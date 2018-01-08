@@ -1,0 +1,6 @@
+*.h5
+*__OLD
+*.pro.user*
+*.pyc
+_*
+fftw_wisdom*

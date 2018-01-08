@@ -1,0 +1,39 @@
+Permissive:
+
+TBB
+	GNU GPL 2 with exception:
+
+	"As a special exception, you may use this file as part of a free software
+	library without restriction.  Specifically, if other files instantiate
+	templates or use macros or inline functions from this file, or you compile
+	this file and link it with other files to produce an executable, this
+	file does not by itself cause the resulting executable to be covered by
+	the GNU General Public License.  This exception does not however
+	invalidate any other reasons why the executable file might be covered by
+	the GNU General Public License."
+
+Boost   1.49.0
+	Boost Software License 1
+	* Permissive.
+	* Compatible with GNU GPL, according to gnu.org.
+
+HDF 5   1.8.11
+	* Permissive.
+	* Only covers the distribution of HDF 5 source/binaries.
+
+KissFFT
+	BSD 3-clause
+	* Permissive.
+	* Compatible with GNU GPL, according to gnu.org.
+
+Qt 4.8.4
+	GNU LGPL 2.1 or GPL 3.
+
+-------------------------------------------------------------------------------
+Not permissive:
+
+FFTW   3.3.3
+	GNU GPL 2 or later
+
+QCustomPlot
+	GNU GPL 3 or later.
