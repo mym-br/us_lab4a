@@ -31,6 +31,7 @@ Method::fillNameMap()
 	nameMap_["sta:sectorial:vectorial:double_precision:saved"           ] = STA_SECTORIAL_VECTORIAL_DP_SAVED;
 	nameMap_["sta:sectorial:single_precision:saved"                     ] = STA_SECTORIAL_SP_SAVED;
 	nameMap_["sta:sectorial:vectorial:single_precision:saved"           ] = STA_SECTORIAL_VECTORIAL_SP_SAVED;
+	nameMap_["sta:save_signals"                                         ] = STA_SAVE_SIGNALS;
 	nameMap_["show_image"                                               ] = SHOW_IMAGE;
 	nameMap_["test"                                                     ] = TEST;
 }
@@ -50,7 +51,8 @@ Method::get(Project& project)
 	case STA_SECTORIAL_SIMULATED:                             // falls through
 	case STA_SECTORIAL_DP_NETWORK:                            // falls through
 	case STA_SECTORIAL_DP_SAVED:                              // falls through
-	case STA_SECTORIAL_VECTORIAL_DP_SAVED:
+	case STA_SECTORIAL_VECTORIAL_DP_SAVED:                    // falls through
+	case STA_SAVE_SIGNALS:
 		return new STAMethod<double>(project);
 	case STA_SECTORIAL_SP_SAVED:
 	case STA_SECTORIAL_VECTORIAL_SP_SAVED:

@@ -20,6 +20,7 @@
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
 #include "STAProcessor.h"
+#include "Timer.h"
 #include "VectorialSTAProcessor.h"
 #include "Util.h"
 #include "XZValue.h"
@@ -40,6 +41,8 @@ public:
 private:
 	STAMethod(const STAMethod&);
 	STAMethod& operator=(const STAMethod&);
+
+	void saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq, unsigned int baseElement, const std::string& dataDir);
 
 	Project& project_;
 };
@@ -63,10 +66,8 @@ STAMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
-	const STAConfiguration<FloatType> config(taskPM);
-	const std::string outputDir    = taskPM->value<std::string>( "output_dir");
-	const unsigned int baseElement = taskPM->value<unsigned int>("base_element",   0, config.numElementsMux - config.numElements);
-	const FloatType peakOffset     = taskPM->value<FloatType>(   "peak_offset" , 0.0, 50.0);
+	const STAConfiguration<FloatType> config(project_.loadChildParameterMap(taskPM, "sta_config_file"));
+	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 
 	boost::scoped_ptr<STAAcquisition<FloatType>> acquisition;
 
@@ -75,7 +76,8 @@ STAMethod<FloatType>::execute()
 	case Method::STA_SECTORIAL_SIMULATED:
 		acquisition.reset(new SimulatedSTAAcquisition<FloatType>(project_, config));
 		break;
-	case Method::STA_SECTORIAL_DP_NETWORK:
+	case Method::STA_SECTORIAL_DP_NETWORK:         // falls through
+	case Method::STA_SAVE_SIGNALS:
 		acquisition.reset(new NetworkSTAAcquisition<FloatType>(project_, config));
 		break;
 	case Method::STA_SECTORIAL_SIMPLE_SAVED:       // falls through
@@ -89,17 +91,26 @@ STAMethod<FloatType>::execute()
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << project_.method() << '.');
 	}
 
+	if (project_.method() == Method::STA_SAVE_SIGNALS) {
+		std::string dataDir = taskPM->value<std::string>("data_dir");
+		saveSignals(config, *acquisition, baseElement, dataDir);
+		return;
+	}
+
 	Matrix2<XZValueFactor<FloatType>> gridData;
 
 	const FloatType lambda = config.propagationSpeed / config.centerFrequency;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), lambda, gridData);
 
-	bool coherenceFactorEnabled;
+	bool coherenceFactorEnabled = false;
 	bool vectorialProcessingWithEnvelope = false;
 	if (project_.method() == Method::STA_SECTORIAL_VECTORIAL_DP_SAVED ||
 			project_.method() == Method::STA_SECTORIAL_VECTORIAL_SP_SAVED) {
 		vectorialProcessingWithEnvelope = taskPM->value<bool>("calculate_envelope_in_processing");
 	}
+
+	const FloatType peakOffset  = taskPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
+	const std::string outputDir = taskPM->value<std::string>( "output_dir");
 
 	switch (project_.method()) {
 	case Method::STA_SECTORIAL_SIMPLE_SIMULATED: // falls through
@@ -109,10 +120,13 @@ STAMethod<FloatType>::execute()
 			CoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			coherenceFactorEnabled = coherenceFactor.enabled();
 			processor.reset(new SimpleSTAProcessor<FloatType>(config, *acquisition, peakOffset));
+
+			Timer tProc;
 			processor->process(baseElement, gridData);
+			LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 		}
 		break;
-	case Method::STA_SECTORIAL_VECTORIAL_DP_SAVED:
+	case Method::STA_SECTORIAL_VECTORIAL_DP_SAVED: // falls through
 	case Method::STA_SECTORIAL_VECTORIAL_SP_SAVED:
 		{
 			const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
@@ -120,7 +134,10 @@ STAMethod<FloatType>::execute()
 			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			coherenceFactorEnabled = coherenceFactor.enabled();
 			processor.reset(new VectorialSTAProcessor<FloatType>(config, *acquisition, upsamplingFactor, coherenceFactor, peakOffset, vectorialProcessingWithEnvelope));
+
+			Timer tProc;
 			processor->process(baseElement, gridData);
+			LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 		}
 		break;
 	default:
@@ -129,7 +146,10 @@ STAMethod<FloatType>::execute()
 			CoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			coherenceFactorEnabled = coherenceFactor.enabled();
 			processor.reset(new DefaultSTAProcessor<FloatType>(config, *acquisition, coherenceFactor, peakOffset));
+
+			Timer tProc;
 			processor->process(baseElement, gridData);
+			LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 		}
 	}
 
@@ -184,6 +204,23 @@ STAMethod<FloatType>::execute()
 		Util::copyXZValue(gridData, projGridData);
 		project_.showFigure3D(2, "CF", &projGridData, Project::emptyPointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+	}
+}
+
+template<typename FloatType>
+void
+STAMethod<FloatType>::saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq, unsigned int baseElement, const std::string& dataDir)
+{
+	typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+
+	for (unsigned int txElem = 0; txElem < config.numElements; ++txElem) {
+		acq.execute(baseElement, txElem, acqData);
+
+		std::ostringstream filePath;
+		filePath << dataDir << std::setfill('0') << "/signal-base" << std::setw(4) << baseElement << "-tx" << std::setw(4) << txElem;
+		std::string filePathStr = filePath.str();
+		LOG_DEBUG << "Saving " << filePathStr << "...";
+		project_.saveHDF5(acqData, filePathStr, "signal");
 	}
 }
 
