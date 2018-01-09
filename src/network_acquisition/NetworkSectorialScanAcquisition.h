@@ -54,15 +54,15 @@ NetworkSectorialScanAcquisition<FloatType>::NetworkSectorialScanAcquisition(cons
 
 	acq_->execPreConfiguration();
 
-	acq_->setSamplingFrequency(config_.samplingFrequency);
+	acq_->setAcquisitionDelay(config_.acquisitionDelay);
+	acq_->setSignalMode(config_.signalMode);
 	acq_->setMaterialVelocity(config_.propagationSpeed);
-	//acq_->setFocalPoint(config_.focalEmissionDistance, config_.focalReceptionDistance);
-	//acq_->setAcquisitionDelay(config_.acquisitionDelay);
-	//acq_->setSignalMode(config_.signalMode);
+	acq_->setFocalPoint(config_.focalEmissionDistance, config_.focalReceptionDistance);
 	acq_->setPhasedArrayConfiguration(config_.numElementsMux, config_.pitch, config_.centerFrequency);
 	acq_->setRange(config_.rangeStart, config_.rangeEnd);
 	acq_->setSectorialScan(config_.baseElement, config_.numElements, config_.startAngle, config_.endAngle, config_.angleStep);
 	acq_->setGain(config_.gain);
+	LOG_DEBUG << "[NetworkSectorialScanAcquisition] sampling frequency: " << acq_->getSamplingFrequency();
 
 	acq_->execPostConfiguration();
 }
@@ -94,8 +94,8 @@ NetworkSectorialScanAcquisition<FloatType>::execute(typename SectorialScanAcquis
 			const FloatType coef = i / (numRows - FloatType{1.0});
 			const FloatType r = (config_.rangeEnd - config_.rangeStart) * coef + config_.rangeStart;
 			XZValue<FloatType>& point = acqData(j, i);
-			point.x = lineStartX_[j] + sa * r;
-			point.z = lineStartZ_[j] + ca * r;
+			point.x = lineStartX_[j] * 1.0e-3f + sa * r;
+			point.z = lineStartZ_[j] * 1.0e-3f + ca * r;
 			point.value = imageBuffer_[i + j * numRows];
 		}
 	}
