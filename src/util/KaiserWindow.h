@@ -36,6 +36,7 @@ FloatType getBeta(FloatType tolerance_dB)
 	} else {
 		beta = 0.0;
 	}
+
 	return beta;
 }
 
@@ -64,7 +65,9 @@ void getWindow(unsigned int size, FloatType beta, std::vector<FloatType>& window
 	const FloatType c2 = 1 / boost::math::cyl_bessel_i(0, beta);
 	for (unsigned int n = 0; n < size; ++n) {
 		const FloatType k = c1 * n - 1;
-		window[n] = c2 * boost::math::cyl_bessel_i(0, beta * std::sqrt(1 - k * k));
+		FloatType x = 1 - k * k;
+		if (x < 0.0) x = 0.0;
+		window[n] = c2 * boost::math::cyl_bessel_i(0, beta * std::sqrt(x));
 	}
 }
 
