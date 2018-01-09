@@ -11,6 +11,7 @@
 #include "ParameterMap.h"
 #include "Project.h"
 #include "SectorialScanConfiguration.h"
+#include "Timer.h"
 #include "Util.h"
 #include "XZValue.h"
 
@@ -33,6 +34,7 @@ private:
 	void fillConfiguration();
 	void getSingleImageFromNetwork();
 	void showSavedImage();
+	void execContinuousNetworkImaging();
 
 	Project& project_;
 	SectorialScanConfiguration<FloatType> config_;
@@ -98,6 +100,9 @@ SectorialScanMethod<FloatType>::execute()
 	case Method::SECTORIAL_SCAN_SP_SAVED:
 		showSavedImage();
 		break;
+	case Method::SECTORIAL_SCAN_SP_NETWORK_CONTINUOUS:
+		execContinuousNetworkImaging();
+		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << project_.method() << '.');
 	}
@@ -156,6 +161,29 @@ SectorialScanMethod<FloatType>::showSavedImage()
 
 	project_.showFigure3D(1, "Image", &imageData, Project::emptyPointList,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+}
+
+template<typename FloatType>
+void
+SectorialScanMethod<FloatType>::execContinuousNetworkImaging()
+{
+	auto acquisition = std::make_unique<NetworkSectorialScanAcquisition<FloatType>>(project_, config_);
+	Matrix2<XZValue<FloatType>> imageData;
+
+	int n = 0;
+	Timer t;
+	do {
+		acquisition->execute(imageData);
+
+		project_.showFigure3D(1, "Image", &imageData, Project::emptyPointList,
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+
+		if (++n == 10) {
+			LOG_INFO << 10.0 / t.getTime() << " image/s";
+			n = 0;
+			t.reset();
+		}
+	} while (!project_.processingCancellationRequested());
 }
 
 } // namespace Lab

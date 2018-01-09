@@ -21,6 +21,7 @@ Method::fillNameMap()
 {
 	nameMap_["single_acquisition"                                       ] = SINGLE_ACQUISITION;
 	nameMap_["sectorial_scan:single_precision:network"                  ] = SECTORIAL_SCAN_SP_NETWORK;
+	nameMap_["sectorial_scan:single_precision:network:continuous"       ] = SECTORIAL_SCAN_SP_NETWORK_CONTINUOUS;
 	nameMap_["sectorial_scan:single_precision:saved"                    ] = SECTORIAL_SCAN_SP_SAVED;
 	nameMap_["sta:sectorial:simple:simulated"                           ] = STA_SECTORIAL_SIMPLE_SIMULATED;
 	nameMap_["sta:sectorial:simple:saved"                               ] = STA_SECTORIAL_SIMPLE_SAVED;
@@ -41,6 +42,7 @@ Method::get(Project& project)
 	case SINGLE_ACQUISITION:
 		return new SingleAcquisitionMethod(project);
 	case SECTORIAL_SCAN_SP_NETWORK:                           // falls through
+	case SECTORIAL_SCAN_SP_NETWORK_CONTINUOUS:                // falls through
 	case SECTORIAL_SCAN_SP_SAVED:
 		return new SectorialScanMethod<float>(project);
 	case STA_SECTORIAL_SIMPLE_SIMULATED:                      // falls through
