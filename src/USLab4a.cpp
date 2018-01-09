@@ -90,9 +90,9 @@ USLab4a::USLab4a(QWidget* parent)
 			}
 		}
 	} catch (std::exception& e) {
-		LOG_ERROR << "[USLab4::USLab4] Caught exception: " << e.what() << '.';
+		LOG_ERROR << "[USLab4a::USLab4a] Caught exception: " << e.what() << '.';
 	} catch (...) {
-		LOG_ERROR << "[USLab4::USLab4] Caught an unknown exception.";
+		LOG_ERROR << "[USLab4a::USLab4a] Caught an unknown exception.";
 	}
 
 	ui_.logLevelComboBox->addItem(tr("Error")  , Log::LEVEL_ERROR);
@@ -126,7 +126,7 @@ USLab4a::~USLab4a()
 void
 USLab4a::fillTaskListWidget()
 {
-	//LOG_DEBUG << "USLab4::fillTaskListWidget";
+	//LOG_DEBUG << "USLab4a::fillTaskListWidget";
 
 	ui_.taskListWidget->clear();
 
@@ -157,7 +157,7 @@ USLab4a::processScriptEntry()
 		QString projectDir = scriptEntryList_[nextScriptEntry_].project;
 		QFileInfo projectInfo(projectDir);
 		if (!projectInfo.exists() || !projectInfo.isDir()) {
-			LOG_ERROR << "[USLab4::processScriptEntry] Project path " << projectDir.toStdString() << " doesn't exist or is not a directory.";
+			LOG_ERROR << "[USLab4a::processScriptEntry] Project path " << projectDir.toStdString() << " doesn't exist or is not a directory.";
 			resetScriptData();
 			return;
 		}
@@ -182,11 +182,11 @@ USLab4a::processScriptEntry()
 			Method::Type method = Method::findByName(methodName);
 			project_.setMethod(method);
 		} catch (std::exception& e) {
-			LOG_ERROR << "[USLab4::processScriptEntry] Caught exception: " << e.what() << '.';
+			LOG_ERROR << "[USLab4a::processScriptEntry] Caught exception: " << e.what() << '.';
 			resetScriptData();
 			return;
 		} catch (...) {
-			LOG_ERROR << "[USLab4::processScriptEntry] Caught an unknown exception.";
+			LOG_ERROR << "[USLab4a::processScriptEntry] Caught an unknown exception.";
 			resetScriptData();
 			return;
 		}
@@ -243,7 +243,7 @@ USLab4a::on_openScriptAction_triggered()
 
 		QFile file(filePath);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-			LOG_ERROR << "[USLab4::on_openScriptAction_triggered] The file " << filePath.toStdString() << " could not be opened.";
+			LOG_ERROR << "[USLab4a::on_openScriptAction_triggered] The file " << filePath.toStdString() << " could not be opened.";
 			return;
 		}
 
@@ -260,12 +260,12 @@ USLab4a::on_openScriptAction_triggered()
 
 			QStringList fieldList = line.split(' ', QString::SkipEmptyParts);
 			if (fieldList.size() == 1) {
-				LOG_ERROR << "[USLab4::on_openScriptAction_triggered] Missing task at line " << lineNumber << " of file " << filePath.toStdString() << '.';
+				LOG_ERROR << "[USLab4a::on_openScriptAction_triggered] Missing task at line " << lineNumber << " of file " << filePath.toStdString() << '.';
 				resetScriptData();
 				return;
 			}
 			if (fieldList.size() != 2) {
-				LOG_ERROR << "[USLab4::on_openScriptAction_triggered] Invalid syntax at line " << lineNumber << " of file " << filePath.toStdString() << '.';
+				LOG_ERROR << "[USLab4a::on_openScriptAction_triggered] Invalid syntax at line " << lineNumber << " of file " << filePath.toStdString() << '.';
 				resetScriptData();
 				return;
 			}
@@ -326,10 +326,10 @@ USLab4a::on_enableTaskButton_clicked()
 		Method::Type method = Method::findByName(methodName);
 		project_.setMethod(method);
 	} catch (std::exception& e) {
-		LOG_ERROR << "[USLab4::on_enableTaskButton_clicked] Caught exception: " << e.what() << '.';
+		LOG_ERROR << "[USLab4a::on_enableTaskButton_clicked] Caught exception: " << e.what() << '.';
 		return;
 	} catch (...) {
-		LOG_ERROR << "[USLab4::on_enableTaskButton_clicked] Caught an unknown exception.";
+		LOG_ERROR << "[USLab4a::on_enableTaskButton_clicked] Caught an unknown exception.";
 		return;
 	}
 
@@ -350,9 +350,9 @@ USLab4a::on_scanProjectDirButton_clicked()
 	try {
 		fillTaskListWidget();
 	} catch (std::exception& e) {
-		LOG_ERROR << "[USLab4::on_scanProjectDirButton_clicked] Caught exception: " << e.what() << '.';
+		LOG_ERROR << "[USLab4a::on_scanProjectDirButton_clicked] Caught exception: " << e.what() << '.';
 	} catch (...) {
-		LOG_ERROR << "[USLab4::on_scanProjectDirButton_clicked] Caught an unknown exception.";
+		LOG_ERROR << "[USLab4a::on_scanProjectDirButton_clicked] Caught an unknown exception.";
 	}
 }
 
@@ -370,9 +370,9 @@ USLab4a::on_selectProjectDirButton_clicked()
 			fillTaskListWidget();
 		}
 	} catch (std::exception& e) {
-		LOG_ERROR << "[USLab4::on_selectProjectDirButton_clicked] Caught exception: " << e.what() << '.';
+		LOG_ERROR << "[USLab4a::on_selectProjectDirButton_clicked] Caught exception: " << e.what() << '.';
 	} catch (...) {
-		LOG_ERROR << "[USLab4::on_selectProjectDirButton_clicked] Caught an unknown exception.";
+		LOG_ERROR << "[USLab4a::on_selectProjectDirButton_clicked] Caught an unknown exception.";
 	}
 }
 
@@ -418,17 +418,17 @@ USLab4a::updateLogWidget()
 
 			qint64 n = logFile_.write("\n");
 			if (n == -1) {
-				LOG_ERROR << "[USLab4::updateLogWidget] An error ocurred while writing to the log file.";
+				LOG_ERROR << "[USLab4a::updateLogWidget] An error ocurred while writing to the log file.";
 			}
 			n = logFile_.write(s.c_str());
 			if (n == -1) {
-				LOG_ERROR << "[USLab4::updateLogWidget] An error ocurred while writing to the log file.";
+				LOG_ERROR << "[USLab4a::updateLogWidget] An error ocurred while writing to the log file.";
 			}
 		}
 	} catch (std::exception& e) {
-		LOG_ERROR << "[USLab4::updateLogWidget] Caught exception: " << e.what() << '.';
+		LOG_ERROR << "[USLab4a::updateLogWidget] Caught exception: " << e.what() << '.';
 	} catch (...) {
-		LOG_ERROR << "[USLab4::updateLogWidget] Caught an unknown exception.";
+		LOG_ERROR << "[USLab4a::updateLogWidget] Caught an unknown exception.";
 	}
 }
 
@@ -453,9 +453,9 @@ USLab4a::showFigure2D(
 		fig.updateData(xList, yList, markPoints);
 		fig.show();
 	} catch (std::exception& e) {
-		LOG_ERROR << "[USLab4::showFigure2D] Caught exception: " << e.what() << '.';
+		LOG_ERROR << "[USLab4a::showFigure2D] Caught exception: " << e.what() << '.';
 	} catch (...) {
-		LOG_ERROR << "[USLab4::showFigure2D] Caught an unknown exception.";
+		LOG_ERROR << "[USLab4a::showFigure2D] Caught an unknown exception.";
 	}
 }
 
@@ -476,9 +476,9 @@ USLab4a::showFigure3D(
 		fig.updateData(gridData, pointList);
 		fig.show();
 	} catch (std::exception& e) {
-		LOG_ERROR << "[USLab4::showFigure3D] Caught exception: " << e.what() << '.';
+		LOG_ERROR << "[USLab4a::showFigure3D] Caught exception: " << e.what() << '.';
 	} catch (...) {
-		LOG_ERROR << "[USLab4::showFigure3D] Caught an unknown exception.";
+		LOG_ERROR << "[USLab4a::showFigure3D] Caught an unknown exception.";
 	}
 }
 
