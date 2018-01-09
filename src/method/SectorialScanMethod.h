@@ -65,6 +65,8 @@ SectorialScanMethod<FloatType>::fillConfiguration()
 	config_.endAngle               = pm->value<FloatType>(   "end_angle"               , config_.startAngle + 1.0, 90.0);
 	config_.angleStep              = pm->value<FloatType>(   "angle_step"              ,  1.0e-3,      10.0);
 
+	config_.enableFocusing         = pm->value<bool>(        "enable_focusing");
+
 	if (config_.numElementsMux & 0x01) {
 		THROW_EXCEPTION(InvalidParameterException, "The value of num_elements_mux is not even.");
 	}

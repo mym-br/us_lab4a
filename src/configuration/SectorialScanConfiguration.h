@@ -26,6 +26,8 @@ struct SectorialScanConfiguration {
 	FloatType startAngle; // degree
 	FloatType endAngle;   // degree
 	FloatType angleStep;  // degree
+
+	bool enableFocusing;
 };
 
 } // namespace Lab

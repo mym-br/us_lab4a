@@ -57,7 +57,11 @@ NetworkSectorialScanAcquisition<FloatType>::NetworkSectorialScanAcquisition(cons
 	acq_->setAcquisitionDelay(config_.acquisitionDelay);
 	acq_->setSignalMode(config_.signalMode);
 	acq_->setMaterialVelocity(config_.propagationSpeed);
-	acq_->setFocalPoint(config_.focalEmissionDistance, config_.focalReceptionDistance);
+	if (config_.enableFocusing) {
+		acq_->setFocalPoint(config_.focalEmissionDistance, config_.focalReceptionDistance);
+	} else {
+		acq_->setFocalPoint(0.0, 0.0);
+	}
 	acq_->setPhasedArrayConfiguration(config_.numElementsMux, config_.pitch, config_.centerFrequency);
 	acq_->setRange(config_.rangeStart, config_.rangeEnd);
 	acq_->setSectorialScan(config_.baseElement, config_.numElements, config_.startAngle, config_.endAngle, config_.angleStep);
