@@ -174,9 +174,11 @@ STAMethod<FloatType>::execute()
 		visual = Figure::VISUALIZATION_ENVELOPE_LOG;
 	}
 
+	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
+
 	Project::GridDataType projGridData;
 	Util::copyXZValue(gridData, projGridData);
-	project_.showFigure3D(1, "Raw", &projGridData, Project::emptyPointList,
+	project_.showFigure3D(1, "Raw", &projGridData, &pointList,
 				true, visual, Figure::COLORMAP_VIRIDIS);
 
 	if (coherenceFactorEnabled) {
@@ -202,7 +204,7 @@ STAMethod<FloatType>::execute()
 		}
 
 		Util::copyXZValue(gridData, projGridData);
-		project_.showFigure3D(2, "CF", &projGridData, Project::emptyPointList,
+		project_.showFigure3D(2, "CF", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 	}
 }

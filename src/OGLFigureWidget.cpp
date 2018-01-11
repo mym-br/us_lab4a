@@ -1695,7 +1695,7 @@ OGLFigureWidget::paintGL()
 			glPointSize(REFLECTOR_POINT_SIZE_BIG);
 //		}
 		glBegin(GL_POINTS);
-		glColor3f(0.0f, 1.0f, 0.0f);
+		glColor3f(0.0f, 0.5f, 0.0f);
 		const float zReflectors = AUX_LINES_Z * totalValueScale;
 		for (std::vector<XY<float> >::const_iterator iter = pointList_.begin(); iter != pointList_.end(); ++iter) {
 			glVertex3f(iter->x, iter->y, zReflectors);

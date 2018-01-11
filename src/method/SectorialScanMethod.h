@@ -118,7 +118,9 @@ SectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 	Matrix2<XZValue<FloatType>> imageData;
 	acquisition->execute(imageData);
 
-	project_.showFigure3D(1, "Image", &imageData, Project::emptyPointList,
+	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
+
+	project_.showFigure3D(1, "Image", &imageData, &pointList,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 
 	{
@@ -159,7 +161,9 @@ SectorialScanMethod<FloatType>::showSavedImage()
 		Util::copyXZFromSimpleMatrices(gridX, gridZ, imageData);
 	}
 
-	project_.showFigure3D(1, "Image", &imageData, Project::emptyPointList,
+	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
+
+	project_.showFigure3D(1, "Image", &imageData, &pointList,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 }
 
@@ -170,12 +174,14 @@ SectorialScanMethod<FloatType>::execContinuousNetworkImaging()
 	auto acquisition = std::make_unique<NetworkSectorialScanAcquisition<FloatType>>(project_, config_);
 	Matrix2<XZValue<FloatType>> imageData;
 
+	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
+
 	int n = 0;
 	Timer t;
 	do {
 		acquisition->execute(imageData);
 
-		project_.showFigure3D(1, "Image", &imageData, Project::emptyPointList,
+		project_.showFigure3D(1, "Image", &imageData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 
 		if (++n == 10) {
