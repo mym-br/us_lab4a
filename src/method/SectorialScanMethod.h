@@ -61,11 +61,11 @@ SectorialScanMethod<FloatType>::fillConfiguration()
 	config_.focalReceptionDistance = pm->value<FloatType>(   "focus_reception_distance",  1.0e-3, 1000.0e-3);
 
 	// Sectorial scan grid.
-	config_.rangeStart             = pm->value<FloatType>(   "range_start"             ,  1.0e-3, 1000.0e-3);
-	config_.rangeEnd               = pm->value<FloatType>(   "range_end"               ,  1.0e-3, 1000.0e-3);
-	config_.startAngle             = pm->value<FloatType>(   "start_angle"             ,   -90.0,      89.0);
+	config_.rangeStart             = pm->value<FloatType>(   "range_start"             ,  1.0e-3, 99.0);
+	config_.rangeEnd               = pm->value<FloatType>(   "range_end"               , config_.rangeStart + 1.0e-2, 100.0);
+	config_.startAngle             = pm->value<FloatType>(   "start_angle"             ,   -90.0, 89.0);
 	config_.endAngle               = pm->value<FloatType>(   "end_angle"               , config_.startAngle + 1.0, 90.0);
-	config_.angleStep              = pm->value<FloatType>(   "angle_step"              ,  1.0e-3,      10.0);
+	config_.angleStep              = pm->value<FloatType>(   "angle_step"              ,  1.0e-3, 10.0);
 
 	config_.enableFocusing         = pm->value<bool>(        "enable_focusing");
 

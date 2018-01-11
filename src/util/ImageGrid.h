@@ -66,14 +66,14 @@ template<typename T>
 void
 ImageGrid<FloatType>::getSectorialGrid(ConstParameterMapPtr pm, FloatType lambda, T& grid)
 {
-	const FloatType minRadius         = pm->value<FloatType>("sectorial_min_radius"          ,             1.0e-4, 100.0e-3);
-	const FloatType maxRadius         = pm->value<FloatType>("sectorial_max_radius"          , minRadius + 1.0e-4, 500.0e-3);
-	const FloatType radiusStepDiv     = pm->value<FloatType>("sectorial_radius_step_div"     ,             1.0e-2,    256.0);
-	const FloatType minAngle          = pm->value<FloatType>("sectorial_min_angle"           ,              -80.0,     80.0);
-	const FloatType maxAngle          = pm->value<FloatType>("sectorial_max_angle"           ,  minAngle + 1.0e-3,     80.0);
-	const FloatType maxLateralStepDiv = pm->value<FloatType>("sectorial_max_lateral_step_div",             1.0e-2,    256.0);
-	const FloatType originX           = pm->value<FloatType>("sectorial_origin_x"            ,          -200.0e-3, 200.0e-3);
-	const FloatType originZ           = pm->value<FloatType>("sectorial_origin_z"            ,          -200.0e-3, 200.0e-3);
+	const FloatType minRadius         = pm->value<FloatType>("sectorial_min_radius"          ,             1.0e-4,   100.0e-3);
+	const FloatType maxRadius         = pm->value<FloatType>("sectorial_max_radius"          , minRadius + 1.0e-4, 10000.0e-3);
+	const FloatType radiusStepDiv     = pm->value<FloatType>("sectorial_radius_step_div"     ,             1.0e-2,      256.0);
+	const FloatType minAngle          = pm->value<FloatType>("sectorial_min_angle"           ,              -80.0,       80.0);
+	const FloatType maxAngle          = pm->value<FloatType>("sectorial_max_angle"           ,  minAngle + 1.0e-3,       80.0);
+	const FloatType maxLateralStepDiv = pm->value<FloatType>("sectorial_max_lateral_step_div",             1.0e-2,      256.0);
+	const FloatType originX           = pm->value<FloatType>("sectorial_origin_x"            ,          -200.0e-3,   200.0e-3);
+	const FloatType originZ           = pm->value<FloatType>("sectorial_origin_z"            ,          -200.0e-3,   200.0e-3);
 
 	std::vector<FloatType> radiusList;
 	Util::fillSequence(radiusList, minRadius, maxRadius, lambda / radiusStepDiv);
