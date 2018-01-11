@@ -2,3 +2,5 @@
 - Update QCustomPlot.
 
 - Show image (python).
+
+- Rename show reflectors > show points
