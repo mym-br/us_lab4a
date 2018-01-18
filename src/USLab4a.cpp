@@ -377,6 +377,13 @@ USLab4a::on_selectProjectDirButton_clicked()
 }
 
 void
+USLab4a::on_triggerButton_clicked()
+{
+	project_.trigger();
+	LOG_INFO << "##### TRIGGER #####";
+}
+
+void
 USLab4a::closeEvent(QCloseEvent* event)
 {
 	controller_->exit();

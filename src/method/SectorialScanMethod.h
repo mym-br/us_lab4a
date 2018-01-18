@@ -1,8 +1,12 @@
 #ifndef SECTORIALSCANMETHOD_H
 #define SECTORIALSCANMETHOD_H
 
+#include <cstddef> /* std::size_t */
 #include <memory>
+#include <sstream>
 #include <string>
+
+#include <QDir>//TODO: Move to Project
 
 #include "Log.h"
 #include "Matrix2.h"
@@ -35,6 +39,7 @@ private:
 	void getSingleImageFromNetwork();
 	void showSavedImage();
 	void execContinuousNetworkImaging();
+	void execTriggeredNetworkImaging();
 
 	Project& project_;
 	SectorialScanConfiguration<FloatType> config_;
@@ -104,6 +109,9 @@ SectorialScanMethod<FloatType>::execute()
 		break;
 	case Method::SECTORIAL_SCAN_SP_NETWORK_CONTINUOUS:
 		execContinuousNetworkImaging();
+		break;
+	case Method::SECTORIAL_SCAN_SP_NETWORK_TRIGGER:
+		execTriggeredNetworkImaging();
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << project_.method() << '.');
@@ -192,6 +200,57 @@ SectorialScanMethod<FloatType>::execContinuousNetworkImaging()
 			t.reset();
 		}
 	} while (!project_.processingCancellationRequested());
+}
+
+template<typename FloatType>
+void
+SectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
+{
+	project_.resetTrigger();
+
+	const std::string outputDirPrefix = project_.taskParameterMap()->value<std::string>("output_dir_prefix");
+
+	auto acquisition = std::make_unique<NetworkSectorialScanAcquisition<FloatType>>(project_, config_);
+	Matrix2<XZValue<FloatType>> imageData;
+
+	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
+
+	std::size_t triggerCount = 0;
+	QDir dir;
+	while (project_.waitForTrigger(&triggerCount)) {
+
+		acquisition->execute(imageData);
+
+		project_.showFigure3D(1, "Image", &imageData, &pointList,
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);
+
+		{
+			std::ostringstream out;
+			out << outputDirPrefix << triggerCount;
+			std::string outputDir = out.str();
+
+			QString fullDir{project_.directory().c_str()};
+			fullDir += '/';
+			fullDir += outputDir.c_str();
+			if (dir.exists(fullDir)) {
+				THROW_EXCEPTION(InvalidDirectoryException, "The directory/file " << fullDir.toStdString() << " already exists.");
+			} else {
+				dir.mkpath(fullDir);
+			}
+
+			Matrix2<FloatType> aux;
+			Util::copyValueToSimpleMatrix(imageData, aux);
+			LOG_DEBUG << "Saving the image...";
+			project_.saveHDF5(aux, outputDir + "/image_value", "value");
+
+			Matrix2<FloatType> gridX, gridZ;
+			Util::copyXZToSimpleMatrices(imageData, gridX, gridZ);
+			LOG_DEBUG << "Saving the X coordinates...";
+			project_.saveHDF5(gridX, outputDir + "/image_x", "x");
+			LOG_DEBUG << "Saving the Z coordinates...";
+			project_.saveHDF5(gridZ, outputDir + "/image_z", "z");
+		}
+	}
 }
 
 } // namespace Lab

@@ -126,6 +126,7 @@ Project::requestProcessingCancellation()
 {
 	QMutexLocker locker(&control_.mutex);
 	control_.processingCancellationRequested = true;
+	control_.triggerCondition.wakeAll();
 }
 
 bool
@@ -138,6 +139,56 @@ Project::processingCancellationRequested()
 	} else {
 		return false;
 	}
+}
+
+void
+Project::resetTrigger()
+{
+	QMutexLocker locker(&control_.mutex);
+	control_.trigger = false;
+	control_.triggerCount = 0;
+}
+
+void
+Project::trigger()
+{
+	QMutexLocker locker(&control_.mutex);
+	if (control_.trigger) {
+		THROW_EXCEPTION(InvalidStateException, "Duplicated trigger.");
+	}
+	control_.trigger = true;
+	control_.triggerCondition.wakeAll();
+}
+
+bool
+Project::waitForTrigger(std::size_t* triggerCount)
+{
+	QMutexLocker locker(&control_.mutex);
+	if (control_.processingCancellationRequested) {
+		control_.processingCancellationRequested = false;
+		control_.trigger = false;
+		control_.triggerCount = 0;
+		return false;
+	}
+
+	while (!control_.trigger) {
+		LOG_INFO << ">>>>> Waiting for trigger >>>>>";
+		control_.triggerCondition.wait(&control_.mutex);
+
+		if (control_.processingCancellationRequested) {
+			control_.processingCancellationRequested = false;
+			control_.trigger = false;
+			control_.triggerCount = 0;
+			return false;
+		}
+	}
+	control_.trigger = false;
+
+	if (triggerCount != nullptr) {
+		*triggerCount = control_.triggerCount;
+	}
+	++control_.triggerCount;
+	return true;
 }
 
 } // namespace Lab

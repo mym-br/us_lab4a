@@ -63,6 +63,7 @@ private slots:
 	void on_enableTaskButton_clicked();
 	void on_scanProjectDirButton_clicked();
 	void on_selectProjectDirButton_clicked();
+	void on_triggerButton_clicked();
 	void updateFigureWindows();
 	void updateLogWidget();
 private:

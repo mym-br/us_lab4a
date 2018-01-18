@@ -2,6 +2,7 @@
 #define PROJECT_H_
 
 #include <algorithm> /* copy */
+#include <cstddef> /* std::size_t */
 #include <sstream>
 #include <string>
 #include <utility> /* pair */
@@ -108,6 +109,9 @@ public:
 	// These functions are thread-safe.
 	void requestProcessingCancellation();
 	bool processingCancellationRequested();
+	void resetTrigger();
+	void trigger();
+	bool waitForTrigger(std::size_t* triggerCount = nullptr); // returns false if processing cancellation has been requested
 
 	static Matrix2<XZValue<float> >* emptyGridData;
 	static std::vector<XZ<float> >* emptyPointList;
@@ -157,10 +161,15 @@ private:
 
 	struct Control {
 		Control()
-			: processingCancellationRequested(false)
+			: triggerCount(0)
+			, processingCancellationRequested(false)
+			, trigger(false)
 		{ }
 		QMutex mutex;
+		QWaitCondition triggerCondition;
+		std::size_t triggerCount;
 		bool processingCancellationRequested;
+		bool trigger;
 	};
 
 	Project(const Project&);
