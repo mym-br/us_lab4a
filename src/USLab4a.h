@@ -52,7 +52,8 @@ public:
 		const Project::GridDataType* gridData = 0,
 		const std::vector<Project::PointType>* pointList = 0,
 		Figure::Visualization visualization = Figure::VISUALIZATION_DEFAULT,
-		Figure::Colormap colormap = Figure::COLORMAP_DEFAULT);
+		Figure::Colormap colormap = Figure::COLORMAP_DEFAULT,
+		double valueScale = 0.0);
 private slots:
 	void handleControllerFinishedProcessing();
 	void on_openScriptAction_triggered();

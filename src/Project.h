@@ -95,7 +95,8 @@ public:
 						const U* pointList,
 						bool waitPending = true,
 						Figure::Visualization visualization = Figure::VISUALIZATION_DEFAULT,
-						Figure::Colormap colormap = Figure::COLORMAP_DEFAULT);
+						Figure::Colormap colormap = Figure::COLORMAP_DEFAULT,
+						double valueScale = 0.0);
 
 	// Called by the consumer.
 	// These functions are thread-safe.
@@ -138,6 +139,7 @@ private:
 			, visualization(Figure::VISUALIZATION_DEFAULT)
 			, colormap(Figure::COLORMAP_DEFAULT)
 			, figureName("Figure")
+			, valueScale(0.0)
 		{ }
 		QMutex mutex;
 		QWaitCondition requestHandledCondition;
@@ -150,6 +152,7 @@ private:
 		std::string figureName;
 		GridDataType gridData;
 		std::vector<PointType> pointList;
+		double valueScale;
 	};
 
 	struct Flags {
@@ -300,7 +303,8 @@ Project::showFigure3D(
 		const U* pointList,
 		bool waitPending,
 		Figure::Visualization visualization,
-		Figure::Colormap colormap)
+		Figure::Colormap colormap,
+		double valueScale)
 {
 	{
 		QMutexLocker locker(&figure3DData_.mutex);
@@ -335,6 +339,7 @@ Project::showFigure3D(
 
 		figure3DData_.visualization = visualization;
 		figure3DData_.colormap = colormap;
+		figure3DData_.valueScale = valueScale;
 	}
 }
 

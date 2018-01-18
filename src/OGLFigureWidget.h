@@ -60,7 +60,7 @@ public:
 	float minDecibels() const { return minDecibels_; }
 	void setColormap(Figure::Colormap colormap) { colormap_ = colormap; }
 	Figure::Colormap colormap() const { return colormap_; }
-	void updateGridData(const Matrix2<XZValue<float> >& gridData);
+	void updateGridData(double valueScale, const Matrix2<XZValue<float> >& gridData);
 	void updatePointList(const std::vector<XZ<float> >& pointList);
 	void setRotationMode(bool enabled) {
 		editingDistanceMarkers_ = false;
@@ -93,7 +93,7 @@ private:
 	template<typename ColorScale, typename SrcIterator, typename DestIterator>
 	void fillOGLGridDataWithLogAbsValues(SrcIterator srcIter, SrcIterator srcEnd, DestIterator destIter, float valueFactor);
 
-	template<typename ColorScale> void fillOGLGridData(const Matrix2<XZValue<float> >& gridData);
+	template<typename ColorScale> void fillOGLGridData(double valueScale, const Matrix2<XZValue<float> >& gridData);
 
 	void createVertex(const OGLPoint3D& point, float valueScale);
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS

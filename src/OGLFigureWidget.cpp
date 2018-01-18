@@ -1310,7 +1310,7 @@ OGLFigureWidget::fillOGLGridDataWithLogAbsValues(SrcIterator srcIter, SrcIterato
 
 template<typename ColorScale>
 void
-OGLFigureWidget::fillOGLGridData(const Matrix2<XZValue<float> >& gridData)
+OGLFigureWidget::fillOGLGridData(double valueScale, const Matrix2<XZValue<float> >& gridData)
 {
 	if (oglGridData_.n1() != gridData.n1() || oglGridData_.n2() != gridData.n2()) {
 		oglGridData_.resize(gridData.n1(), gridData.n2());
@@ -1320,9 +1320,14 @@ OGLFigureWidget::fillOGLGridData(const Matrix2<XZValue<float> >& gridData)
 	case Figure::VISUALIZATION_DEFAULT: // falls through
 	case Figure::VISUALIZATION_RAW_LINEAR:
 		{
-			float minValue, maxValue;
-			Util::minMaxValueField(gridData, minValue, maxValue);
-			const float valueFactor = 0.5f / std::max(std::max(std::abs(maxValue), std::abs(minValue)), VALUE_EPS);
+			float valueFactor;
+			if (valueScale != 0.0) {
+				valueFactor = 0.5f / static_cast<float>(valueScale);
+			} else {
+				float minValue, maxValue;
+				Util::minMaxValueField(gridData, minValue, maxValue);
+				valueFactor = 0.5f / std::max(std::max(std::abs(maxValue), std::abs(minValue)), VALUE_EPS);
+			}
 			Matrix2<OGLPoint3D>::Iterator destIter = oglGridData_.begin();
 			for (Matrix2<XZValue<float> >::ConstIterator srcIter = gridData.begin(); srcIter != gridData.end(); ++srcIter, ++destIter) {
 				destIter->x = srcIter->x;
@@ -1335,15 +1340,25 @@ OGLFigureWidget::fillOGLGridData(const Matrix2<XZValue<float> >& gridData)
 		break;
 	case Figure::VISUALIZATION_RECTIFIED_LINEAR:
 		{
-			const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(gridData);
-			const float valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
+			float valueFactor;
+			if (valueScale != 0.0) {
+				valueFactor = 1.0f / static_cast<float>(valueScale);
+			} else {
+				const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(gridData);
+				valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
+			}
 			fillOGLGridDataWithAbsValues<ColorScale>(gridData.begin(), gridData.end(), oglGridData_.begin(), valueFactor);
 		}
 		break;
 	case Figure::VISUALIZATION_RECTIFIED_LOG:
 		{
-			const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(gridData);
-			const float valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
+			float valueFactor;
+			if (valueScale != 0.0) {
+				valueFactor = 1.0f / static_cast<float>(valueScale);
+			} else {
+				const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(gridData);
+				valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
+			}
 			fillOGLGridDataWithLogAbsValues<ColorScale>(gridData.begin(), gridData.end(), oglGridData_.begin(), valueFactor);
 		}
 		break;
@@ -1352,8 +1367,13 @@ OGLFigureWidget::fillOGLGridData(const Matrix2<XZValue<float> >& gridData)
 			Matrix2<XZValue<float> > envelope = gridData;
 			ParallelHilbertEnvelope<float>::calculateDim2(envelope);
 
-			const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(envelope);
-			const float valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
+			float valueFactor;
+			if (valueScale != 0.0) {
+				valueFactor = 1.0f / static_cast<float>(valueScale);
+			} else {
+				const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(envelope);
+				valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
+			}
 			fillOGLGridDataWithAbsValues<ColorScale>(envelope.begin(), envelope.end(), oglGridData_.begin(), valueFactor);
 		}
 		break;
@@ -1362,8 +1382,13 @@ OGLFigureWidget::fillOGLGridData(const Matrix2<XZValue<float> >& gridData)
 			Matrix2<XZValue<float> > envelope = gridData;
 			ParallelHilbertEnvelope<float>::calculateDim2(envelope);
 
-			const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(envelope);
-			const float valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
+			float valueFactor;
+			if (valueScale != 0.0) {
+				valueFactor = 1.0f / static_cast<float>(valueScale);
+			} else {
+				const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(envelope);
+				valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
+			}
 			fillOGLGridDataWithLogAbsValues<ColorScale>(envelope.begin(), envelope.end(), oglGridData_.begin(), valueFactor);
 		}
 		break;
@@ -1380,7 +1405,7 @@ OGLFigureWidget::resetScale()
 }
 
 void
-OGLFigureWidget::updateGridData(const Matrix2<XZValue<float>>& gridData)
+OGLFigureWidget::updateGridData(double valueScale, const Matrix2<XZValue<float>>& gridData)
 {
 	if (gridData.empty()) return;
 
@@ -1389,37 +1414,37 @@ OGLFigureWidget::updateGridData(const Matrix2<XZValue<float>>& gridData)
 	switch (colormap_) {
 	case Figure::COLORMAP_DEFAULT: // falls through
 	case Figure::COLORMAP_GRAY:
-		fillOGLGridData<GrayScaleColormap>(gridData);
+		fillOGLGridData<GrayScaleColormap>(valueScale, gridData);
 		break;
 	case Figure::COLORMAP_INVERTED_GRAY:
-		fillOGLGridData<InvertedGrayScaleColormap>(gridData);
+		fillOGLGridData<InvertedGrayScaleColormap>(valueScale, gridData);
 		break;
 	case Figure::COLORMAP_VIRIDIS:
-		fillOGLGridData<ViridisColormap>(gridData);
+		fillOGLGridData<ViridisColormap>(valueScale, gridData);
 		break;
 	case Figure::COLORMAP_INVERTED_VIRIDIS:
-		fillOGLGridData<InvertedViridisColormap>(gridData);
+		fillOGLGridData<InvertedViridisColormap>(valueScale, gridData);
 		break;
 	case Figure::COLORMAP_PLASMA:
-		fillOGLGridData<PlasmaColormap>(gridData);
+		fillOGLGridData<PlasmaColormap>(valueScale, gridData);
 		break;
 	case Figure::COLORMAP_INVERTED_PLASMA:
-		fillOGLGridData<InvertedPlasmaColormap>(gridData);
+		fillOGLGridData<InvertedPlasmaColormap>(valueScale, gridData);
 		break;
 	case Figure::COLORMAP_INFERNO:
-		fillOGLGridData<InfernoColormap>(gridData);
+		fillOGLGridData<InfernoColormap>(valueScale, gridData);
 		break;
 	case Figure::COLORMAP_INVERTED_INFERNO:
-		fillOGLGridData<InvertedInfernoColormap>(gridData);
+		fillOGLGridData<InvertedInfernoColormap>(valueScale, gridData);
 		break;
 	case Figure::COLORMAP_MAGMA:
-		fillOGLGridData<MagmaColormap>(gridData);
+		fillOGLGridData<MagmaColormap>(valueScale, gridData);
 		break;
 	case Figure::COLORMAP_INVERTED_MAGMA:
-		fillOGLGridData<InvertedMagmaColormap>(gridData);
+		fillOGLGridData<InvertedMagmaColormap>(valueScale, gridData);
 		break;
 	case Figure::COLORMAP_RED_WHITE_BLUE:
-		fillOGLGridData<RedWhiteBlueColormap>(gridData);
+		fillOGLGridData<RedWhiteBlueColormap>(valueScale, gridData);
 		break;
 	}
 

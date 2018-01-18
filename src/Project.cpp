@@ -86,7 +86,8 @@ Project::handleShowFigure3DRequest()
 			figure3DData_.newGridData ? &figure3DData_.gridData : 0,
 			figure3DData_.newPointList ? &figure3DData_.pointList : 0,
 			figure3DData_.visualization,
-			figure3DData_.colormap);
+			figure3DData_.colormap,
+			figure3DData_.valueScale);
 	figure3DData_.showFigureRequested = false;
 	figure3DData_.requestHandledCondition.wakeAll();
 }

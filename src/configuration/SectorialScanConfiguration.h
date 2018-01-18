@@ -19,6 +19,7 @@ struct SectorialScanConfiguration {
 	FloatType samplingFrequency;      // Hz
 	FloatType focalEmissionDistance;  // m
 	FloatType focalReceptionDistance; // m
+	FloatType valueScale;
 
 	// Sectorial scan grid.
 	FloatType rangeStart; // m

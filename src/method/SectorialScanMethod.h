@@ -46,6 +46,7 @@ template<typename FloatType>
 void
 SectorialScanMethod<FloatType>::fillConfiguration()
 {
+	//TODO: Move to struct?
 	ConstParameterMapPtr pm = project_.loadParameterMap("config-sectorial_scan_method.txt");
 	config_.numElementsMux         = pm->value<unsigned int>("num_elements_mux"        ,       8,      1024);
 	config_.numElements            = pm->value<unsigned int>("num_elements"            ,       8, config_.numElementsMux);
@@ -59,6 +60,7 @@ SectorialScanMethod<FloatType>::fillConfiguration()
 	config_.samplingFrequency      = pm->value<FloatType>(   "sampling_frequency"      ,   100.0,   200.0e6);
 	config_.focalEmissionDistance  = pm->value<FloatType>(   "focus_emission_distance" ,  1.0e-3, 1000.0e-3);
 	config_.focalReceptionDistance = pm->value<FloatType>(   "focus_reception_distance",  1.0e-3, 1000.0e-3);
+	config_.valueScale             = pm->value<FloatType>(   "value_scale"             ,     0.0,    1.0e10);
 
 	// Sectorial scan grid.
 	config_.rangeStart             = pm->value<FloatType>(   "range_start"             ,  1.0e-3, 99.0);
@@ -121,7 +123,7 @@ SectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
 
 	project_.showFigure3D(1, "Image", &imageData, &pointList,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);
 
 	{
 		Matrix2<FloatType> aux;
@@ -164,7 +166,7 @@ SectorialScanMethod<FloatType>::showSavedImage()
 	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
 
 	project_.showFigure3D(1, "Image", &imageData, &pointList,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);
 }
 
 template<typename FloatType>
@@ -182,7 +184,7 @@ SectorialScanMethod<FloatType>::execContinuousNetworkImaging()
 		acquisition->execute(imageData);
 
 		project_.showFigure3D(1, "Image", &imageData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);
 
 		if (++n == 10) {
 			LOG_INFO << 10.0 / t.getTime() << " image/s";

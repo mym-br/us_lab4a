@@ -466,14 +466,15 @@ USLab4a::showFigure3D(
 		const Project::GridDataType* gridData,
 		const std::vector<Project::PointType>* pointList,
 		Figure::Visualization visualization,
-		Figure::Colormap colormap)
+		Figure::Colormap colormap,
+		double valueScale)
 {
 	try {
 		Figure3DWindow& fig = figure3DWindowList_.get(id);
 		fig.setWindowTitle(figureName.c_str());
 		fig.setVisualization(visualization);
 		fig.setColormap(colormap);
-		fig.updateData(gridData, pointList);
+		fig.updateData(valueScale, gridData, pointList);
 		fig.show();
 	} catch (std::exception& e) {
 		LOG_ERROR << "[USLab4a::showFigure3D] Caught exception: " << e.what() << '.';

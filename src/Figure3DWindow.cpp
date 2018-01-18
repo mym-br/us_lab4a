@@ -10,6 +10,7 @@ namespace Lab {
 
 Figure3DWindow::Figure3DWindow(QWidget *parent)
 		: QWidget(parent)
+		, valueScale_(0.0)
 {
 	ui_.setupUi(this);
 
@@ -60,14 +61,16 @@ Figure3DWindow::~Figure3DWindow()
 }
 
 void
-Figure3DWindow::updateData(const Matrix2<XZValue<float> >* gridData, const std::vector<XZ<float> >* pointList)
+Figure3DWindow::updateData(double valueScale, const Matrix2<XZValue<float> >* gridData, const std::vector<XZ<float> >* pointList)
 {
 	ui_.oglFigureWidget->resetScale();
+
+	valueScale_ = valueScale;
 
 //	bool newData = false;
 	if (gridData != 0) {
 		gridData_ = *gridData; // gets a copy
-		ui_.oglFigureWidget->updateGridData(gridData_);
+		ui_.oglFigureWidget->updateGridData(valueScale, gridData_);
 //		newData = true;
 	}
 	if (pointList != 0) {
@@ -85,7 +88,7 @@ Figure3DWindow::on_visualizationComboBox_currentIndexChanged(int index)
 {
 	visualization_ = static_cast<Figure::Visualization>(index);
 	ui_.oglFigureWidget->setVisualization(visualization_);
-	ui_.oglFigureWidget->updateGridData(gridData_);
+	ui_.oglFigureWidget->updateGridData(valueScale_, gridData_);
 	//	ui_.oglFigureWidget->update();
 }
 
@@ -109,7 +112,7 @@ Figure3DWindow::on_minDecibelsComboBox_currentIndexChanged(const QString& text)
 
 	if (visualization_ == Figure::VISUALIZATION_RECTIFIED_LOG ||
 			visualization_ == Figure::VISUALIZATION_ENVELOPE_LOG) {
-		ui_.oglFigureWidget->updateGridData(gridData_);
+		ui_.oglFigureWidget->updateGridData(valueScale_, gridData_);
 //		ui_.oglFigureWidget->update();
 	}
 }
@@ -119,7 +122,7 @@ Figure3DWindow::on_colormapComboBox_currentIndexChanged(int index)
 {
 	colormap_ = static_cast<Figure::Colormap>(index);
 	ui_.oglFigureWidget->setColormap(colormap_);
-	ui_.oglFigureWidget->updateGridData(gridData_);
+	ui_.oglFigureWidget->updateGridData(valueScale_, gridData_);
 //	ui_.oglFigureWidget->update();
 }
 
