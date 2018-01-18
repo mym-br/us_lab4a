@@ -124,16 +124,16 @@ Project::executeProgram(std::string& programPath, std::vector<std::string>& prog
 void
 Project::requestProcessingCancellation()
 {
-	QMutexLocker locker(&flags_.mutex);
-	flags_.processingCancellationRequested = true;
+	QMutexLocker locker(&control_.mutex);
+	control_.processingCancellationRequested = true;
 }
 
 bool
 Project::processingCancellationRequested()
 {
-	QMutexLocker locker(&flags_.mutex);
-	if (flags_.processingCancellationRequested) {
-		flags_.processingCancellationRequested = false;
+	QMutexLocker locker(&control_.mutex);
+	if (control_.processingCancellationRequested) {
+		control_.processingCancellationRequested = false;
 		return true;
 	} else {
 		return false;

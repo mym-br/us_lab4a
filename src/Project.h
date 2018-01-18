@@ -155,8 +155,8 @@ private:
 		double valueScale;
 	};
 
-	struct Flags {
-		Flags()
+	struct Control {
+		Control()
 			: processingCancellationRequested(false)
 		{ }
 		QMutex mutex;
@@ -173,7 +173,7 @@ private:
 	//QString taskFile_;
 	Figure2DData figure2DData_;
 	Figure3DData figure3DData_;
-	Flags flags_;
+	Control control_;
 
 	// These containers are here to avoid reallocations.
 	std::vector<double> auxHDF5Vector_;
