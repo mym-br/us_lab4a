@@ -211,6 +211,13 @@
       </property>
      </widget>
     </item>
+    <item row="3" column="2" colspan="2">
+     <widget class="QPushButton" name="triggerButton">
+      <property name="text">
+       <string>Trigger</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
