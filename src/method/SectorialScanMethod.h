@@ -33,7 +33,6 @@ private:
 	SectorialScanMethod(const SectorialScanMethod&);
 	SectorialScanMethod& operator=(const SectorialScanMethod&);
 
-	void fillConfiguration();
 	void getSingleImageFromNetwork();
 	void showSavedImage();
 	void execContinuousNetworkImaging();
@@ -46,47 +45,10 @@ private:
 
 
 template<typename FloatType>
-void
-SectorialScanMethod<FloatType>::fillConfiguration()
-{
-	//TODO: Move to struct?
-	ConstParameterMapPtr pm = project_.loadParameterMap("config-sectorial_scan_method.txt");
-	config_.numElementsMux         = pm->value<unsigned int>("num_elements_mux"        ,       8,      1024);
-	config_.numElements            = pm->value<unsigned int>("num_elements"            ,       8, config_.numElementsMux);
-	config_.baseElement            = pm->value<unsigned int>("base_element"            ,       0, config_.numElementsMux - config_.numElements);
-	config_.signalMode             = pm->value<unsigned int>("signal_mode"             ,       0,         1);
-	config_.pitch                  = pm->value<FloatType>(   "pitch"                   , 0.01e-3,   10.0e-3);
-	config_.centerFrequency        = pm->value<FloatType>(   "center_frequency"        ,   100.0,   100.0e6);
-	config_.gain                   = pm->value<FloatType>(   "gain"                    ,     0.0,     100.0);
-	config_.propagationSpeed       = pm->value<FloatType>(   "propagation_speed"       ,   100.0,   10000.0);
-	config_.acquisitionDelay       = pm->value<FloatType>(   "acquisition_delay"       ,     0.0,       1.0);
-	config_.samplingFrequency      = pm->value<FloatType>(   "sampling_frequency"      ,   100.0,   200.0e6);
-	config_.focalEmissionDistance  = pm->value<FloatType>(   "focus_emission_distance" ,  1.0e-3, 1000.0e-3);
-	config_.focalReceptionDistance = pm->value<FloatType>(   "focus_reception_distance",  1.0e-3, 1000.0e-3);
-	config_.valueScale             = pm->value<FloatType>(   "value_scale"             ,     0.0,    1.0e10);
-
-	// Sectorial scan grid.
-	config_.rangeStart             = pm->value<FloatType>(   "range_start"             ,  1.0e-3, 99.0);
-	config_.rangeEnd               = pm->value<FloatType>(   "range_end"               , config_.rangeStart + 1.0e-2, 100.0);
-	config_.startAngle             = pm->value<FloatType>(   "start_angle"             ,   -90.0, 89.0);
-	config_.endAngle               = pm->value<FloatType>(   "end_angle"               , config_.startAngle + 1.0, 90.0);
-	config_.angleStep              = pm->value<FloatType>(   "angle_step"              ,  1.0e-3, 10.0);
-
-	config_.enableFocusing         = pm->value<bool>(        "enable_focusing");
-
-	if (config_.numElementsMux & 0x01) {
-		THROW_EXCEPTION(InvalidParameterException, "The value of num_elements_mux is not even.");
-	}
-	if (config_.numElements & 0x01) {
-		THROW_EXCEPTION(InvalidParameterException, "The value of num_elements is not even.");
-	}
-}
-
-template<typename FloatType>
 SectorialScanMethod<FloatType>::SectorialScanMethod(Project& project)
 		: project_(project)
 {
-	fillConfiguration();
+	config_.load(project_.loadParameterMap("config-sectorial_scan_method.txt"));
 }
 
 template<typename FloatType>
