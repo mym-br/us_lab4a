@@ -113,9 +113,10 @@ public:
 	void trigger();
 	bool waitForTrigger(std::size_t* triggerCount = nullptr); // returns false if processing cancellation has been requested
 
-	static Matrix2<XZValue<float> >* emptyGridData;
-	static std::vector<XZ<float> >* emptyPointList;
+	static Matrix2<XZValue<float>>* emptyGridData;
+	static std::vector<XZ<float>>* emptyPointList;
 
+	void createDirectory(const std::string& path, bool mustNotExist);
 private:
 	struct Figure2DData {
 		Figure2DData()

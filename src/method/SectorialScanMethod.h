@@ -6,8 +6,6 @@
 #include <sstream>
 #include <string>
 
-#include <QDir>//TODO: Move to Project
-
 #include "Log.h"
 #include "Matrix2.h"
 #include "Method.h"
@@ -216,7 +214,6 @@ SectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
 
 	std::size_t triggerCount = 0;
-	QDir dir;
 	while (project_.waitForTrigger(&triggerCount)) {
 
 		acquisition->execute(imageData);
@@ -229,14 +226,7 @@ SectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 			out << outputDirPrefix << triggerCount;
 			std::string outputDir = out.str();
 
-			QString fullDir{project_.directory().c_str()};
-			fullDir += '/';
-			fullDir += outputDir.c_str();
-			if (dir.exists(fullDir)) {
-				THROW_EXCEPTION(InvalidDirectoryException, "The directory/file " << fullDir.toStdString() << " already exists.");
-			} else {
-				dir.mkpath(fullDir);
-			}
+			project_.createDirectory(outputDir, true);
 
 			Matrix2<FloatType> aux;
 			Util::copyValueToSimpleMatrix(imageData, aux);

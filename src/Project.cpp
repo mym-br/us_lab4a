@@ -4,6 +4,7 @@
 
 #include <boost/make_shared.hpp>
 
+#include <QDir>
 #include <QFile>
 #include <QMutexLocker>
 #include <QProcess>
@@ -189,6 +190,22 @@ Project::waitForTrigger(std::size_t* triggerCount)
 	}
 	++control_.triggerCount;
 	return true;
+}
+
+void
+Project::createDirectory(const std::string &path, bool mustNotExist)
+{
+	QDir dir;
+	QString fullDir = directory_;
+	fullDir.append('/');
+	fullDir.append(path.c_str());
+	if (mustNotExist && dir.exists(fullDir)) {
+		THROW_EXCEPTION(InvalidDirectoryException, "The directory/file " << fullDir.toStdString() << " already exists.");
+	}
+
+	if (!dir.mkpath(fullDir)) {
+		THROW_EXCEPTION(InvalidDirectoryException, "Could not create the directory " << fullDir.toStdString() << '.');
+	}
 }
 
 } // namespace Lab
