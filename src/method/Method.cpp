@@ -8,86 +8,77 @@
 #include "STAMethod.h"
 #include "TestMethod.h"
 
+#define ADD_MAP_ITEM(A) map_[#A] = MethodType::A
+
 
 
 namespace Lab {
 
-Method::NameMap Method::nameMap_;
+MethodNameMap Method::nameMap_;
 
-
-
-void
-Method::fillNameMap()
+MethodNameMap::MethodNameMap()
 {
-	nameMap_["single_acquisition"                                       ] = SINGLE_ACQUISITION;
-	nameMap_["sectorial_scan:single_precision:network"                  ] = SECTORIAL_SCAN_SP_NETWORK;
-	nameMap_["sectorial_scan:single_precision:network:continuous"       ] = SECTORIAL_SCAN_SP_NETWORK_CONTINUOUS;
-	nameMap_["sectorial_scan:single_precision:network:trigger"          ] = SECTORIAL_SCAN_SP_NETWORK_TRIGGER;
-	nameMap_["sectorial_scan:single_precision:saved"                    ] = SECTORIAL_SCAN_SP_SAVED;
-	nameMap_["sta:sectorial:simple:simulated"                           ] = STA_SECTORIAL_SIMPLE_SIMULATED;
-	nameMap_["sta:sectorial:simple:saved"                               ] = STA_SECTORIAL_SIMPLE_SAVED;
-	nameMap_["sta:sectorial:simulated"                                  ] = STA_SECTORIAL_SIMULATED;
-	nameMap_["sta:sectorial:double_precision:network"                   ] = STA_SECTORIAL_DP_NETWORK;
-	nameMap_["sta:sectorial:double_precision:saved"                     ] = STA_SECTORIAL_DP_SAVED;
-	nameMap_["sta:sectorial:vectorial:double_precision:saved"           ] = STA_SECTORIAL_VECTORIAL_DP_SAVED;
-	nameMap_["sta:sectorial:single_precision:saved"                     ] = STA_SECTORIAL_SP_SAVED;
-	nameMap_["sta:sectorial:vectorial:single_precision:saved"           ] = STA_SECTORIAL_VECTORIAL_SP_SAVED;
-	nameMap_["sta:save_signals"                                         ] = STA_SAVE_SIGNALS;
-	nameMap_["show_image"                                               ] = SHOW_IMAGE;
-	nameMap_["test"                                                     ] = TEST;
+	ADD_MAP_ITEM(single_acquisition);
+	ADD_MAP_ITEM(sectorial_scan_sp_network);
+	ADD_MAP_ITEM(sectorial_scan_sp_network_continuous);
+	ADD_MAP_ITEM(sectorial_scan_sp_network_trigger);
+	ADD_MAP_ITEM(sectorial_scan_sp_saved);
+	ADD_MAP_ITEM(sta_sectorial_simple_simulated);
+	ADD_MAP_ITEM(sta_sectorial_simple_saved);
+	ADD_MAP_ITEM(sta_sectorial_simple_simulated);
+	ADD_MAP_ITEM(sta_sectorial_dp_network);
+	ADD_MAP_ITEM(sta_sectorial_dp_saved);
+	ADD_MAP_ITEM(sta_sectorial_vectorial_dp_saved);
+	ADD_MAP_ITEM(sta_sectorial_sp_saved);
+	ADD_MAP_ITEM(sta_sectorial_vectorial_sp_saved);
+	ADD_MAP_ITEM(sta_save_signals);
+	ADD_MAP_ITEM(show_image);
+	ADD_MAP_ITEM(test);
+}
+
+MethodNameMap::~MethodNameMap()
+{
+}
+
+MethodType
+MethodNameMap::findByName(const std::string& name)
+{
+	Map::const_iterator iter = map_.find(name);
+	if (iter == map_.end()) {
+		THROW_EXCEPTION(InvalidParameterException, "Could not find a method with name \"" << name << "\".");
+	}
+	return iter->second;
 }
 
 Method*
 Method::get(Project& project)
 {
 	switch (project.method()) {
-	case SINGLE_ACQUISITION:
+	case MethodType::single_acquisition:
 		return new SingleAcquisitionMethod(project);
-	case SECTORIAL_SCAN_SP_NETWORK:                           // falls through
-	case SECTORIAL_SCAN_SP_NETWORK_CONTINUOUS:                // falls through
-	case SECTORIAL_SCAN_SP_NETWORK_TRIGGER:                   // falls through
-	case SECTORIAL_SCAN_SP_SAVED:
+	case MethodType::sectorial_scan_sp_network:            // falls through
+	case MethodType::sectorial_scan_sp_network_continuous: // falls through
+	case MethodType::sectorial_scan_sp_network_trigger:    // falls through
+	case MethodType::sectorial_scan_sp_saved:
 		return new SectorialScanMethod<float>(project);
-	case STA_SECTORIAL_SIMPLE_SIMULATED:                      // falls through
-	case STA_SECTORIAL_SIMPLE_SAVED:                          // falls through
-	case STA_SECTORIAL_SIMULATED:                             // falls through
-	case STA_SECTORIAL_DP_NETWORK:                            // falls through
-	case STA_SECTORIAL_DP_SAVED:                              // falls through
-	case STA_SECTORIAL_VECTORIAL_DP_SAVED:                    // falls through
-	case STA_SAVE_SIGNALS:
+	case MethodType::sta_sectorial_simple_simulated:   // falls through
+	case MethodType::sta_sectorial_simple_saved:       // falls through
+	case MethodType::sta_sectorial_simulated:          // falls through
+	case MethodType::sta_sectorial_dp_network:         // falls through
+	case MethodType::sta_sectorial_dp_saved:           // falls through
+	case MethodType::sta_sectorial_vectorial_dp_saved: // falls through
+	case MethodType::sta_save_signals:
 		return new STAMethod<double>(project);
-	case STA_SECTORIAL_SP_SAVED:
-	case STA_SECTORIAL_VECTORIAL_SP_SAVED:
+	case MethodType::sta_sectorial_sp_saved:           // falls through
+	case MethodType::sta_sectorial_vectorial_sp_saved:
 		return new STAMethod<float>(project);
-	case SHOW_IMAGE:
+	case MethodType::show_image:
 		return new ShowImageMethod(project);
-	case TEST:
+	case MethodType::test:
 		return new TestMethod(project);
 	default:
-		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << project.method() << '.');
+		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project.method()) << '.');
 	}
-}
-
-Method::Type
-Method::findByName(const std::string& name)
-{
-	NameMap::const_iterator iter = nameMap_.find(name);
-	if (iter == nameMap_.end()) {
-		THROW_EXCEPTION(InvalidParameterException, "Could not find a method with name \"" << name << "\".");
-	}
-	return iter->second;
-}
-
-// This search is slow.
-std::string
-Method::findByType(Method::Type type)
-{
-	for (NameMap::const_iterator iter = nameMap_.begin(); iter != nameMap_.end(); ++iter) {
-		if (iter->second == type) {
-			return iter->first;
-		}
-	}
-	THROW_EXCEPTION(InvalidParameterException, "Could not find a method with type " << static_cast<int>(type) << '.');
 }
 
 } // namespace Lab

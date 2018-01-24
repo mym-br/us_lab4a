@@ -52,8 +52,8 @@ public:
 		return taskParameterMap_;
 	}
 
-	Method::Type method() const { return method_; }
-	void setMethod(Method::Type method) { method_ = method; }
+	MethodType method() const { return method_; }
+	void setMethod(MethodType method) { method_ = method; }
 
 	// The caller becomes the owner of the ParameterMap object.
 	ConstParameterMapPtr loadParameterMap(const char* fileName) const;
@@ -175,7 +175,7 @@ private:
 	Project(const Project&);
 	Project& operator=(const Project&);
 
-	Method::Type method_;
+	MethodType method_;
 	USLab4a& mainWindow_;
 	ConstParameterMapPtr taskParameterMap_;
 	QString directory_;

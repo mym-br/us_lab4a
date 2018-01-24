@@ -9,46 +9,51 @@
 
 namespace Lab {
 
+enum class MethodType {
+	invalid,
+	single_acquisition,
+	sectorial_scan_sp_network,
+	sectorial_scan_sp_network_continuous,
+	sectorial_scan_sp_network_trigger,
+	sectorial_scan_sp_saved,
+	sta_sectorial_simple_simulated,
+	sta_sectorial_simple_saved,
+	sta_sectorial_simulated,
+	sta_sectorial_dp_network,
+	sta_sectorial_dp_saved,
+	sta_sectorial_vectorial_dp_saved,
+	sta_sectorial_sp_saved,
+	sta_sectorial_vectorial_sp_saved,
+	sta_save_signals,
+	show_image,
+	test
+};
+
 class Project;
 
-// The static functions in this class can only be accessed by one thread at a time.
+class MethodNameMap {
+public:
+	MethodNameMap();
+	~MethodNameMap();
+
+	MethodType findByName(const std::string& name);
+private:
+	typedef boost::unordered_map<std::string, MethodType> Map;
+
+	Map map_;
+};
+
 class Method {
 public:
-	enum Type {
-		INVALID,
-		SINGLE_ACQUISITION,
-		SECTORIAL_SCAN_SP_NETWORK,
-		SECTORIAL_SCAN_SP_NETWORK_CONTINUOUS,
-		SECTORIAL_SCAN_SP_NETWORK_TRIGGER,
-		SECTORIAL_SCAN_SP_SAVED,
-		STA_SECTORIAL_SIMPLE_SIMULATED,
-		STA_SECTORIAL_SIMPLE_SAVED,
-		STA_SECTORIAL_SIMULATED,
-		STA_SECTORIAL_DP_NETWORK,
-		STA_SECTORIAL_DP_SAVED,
-		STA_SECTORIAL_VECTORIAL_DP_SAVED,
-		STA_SECTORIAL_SP_SAVED,
-		STA_SECTORIAL_VECTORIAL_SP_SAVED,
-		STA_SAVE_SIGNALS,
-		SHOW_IMAGE,
-		TEST
-	};
-
 	Method() {}
 	virtual ~Method() {}
 
 	virtual void execute() = 0;
 
-	// This function must be called in main().
-	static void fillNameMap();
-
-	static Type findByName(const std::string& name);
-	static std::string findByType(Type type);
+	static MethodType findByName(const std::string& name) { return nameMap_.findByName(name); }
 	static Method* get(Project& project);
 private:
-	typedef boost::unordered_map<std::string, Type> NameMap;
-
-	static NameMap nameMap_;
+	static MethodNameMap nameMap_;
 };
 
 } // namespace Lab

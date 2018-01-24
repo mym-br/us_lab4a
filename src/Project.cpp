@@ -17,11 +17,11 @@
 
 namespace Lab {
 
-Matrix2<XZValue<float> >* Project::emptyGridData;
-std::vector<XZ<float> >*  Project::emptyPointList;
+Matrix2<XZValue<float>>* Project::emptyGridData;
+std::vector<XZ<float>>*  Project::emptyPointList;
 
 Project::Project(USLab4a& mainWindow)
-		: method_(Method::INVALID)
+		: method_(MethodType::invalid)
 		, mainWindow_(mainWindow)
 {
 }

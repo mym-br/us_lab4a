@@ -45,8 +45,6 @@ main(int argc, char* argv[])
 	QCoreApplication::setOrganizationDomain("lus.poli.usp.br");
 	QCoreApplication::setApplicationName("USLab4a");
 
-	Lab::Method::fillNameMap();
-
 	Lab::USLab4a w;
 	//w.show();
 	int returnValue = a.exec();

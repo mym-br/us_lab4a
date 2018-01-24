@@ -72,26 +72,26 @@ STAMethod<FloatType>::execute()
 	boost::scoped_ptr<STAAcquisition<FloatType>> acquisition;
 
 	switch (project_.method()) {
-	case Method::STA_SECTORIAL_SIMPLE_SIMULATED:   // falls through
-	case Method::STA_SECTORIAL_SIMULATED:
+	case MethodType::sta_sectorial_simple_simulated: // falls through
+	case MethodType::sta_sectorial_simulated:
 		acquisition.reset(new SimulatedSTAAcquisition<FloatType>(project_, config));
 		break;
-	case Method::STA_SECTORIAL_DP_NETWORK:         // falls through
-	case Method::STA_SAVE_SIGNALS:
+	case MethodType::sta_sectorial_dp_network: // falls through
+	case MethodType::sta_save_signals:
 		acquisition.reset(new NetworkSTAAcquisition<FloatType>(project_, config));
 		break;
-	case Method::STA_SECTORIAL_SIMPLE_SAVED:       // falls through
-	case Method::STA_SECTORIAL_DP_SAVED:           // falls through
-	case Method::STA_SECTORIAL_VECTORIAL_DP_SAVED: // falls through
-	case Method::STA_SECTORIAL_SP_SAVED:           // falls through
-	case Method::STA_SECTORIAL_VECTORIAL_SP_SAVED:
+	case MethodType::sta_sectorial_simple_saved:       // falls through
+	case MethodType::sta_sectorial_dp_saved:           // falls through
+	case MethodType::sta_sectorial_vectorial_dp_saved: // falls through
+	case MethodType::sta_sectorial_sp_saved:           // falls through
+	case MethodType::sta_sectorial_vectorial_sp_saved:
 		acquisition.reset(new SavedSTAAcquisition<FloatType>(project_, config.numElements));
 		break;
 	default:
-		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << project_.method() << '.');
+		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
 
-	if (project_.method() == Method::STA_SAVE_SIGNALS) {
+	if (project_.method() == MethodType::sta_save_signals) {
 		std::string dataDir = taskPM->value<std::string>("data_dir");
 		saveSignals(config, *acquisition, baseElement, dataDir);
 		return;
@@ -104,8 +104,8 @@ STAMethod<FloatType>::execute()
 
 	bool coherenceFactorEnabled = false;
 	bool vectorialProcessingWithEnvelope = false;
-	if (project_.method() == Method::STA_SECTORIAL_VECTORIAL_DP_SAVED ||
-			project_.method() == Method::STA_SECTORIAL_VECTORIAL_SP_SAVED) {
+	if (project_.method() == MethodType::sta_sectorial_vectorial_dp_saved ||
+			project_.method() == MethodType::sta_sectorial_vectorial_sp_saved) {
 		vectorialProcessingWithEnvelope = taskPM->value<bool>("calculate_envelope_in_processing");
 	}
 
@@ -113,8 +113,8 @@ STAMethod<FloatType>::execute()
 	const std::string outputDir = taskPM->value<std::string>( "output_dir");
 
 	switch (project_.method()) {
-	case Method::STA_SECTORIAL_SIMPLE_SIMULATED: // falls through
-	case Method::STA_SECTORIAL_SIMPLE_SAVED:
+	case MethodType::sta_sectorial_simple_simulated: // falls through
+	case MethodType::sta_sectorial_simple_saved:
 		{
 			boost::scoped_ptr<STAProcessor<FloatType> > processor;
 			CoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
@@ -126,8 +126,8 @@ STAMethod<FloatType>::execute()
 			LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 		}
 		break;
-	case Method::STA_SECTORIAL_VECTORIAL_DP_SAVED: // falls through
-	case Method::STA_SECTORIAL_VECTORIAL_SP_SAVED:
+	case MethodType::sta_sectorial_vectorial_dp_saved: // falls through
+	case MethodType::sta_sectorial_vectorial_sp_saved:
 		{
 			const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
 			boost::scoped_ptr<STAProcessor<FloatType> > processor;

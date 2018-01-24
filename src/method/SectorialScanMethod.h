@@ -101,20 +101,20 @@ void
 SectorialScanMethod<FloatType>::execute()
 {
 	switch (project_.method()) {
-	case Method::SECTORIAL_SCAN_SP_NETWORK:
+	case MethodType::sectorial_scan_sp_network:
 		getSingleImageFromNetwork();
 		break;
-	case Method::SECTORIAL_SCAN_SP_SAVED:
+	case MethodType::sectorial_scan_sp_saved:
 		showSavedImage();
 		break;
-	case Method::SECTORIAL_SCAN_SP_NETWORK_CONTINUOUS:
+	case MethodType::sectorial_scan_sp_network_continuous:
 		execContinuousNetworkImaging();
 		break;
-	case Method::SECTORIAL_SCAN_SP_NETWORK_TRIGGER:
+	case MethodType::sectorial_scan_sp_network_trigger:
 		execTriggeredNetworkImaging();
 		break;
 	default:
-		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << project_.method() << '.');
+		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
 }
 
