@@ -2,5 +2,4 @@
 *__OLD
 *.pro.user*
 *.pyc
-_*
 fftw_wisdom*
