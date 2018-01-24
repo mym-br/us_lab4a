@@ -11,7 +11,6 @@
 #include <QStringList>
 
 #include "KeyValueFileReader.h"
-#include "Log.h"
 #include "USLab4a.h"
 
 

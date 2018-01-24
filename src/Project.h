@@ -15,6 +15,7 @@
 #include "Exception.h"
 #include "global.h"
 #include "HDF5Util.h"
+#include "Log.h"
 #include "Matrix2.h"
 #include "Method.h"
 #include "ParameterMap.h"
@@ -73,6 +74,8 @@ public:
 	// These functions may be called by only one thread.
 	template<typename T, typename U> void saveHDF5(const std::vector<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp);
 	template<typename T, typename U> void saveHDF5(const Matrix2<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp);
+	template<typename T> void saveImageToHDF5(const Matrix2<T>& container, const std::string& outputDir);
+	template<typename T> void loadImageFromHDF5(const std::string& inputDir, Matrix2<T>& container);
 
 	// Called by the producer.
 	// This function blocks if waitPending = true and there is a pending request.
@@ -188,6 +191,7 @@ private:
 	// These containers are here to avoid reallocations.
 	std::vector<double> auxHDF5Vector_;
 	Matrix2<double> auxHDF5Matrix_;
+	Matrix2<double> aux2HDF5Matrix_;
 };
 
 
@@ -256,6 +260,37 @@ Project::saveHDF5(const Matrix2<T>& container, const std::string& fileName, cons
 	auxHDF5Matrix_.resize(container.n1(), container.n2());
 	Util::copyUsingOperator(container.begin(), container.end(), auxHDF5Matrix_.begin(), copyOp);
 	saveHDF5(auxHDF5Matrix_, fileName, datasetName);
+}
+
+template<typename T>
+void
+Project::saveImageToHDF5(const Matrix2<T>& container, const std::string& outputDir)
+{
+	Util::copyValueToSimpleMatrix(container, auxHDF5Matrix_);
+	LOG_DEBUG << "Saving the image...";
+	saveHDF5(auxHDF5Matrix_, outputDir + "/image_value", "value");
+
+	Util::copyXZToSimpleMatrices(container, auxHDF5Matrix_, aux2HDF5Matrix_);
+	LOG_DEBUG << "Saving the X coordinates...";
+	saveHDF5(auxHDF5Matrix_, outputDir + "/image_x", "x");
+	LOG_DEBUG << "Saving the Z coordinates...";
+	saveHDF5(aux2HDF5Matrix_, outputDir + "/image_z", "z");
+}
+
+template<typename T>
+void
+Project::loadImageFromHDF5(const std::string& inputDir, Matrix2<T>& container)
+{
+	LOG_DEBUG << "Loading the image...";
+	loadHDF5(inputDir + "/image_value", "value", auxHDF5Matrix_);
+	container.resize(auxHDF5Matrix_.n1(), auxHDF5Matrix_.n2());
+	Util::copyValueFromSimpleMatrix(auxHDF5Matrix_, container);
+
+	LOG_DEBUG << "Loading the X coordinates...";
+	loadHDF5(inputDir + "/image_x", "x", auxHDF5Matrix_);
+	LOG_DEBUG << "Loading the Z coordinates...";
+	loadHDF5(inputDir + "/image_z", "z", aux2HDF5Matrix_);
+	Util::copyXZFromSimpleMatrices(auxHDF5Matrix_, aux2HDF5Matrix_, container);
 }
 
 template<typename FloatType>

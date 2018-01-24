@@ -153,19 +153,7 @@ STAMethod<FloatType>::execute()
 		}
 	}
 
-	{
-		Matrix2<FloatType> aux;
-		Util::copyValueToSimpleMatrix(gridData, aux);
-		LOG_DEBUG << "Saving the image...";
-		project_.saveHDF5(aux, outputDir + "/raw_image", "image");
-
-		Matrix2<double> gridX, gridZ;
-		Util::copyXZToSimpleMatrices(gridData, gridX, gridZ);
-		LOG_DEBUG << "Saving the X coordinates...";
-		project_.saveHDF5(gridX, outputDir + "/image_x", "x");
-		LOG_DEBUG << "Saving the Z coordinates...";
-		project_.saveHDF5(gridZ, outputDir + "/image_z", "z");
-	}
+	project_.saveImageToHDF5(gridData, outputDir);
 
 	Figure::Visualization visual;
 	if (vectorialProcessingWithEnvelope) {
@@ -182,12 +170,8 @@ STAMethod<FloatType>::execute()
 				true, visual, Figure::COLORMAP_VIRIDIS);
 
 	if (coherenceFactorEnabled) {
-		{
-			Matrix2<FloatType> aux;
-			Util::copyFactorToSimpleMatrix(gridData, aux);
-			LOG_DEBUG << "Saving the CF factors...";
-			project_.saveHDF5(aux, outputDir + "/cf_factors", "image");
-		}
+		LOG_DEBUG << "Saving the image factors...";
+		project_.saveHDF5(gridData, outputDir + "/image_factor", "image", Util::CopyFactorOp());
 
 		ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData);
 
@@ -196,12 +180,9 @@ STAMethod<FloatType>::execute()
 			iter->value *= iter->factor;
 			iter->factor = 1.0;
 		}
-		{
-			Matrix2<FloatType> aux;
-			Util::copyValueToSimpleMatrix(gridData, aux);
-			LOG_DEBUG << "Saving the CF image...";
-			project_.saveHDF5(aux, outputDir + "/cf_image", "image");
-		}
+
+		LOG_DEBUG << "Saving the CF image...";
+		project_.saveHDF5(gridData, outputDir + "/image_cf", "image", Util::CopyValueOp());
 
 		Util::copyXZValue(gridData, projGridData);
 		project_.showFigure3D(2, "CF", &projGridData, &pointList,

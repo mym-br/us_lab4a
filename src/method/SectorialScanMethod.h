@@ -93,19 +93,7 @@ SectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 	project_.showFigure3D(1, "Image", &imageData, &pointList,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);
 
-	{
-		Matrix2<FloatType> aux;
-		Util::copyValueToSimpleMatrix(imageData, aux);
-		LOG_DEBUG << "Saving the image...";
-		project_.saveHDF5(aux, outputDir + "/image_value", "value");
-
-		Matrix2<FloatType> gridX, gridZ;
-		Util::copyXZToSimpleMatrices(imageData, gridX, gridZ);
-		LOG_DEBUG << "Saving the X coordinates...";
-		project_.saveHDF5(gridX, outputDir + "/image_x", "x");
-		LOG_DEBUG << "Saving the Z coordinates...";
-		project_.saveHDF5(gridZ, outputDir + "/image_z", "z");
-	}
+	project_.saveImageToHDF5(imageData, outputDir);
 }
 
 template<typename FloatType>
@@ -116,20 +104,7 @@ SectorialScanMethod<FloatType>::showSavedImage()
 
 	Matrix2<XZValue<FloatType>> imageData;
 
-	{
-		Matrix2<FloatType> aux;
-		LOG_DEBUG << "Loading the image...";
-		project_.loadHDF5(outputDir + "/image_value", "value", aux);
-		imageData.resize(aux.n1(), aux.n2());
-		Util::copyValueFromSimpleMatrix(aux, imageData);
-
-		Matrix2<FloatType> gridX, gridZ;
-		LOG_DEBUG << "Loading the X coordinates...";
-		project_.loadHDF5(outputDir + "/image_x", "x", gridX);
-		LOG_DEBUG << "Loading the Z coordinates...";
-		project_.loadHDF5(outputDir + "/image_z", "z", gridZ);
-		Util::copyXZFromSimpleMatrices(gridX, gridZ, imageData);
-	}
+	project_.loadImageFromHDF5(outputDir, imageData);
 
 	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
 
@@ -183,25 +158,12 @@ SectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 		project_.showFigure3D(1, "Image", &imageData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);
 
-		{
-			std::ostringstream out;
-			out << outputDirPrefix << triggerCount;
-			std::string outputDir = out.str();
+		std::ostringstream out;
+		out << outputDirPrefix << triggerCount;
+		std::string outputDir = out.str();
 
-			project_.createDirectory(outputDir, true);
-
-			Matrix2<FloatType> aux;
-			Util::copyValueToSimpleMatrix(imageData, aux);
-			LOG_DEBUG << "Saving the image...";
-			project_.saveHDF5(aux, outputDir + "/image_value", "value");
-
-			Matrix2<FloatType> gridX, gridZ;
-			Util::copyXZToSimpleMatrices(imageData, gridX, gridZ);
-			LOG_DEBUG << "Saving the X coordinates...";
-			project_.saveHDF5(gridX, outputDir + "/image_x", "x");
-			LOG_DEBUG << "Saving the Z coordinates...";
-			project_.saveHDF5(gridZ, outputDir + "/image_z", "z");
-		}
+		project_.createDirectory(outputDir, true);
+		project_.saveImageToHDF5(imageData, outputDir);
 	}
 }
 
