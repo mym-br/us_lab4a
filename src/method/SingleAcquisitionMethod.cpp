@@ -1,6 +1,7 @@
 #include "SingleAcquisitionMethod.h"
 
 #include <cstddef> /* std::size_t */
+#include <iomanip>
 #include <sstream>
 #include <vector>
 
@@ -40,7 +41,7 @@ SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
 {
 	fillConfiguration();
 
-	ConstParameterMapPtr pm = project_.loadParameterMap("network_acquisition.lab4config");
+	ConstParameterMapPtr pm = project_.loadParameterMap("config-network_acquisition.txt");
 	std::string serverIpAddress = pm->value<std::string>("server_ip_address");
 	unsigned short portNumber = pm->value<unsigned short>("server_port_number", 49152, 65535);
 
@@ -124,10 +125,11 @@ SingleAcquisitionMethod::execute()
 #endif
 
 	{
-		LOG_DEBUG << "Saving the A-scan...";
-		std::ostringstream fileName;
-		fileName << config_.savedAcqDir << "/base" << config_.baseElement << "_tx" << config_.txGroupElement << "_rx" << config_.rxGroupElement;
-		project_.saveHDF5(ascan, fileName.str(), "ascan");
+		LOG_DEBUG << "Saving the signal...";
+		std::ostringstream filePath;
+		filePath << config_.savedAcqDir << std::setfill('0') << "/signal-base" << std::setw(4) << config_.baseElement <<
+				"-tx" << std::setw(4) << config_.txGroupElement << "-rx" << std::setw(4) << config_.rxGroupElement;
+		project_.saveHDF5(ascan, filePath.str(), "ascan");
 	}
 
 	project_.showFigure2D(0, "A-scan", t, ascan);

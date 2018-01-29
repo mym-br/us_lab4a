@@ -2,6 +2,7 @@
 #define STAMETHOD_H_
 
 #include <algorithm>
+#include <iomanip>
 
 #include <boost/scoped_ptr.hpp>
 
