@@ -186,7 +186,7 @@ STAMethod<FloatType>::execute()
 
 		Util::copyXZValue(gridData, projGridData);
 		project_.showFigure3D(2, "CF", &projGridData, &pointList,
-					true, visual, Figure::COLORMAP_VIRIDIS);
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 	}
 }
 
