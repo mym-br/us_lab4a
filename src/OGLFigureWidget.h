@@ -103,7 +103,7 @@ private:
 	bool valuesInDecibel_;
 	bool editingDistanceMarkers_;
 	bool rotationMode_;
-	bool showReflectors_;
+	bool showPoints_;
 	bool showInfo_;
 	Figure::Colormap colormap_;
 	Figure::Visualization visualization_;

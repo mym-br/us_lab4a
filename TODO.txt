@@ -1,2 +1,0 @@
-
-- Rename show reflectors > show points

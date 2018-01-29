@@ -1257,7 +1257,7 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 		, valuesInDecibel_(false)
 		, editingDistanceMarkers_(false)
 		, rotationMode_(false)
-		, showReflectors_(true)
+		, showPoints_(true)
 		, showInfo_(true)
 		, colormap_(Figure::COLORMAP_GRAY)
 		, visualization_(Figure::VISUALIZATION_RAW_LINEAR)
@@ -1713,7 +1713,7 @@ OGLFigureWidget::paintGL()
 #endif
 	}
 
-	if (showReflectors_ && !rotationMode_ && !pointList_.empty()) {
+	if (showPoints_ && !rotationMode_ && !pointList_.empty()) {
 //		if (pointList_.size() > REFLECTOR_SIZE_THRESHOLD) {
 //			glPointSize(REFLECTOR_POINT_SIZE_SMALL);
 //		} else {
@@ -1871,8 +1871,8 @@ OGLFigureWidget::keyPressEvent(QKeyEvent* e)
 		distanceMarker1_ = QPoint(); // clear
 		distanceMarker2_ = QPoint(); // clear
 		break;
-	case Qt::Key_R:
-		showReflectors_ = !showReflectors_;
+	case Qt::Key_P:
+		showPoints_ = !showPoints_;
 		break;
 	default:
 		return;
