@@ -72,6 +72,7 @@ public:
 	template<typename FloatType> void saveHDF5(const Matrix2<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
 
 	// These functions may be called by only one thread.
+	template<typename T, typename U> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix2<T>& container, U copyOp);
 	template<typename T, typename U> void saveHDF5(const std::vector<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp);
 	template<typename T, typename U> void saveHDF5(const Matrix2<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp);
 	template<typename T> void saveImageToHDF5(const Matrix2<T>& container, const std::string& outputDir);
@@ -242,6 +243,15 @@ Project::saveHDF5(const Matrix2<FloatType>& container, const std::string& fileNa
 {
 	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 	HDF5Util::save2(container, filePath.toStdString(), datasetName);
+}
+
+template<typename T, typename U>
+void
+Project::loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix2<T>& container, U copyOp)
+{
+	loadHDF5(fileName, datasetName, auxHDF5Matrix_);
+	container.resize(auxHDF5Matrix_.n1(), auxHDF5Matrix_.n2());
+	Util::copyUsingOperator(auxHDF5Matrix_.begin(), auxHDF5Matrix_.end(), container.begin(), copyOp);
 }
 
 template<typename T, typename U>

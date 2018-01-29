@@ -26,27 +26,22 @@ void
 ShowImageMethod::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	std::string dataDir   = taskPM->value<std::string>("data_dir");
-	std::string xFile     = taskPM->value<std::string>("x_file");
-	std::string zFile     = taskPM->value<std::string>("z_file");
-	std::string imageFile = taskPM->value<std::string>("image_file");
+	std::string dataDir      = taskPM->value<std::string>("data_dir");
+	std::string xFile        = taskPM->value<std::string>("x_file");
+	std::string xDataset     = taskPM->value<std::string>("x_dataset");
+	std::string zFile        = taskPM->value<std::string>("z_file");
+	std::string zDataset     = taskPM->value<std::string>("z_dataset");
+	std::string imageFile    = taskPM->value<std::string>("image_file");
+	std::string imageDataset = taskPM->value<std::string>("image_dataset");
 
 	Project::GridDataType projGridData;
-	{
-		Matrix2<float> values;
-		LOG_DEBUG << "Loading the image...";
-		project_.loadHDF5(dataDir + '/' + imageFile, "image", values);
-		projGridData.resize(values.n1(), values.n2());
-		Util::copyValueFromSimpleMatrix(values, projGridData);
-	}
-	{
-		Matrix2<float> x, z;
-		LOG_DEBUG << "Loading the X coordinates...";
-		project_.loadHDF5(dataDir + '/' + xFile, "x", x);
-		LOG_DEBUG << "Loading the Z coordinates...";
-		project_.loadHDF5(dataDir + '/' + zFile, "z", z);
-		Util::copyXZFromSimpleMatrices(x, z, projGridData);
-	}
+
+	LOG_DEBUG << "Loading the image...";
+	project_.loadHDF5(dataDir + '/' + imageFile, imageDataset, projGridData, Util::CopyToValueOp());
+	LOG_DEBUG << "Loading the X coordinates...";
+	project_.loadHDF5(dataDir + '/' + xFile, xDataset, projGridData, Util::CopyToXOp());
+	LOG_DEBUG << "Loading the Z coordinates...";
+	project_.loadHDF5(dataDir + '/' + zFile, zDataset, projGridData, Util::CopyToZOp());
 
 	if (taskPM->contains("points_x_file")) {
 		std::vector<Project::PointType> projPointList;

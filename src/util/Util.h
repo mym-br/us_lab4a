@@ -723,10 +723,24 @@ struct CopyValueOp {
 	}
 };
 
+struct CopyToValueOp {
+	template<typename T, typename U>
+	void operator()(const T& orig, U& dest) {
+		dest.value = orig;
+	}
+};
+
 struct CopyFactorOp {
 	template<typename T, typename U>
 	void operator()(const T& orig, U& dest) {
 		dest = orig.factor;
+	}
+};
+
+struct CopyToFactorOp {
+	template<typename T, typename U>
+	void operator()(const T& orig, U& dest) {
+		dest.factor = orig;
 	}
 };
 
@@ -737,10 +751,24 @@ struct CopyXOp {
 	}
 };
 
+struct CopyToXOp {
+	template<typename T, typename U>
+	void operator()(const T& orig, U& dest) {
+		dest.x = orig;
+	}
+};
+
 struct CopyZOp {
 	template<typename T, typename U>
 	void operator()(const T& orig, U& dest) {
 		dest = orig.z;
+	}
+};
+
+struct CopyToZOp {
+	template<typename T, typename U>
+	void operator()(const T& orig, U& dest) {
+		dest.z = orig;
 	}
 };
 
