@@ -1,4 +1,2 @@
 
-- Update QCustomPlot.
-
 - Rename show reflectors > show points
