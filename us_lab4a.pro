@@ -42,7 +42,6 @@ HEADERS  += \
     src/ProcessingNode.h \
     src/OGLFigureWidget.h \
     src/Controller.h \
-    src/config.h \
     src/acquisition/STAAcquisition.h \
     src/acquisition/SavedSTAAcquisition.h \
     src/acquisition/MultiplexedAcquisition.h \
