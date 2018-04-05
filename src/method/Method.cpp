@@ -40,9 +40,9 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sectorial_scan_sp_network_continuous);
 	ADD_MAP_ITEM(sectorial_scan_sp_network_trigger);
 	ADD_MAP_ITEM(sectorial_scan_sp_saved);
-	ADD_MAP_ITEM(sta_sectorial_simple_simulated);
 	ADD_MAP_ITEM(sta_sectorial_simple_saved);
 	ADD_MAP_ITEM(sta_sectorial_simple_simulated);
+	ADD_MAP_ITEM(sta_sectorial_simulated);
 	ADD_MAP_ITEM(sta_sectorial_dp_network);
 	ADD_MAP_ITEM(sta_sectorial_dp_saved);
 	ADD_MAP_ITEM(sta_sectorial_vectorial_dp_saved);
