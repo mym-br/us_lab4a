@@ -125,7 +125,8 @@ HEADERS  += \
     src/network_acquisition/PhasedArrayAcqProtocol.h \
     src/configuration/SectorialScanConfiguration.h \
     src/method/SectorialScanMethod.h \
-    src/network_acquisition/NetworkSectorialScanAcquisition.h
+    src/network_acquisition/NetworkSectorialScanAcquisition.h \
+    src/method/SimRectangularFlatSourceMethod.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

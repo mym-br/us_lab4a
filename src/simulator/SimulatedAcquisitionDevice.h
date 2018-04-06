@@ -480,7 +480,7 @@ SimulatedAcquisitionDevice<FloatType>::setExcitationWaveform(FloatType centerFre
 {
 	std::vector<FloatType> vExc;
 	//createExcitationVelocity(centerFrequency, vExc);
-	Waveform::createPulseA(centerFrequency, fsUp_, vExc);
+	Waveform::getType2c(centerFrequency, fsUp_, vExc);
 
 	prepareExcitationDadt(vExc, dadtExc_);
 }

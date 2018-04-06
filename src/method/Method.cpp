@@ -21,6 +21,7 @@
 #include "Project.h"
 #include "SectorialScanMethod.h"
 #include "ShowImageMethod.h"
+#include "SimRectangularFlatSourceMethod.h"
 #include "SingleAcquisitionMethod.h"
 #include "STAMethod.h"
 #include "TestMethod.h"
@@ -49,6 +50,7 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sta_sectorial_sp_saved);
 	ADD_MAP_ITEM(sta_sectorial_vectorial_sp_saved);
 	ADD_MAP_ITEM(sta_save_signals);
+	ADD_MAP_ITEM(sim_acoustic_beam_rectangular_flat_source_transient);
 	ADD_MAP_ITEM(show_image);
 	ADD_MAP_ITEM(test);
 }
@@ -89,6 +91,8 @@ Method::get(Project& project)
 	case MethodType::sta_sectorial_sp_saved:           // falls through
 	case MethodType::sta_sectorial_vectorial_sp_saved:
 		return new STAMethod<float>(project);
+	case MethodType::sim_acoustic_beam_rectangular_flat_source_transient:
+		return new SimRectangularFlatSourceMethod<double>(project);
 	case MethodType::show_image:
 		return new ShowImageMethod(project);
 	case MethodType::test:
