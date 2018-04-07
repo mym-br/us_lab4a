@@ -36,6 +36,7 @@ namespace Lab {
 // Convolver that uses the overlap-save method.
 //
 // The DFT of the filter is stored outside the object.
+// The FFT size is fixed.
 //
 // This class is copy constructible and assignable.
 template<typename FloatType>
