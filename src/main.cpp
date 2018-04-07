@@ -17,6 +17,7 @@
 
 #include "USLab4a.h"
 
+#include <cfenv> /* fesetround */
 #include <fftw3.h>
 #include <iostream>
 
@@ -41,6 +42,8 @@
 int
 main(int argc, char* argv[])
 {
+	std::fesetround(FE_TONEAREST);
+
 #ifdef _WIN32
 	timeBeginPeriod(1); // set the minimum timer resolution to 1 ms
 #endif

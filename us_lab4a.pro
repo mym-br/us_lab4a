@@ -126,7 +126,10 @@ HEADERS  += \
     src/configuration/SectorialScanConfiguration.h \
     src/method/SectorialScanMethod.h \
     src/network_acquisition/NetworkSectorialScanAcquisition.h \
-    src/method/SimRectangularFlatSourceMethod.h
+    src/method/SimRectangularFlatSourceMethod.h \
+    src/simulator/NumericRectangularFlatSourceImpulseResponse.h \
+    src/simulator/SimTransientAcousticBeam.h \
+    src/util/XYZ.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

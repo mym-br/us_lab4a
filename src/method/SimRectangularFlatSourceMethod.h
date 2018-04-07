@@ -18,15 +18,20 @@
 #ifndef SIMRECTANGULARFLATSOURCEMETHOD_H
 #define SIMRECTANGULARFLATSOURCEMETHOD_H
 
+#include <cmath>
+#include <memory>
+
 #include "Exception.h"
 #include "Log.h"
 #include "Matrix2.h"
 #include "Method.h"
 #include "ParameterMap.h"
 #include "Project.h"
+#include "SimTransientAcousticBeam.h"
 #include "Timer.h"
 #include "Util.h"
 #include "Waveform.h"
+#include "XYZ.h"
 #include "XZ.h"
 #include "XZValue.h"
 
@@ -112,6 +117,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	Util::fillSequenceWithSize(thetaYList, 0.0, beamThetaYMax, std::ceil(beamThetaYMax / beamThetaYStep) + 1);
 
 	Matrix2<XZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
+	Matrix2<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
 
 	for (unsigned int ix = 0, xSize = thetaXList.size(); ix < xSize; ++ix) {
 		const FloatType tX = Util::degreeToRadian(thetaXList[ix]);
@@ -123,11 +129,32 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 			const FloatType rx = beamDistance * std::cos(tY);
 			const FloatType y = rx * sinTX;
 			const FloatType z = rx * cosTX;
-
-			gridData(ix, iy).x = thetaYList[iy];
-			gridData(ix, iy).z = thetaXList[ix];
-			gridData(ix, iy).value = x + y + z;
+			XZValue<FloatType>& gd = gridData(ix, iy);
+			gd.x = thetaYList[iy];
+			gd.z = thetaXList[ix];
+			gd.value = 0.0;
+			XYZ<FloatType>& id = inputData(ix, iy);
+			id.x = x;
+			id.y = y;
+			id.z = z;
 		}
+	}
+
+	auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType>>();
+	acBeam->getRectangularFlatSourceAcousticBeam(
+				propagationSpeed,
+				samplingFreq,
+				sourceWidth,
+				sourceHeight,
+				subElemSize,
+				inputData,
+				dvdt,
+				gridData);
+
+	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
+	const FloatType k = 1.0 / maxAbsValue;
+	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
+		it->value *= k;
 	}
 
 	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
