@@ -1,0 +1,5 @@
+
+SimTransientAcousticBeam
+i5
+single-thread 3.75 s
+multi-thread  1.06 s
