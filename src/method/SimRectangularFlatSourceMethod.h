@@ -142,13 +142,13 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 
 	auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType>>();
 	acBeam->getRectangularFlatSourceAcousticBeam(
-				propagationSpeed,
-				samplingFreq,
 				sourceWidth,
 				sourceHeight,
+				samplingFreq,
+				propagationSpeed,
 				subElemSize,
-				inputData,
 				dvdt,
+				inputData,
 				gridData);
 
 	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);

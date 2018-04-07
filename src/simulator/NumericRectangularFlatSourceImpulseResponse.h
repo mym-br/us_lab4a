@@ -42,9 +42,6 @@ public:
 
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h);
 private:
-	NumericRectangularFlatSourceImpulseResponse(const NumericRectangularFlatSourceImpulseResponse&) = delete;
-	NumericRectangularFlatSourceImpulseResponse& operator=(const NumericRectangularFlatSourceImpulseResponse&) = delete;
-
 	struct SubElem {
 		FloatType x;
 		FloatType y;
