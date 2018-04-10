@@ -232,8 +232,7 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 	impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 
 	std::vector<FloatType> tH;
-	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset * samplingFreq, dt, h.size());
-	//Util::fillSequenceFromStartWithStepAndSize(tH, 0.0, dt, h.size());
+	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset / samplingFreq, dt, h.size());
 	project_.showFigure2D(2, "Impulse response", tH, h);
 
 	std::vector<std::complex<FloatType>> filterFreqCoeff;
@@ -243,12 +242,8 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 
 	filter->filter(filterFreqCoeff, h, signal);
 
-	LOG_DEBUG << "hOffset=" << hOffset;
-	LOG_DEBUG << "hOffset * samplingFreq=" << hOffset * samplingFreq;
-
 	std::vector<FloatType> tSignal;
-	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset * samplingFreq, dt, signal.size());
-	//Util::fillSequenceFromStartWithStepAndSize(tSignal, 0.0, dt, signal.size());
+	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset / samplingFreq, dt, signal.size());
 	Util::multiply(signal, density);
 	project_.showFigure2D(3, "Pressure", tSignal, signal);
 }
