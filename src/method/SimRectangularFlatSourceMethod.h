@@ -261,7 +261,77 @@ template<typename FloatType>
 void
 SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 {
+	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
+	const std::string outputDir = taskPM->value<std::string>("output_dir");
+
+	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
+	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
+	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
+	const FloatType centerFreq       = taskPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
+	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
+	const FloatType nyquistRate = 2.0 * maxFreq;
+	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
+	const FloatType subElemSize      = propagationSpeed / (nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
+	const std::string excitationType = taskPM->value<std::string>("excitation_type");
+	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
+	const FloatType y                = taskPM->value<FloatType>("y", -1000.0, 1000.0);
+
+	std::vector<XY<FloatType>> elemPos;
+	std::vector<FloatType> focusDelay;
+	ArrayUtil::calculateXYArrayParameters(*taskPM, propagationSpeed, samplingFreq, elemPos, focusDelay);
+
+	std::vector<FloatType> exc;
+	if (excitationType == "1") {
+		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
+	} else if (excitationType == "2a") {
+		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
+	} else if (excitationType == "2b") {
+		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
+	}
+
+	const FloatType dt = 1.0 / samplingFreq;
+	std::vector<FloatType> tExc(exc.size());
+	for (unsigned int i = 0; i < tExc.size(); ++i) {
+		tExc[i] = dt * i;
+	}
+	project_.showFigure2D(1, "Excitation", tExc, exc);
+
+	std::vector<FloatType> dvdt;
+	Util::centralDiff(exc, dt, dvdt);
+
+	Matrix2<XZValue<FloatType>> gridData;
+
+	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
+	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
+
+	auto acField = std::make_unique<SimTransientAcousticField<FloatType>>();
+	acField->getArrayOfRectangularFlatSourcesAcousticField(
+				sourceWidth,
+				sourceHeight,
+				samplingFreq,
+				propagationSpeed,
+				subElemSize,
+				dvdt,
+				y,
+				elemPos,
+				focusDelay,
+				gridData);
+
+	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
+	const FloatType k = 1.0 / maxAbsValue;
+	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
+		it->value *= k;
+	}
+
+	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
+
+	Project::GridDataType projGridData;
+	Util::copyXZValue(gridData, projGridData);
+	project_.showFigure3D(1, "Acoustic field", &projGridData, &pointList,
+					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Figure::COLORMAP_VIRIDIS);
 }
 
 template<typename FloatType>

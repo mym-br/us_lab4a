@@ -64,6 +64,8 @@ NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::NumericArrayOfRe
 		: ir_{sourceWidth, sourceHeight, samplingFreq, propagationSpeed, subElemSize}
 		, elemPos_{elemPos}
 		, focusDelay_{focusDelay}
+		, offsetList_(elemPos_.size())
+		, hList_(elemPos_.size())
 {
 }
 
@@ -72,9 +74,6 @@ void
 NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::getImpulseResponse(
 		FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h)
 {
-	offsetList_.resize(elemPos_.size());
-	hList_.resize(elemPos_.size());
-
 	std::size_t iMin = std::numeric_limits<std::size_t>::max();
 	std::size_t iMax = 0; // the index after the last
 
@@ -92,7 +91,7 @@ NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::getImpulseRespon
 	}
 
 	// Accumulate the impulse responses.
-	h.resize(iMax - iMin);
+	h.assign(iMax - iMin, 0.0);
 	for (std::size_t i = 0, iEnd = elemPos_.size(); i < iEnd; ++i) {
 		const std::size_t hBegin = offsetList_[i];
 		const std::size_t hEnd = hBegin + hList_[i].size();

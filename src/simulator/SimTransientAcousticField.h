@@ -26,6 +26,7 @@
 #include "FFTWFilter2.h"
 #include "Log.h"
 #include "Matrix2.h"
+#include "NumericArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "NumericRectangularFlatSourceImpulseResponse.h"
 #include "Util.h"
 #include "XZValue.h"
@@ -59,13 +60,35 @@ public:
 		FFTWFilter2<FloatType> filter;
 	};
 
+	struct ArrayThreadData {
+		ArrayThreadData(
+			FloatType sourceWidth,
+			FloatType sourceHeight,
+			FloatType samplingFreq,
+			FloatType propagationSpeed,
+			FloatType subElemSize,
+			const std::vector<XY<FloatType>>& elemPos,
+			const std::vector<FloatType>& focusDelay,
+			const std::vector<FloatType>& dvdt)
+				: ir(sourceWidth, sourceHeight, samplingFreq,
+					propagationSpeed, subElemSize, elemPos, focusDelay)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType> ir;
+		std::vector<std::complex<FloatType>> filterFreqCoeff;
+		std::vector<FloatType> h;
+		std::vector<FloatType> signal;
+		FFTWFilter2<FloatType> filter;
+	};
+
 	void getRectangularFlatSourceAcousticField(
 			FloatType sourceWidth,
 			FloatType sourceHeight,
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType subElemSize,
-			std::vector<FloatType>& dvdt,
+			const std::vector<FloatType>& dvdt,
 			FloatType y,
 			Matrix2<XZValue<FloatType>>& gridData);
 
@@ -75,8 +98,10 @@ public:
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType subElemSize,
-			std::vector<FloatType>& dvdt,
+			const std::vector<FloatType>& dvdt,
 			FloatType y,
+			const std::vector<XY<FloatType>>& elemPos,
+			const std::vector<FloatType>& focusDelay,
 			Matrix2<XZValue<FloatType>>& gridData);
 private:
 	SimTransientAcousticField(const SimTransientAcousticField&) = delete;
@@ -100,7 +125,7 @@ SimTransientAcousticField<FloatType>::getRectangularFlatSourceAcousticField(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType subElemSize,
-					std::vector<FloatType>& dvdt,
+					const std::vector<FloatType>& dvdt,
 					FloatType y,
 					Matrix2<XZValue<FloatType>>& gridData)
 {
@@ -113,6 +138,55 @@ SimTransientAcousticField<FloatType>::getRectangularFlatSourceAcousticField(
 		dvdt
 	};
 	tbb::enumerable_thread_specific<ThreadData> tls{threadData};
+
+	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
+		LOG_DEBUG << "i = " << i << " / " << iEnd - 1;
+
+		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n2()),
+			[&, i, y](const tbb::blocked_range<std::size_t>& r) {
+				auto& local = tls.local();
+
+				std::size_t hOffset;
+
+				for (std::size_t j = r.begin(); j != r.end(); ++j) {
+					XZValue<FloatType>& point = gridData(i, j);
+					local.ir.getImpulseResponse(point.x, y, point.z, hOffset, local.h);
+
+					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
+
+					FloatType minValue, maxValue;
+					Util::minMax(local.signal, minValue, maxValue);
+					point.value = maxValue - minValue;
+				}
+		});
+	}
+}
+
+template<typename FloatType>
+void
+SimTransientAcousticField<FloatType>::getArrayOfRectangularFlatSourcesAcousticField(
+					FloatType sourceWidth,
+					FloatType sourceHeight,
+					FloatType samplingFreq,
+					FloatType propagationSpeed,
+					FloatType subElemSize,
+					const std::vector<FloatType>& dvdt,
+					FloatType y,
+					const std::vector<XY<FloatType>>& elemPos,
+					const std::vector<FloatType>& focusDelay,
+					Matrix2<XZValue<FloatType>>& gridData)
+{
+	ArrayThreadData threadData{
+		sourceWidth,
+		sourceHeight,
+		samplingFreq,
+		propagationSpeed,
+		subElemSize,
+		elemPos,
+		focusDelay,
+		dvdt
+	};
+	tbb::enumerable_thread_specific<ArrayThreadData> tls{threadData};
 
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
 		LOG_DEBUG << "i = " << i << " / " << iEnd - 1;
