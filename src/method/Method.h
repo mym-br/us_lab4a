@@ -43,6 +43,8 @@ enum class MethodType {
 	sta_sectorial_vectorial_sp_saved,
 	sta_save_signals,
 	sim_acoustic_beam_rectangular_flat_source_transient,
+	sim_acoustic_field_rectangular_flat_source_transient,
+	sim_impulse_response_rectangular_flat_source,
 	show_image,
 	test
 };

@@ -97,7 +97,7 @@ Interpolator<FloatType>::prepare(unsigned int upsamplingFactor, FloatType lpFilt
 	// Sinc.
 	const FloatType numPeriods = (finalWindowSize - 1U) / twoUpFactor;
 	std::vector<FloatType> x;
-	Util::fillSequenceWithSize(x, -numPeriods, numPeriods, finalWindowSize);
+	Util::fillSequenceFromStartToEndWithSize(x, -numPeriods, numPeriods, finalWindowSize);
 	lowPassFIRFilter_.resize(x.size());
 	for (unsigned int i = 0; i < lowPassFIRFilter_.size(); ++i) {
 		lowPassFIRFilter_[i] = boost::math::sinc_pi(PI * x[i]);

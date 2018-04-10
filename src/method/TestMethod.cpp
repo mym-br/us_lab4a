@@ -827,7 +827,7 @@ void
 testFillSequence()
 {
 	std::vector<double> v;
-	Lab::Util::fillSequence(v, 1.0, 5.0, 0.99);
+	Lab::Util::fillSequenceFromStartToEndWithMaximumStep(v, 1.0, 5.0, 0.99);
 //	for (std::size_t i = 0; i < v.size(); ++i) {
 //		LOG_DEBUG << "v " << v[i];
 //	}
@@ -849,7 +849,7 @@ void
 testFillSequence2()
 {
 	std::vector<double> v;
-	Lab::Util::fillSequenceWithSize(v, 1.0, 5.0, 6);
+	Lab::Util::fillSequenceFromStartToEndWithSize(v, 1.0, 5.0, 6);
 	//for (std::size_t i = 0; i < v.size(); ++i) {
 	//	LOG_DEBUG << "v " << v[i];
 	//}

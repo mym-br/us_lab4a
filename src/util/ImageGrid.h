@@ -62,10 +62,10 @@ ImageGrid<FloatType>::getRectangularGrid(ConstParameterMapPtr pm, FloatType lamb
 	const FloatType originZ  = pm->value<FloatType>("rectangular_origin_z"  ,     -200.0e-3, 200.0e-3);
 
 	std::vector<FloatType> xList;
-	Util::fillSequence(xList, minX, maxX, lambda / xStepDiv);
+	Util::fillSequenceFromStartToEndWithMaximumStep(xList, minX, maxX, lambda / xStepDiv);
 
 	std::vector<FloatType> zList;
-	Util::fillSequence(zList, minZ, maxZ, lambda / zStepDiv);
+	Util::fillSequenceFromStartToEndWithMaximumStep(zList, minZ, maxZ, lambda / zStepDiv);
 
 	LOG_DEBUG << "xList.size(): " << xList.size() << " zList.size(): " << zList.size();
 
@@ -93,10 +93,10 @@ ImageGrid<FloatType>::getSectorialGrid(ConstParameterMapPtr pm, FloatType lambda
 	const FloatType originZ           = pm->value<FloatType>("sectorial_origin_z"            ,          -200.0e-3,   200.0e-3);
 
 	std::vector<FloatType> radiusList;
-	Util::fillSequence(radiusList, minRadius, maxRadius, lambda / radiusStepDiv);
+	Util::fillSequenceFromStartToEndWithMaximumStep(radiusList, minRadius, maxRadius, lambda / radiusStepDiv);
 
 	std::vector<FloatType> angleList;
-	Util::fillSequence(angleList, Util::degreeToRadian(minAngle), Util::degreeToRadian(maxAngle), (lambda / maxLateralStepDiv) / maxRadius);
+	Util::fillSequenceFromStartToEndWithMaximumStep(angleList, Util::degreeToRadian(minAngle), Util::degreeToRadian(maxAngle), (lambda / maxLateralStepDiv) / maxRadius);
 
 	LOG_DEBUG << "radiusList.size(): " << radiusList.size() << " angleList.size(): " << angleList.size();
 

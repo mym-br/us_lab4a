@@ -52,11 +52,14 @@ void fillSequence(std::vector<int>& v, int startValue, int endValue, int step = 
 
 // This function may not give good results with integer values.
 // The sequence will contain _startValue_ and _endValue_. The step may be different.
-template<typename T> void fillSequence(std::vector<T>& v, T startValue, T endValue, T step = 1);
+template<typename T> void fillSequenceFromStartToEndWithMaximumStep(std::vector<T>& v, T startValue, T endValue, T step = 1);
 
 // This function may not give good results with integer values.
 // The sequence will contain _startValue_ and _endValue_, with exactly _size_ items.
-template<typename T> void fillSequenceWithSize(std::vector<T>& v, T startValue, T endValue, unsigned int size);
+template<typename T> void fillSequenceFromStartToEndWithSize(std::vector<T>& v, T startValue, T endValue, unsigned int size);
+
+// The sequence will contain _startValue_, with exactly _size_ items.
+template<typename T> void fillSequenceFromStartWithStepAndSize(std::vector<T>& v, T startValue, T step, unsigned int size);
 
 void sleepMs(unsigned long milliseconds);
 template<typename T> T meterToMillimeter(T value);
@@ -217,7 +220,7 @@ fillSequence(std::vector<int>& v, int startValue, int endValue, int step)
 
 template<typename T>
 void
-fillSequence(std::vector<T>& v, T startValue, T endValue, T step)
+fillSequenceFromStartToEndWithMaximumStep(std::vector<T>& v, T startValue, T endValue, T step)
 {
 	if (step == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The step must not be zero.");
@@ -244,7 +247,7 @@ fillSequence(std::vector<T>& v, T startValue, T endValue, T step)
 
 template<typename T>
 void
-fillSequenceWithSize(std::vector<T>& v, T startValue, T endValue, unsigned int size)
+fillSequenceFromStartToEndWithSize(std::vector<T>& v, T startValue, T endValue, unsigned int size)
 {
 	if (size < 1) {
 		THROW_EXCEPTION(InvalidParameterException, "The size must be >= 1.");
@@ -255,6 +258,26 @@ fillSequenceWithSize(std::vector<T>& v, T startValue, T endValue, unsigned int s
 		v[0] = startValue;
 	} else {
 		const double step = static_cast<double>(endValue - startValue) / (size - 1U);
+		v.resize(size);
+		v[0] = startValue;
+		for (unsigned int i = 1; i < size; ++i) {
+			v[i] = startValue + i * step;
+		}
+	}
+}
+
+template<typename T>
+void
+fillSequenceFromStartWithStepAndSize(std::vector<T>& v, T startValue, T step, unsigned int size)
+{
+	if (size < 1) {
+		THROW_EXCEPTION(InvalidParameterException, "The size must be >= 1.");
+	}
+
+	if (size == 1) {
+		v.resize(1);
+		v[0] = startValue;
+	} else {
 		v.resize(size);
 		v[0] = startValue;
 		for (unsigned int i = 1; i < size; ++i) {

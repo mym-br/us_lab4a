@@ -29,21 +29,23 @@ namespace Lab {
 namespace Waveform {
 
 template<typename FloatType> void getType1(FloatType centerFreq, FloatType samplingFreq,
-						std::vector<FloatType>& v, FloatType numPeriods=3.0);
+						std::vector<FloatType>& v, FloatType numPeriods);
 template<typename FloatType> void getType2(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods,
 						FloatType k, std::vector<FloatType>& v);
 template<typename FloatType> void getType2a(FloatType centerFreq, FloatType samplingFreq,
-						std::vector<FloatType>& v, FloatType numPeriods=3.25);
+						std::vector<FloatType>& v, FloatType numPeriods);
 template<typename FloatType> void getType2b(FloatType centerFreq, FloatType samplingFreq,
-						std::vector<FloatType>& v, FloatType numPeriods=8.25);
+						std::vector<FloatType>& v, FloatType numPeriods);
 template<typename FloatType> void getType2c(FloatType centerFreq, FloatType samplingFreq,
-						std::vector<FloatType>& v, FloatType numPeriods=4.25);
+						std::vector<FloatType>& v, FloatType numPeriods);
 
 
 
 template<typename FloatType>
 void getType1(FloatType centerFreq, FloatType samplingFreq, std::vector<FloatType>& v, FloatType numPeriods)
 {
+	if (numPeriods <= 0.0) numPeriods = 3.0;
+
 	const FloatType end = numPeriods / centerFreq;
 	const FloatType dt = 1.0 / samplingFreq;
 	const FloatType w = 2.0 * PI * centerFreq;
@@ -83,17 +85,23 @@ void getType2(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods
 template<typename FloatType>
 void getType2a(FloatType centerFreq, FloatType samplingFreq, std::vector<FloatType>& v, FloatType numPeriods)
 {
+	if (numPeriods <= 0.0) numPeriods = 3.25;
+
 	getType2(centerFreq, samplingFreq, numPeriods, FloatType{3.833}, v);
 }
 template<typename FloatType>
 void getType2b(FloatType centerFreq, FloatType samplingFreq, std::vector<FloatType>& v, FloatType numPeriods)
 {
+	if (numPeriods <= 0.0) numPeriods = 8.25;
+
 	getType2(centerFreq, samplingFreq, numPeriods, FloatType{1.437}, v);
 }
 
 template<typename FloatType>
 void getType2c(FloatType centerFreq, FloatType samplingFreq, std::vector<FloatType>& v, FloatType numPeriods)
 {
+	if (numPeriods <= 0.0) numPeriods = 4.25;
+
 	getType2(centerFreq, samplingFreq, numPeriods, FloatType{3.5}, v);
 }
 

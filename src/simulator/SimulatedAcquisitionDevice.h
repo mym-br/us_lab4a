@@ -391,10 +391,10 @@ SimulatedAcquisitionDevice<FloatType>::SimulatedAcquisitionDevice(
 	const FloatType sizeDivHeight = heightElem_ / numDivHeight;
 	const FloatType halfW = sizeDivWidth * (numDivWidth_ - 1) / 2.0;
 	std::vector<FloatType> xSubElemList;
-	Util::fillSequenceWithSize(xSubElemList, -halfW, halfW, numDivWidth_);
+	Util::fillSequenceFromStartToEndWithSize(xSubElemList, -halfW, halfW, numDivWidth_);
 	const FloatType halfH = sizeDivHeight * (numDivHeight - 1) / 2.0;
 	std::vector<FloatType> ySubElemList;
-	Util::fillSequenceWithSize<FloatType>(ySubElemList, sizeDivHeight / 2.0, halfH, numDivHeight / 2); // uses only half of the element due to the simetry (ye must be = 0)
+	Util::fillSequenceFromStartToEndWithSize<FloatType>(ySubElemList, sizeDivHeight / 2.0, halfH, numDivHeight / 2); // uses only half of the element due to the simetry (ye must be = 0)
 
 	xySubElemList_.resize(xSubElemList.size() * ySubElemList.size());
 	for (unsigned int iw = 0, sizeW = xSubElemList.size(); iw < sizeW; ++iw) {
@@ -480,7 +480,7 @@ SimulatedAcquisitionDevice<FloatType>::setExcitationWaveform(FloatType centerFre
 {
 	std::vector<FloatType> vExc;
 	//createExcitationVelocity(centerFrequency, vExc);
-	Waveform::getType2c(centerFrequency, fsUp_, vExc);
+	Waveform::getType2c(centerFrequency, fsUp_, vExc, FloatType{0.0});
 
 	prepareExcitationDadt(vExc, dadtExc_);
 }

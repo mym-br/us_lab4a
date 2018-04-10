@@ -22,9 +22,11 @@
 #include <memory>
 
 #include "Exception.h"
+#include "FFTWFilter2.h"
 #include "Log.h"
 #include "Matrix2.h"
 #include "Method.h"
+#include "NumericRectangularFlatSourceImpulseResponse.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "SimTransientAcousticBeam.h"
@@ -51,6 +53,8 @@ private:
 	SimRectangularFlatSourceMethod& operator=(const SimRectangularFlatSourceMethod&) = delete;
 
 	void execTransientAcousticBeam();
+	void execTransientAcousticField();
+	void execImpulseResponse();
 
 	Project& project_;
 };
@@ -85,18 +89,20 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
 	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
 	const FloatType centerFreq       = taskPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
-	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency", 0.0, 1.0e12);
-	const FloatType subElemSize      = taskPM->value<FloatType>("sub_elem_size", 0.0, 1.0);
+	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
+	const FloatType nyquistRate = 2.0 * maxFreq;
+	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
+	const FloatType subElemSize      = propagationSpeed / (nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
 	const std::string excitationType = taskPM->value<std::string>("excitation_type");
+	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
 
 	std::vector<FloatType> exc;
 	if (excitationType == "1") {
-		Waveform::getType1(centerFreq, samplingFreq, exc,
-					taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0));
+		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
 	} else if (excitationType == "2a") {
-		Waveform::getType2a(centerFreq, samplingFreq, exc);
+		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
 	} else if (excitationType == "2b") {
-		Waveform::getType2b(centerFreq, samplingFreq, exc);
+		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
 	}
@@ -109,12 +115,12 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	project_.showFigure2D(1, "Excitation", tExc, exc);
 
 	std::vector<FloatType> dvdt;
-	Util::centralDiff(exc, 1.0 / samplingFreq, dvdt);
+	Util::centralDiff(exc, dt, dvdt);
 
 	std::vector<FloatType> thetaXList;
-	Util::fillSequenceWithSize(thetaXList, 0.0, beamThetaXMax, std::ceil(beamThetaXMax / beamThetaXStep) + 1);
+	Util::fillSequenceFromStartToEndWithSize(thetaXList, 0.0, beamThetaXMax, std::ceil(beamThetaXMax / beamThetaXStep) + 1);
 	std::vector<FloatType> thetaYList;
-	Util::fillSequenceWithSize(thetaYList, 0.0, beamThetaYMax, std::ceil(beamThetaYMax / beamThetaYStep) + 1);
+	Util::fillSequenceFromStartToEndWithSize(thetaYList, 0.0, beamThetaYMax, std::ceil(beamThetaYMax / beamThetaYStep) + 1);
 
 	Matrix2<XZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
 	Matrix2<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
@@ -168,6 +174,87 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 
 template<typename FloatType>
 void
+SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
+{
+
+}
+
+template<typename FloatType>
+void
+SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
+{
+	ConstParameterMapPtr taskPM = project_.taskParameterMap();
+
+	const std::string outputDir = taskPM->value<std::string>("output_dir");
+
+	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
+	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
+	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
+	const FloatType density          = taskPM->value<FloatType>("density", 0.0, 100000.0);
+	const FloatType centerFreq       = taskPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
+	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
+	const FloatType nyquistRate = 2.0 * maxFreq;
+	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
+	const FloatType subElemSize      = propagationSpeed / (nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
+	const std::string excitationType = taskPM->value<std::string>("excitation_type");
+	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
+	const FloatType pointX           = taskPM->value<FloatType>("point_x", 0.0, 10000.0);
+	const FloatType pointY           = taskPM->value<FloatType>("point_y", 0.0, 10000.0);
+	const FloatType pointZ           = taskPM->value<FloatType>("point_z", 0.0, 10000.0);
+
+	std::vector<FloatType> exc;
+	if (excitationType == "1") {
+		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
+	} else if (excitationType == "2a") {
+		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
+	} else if (excitationType == "2b") {
+		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
+	}
+
+	const FloatType dt = 1.0 / samplingFreq;
+	std::vector<FloatType> tExc;
+	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, exc.size());
+	project_.showFigure2D(1, "Excitation", tExc, exc);
+
+	std::vector<FloatType> dvdt;
+	Util::centralDiff(exc, dt, dvdt);
+
+	std::size_t hOffset;
+	std::vector<FloatType> h;
+	auto impResp = std::make_unique<NumericRectangularFlatSourceImpulseResponse<FloatType>>(
+									sourceWidth,
+									sourceHeight,
+									samplingFreq,
+									propagationSpeed,
+									subElemSize);
+	impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+
+	std::vector<FloatType> tH;
+	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset * samplingFreq, dt, h.size());
+	//Util::fillSequenceFromStartWithStepAndSize(tH, 0.0, dt, h.size());
+	project_.showFigure2D(2, "Impulse response", tH, h);
+
+	std::vector<std::complex<FloatType>> filterFreqCoeff;
+	auto filter = std::make_unique<FFTWFilter2<FloatType>>();
+	filter->setCoefficients(dvdt, filterFreqCoeff);
+	std::vector<FloatType> signal;
+
+	filter->filter(filterFreqCoeff, h, signal);
+
+	LOG_DEBUG << "hOffset=" << hOffset;
+	LOG_DEBUG << "hOffset * samplingFreq=" << hOffset * samplingFreq;
+
+	std::vector<FloatType> tSignal;
+	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset * samplingFreq, dt, signal.size());
+	//Util::fillSequenceFromStartWithStepAndSize(tSignal, 0.0, dt, signal.size());
+	Util::multiply(signal, density);
+	project_.showFigure2D(3, "Pressure", tSignal, signal);
+}
+
+template<typename FloatType>
+void
 SimRectangularFlatSourceMethod<FloatType>::execute()
 {
 	Timer tProc;
@@ -175,6 +262,12 @@ SimRectangularFlatSourceMethod<FloatType>::execute()
 	switch (project_.method()) {
 	case MethodType::sim_acoustic_beam_rectangular_flat_source_transient:
 		execTransientAcousticBeam();
+		break;
+	case MethodType::sim_acoustic_field_rectangular_flat_source_transient:
+		execTransientAcousticField();
+		break;
+	case MethodType::sim_impulse_response_rectangular_flat_source:
+		execImpulseResponse();
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
