@@ -129,7 +129,8 @@ HEADERS  += \
     src/method/SimRectangularFlatSourceMethod.h \
     src/simulator/NumericRectangularFlatSourceImpulseResponse.h \
     src/simulator/SimTransientAcousticBeam.h \
-    src/util/XYZ.h
+    src/util/XYZ.h \
+    src/simulator/SimTransientAcousticField.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
