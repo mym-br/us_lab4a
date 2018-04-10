@@ -54,10 +54,10 @@ ImageGrid<FloatType>::getRectangularGrid(ConstParameterMapPtr pm, FloatType lamb
 {
 	const FloatType minX     = pm->value<FloatType>("rectangular_min_x"     ,     -500.0e-3, 500.0e-3);
 	const FloatType maxX     = pm->value<FloatType>("rectangular_max_x"     , minX + 1.0e-4, 500.0e-3);
-	const FloatType xStepDiv = pm->value<FloatType>("rectangular_x_step_div",        1.0e-2,    256.0);
+	const FloatType xStepDiv = pm->value<FloatType>("rectangular_x_step_div",        1.0e-2,   1000.0);
 	const FloatType minZ     = pm->value<FloatType>("rectangular_min_z"     ,     -500.0e-3, 500.0e-3);
 	const FloatType maxZ     = pm->value<FloatType>("rectangular_max_z"     , minZ + 1.0e-4, 500.0e-3);
-	const FloatType zStepDiv = pm->value<FloatType>("rectangular_z_step_div",        1.0e-2,    256.0);
+	const FloatType zStepDiv = pm->value<FloatType>("rectangular_z_step_div",        1.0e-2,   1000.0);
 	const FloatType originX  = pm->value<FloatType>("rectangular_origin_x"  ,     -200.0e-3, 200.0e-3);
 	const FloatType originZ  = pm->value<FloatType>("rectangular_origin_z"  ,     -200.0e-3, 200.0e-3);
 
@@ -83,20 +83,22 @@ template<typename T>
 void
 ImageGrid<FloatType>::getSectorialGrid(ConstParameterMapPtr pm, FloatType lambda, T& grid)
 {
-	const FloatType minRadius         = pm->value<FloatType>("sectorial_min_radius"          ,             1.0e-4,   100.0e-3);
-	const FloatType maxRadius         = pm->value<FloatType>("sectorial_max_radius"          , minRadius + 1.0e-4, 10000.0e-3);
-	const FloatType radiusStepDiv     = pm->value<FloatType>("sectorial_radius_step_div"     ,             1.0e-2,      256.0);
-	const FloatType minAngle          = pm->value<FloatType>("sectorial_min_angle"           ,              -80.0,       80.0);
-	const FloatType maxAngle          = pm->value<FloatType>("sectorial_max_angle"           ,  minAngle + 1.0e-3,       80.0);
-	const FloatType maxLateralStepDiv = pm->value<FloatType>("sectorial_max_lateral_step_div",             1.0e-2,      256.0);
-	const FloatType originX           = pm->value<FloatType>("sectorial_origin_x"            ,          -200.0e-3,   200.0e-3);
-	const FloatType originZ           = pm->value<FloatType>("sectorial_origin_z"            ,          -200.0e-3,   200.0e-3);
+	const FloatType minRadius         = pm->value<FloatType>("sectorial_min_radius"     ,             1.0e-4,   100.0e-3);
+	const FloatType maxRadius         = pm->value<FloatType>("sectorial_max_radius"     , minRadius + 1.0e-4, 10000.0e-3);
+	const FloatType radiusStepDiv     = pm->value<FloatType>("sectorial_radius_step_div",             1.0e-2,      256.0);
+	const FloatType minAngle          = pm->value<FloatType>("sectorial_min_angle"      ,              -80.0,       80.0);
+	const FloatType maxAngle          = pm->value<FloatType>("sectorial_max_angle"      ,  minAngle + 1.0e-3,       80.0);
+	const FloatType angleStep         = pm->value<FloatType>("sectorial_angle_step"     ,             1.0e-5,       10.0);
+	const FloatType originX           = pm->value<FloatType>("sectorial_origin_x"       ,          -200.0e-3,   200.0e-3);
+	const FloatType originZ           = pm->value<FloatType>("sectorial_origin_z"       ,          -200.0e-3,   200.0e-3);
 
 	std::vector<FloatType> radiusList;
-	Util::fillSequenceFromStartToEndWithMaximumStep(radiusList, minRadius, maxRadius, lambda / radiusStepDiv);
+	Util::fillSequenceFromStartToEndWithMaximumStep(radiusList,
+			minRadius, maxRadius, lambda / radiusStepDiv);
 
 	std::vector<FloatType> angleList;
-	Util::fillSequenceFromStartToEndWithMaximumStep(angleList, Util::degreeToRadian(minAngle), Util::degreeToRadian(maxAngle), (lambda / maxLateralStepDiv) / maxRadius);
+	Util::fillSequenceFromStartToEndWithMaximumStep(angleList,
+			Util::degreeToRadian(minAngle), Util::degreeToRadian(maxAngle), Util::degreeToRadian(angleStep));
 
 	LOG_DEBUG << "radiusList.size(): " << radiusList.size() << " angleList.size(): " << angleList.size();
 
