@@ -183,7 +183,105 @@ template<typename FloatType>
 void
 SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 {
+	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
+	const std::string outputDir = taskPM->value<std::string>("output_dir");
+
+	const FloatType beamDistance     = taskPM->value<FloatType>("beam_distance", 0.0, 100.0);
+	const FloatType beamThetaYStep   = taskPM->value<FloatType>("beam_theta_y_step", 0.0, 10.0);
+	const FloatType beamThetaYMax    = taskPM->value<FloatType>("beam_theta_y_max" , 0.0, 90.0);
+	const FloatType beamThetaXStep   = taskPM->value<FloatType>("beam_theta_x_step", 0.0, 10.0);
+	const FloatType beamThetaXMax    = taskPM->value<FloatType>("beam_theta_x_max" , 0.0, 90.0);
+	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
+	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
+	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
+	const FloatType centerFreq       = taskPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
+	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
+	const FloatType nyquistRate = 2.0 * maxFreq;
+	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
+	const FloatType subElemSize      = propagationSpeed / (nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
+	const std::string excitationType = taskPM->value<std::string>("excitation_type");
+	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
+
+	std::vector<XY<FloatType>> elemPos;
+	std::vector<FloatType> focusDelay;
+	ArrayUtil::calculateXYArrayParameters(*taskPM, propagationSpeed, samplingFreq, elemPos, focusDelay);
+
+	std::vector<FloatType> exc;
+	if (excitationType == "1") {
+		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
+	} else if (excitationType == "2a") {
+		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
+	} else if (excitationType == "2b") {
+		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
+	}
+
+	const FloatType dt = 1.0 / samplingFreq;
+	std::vector<FloatType> tExc(exc.size());
+	for (unsigned int i = 0; i < tExc.size(); ++i) {
+		tExc[i] = dt * i;
+	}
+	project_.showFigure2D(1, "Excitation", tExc, exc);
+
+	std::vector<FloatType> dvdt;
+	Util::centralDiff(exc, dt, dvdt);
+
+	std::vector<FloatType> thetaXList;
+	Util::fillSequenceFromStartToEndWithSize(thetaXList, 0.0, beamThetaXMax, std::ceil(beamThetaXMax / beamThetaXStep) + 1);
+	std::vector<FloatType> thetaYList;
+	Util::fillSequenceFromStartToEndWithSize(thetaYList, 0.0, beamThetaYMax, std::ceil(beamThetaYMax / beamThetaYStep) + 1);
+
+	Matrix2<XZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
+	Matrix2<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
+
+	for (unsigned int ix = 0, xSize = thetaXList.size(); ix < xSize; ++ix) {
+		const FloatType tX = Util::degreeToRadian(thetaXList[ix]);
+		const FloatType sinTX = std::sin(tX);
+		const FloatType cosTX = std::cos(tX);
+		for (unsigned int iy = 0, ySize = thetaYList.size(); iy < ySize; ++iy) {
+			const FloatType tY = Util::degreeToRadian(thetaYList[iy]);
+			const FloatType x = beamDistance * std::sin(tY);
+			const FloatType rx = beamDistance * std::cos(tY);
+			const FloatType y = rx * sinTX;
+			const FloatType z = rx * cosTX;
+			XZValue<FloatType>& gd = gridData(ix, iy);
+			gd.x = thetaYList[iy];
+			gd.z = thetaXList[ix];
+			gd.value = 0.0;
+			XYZ<FloatType>& id = inputData(ix, iy);
+			id.x = x;
+			id.y = y;
+			id.z = z;
+		}
+	}
+
+	auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType>>();
+	acBeam->getArrayOfRectangularFlatSourcesAcousticBeam(
+				sourceWidth,
+				sourceHeight,
+				samplingFreq,
+				propagationSpeed,
+				subElemSize,
+				dvdt,
+				elemPos,
+				focusDelay,
+				inputData,
+				gridData);
+
+	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
+	const FloatType k = 1.0 / maxAbsValue;
+	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
+		it->value *= k;
+	}
+
+	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
+
+	Project::GridDataType projGridData;
+	Util::copyXZValue(gridData, projGridData);
+	project_.showFigure3D(1, "Beam", &projGridData, &pointList,
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 }
 
 template<typename FloatType>

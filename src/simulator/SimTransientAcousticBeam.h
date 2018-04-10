@@ -26,6 +26,7 @@
 #include "FFTWFilter2.h"
 #include "Log.h"
 #include "Matrix2.h"
+#include "NumericArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "NumericRectangularFlatSourceImpulseResponse.h"
 #include "Util.h"
 #include "XYZ.h"
@@ -63,6 +64,27 @@ public:
 		FFTWFilter2<FloatType> filter;
 	};
 #endif
+	struct ArrayThreadData {
+		ArrayThreadData(
+			FloatType sourceWidth,
+			FloatType sourceHeight,
+			FloatType samplingFreq,
+			FloatType propagationSpeed,
+			FloatType subElemSize,
+			const std::vector<XY<FloatType>>& elemPos,
+			const std::vector<FloatType>& focusDelay,
+			const std::vector<FloatType>& dvdt)
+				: ir(sourceWidth, sourceHeight, samplingFreq,
+					propagationSpeed, subElemSize, elemPos, focusDelay)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType> ir;
+		std::vector<std::complex<FloatType>> filterFreqCoeff;
+		std::vector<FloatType> h;
+		std::vector<FloatType> signal;
+		FFTWFilter2<FloatType> filter;
+	};
 
 	void getRectangularFlatSourceAcousticBeam(
 			FloatType sourceWidth,
@@ -70,8 +92,20 @@ public:
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType subElemSize,
-			std::vector<FloatType>& dvdt,
-			Matrix2<XYZ<FloatType>>& inputData,
+			const std::vector<FloatType>& dvdt,
+			const Matrix2<XYZ<FloatType>>& inputData,
+			Matrix2<XZValue<FloatType>>& gridData);
+
+	void getArrayOfRectangularFlatSourcesAcousticBeam(
+			FloatType sourceWidth,
+			FloatType sourceHeight,
+			FloatType samplingFreq,
+			FloatType propagationSpeed,
+			FloatType subElemSize,
+			const std::vector<FloatType>& dvdt,
+			const std::vector<XY<FloatType>>& elemPos,
+			const std::vector<FloatType>& focusDelay,
+			const Matrix2<XYZ<FloatType>>& inputData,
 			Matrix2<XZValue<FloatType>>& gridData);
 private:
 	SimTransientAcousticBeam(const SimTransientAcousticBeam&) = delete;
@@ -95,8 +129,8 @@ SimTransientAcousticBeam<FloatType>::getRectangularFlatSourceAcousticBeam(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType subElemSize,
-					std::vector<FloatType>& dvdt,
-					Matrix2<XYZ<FloatType>>& inputData,
+					const std::vector<FloatType>& dvdt,
+					const Matrix2<XYZ<FloatType>>& inputData,
 					Matrix2<XZValue<FloatType>>& gridData)
 {
 #ifdef SIM_TRANSIENT_ACOUSTIC_BEAM_USE_MULTITHREADING
@@ -120,7 +154,7 @@ SimTransientAcousticBeam<FloatType>::getRectangularFlatSourceAcousticBeam(
 				std::size_t hOffset;
 
 				for (std::size_t j = r.begin(); j != r.end(); ++j) {
-					XYZ<FloatType>& id = inputData(i, j);
+					const XYZ<FloatType>& id = inputData(i, j);
 					local.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, local.h);
 
 					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
@@ -147,7 +181,7 @@ SimTransientAcousticBeam<FloatType>::getRectangularFlatSourceAcousticBeam(
 
 	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
 		for (std::size_t j = 0, jEnd = inputData.n2(); j < jEnd; ++j) {
-			XYZ<FloatType>& id = inputData(i, j);
+			const XYZ<FloatType>& id = inputData(i, j);
 			impResp->getImpulseResponse(id.x, id.y, id.z, hOffset, h);
 
 			filter_.filter(filterFreqCoeff, h, signal);
@@ -158,6 +192,55 @@ SimTransientAcousticBeam<FloatType>::getRectangularFlatSourceAcousticBeam(
 		}
 	}
 #endif
+}
+
+template<typename FloatType>
+void
+SimTransientAcousticBeam<FloatType>::getArrayOfRectangularFlatSourcesAcousticBeam(
+					FloatType sourceWidth,
+					FloatType sourceHeight,
+					FloatType samplingFreq,
+					FloatType propagationSpeed,
+					FloatType subElemSize,
+					const std::vector<FloatType>& dvdt,
+					const std::vector<XY<FloatType>>& elemPos,
+					const std::vector<FloatType>& focusDelay,
+					const Matrix2<XYZ<FloatType>>& inputData,
+					Matrix2<XZValue<FloatType>>& gridData)
+{
+	ArrayThreadData threadData{
+		sourceWidth,
+		sourceHeight,
+		samplingFreq,
+		propagationSpeed,
+		subElemSize,
+		elemPos,
+		focusDelay,
+		dvdt
+	};
+	tbb::enumerable_thread_specific<ArrayThreadData> tls{threadData};
+
+	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
+		LOG_DEBUG << "i = " << i << " / " << iEnd - 1;
+
+		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
+			[&, i](const tbb::blocked_range<std::size_t>& r) {
+				auto& local = tls.local();
+
+				std::size_t hOffset;
+
+				for (std::size_t j = r.begin(); j != r.end(); ++j) {
+					const XYZ<FloatType>& id = inputData(i, j);
+					local.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, local.h);
+
+					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
+
+					FloatType minValue, maxValue;
+					Util::minMax(local.signal, minValue, maxValue);
+					gridData(i, j).value = maxValue - minValue;
+				}
+		});
+	}
 }
 
 } // namespace Lab
