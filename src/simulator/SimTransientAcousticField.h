@@ -68,6 +68,16 @@ public:
 			std::vector<FloatType>& dvdt,
 			FloatType y,
 			Matrix2<XZValue<FloatType>>& gridData);
+
+	void getArrayOfRectangularFlatSourcesAcousticField(
+			FloatType sourceWidth,
+			FloatType sourceHeight,
+			FloatType samplingFreq,
+			FloatType propagationSpeed,
+			FloatType subElemSize,
+			std::vector<FloatType>& dvdt,
+			FloatType y,
+			Matrix2<XZValue<FloatType>>& gridData);
 private:
 	SimTransientAcousticField(const SimTransientAcousticField&) = delete;
 	SimTransientAcousticField& operator=(const SimTransientAcousticField&) = delete;
