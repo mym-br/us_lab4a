@@ -1778,7 +1778,7 @@ OGLFigureWidget::paintGL()
 
 	if (mustShowDistance) {
 		painter.drawLine(distanceMarker1_, distanceMarker2_);
-		painter.drawText(10, 20, QString("Distance = ") + QString::number(Util::meterToMillimeter(distance), 'f', 2) + " mm");
+		painter.drawText(10, 20, QString("Distance = ") + QString::number(distance));
 	}
 	if (showInfo_) {
 		if (rotationMode_) {
