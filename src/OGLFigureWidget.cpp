@@ -1426,7 +1426,7 @@ OGLFigureWidget::updateGridData(double valueScale, const Matrix2<XZValue<float>>
 {
 	if (gridData.empty()) return;
 
-	LOG_DEBUG << "Grid data size: (" << gridData.n1() << ", " << gridData.n2() << ")";
+//	LOG_DEBUG << "Grid data size: (" << gridData.n1() << ", " << gridData.n2() << ")";
 
 	switch (colormap_) {
 	case Figure::COLORMAP_DEFAULT: // falls through
@@ -1882,7 +1882,6 @@ OGLFigureWidget::keyPressEvent(QKeyEvent* e)
 		break;
 	case Qt::Key_Control:
 		if (rotationMode_) return;
-		LOG_DEBUG << "=== OK 1";
 		rotX_ = 0.0;
 		editingDistanceMarkers_ = true;
 		distanceMarker1_ = QPoint(); // clear
