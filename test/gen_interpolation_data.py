@@ -23,8 +23,8 @@ for upsamp_factor in [2, 8, 64]:
                                                     transition_width=UPSAMP_FILTER_TRANSITION_WIDTH,
                                                     tolerance=UPSAMP_FILTER_TOLERANCE,
                                                     plot=False)
-    filter_len = len(upsamp_filter)
-    print 'filter length:', filter_len
+    print 'filter length:', len(upsamp_filter)
+
     ascan_r, t_r = interpolation.interpolate(ascan,
                                              upsamp_factor,
                                              upsamp_filter,
@@ -44,6 +44,7 @@ for upsamp_factor in [2, 8, 64]:
     plt.plot(t, ascan, label='orig')
     plt.plot(t_r, ascan_r, label='interpolated ' + str(upsamp_factor) + 'x')
     plt.legend(loc='upper right', labelspacing=0.2)
+    plt.title('interpolated ' + str(upsamp_factor) + 'x')
     plt.grid()
 
     plt.figure()
