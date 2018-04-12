@@ -36,7 +36,7 @@ def calc_chunk_shape(data_shape):
             while data_size > MAX_CHUNK_SIZE_1D:
                 i = np.argmax(chunk_shape)
                 chunk_shape[i] /= 2
-                print '2:', chunk_shape
+                print('2: {}'.format(chunk_shape))
                 data_size = calc_shape_size(chunk_shape)
             return tuple(chunk_shape)
     else:
