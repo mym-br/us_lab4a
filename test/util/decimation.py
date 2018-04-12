@@ -58,9 +58,16 @@ def downsampling_filter(decimation_factor, transition_width, tolerance=0.1, plot
 
 
 
-def decimate(signal, decimation_factor, fir_lp_filter, t):
+def decimate(signal_offset, signal, decimation_factor, fir_lp_filter, t):
     signal_filtered = fftconvolve(signal, fir_lp_filter, mode="same")
-    signal_out = signal_filtered[::decimation_factor] / decimation_factor
-    t_out = t[::decimation_factor]
 
-    return signal_out, t_out
+    m = signal_offset % decimation_factor
+    if m == 0:
+        first_index = 0
+    else:
+        first_index = decimation_factor - m
+    signal_out = signal_filtered[first_index::decimation_factor] / decimation_factor
+    t_out = t[first_index::decimation_factor]
+    signal_offset_out = int((signal_offset + first_index) // decimation_factor)
+
+    return signal_offset_out, signal_out, t_out
