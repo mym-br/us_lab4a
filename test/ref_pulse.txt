@@ -1,0 +1,2 @@
+fc = 5 MHz
+fs = 40 MHz * 10 (interpolation) = 400 MHz
