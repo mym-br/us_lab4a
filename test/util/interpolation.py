@@ -53,7 +53,6 @@ def upsampling_filter(upsamp_factor, transition_width, tolerance=0.1, plot=False
                  [0.0, ft], [1.0 + tolerance, 1.0 + tolerance], 'r',
                  [0.0, ft], [1.0 - tolerance, 1.0 - tolerance], 'r',
                  [ft, 0.5], [tolerance, tolerance], 'r',
-                 [ft, ft], [0.0, 1.0], 'r',
                  [ft, ft], [0.0, 1.0], 'r')
         plt.title('Filter freq. response')
         plt.grid(True)
