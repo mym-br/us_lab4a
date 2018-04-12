@@ -21,6 +21,7 @@
 #include <cmath>
 #include <complex>
 #include <cstddef> /* std::size_t */
+#include <fstream>
 #include <vector>
 
 #include <boost/math/special_functions/bessel.hpp>
@@ -30,6 +31,7 @@
 #include "CoherenceFactor.h"
 #include "ComplexToRealIFFT.h"
 #include "ContainerDumper.h"
+#include "Decimator.h"
 #include "DirectFFTWFilter.h"
 #include "FFTWFilter.h"
 #include "FFTWFilter2.h"
@@ -65,6 +67,12 @@
 
 // Fraction of the original bandwidth.
 #define INTERPOLATOR_LP_FILTER_TRANSITION_WIDTH (0.45)
+
+// Fraction of the destination bandwidth.
+#define DECIMATOR_LP_FILTER_TRANSITION_WIDTH (0.3)
+
+#define DECIMATOR_OFFSET 32
+#define DECIMATOR_MAX_RELATIVE_ABS_ERROR (1.0e-14)
 
 
 
@@ -268,6 +276,66 @@ testInterpolator(Lab::Project& p)
 	}
 
 	LOG_INFO << "Test ok: Interpolator";
+}
+
+void
+testDecimator(Lab::Project& p)
+{
+	const std::vector<unsigned int> downsampFactorList = {2, 5, 10};
+	std::vector<double> x, y, y2, yRef;
+	p.loadHDF5("decimation_source", "v", x);
+
+	for (unsigned int i = 0; i < downsampFactorList.size(); ++i) {
+		Lab::Decimator<double> decimator;
+		std::size_t yOffset;
+
+		decimator.prepare(downsampFactorList[i], DECIMATOR_LP_FILTER_TRANSITION_WIDTH);
+		decimator.decimate(DECIMATOR_OFFSET, x, yOffset, y);
+
+		std::ostringstream fileName;
+		fileName << "decimated_" << downsampFactorList[i] << 'x';
+		p.loadHDF5(fileName.str().c_str(), "v", yRef);
+
+		if (y.size() != yRef.size()) {
+			THROW_EXCEPTION(Lab::TestException, "Wrong size: " << y.size() <<
+					" (downsampling factor: " << downsampFactorList[i] << ").");
+		}
+		const double maxAbs = Lab::Util::maxAbsolute(yRef);
+		for (unsigned int j = 0; j < y.size(); ++j) {
+			const double error = std::abs(y[j] - yRef[j]) / maxAbs;
+			if (error > DECIMATOR_MAX_RELATIVE_ABS_ERROR) {
+				THROW_EXCEPTION(Lab::TestException, "Wrong value for index = " <<
+						j << ": " << y[j] << " (error: " << error <<
+						", downsampling factor: " << downsampFactorList[i] << ").");
+			}
+		}
+
+		std::ostringstream offsetFileName;
+		offsetFileName << p.directory() << "/decimated_" << downsampFactorList[i] << "x-offset.txt";
+		std::ifstream in(offsetFileName.str().c_str(), std::ios_base::binary);
+		if (!in) THROW_EXCEPTION(Lab::TestException, "Could not open the file: " << offsetFileName.str() << '.');
+		unsigned int offsetRef;
+		in >> offsetRef;
+		if (!in) THROW_EXCEPTION(Lab::TestException, "Could not read the offset from file: " << offsetFileName.str() << '.');
+		if (offsetRef != yOffset) {
+			THROW_EXCEPTION(Lab::TestException, "yOffset != offsetRef");
+		}
+
+		Lab::Decimator<double> decimator2(decimator);
+		std::size_t yOffset2;
+		y2.resize(x.size() * downsampFactorList[i]);
+		decimator2.decimate(DECIMATOR_OFFSET, x, yOffset2, y2);
+		for (unsigned int j = 0; j < y2.size(); ++j) {
+			if (y2[j] != y[j]) {
+				THROW_EXCEPTION(Lab::TestException, "y2 != y");
+			}
+		}
+		if (yOffset != yOffset2) {
+			THROW_EXCEPTION(Lab::TestException, "yOffset2 != yOffset");
+		}
+	}
+
+	LOG_INFO << "Test ok: Decimator";
 }
 
 void
@@ -938,6 +1006,7 @@ TestMethod::execute()
 	testCentralDiff(project_);
 	testFFT(project_);
 	testInterpolator(project_);
+	testDecimator(project_);
 	testKaiserWindow(project_);
 	testBessel(project_);
 	testHilbertTransform(project_);

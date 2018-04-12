@@ -52,6 +52,9 @@ for decimation_factor in [2, 5, 10]:
     plt.title('[index] decimated ' + str(decimation_factor) + 'x')
     plt.grid()
 
-    hdf5util.write_ndarray(data=ascan_d, file_path='decimated_' + str(decimation_factor) + 'x.h5', dataset_name='v')
+    out_file_prefix = 'decimated_' + str(decimation_factor) + 'x'
+    hdf5util.write_ndarray(data=ascan_d, file_path=out_file_prefix+'.h5', dataset_name='v')
+    with open(out_file_prefix + '-offset.txt', 'w') as f:
+        print(str(ascan_d_offset), file=f)
 
 plt.show()
