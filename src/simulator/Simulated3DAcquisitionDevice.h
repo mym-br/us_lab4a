@@ -89,7 +89,7 @@ public:
 	std::size_t signalLength() const { return signalLength_; }
 	const std::vector<FloatType>& getSignalList();
 
-	void setActiveTxElements(const std::vector<bool>& mask);//TODO: Test.
+	void setActiveTxElements(const std::vector<bool>& mask);
 	void setActiveRxElements(const std::vector<bool>& mask);
 
 	// Must be preceded by a call to setActiveTxElements(const std::vector<bool>& mask).
@@ -102,7 +102,7 @@ public:
 		reflectorList_ = reflectorList;
 	}
 	void setReflectorOffset(FloatType reflectorsOffsetX, FloatType reflectorsOffsetY) {
-		reflectorsOffsetX_ = reflectorsOffsetX;//TODO: Test.
+		reflectorsOffsetX_ = reflectorsOffsetX;
 		reflectorsOffsetY_ = reflectorsOffsetY;
 	}
 
