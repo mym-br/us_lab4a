@@ -79,7 +79,7 @@
 #define REFLECTOR_POINT_SIZE_SMALL 1.0f
 #define REFLECTOR_POINT_SIZE_BIG 3.0f
 #define REFLECTOR_SIZE_THRESHOLD 20
-#define VALUE_EPS (1e-20f)
+#define VALUE_EPS (1e-30f)
 
 #define PYRAMIDAL_MESH 1
 
@@ -1381,8 +1381,8 @@ OGLFigureWidget::fillOGLGridData(double valueScale, const Matrix2<XZValue<float>
 		break;
 	case Figure::VISUALIZATION_ENVELOPE_LINEAR:
 		{
-			Matrix2<XZValue<float> > envelope = gridData;
-			ParallelHilbertEnvelope<float>::calculateDim2(envelope);
+			Matrix2<XZValue<float>> envelope = gridData;
+			ParallelHilbertEnvelope<float>::calculateDim2Value(envelope);
 
 			float valueFactor;
 			if (valueScale != 0.0) {
@@ -1396,8 +1396,8 @@ OGLFigureWidget::fillOGLGridData(double valueScale, const Matrix2<XZValue<float>
 		break;
 	case Figure::VISUALIZATION_ENVELOPE_LOG:
 		{
-			Matrix2<XZValue<float> > envelope = gridData;
-			ParallelHilbertEnvelope<float>::calculateDim2(envelope);
+			Matrix2<XZValue<float>> envelope = gridData;
+			ParallelHilbertEnvelope<float>::calculateDim2Value(envelope);
 
 			float valueFactor;
 			if (valueScale != 0.0) {

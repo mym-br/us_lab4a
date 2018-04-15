@@ -25,6 +25,7 @@
 
 #include "HilbertEnvelope.h"
 #include "Matrix2.h"
+#include "Util.h"
 
 
 
@@ -40,6 +41,8 @@ public:
 
 	template<typename T>
 		static void calculateDim2(Matrix2<T>& data);
+	template<typename T>
+		static void calculateDim2Value(Matrix2<T>& data);
 	template<typename T, typename U>
 		static void getAnalyticSignalDim2(const Matrix2<T>& origData, Matrix2<U>& destData);
 private:
@@ -53,17 +56,17 @@ template<typename FloatType>
 template<typename T>
 class ParallelHilbertEnvelope<FloatType>::CalculateDim2 {
 public:
-	CalculateDim2(tbb::enumerable_thread_specific<HilbertEnvelope<FloatType> >& envelopeTLS, Matrix2<T>& data)
+	CalculateDim2(tbb::enumerable_thread_specific<HilbertEnvelope<FloatType>>& envelopeTLS, Matrix2<T>& data)
 			: envelopeTLS_(envelopeTLS)
 			, data_(data) { }
 	void operator()(const tbb::blocked_range<std::size_t>& r) const {
-		typename tbb::enumerable_thread_specific<HilbertEnvelope<FloatType> >::reference envelope = envelopeTLS_.local();
+		typename tbb::enumerable_thread_specific<HilbertEnvelope<FloatType>>::reference envelope = envelopeTLS_.local();
 		for (std::size_t i = r.begin(); i != r.end(); ++i) {
 			envelope.calculate(&data_(i, 0), data_.n2());
 		}
 	}
 private:
-	tbb::enumerable_thread_specific<HilbertEnvelope<FloatType> >& envelopeTLS_;
+	tbb::enumerable_thread_specific<HilbertEnvelope<FloatType>>& envelopeTLS_;
 	Matrix2<T>& data_;
 };
 
@@ -72,34 +75,49 @@ template<typename T>
 void
 ParallelHilbertEnvelope<FloatType>::calculateDim2(Matrix2<T>& data)
 {
-	tbb::enumerable_thread_specific<HilbertEnvelope<FloatType> > envelopeTLS;
+	tbb::enumerable_thread_specific<HilbertEnvelope<FloatType>> envelopeTLS;
 	tbb::parallel_for(
 		tbb::blocked_range<std::size_t>(0, data.n1()),
 		CalculateDim2<typename Matrix2<T>::ValueType>(envelopeTLS, data)
 	);
 }
 
+template<typename FloatType>
+template<typename T>
+void
+ParallelHilbertEnvelope<FloatType>::calculateDim2Value(Matrix2<T>& data)
+{
+	Matrix2<FloatType> aux;
+	Util::copyValueToSimpleMatrix(data, aux);
 
+	tbb::enumerable_thread_specific<HilbertEnvelope<FloatType>> envelopeTLS;
+	tbb::parallel_for(
+		tbb::blocked_range<std::size_t>(0, data.n1()),
+		CalculateDim2<FloatType>(envelopeTLS, aux)
+	);
+
+	Util::copyValueFromSimpleMatrix(aux, data);
+}
 
 template<typename FloatType>
 template<typename T, typename U>
 class ParallelHilbertEnvelope<FloatType>::GetAnalyticSignalDim2 {
 public:
 	GetAnalyticSignalDim2(
-			tbb::enumerable_thread_specific<HilbertEnvelope<FloatType> >& envelopeTLS,
+			tbb::enumerable_thread_specific<HilbertEnvelope<FloatType>>& envelopeTLS,
 			const Matrix2<T>& origData,
 			Matrix2<U>& destData)
 		: envelopeTLS_(envelopeTLS)
 		, origData_(origData)
 		, destData_(destData) { }
 	void operator()(const tbb::blocked_range<std::size_t>& r) const {
-		typename tbb::enumerable_thread_specific<HilbertEnvelope<FloatType> >::reference envelope = envelopeTLS_.local();
+		typename tbb::enumerable_thread_specific<HilbertEnvelope<FloatType>>::reference envelope = envelopeTLS_.local();
 		for (std::size_t i = r.begin(); i != r.end(); ++i) {
 			envelope.getAnalyticSignal(&origData_(i, 0), origData_.n2(), &destData_(i, 0));
 		}
 	}
 private:
-	tbb::enumerable_thread_specific<HilbertEnvelope<FloatType> >& envelopeTLS_;
+	tbb::enumerable_thread_specific<HilbertEnvelope<FloatType>>& envelopeTLS_;
 	const Matrix2<T>& origData_;
 	Matrix2<U>& destData_;
 };
@@ -111,7 +129,7 @@ ParallelHilbertEnvelope<FloatType>::getAnalyticSignalDim2(const Matrix2<T>& orig
 {
 	destData.resize(origData.n1(), origData.n2());
 
-	tbb::enumerable_thread_specific<HilbertEnvelope<FloatType> > envelopeTLS;
+	tbb::enumerable_thread_specific<HilbertEnvelope<FloatType>> envelopeTLS;
 	tbb::parallel_for(
 		tbb::blocked_range<std::size_t>(0, origData.n1()),
 		GetAnalyticSignalDim2<T, U>(envelopeTLS, origData, destData)
