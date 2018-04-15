@@ -157,6 +157,7 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZValu
 		ProcessColumn(
 			gridData.n2(),
 			config_,
+			baseElement,
 			processColumnTLS,
 			signalOffset_,
 			signalMatrix_,
@@ -173,12 +174,14 @@ public:
 	ProcessColumn(
 			std::size_t numRows,
 			const STAConfiguration<FloatType>& config,
+			unsigned int baseElement,
 			tbb::enumerable_thread_specific<ThreadData>& processColumnTLS,
 			FloatType signalOffset,
 			const Matrix3<FloatType>& signalMatrix,
 			Matrix2<XZValueFactor<FloatType> >& gridData)
 				: numRows_(numRows)
 				, config_(config)
+				, baseElement_(baseElement)
 				, processColumnTLS_(processColumnTLS)
 				, signalOffset_(signalOffset)
 				, signalMatrix_(signalMatrix)
@@ -186,9 +189,9 @@ public:
 				, xArray_(config_.numElements)
 				, gridData_(gridData) {
 
-		const FloatType xArrayCenter = (config_.numElements - 1) * config_.pitch / 2.0;
+		const FloatType xArrayCenter = (config_.numElementsMux - 1) * config_.pitch / 2.0;
 		for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
-			xArray_[elem] = elem * config_.pitch - xArrayCenter;
+			xArray_[elem] = (baseElement_ + elem) * config_.pitch - xArrayCenter;
 		}
 	}
 
@@ -246,6 +249,7 @@ public:
 private:
 	const std::size_t numRows_;
 	const STAConfiguration<FloatType>& config_;
+	const unsigned int baseElement_;
 	tbb::enumerable_thread_specific<ThreadData>& processColumnTLS_;
 	const FloatType signalOffset_;
 	const Matrix3<FloatType>& signalMatrix_;

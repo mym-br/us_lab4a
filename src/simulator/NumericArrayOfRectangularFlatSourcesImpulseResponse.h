@@ -20,6 +20,7 @@
 #include <limits>
 #include <vector>
 
+#include "Exception.h"
 #include "NumericRectangularFlatSourceImpulseResponse.h"
 #include "Util.h"
 #include "XY.h"
@@ -41,7 +42,8 @@ public:
 					const std::vector<FloatType>& focusDelay);
 	~NumericArrayOfRectangularFlatSourcesImpulseResponse() {}
 
-	void getImpulseResponse(FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h);
+	void getImpulseResponse(FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
+				std::vector<unsigned int>* activeElemList=nullptr);
 private:
 	NumericRectangularFlatSourceImpulseResponse<FloatType> ir_;
 	const std::vector<XY<FloatType>>& elemPos_;
@@ -72,13 +74,25 @@ NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::NumericArrayOfRe
 template<typename FloatType>
 void
 NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::getImpulseResponse(
-		FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h)
+		FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
+		std::vector<unsigned int>* activeElemList)
 {
+	if (activeElemList && activeElemList->empty()) {
+		THROW_EXCEPTION(InvalidParameterException, "Empty active element list.");
+	}
 	std::size_t iMin = std::numeric_limits<std::size_t>::max();
 	std::size_t iMax = 0; // the index after the last
 
 	// Obtain the impulse responses.
-	for (std::size_t i = 0, iEnd = elemPos_.size(); i < iEnd; ++i) {
+	for (std::size_t i = 0, iEnd = elemPos_.size(), j = 0; i < iEnd; ++i) {
+		if (activeElemList) {
+			if (j >= activeElemList->size()) break;
+			if ((*activeElemList)[j] != i) {
+				continue;
+			} else {
+				++j;
+			}
+		}
 		const XY<FloatType>& pos = elemPos_[i];
 
 		ir_.getImpulseResponse(x - pos.x, y - pos.y, z, offsetList_[i], hList_[i]);
@@ -92,7 +106,15 @@ NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::getImpulseRespon
 
 	// Accumulate the impulse responses.
 	h.assign(iMax - iMin, 0.0);
-	for (std::size_t i = 0, iEnd = elemPos_.size(); i < iEnd; ++i) {
+	for (std::size_t i = 0, iEnd = elemPos_.size(), j = 0; i < iEnd; ++i) {
+		if (activeElemList) {
+			if (j >= activeElemList->size()) break;
+			if ((*activeElemList)[j] != i) {
+				continue;
+			} else {
+				++j;
+			}
+		}
 		const std::size_t hBegin = offsetList_[i];
 		const std::size_t hEnd = hBegin + hList_[i].size();
 		Util::addElements(hList_[i].begin(), h.begin() + hBegin - iMin, h.begin() + hEnd - iMin);

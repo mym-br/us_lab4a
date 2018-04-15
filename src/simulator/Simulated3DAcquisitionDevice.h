@@ -358,15 +358,6 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 	FFTWFilter2<FloatType> dadtFilter;
 	dadtFilter.setCoefficients(dadt_, dadtFilterFreqCoeff_);
 
-	ThreadData threadData{
-		elemWidth_,
-		elemHeight_,
-		simFs_,
-		c_,
-		subElemSize_,
-		*decimator_
-	};
-
 	// For each reflector:
 	for (std::size_t iRef = 0, iRefEnd = reflectorList_.size(); iRef < iRefEnd; ++iRef) {
 		LOG_INFO << "Reflector: " << iRef << " / " << iRefEnd - 1;
@@ -379,11 +370,19 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 
 		// Calculate the impulse response in transmission (all active elements).
 		std::size_t hTxOffset;
-		txImpResp_->getImpulseResponse(refX, refY, refZ, hTxOffset, hTx_);//TODO: multi-threading
+		txImpResp_->getImpulseResponse(refX, refY, refZ, hTxOffset, hTx_, &activeTxElem_);//TODO: multi-threading
 
 		// dadt * hTx
 		dadtFilter.filter(dadtFilterFreqCoeff_, hTx_, convDadtHTx_);
 
+		ThreadData threadData{
+			elemWidth_,
+			elemHeight_,
+			simFs_,
+			c_,
+			subElemSize_,
+			*decimator_
+		};
 		threadData.convDadtHTxFilter.setCoefficients(convDadtHTx_, convDadtHTxFilterFreqCoeff_);
 		tbb::enumerable_thread_specific<ThreadData> tls{threadData};
 
@@ -410,10 +409,11 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 				std::size_t pDownOffset;
 				decimator_->downsample(lpOffset, pOffset, local.p, pDownOffset, local.pDown);
 
+				const std::size_t signalListOffset = iActiveRx * signalLength_;
 				for (std::size_t i = 0, iEnd = local.pDown.size(), j = pDownOffset;
 						(i < iEnd) && (j < signalLength_);
 						++i, ++j) {
-					signalList_[j] += local.pDown[i] * refCoeff;
+					signalList_[signalListOffset + j] += local.pDown[i] * refCoeff;
 				}
 			}
 		});
