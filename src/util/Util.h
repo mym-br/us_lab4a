@@ -69,6 +69,7 @@ template<typename T> void clip(T& value, T minValue, T maxValue);
 template<typename T> T max(const std::vector<T>& list);
 template<typename T> T maxAbsolute(const std::vector<T>& list);
 template<typename T> T maxAbsolute(const std::vector<std::complex<T> >& list);
+template<typename T> T maxAbsolute(const Matrix2<T>& data);
 template<typename T, typename U> U maxValueField(const Matrix2<T>& data);
 template<typename T, typename U> U maxAbsoluteValueField(const Matrix2<T>& data);
 template<typename T> void minMax(const std::vector<T>& list, T& min, T& max);
@@ -380,6 +381,18 @@ maxAbsolute(const std::vector<std::complex<T> >& list)
 	for (typename std::vector<std::complex<T> >::const_iterator iter = list.begin(); iter != list.end(); ++iter) {
 		const T a = std::abs(*iter);
 		if (max < a) max = a;
+	}
+	return max;
+}
+
+template<typename T>
+T
+maxAbsolute(const Matrix2<T>& data)
+{
+	T max = minValue<T>();
+	for (typename Matrix2<T>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) {
+		const T v = std::abs(*iter);
+		if (v > max) max = v;
 	}
 	return max;
 }
