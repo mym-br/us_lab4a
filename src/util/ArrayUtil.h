@@ -27,29 +27,26 @@
 namespace Lab {
 namespace ArrayUtil {
 
-template<typename FloatType> void calculateXYArrayParameters(const ParameterMap& taskPM, FloatType propagationSpeed,
+template<typename FloatType> void calculateXYArrayParameters(const ParameterMap& pm, FloatType propagationSpeed,
 						FloatType samplingFreq, std::vector<XY<FloatType>>& elemPos,
-						std::vector<FloatType>& focusDelay);
+						std::vector<FloatType>& focusDelay, bool useFixedFocus=true);
 
 
 
 template<typename FloatType>
 void
 calculateXYArrayParameters(
-		const ParameterMap& taskPM,
+		const ParameterMap& pm,
 		FloatType propagationSpeed,
 		FloatType samplingFreq,
 		std::vector<XY<FloatType>>& elemPos,
-		std::vector<FloatType>& focusDelay)
+		std::vector<FloatType>& focusDelay,
+		bool useFixedFocus)
 {
-	const bool useFocus              = taskPM.value<bool>("use_focus");
-	const FloatType focusX           = taskPM.value<FloatType>("focus_x", 0.0, 10000.0);
-	const FloatType focusY           = taskPM.value<FloatType>("focus_y", 0.0, 10000.0);
-	const FloatType focusZ           = taskPM.value<FloatType>("focus_z", 0.0, 10000.0);
-	const FloatType arrayPitchX      = taskPM.value<FloatType>("array_pitch_x", 0.0, 10.0);
-	const unsigned int numArrayElemX = taskPM.value<FloatType>("num_array_elem_x", 1, 1024);
-	const FloatType arrayPitchY      = taskPM.value<FloatType>("array_pitch_y", 0.0, 10.0);
-	const unsigned int numArrayElemY = taskPM.value<FloatType>("num_array_elem_y", 1, 1024);
+	const FloatType arrayPitchX      = pm.value<FloatType>("array_pitch_x", 0.0, 10.0);
+	const unsigned int numArrayElemX = pm.value<FloatType>("num_array_elem_x", 1, 1024);
+	const FloatType arrayPitchY      = pm.value<FloatType>("array_pitch_y", 0.0, 10.0);
+	const unsigned int numArrayElemY = pm.value<FloatType>("num_array_elem_y", 1, 1024);
 
 	const unsigned int numElem = numArrayElemX * numArrayElemY;
 
@@ -65,28 +62,33 @@ calculateXYArrayParameters(
 		}
 	}
 
-	if (useFocus) {
-		focusDelay.resize(numElem);
-		FloatType maxDt = 0.0;
-		for (unsigned int iy = 0; iy < numArrayElemY; ++iy) {
-			for (unsigned int ix = 0; ix < numArrayElemX; ++ix) {
-				const unsigned int index = iy * numArrayElemX + ix;
-				XY<FloatType>& pos = elemPos[index];
-				const FloatType dx = focusX - pos.x;
-				const FloatType dy = focusY - pos.y;
-				const FloatType focusDt = std::sqrt(dx * dx + dy * dy + focusZ * focusZ) / propagationSpeed;
-				focusDelay[index] = focusDt;
-				if (focusDt > maxDt) maxDt = focusDt;
+	focusDelay.assign(numElem, 0.0);
+	if (useFixedFocus) {
+		const bool useFocus = pm.value<bool>("use_focus");
+		if (useFocus) {
+			const FloatType focusX = pm.value<FloatType>("focus_x", 0.0, 10000.0);
+			const FloatType focusY = pm.value<FloatType>("focus_y", 0.0, 10000.0);
+			const FloatType focusZ = pm.value<FloatType>("focus_z", 0.0, 10000.0);
+
+			FloatType maxDt = 0.0;
+			for (unsigned int iy = 0; iy < numArrayElemY; ++iy) {
+				for (unsigned int ix = 0; ix < numArrayElemX; ++ix) {
+					const unsigned int index = iy * numArrayElemX + ix;
+					XY<FloatType>& pos = elemPos[index];
+					const FloatType dx = focusX - pos.x;
+					const FloatType dy = focusY - pos.y;
+					const FloatType focusDt = std::sqrt(dx * dx + dy * dy + focusZ * focusZ) / propagationSpeed;
+					focusDelay[index] = focusDt;
+					if (focusDt > maxDt) maxDt = focusDt;
+				}
+			}
+			for (unsigned int iy = 0; iy < numArrayElemY; ++iy) {
+				for (unsigned int ix = 0; ix < numArrayElemX; ++ix) {
+					const unsigned int index = iy * numArrayElemX + ix;
+					focusDelay[index] = (maxDt - focusDelay[index]) * samplingFreq;
+				}
 			}
 		}
-		for (unsigned int iy = 0; iy < numArrayElemY; ++iy) {
-			for (unsigned int ix = 0; ix < numArrayElemX; ++ix) {
-				const unsigned int index = iy * numArrayElemX + ix;
-				focusDelay[index] = (maxDt - focusDelay[index]) * samplingFreq;
-			}
-		}
-	} else {
-		focusDelay.assign(numElem, 0.0);
 	}
 }
 

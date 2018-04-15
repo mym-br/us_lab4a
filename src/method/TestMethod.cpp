@@ -302,6 +302,10 @@ testDecimator(Lab::Project& p)
 		}
 		const double maxAbs = Lab::Util::maxAbsolute(yRef);
 		for (unsigned int j = 0; j < y.size(); ++j) {
+			if (std::isnan(y[j])) {
+				THROW_EXCEPTION(Lab::TestException, "NaN value for y[" <<
+						j << "] (downsampling factor: " << downsampFactorList[i] << ").");
+			}
 			const double error = std::abs(y[j] - yRef[j]) / maxAbs;
 			if (error > DECIMATOR_MAX_RELATIVE_ABS_ERROR) {
 				THROW_EXCEPTION(Lab::TestException, "Wrong value for index = " <<
@@ -318,20 +322,24 @@ testDecimator(Lab::Project& p)
 		in >> offsetRef;
 		if (!in) THROW_EXCEPTION(Lab::TestException, "Could not read the offset from file: " << offsetFileName.str() << '.');
 		if (offsetRef != yOffset) {
-			THROW_EXCEPTION(Lab::TestException, "yOffset != offsetRef");
+			THROW_EXCEPTION(Lab::TestException, "Error: yOffset != offsetRef.");
 		}
 
-		Lab::Decimator<double> decimator2(decimator);
+		Lab::Decimator<double> decimator2{decimator};
 		std::size_t yOffset2;
-		y2.resize(x.size() * downsampFactorList[i]);
 		decimator2.decimate(DECIMATOR_OFFSET, x, yOffset2, y2);
+		if (y2.size() != y.size()) {
+			THROW_EXCEPTION(Lab::TestException, "Error: y2.size() != y.size().");
+		}
 		for (unsigned int j = 0; j < y2.size(); ++j) {
 			if (y2[j] != y[j]) {
-				THROW_EXCEPTION(Lab::TestException, "y2 != y");
+				THROW_EXCEPTION(Lab::TestException, "Error: y2 != y (y2[" << j << "] = " << y2[j] <<
+						" y[" << j << "] = " << y[j] <<
+						" downsampling factor = " << downsampFactorList[i] << ").");
 			}
 		}
 		if (yOffset != yOffset2) {
-			THROW_EXCEPTION(Lab::TestException, "yOffset2 != yOffset");
+			THROW_EXCEPTION(Lab::TestException, "Error: yOffset2 != yOffset.");
 		}
 	}
 

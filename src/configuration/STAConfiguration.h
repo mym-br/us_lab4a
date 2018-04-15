@@ -35,6 +35,7 @@ struct STAConfiguration {
 	unsigned int numElementsMux;
 	FloatType pitch; // m
 	FloatType centerFrequency; // Hz
+	FloatType maxFrequency; // Hz
 	FloatType acquisitionTime; // s
 	FloatType minGain; // (0 - 48) dB
 	FloatType maxGain; // (0 - 48) dB
@@ -56,6 +57,7 @@ STAConfiguration<FloatType>::load(ConstParameterMapPtr pm)
 	numElements       = pm->value<unsigned int>("num_elements"       ,       1, numElementsMux);
 	pitch             = pm->value<FloatType>(   "pitch"              , 0.01e-3, 10.0e-3);
 	centerFrequency   = pm->value<FloatType>(   "center_frequency"   ,   100.0, 100.0e6);
+	maxFrequency      = pm->value<FloatType>(   "max_frequency"      ,   100.0, 100.0e6);
 	acquisitionTime   = pm->value<FloatType>(   "acquisition_time"   ,  1.0e-6,     1.0);
 	minGain           = pm->value<FloatType>(   "min_gain"           ,     0.0,    48.0);
 	maxGain           = pm->value<FloatType>(   "max_gain"           ,     0.0,    48.0);

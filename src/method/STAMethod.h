@@ -20,8 +20,7 @@
 
 #include <algorithm>
 #include <iomanip>
-
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 #include "CoherenceFactor.h"
 #include "DefaultSTAProcessor.h"
@@ -34,6 +33,7 @@
 #include "Project.h"
 #include "SavedSTAAcquisition.h"
 #include "SimpleSTAProcessor.h"
+#include "Simulated3DSTAAcquisition.h"
 #include "SimulatedSTAAcquisition.h"
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
@@ -87,23 +87,26 @@ STAMethod<FloatType>::execute()
 	const STAConfiguration<FloatType> config(project_.loadChildParameterMap(taskPM, "sta_config_file"));
 	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 
-	boost::scoped_ptr<STAAcquisition<FloatType>> acquisition;
+	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
 	switch (project_.method()) {
 	case MethodType::sta_sectorial_simple_simulated: // falls through
 	case MethodType::sta_sectorial_simulated:
-		acquisition.reset(new SimulatedSTAAcquisition<FloatType>(project_, config));
+		acquisition = std::make_unique<SimulatedSTAAcquisition<FloatType>>(project_, config);
 		break;
 	case MethodType::sta_sectorial_dp_network: // falls through
 	case MethodType::sta_save_signals:
-		acquisition.reset(new NetworkSTAAcquisition<FloatType>(project_, config));
+		acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
 		break;
 	case MethodType::sta_sectorial_simple_saved:       // falls through
 	case MethodType::sta_sectorial_dp_saved:           // falls through
 	case MethodType::sta_sectorial_vectorial_dp_saved: // falls through
 	case MethodType::sta_sectorial_sp_saved:           // falls through
 	case MethodType::sta_sectorial_vectorial_sp_saved:
-		acquisition.reset(new SavedSTAAcquisition<FloatType>(project_, config.numElements));
+		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(project_, config.numElements);
+		break;
+	case MethodType::sta_simulated_3d:
+		acquisition = std::make_unique<Simulated3DSTAAcquisition<FloatType>>(project_, config);
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
@@ -127,17 +130,16 @@ STAMethod<FloatType>::execute()
 		vectorialProcessingWithEnvelope = taskPM->value<bool>("calculate_envelope_in_processing");
 	}
 
-	const FloatType peakOffset  = taskPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
-	const std::string outputDir = taskPM->value<std::string>( "output_dir");
+	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset", 0.0, 50.0);
+	const std::string outputDir = taskPM->value<std::string>("output_dir");
 
 	switch (project_.method()) {
 	case MethodType::sta_sectorial_simple_simulated: // falls through
 	case MethodType::sta_sectorial_simple_saved:
 		{
-			boost::scoped_ptr<STAProcessor<FloatType> > processor;
 			CoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			coherenceFactorEnabled = coherenceFactor.enabled();
-			processor.reset(new SimpleSTAProcessor<FloatType>(config, *acquisition, peakOffset));
+			auto processor = std::make_unique<SimpleSTAProcessor<FloatType>>(config, *acquisition, peakOffset);
 
 			Timer tProc;
 			processor->process(baseElement, gridData);
@@ -148,10 +150,9 @@ STAMethod<FloatType>::execute()
 	case MethodType::sta_sectorial_vectorial_sp_saved:
 		{
 			const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
-			boost::scoped_ptr<STAProcessor<FloatType> > processor;
 			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			coherenceFactorEnabled = coherenceFactor.enabled();
-			processor.reset(new VectorialSTAProcessor<FloatType>(config, *acquisition, upsamplingFactor, coherenceFactor, peakOffset, vectorialProcessingWithEnvelope));
+			auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(config, *acquisition, upsamplingFactor, coherenceFactor, peakOffset, vectorialProcessingWithEnvelope);
 
 			Timer tProc;
 			processor->process(baseElement, gridData);
@@ -160,10 +161,9 @@ STAMethod<FloatType>::execute()
 		break;
 	default:
 		{
-			boost::scoped_ptr<STAProcessor<FloatType> > processor;
 			CoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			coherenceFactorEnabled = coherenceFactor.enabled();
-			processor.reset(new DefaultSTAProcessor<FloatType>(config, *acquisition, coherenceFactor, peakOffset));
+			auto processor = std::make_unique<DefaultSTAProcessor<FloatType>>(config, *acquisition, coherenceFactor, peakOffset);
 
 			Timer tProc;
 			processor->process(baseElement, gridData);
@@ -194,7 +194,7 @@ STAMethod<FloatType>::execute()
 		ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData);
 
 		// Applies the coherence factor method.
-		for (typename Matrix2<XZValueFactor<FloatType> >::Iterator iter = gridData.begin(); iter != gridData.end(); ++iter) {
+		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
 			iter->value *= iter->factor;
 			iter->factor = 1.0;
 		}

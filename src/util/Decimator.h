@@ -46,8 +46,14 @@ public:
 	//     1.0 -> pi radian / sample at the destination sampling rate
 	void prepare(unsigned int downsamplingFactor, FloatType lpFilterHalfTransitionWidth);
 
+	void downsample(std::size_t filterOffset,
+			std::size_t inputOffset, const std::vector<FloatType>& input,
+			std::size_t& outputOffset, std::vector<FloatType>& output);
 	void decimate(std::size_t inputOffset, const std::vector<FloatType>& input,
 			std::size_t& outputOffset, std::vector<FloatType>& output);
+
+	const std::vector<FloatType>& lowPassFIRFilter() const { return lowPassFIRFilter_; }
+	unsigned int downsamplingFactor() const { return downsamplingFactor_; }
 private:
 	unsigned int downsamplingFactor_;
 	std::vector<FloatType> lowPassFIRFilter_;
@@ -100,7 +106,7 @@ Decimator<FloatType>::prepare(unsigned int downsamplingFactor, FloatType lpFilte
 	Util::fillSequenceFromStartToEndWithSize(x, -numPeriods, numPeriods, finalWindowSize);
 	lowPassFIRFilter_.resize(x.size());
 	for (unsigned int i = 0; i < lowPassFIRFilter_.size(); ++i) {
-		lowPassFIRFilter_[i] = boost::math::sinc_pi(PI * x[i]);
+		lowPassFIRFilter_[i] = boost::math::sinc_pi(PI * x[i]) / downsamplingFactor;
 	}
 
 	Util::multiply(window, lowPassFIRFilter_);
@@ -108,6 +114,31 @@ Decimator<FloatType>::prepare(unsigned int downsamplingFactor, FloatType lpFilte
 	filter_.setCoefficients(lowPassFIRFilter_);
 
 	downsamplingFactor_ = downsamplingFactor;
+}
+
+template<typename FloatType>
+void
+Decimator<FloatType>::downsample(std::size_t filterOffset,
+					std::size_t inputOffset, const std::vector<FloatType>& input,
+					std::size_t& outputOffset, std::vector<FloatType>& output)
+{
+	const unsigned int m = inputOffset % downsamplingFactor_;
+	// The first input relative index that is multiple of downsamplingFactor_, considering the absolute value.
+	const unsigned int firstIndex = (m == 0) ? 0 : downsamplingFactor_ - m;
+
+	if (input.size() < 2 * filterOffset + firstIndex + 1) {
+		THROW_EXCEPTION(InvalidValueException, "The input is too short.");
+	}
+
+	// Copy to the output, compensating for the FIR filter delay. The signal is truncated at both ends.
+	output.resize(1 + (input.size() - 2 * filterOffset - firstIndex - 1) / downsamplingFactor_);
+	for (std::size_t i = filterOffset + firstIndex, iEnd = input.size() - filterOffset, j = 0;
+			i < iEnd;
+			i += downsamplingFactor_, ++j) {
+		output[j] = input[i];
+	}
+
+	outputOffset = (inputOffset + firstIndex) / downsamplingFactor_;
 }
 
 template<typename FloatType>
@@ -120,20 +151,9 @@ Decimator<FloatType>::decimate(std::size_t inputOffset, const std::vector<FloatT
 	// Apply the low-pass filter.
 	filter_.filter(input, filteredSignal_);
 
-	const unsigned int m = inputOffset % downsamplingFactor_;
-	const unsigned int firstIndex = (m == 0) ? 0 : downsamplingFactor_ - m;
-
-	// Copy to the output, compensating for the FIR filter delay. The signal is truncated at both ends.
-	output.resize(1U + (input.size() - firstIndex - 1U) / downsamplingFactor_);
 	const std::size_t filterOffset = (lowPassFIRFilter_.size() - 1) / 2;
-	const FloatType outputFactor = 1.0 / downsamplingFactor_;
-	for (std::size_t i = filterOffset + firstIndex, iEnd = filteredSignal_.size() - filterOffset, j = 0;
-			i < iEnd;
-			i += downsamplingFactor_, ++j) {
-		output[j] = filteredSignal_[i] * outputFactor;
-	}
 
-	outputOffset = (inputOffset + firstIndex) / downsamplingFactor_;
+	downsample(filterOffset, inputOffset, filteredSignal_, outputOffset, output);
 }
 
 } // namespace Lab
