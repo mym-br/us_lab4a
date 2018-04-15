@@ -25,13 +25,14 @@ def downsampling_filter(decimation_factor, transition_width, tolerance=0.1, plot
     w = kaiser(w_size, beta)
     num_periods = (w_size - 1) / (2.0 * decimation_factor)
     x = np.linspace(-num_periods, num_periods, w_size);
-    s = np.sinc(x)
+    s = np.sinc(x) / decimation_factor
     coef = s * w
 
     if plot:
         plt.figure(figsize=(12, 6), dpi=85)
         plt.stem(np.arange(0, len(w)), w)
         plt.title('Kaiser window size=' + str(w_size) + ' beta=' + str(beta))
+        plt.grid(True)
 
         plt.figure(figsize=(12, 6), dpi=85)
         plt.stem(x, s)
@@ -46,11 +47,12 @@ def downsampling_filter(decimation_factor, transition_width, tolerance=0.1, plot
         freq, h = freqz(coef, worN=2048)
         ft = 0.5 / decimation_factor
         plt.figure(figsize=(12, 6), dpi=85)
+        cf = 1.0 / decimation_factor
         plt.plot(freq / (2.0 * np.pi), abs(h) / decimation_factor, 'k',
-                 [0.0, ft], [1.0 + tolerance, 1.0 + tolerance], 'r',
-                 [0.0, ft], [1.0 - tolerance, 1.0 - tolerance], 'r',
+                 [0.0, ft], [cf + tolerance, cf + tolerance], 'r',
+                 [0.0, ft], [cf - tolerance, cf - tolerance], 'r',
                  [ft, 0.5], [tolerance, tolerance], 'r',
-                 [ft, ft], [0.0, 1.0], 'r')
+                 [ft, ft], [0.0, cf], 'r')
         plt.title('Filter freq. response')
         plt.grid(True)
 
@@ -66,7 +68,7 @@ def decimate(signal_offset, signal, decimation_factor, fir_lp_filter, t):
         first_index = 0
     else:
         first_index = decimation_factor - m
-    signal_out = signal_filtered[first_index::decimation_factor] / decimation_factor
+    signal_out = signal_filtered[first_index::decimation_factor]
     t_out = t[first_index::decimation_factor]
     signal_offset_out = int((signal_offset + first_index) // decimation_factor)
 
