@@ -128,6 +128,8 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZValu
 
 	// Prepares the signal matrix.
 	for (std::size_t txElem = 0; txElem < config_.numElements; ++txElem) {
+		LOG_INFO << "ACQ txElem: " << txElem << " < " << config_.numElements;
+
 		acquisition_.execute(baseElement, txElem, acqData_);
 
 		const std::size_t samplesPerChannelLow = acqData_.n2();

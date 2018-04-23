@@ -364,7 +364,7 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 
 	// For each reflector:
 	for (std::size_t iRef = 0, iRefEnd = reflectorList_.size(); iRef < iRefEnd; ++iRef) {
-		LOG_INFO << "Reflector: " << iRef << " / " << iRefEnd - 1;
+		LOG_INFO << "ACQ Reflector: " << iRef << " < " << iRefEnd;
 
 		const XYZValue<FloatType>& reflector = reflectorList_[iRef];
 		const FloatType refX = reflector.x;
