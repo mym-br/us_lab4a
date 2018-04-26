@@ -61,13 +61,13 @@ class Simulated3DAcquisitionDevice {
 public:
 	struct ThreadData {
 		ThreadData(
-			FloatType sourceWidth,
-			FloatType sourceHeight,
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
-			FloatType subElemSize,
+			FloatType rxElemWidth,
+			FloatType rxElemHeight,
+			FloatType rxSubElemSize,
 			const Decimator<FloatType>& dec)
-				: rxImpResp{sourceWidth, sourceHeight, samplingFreq, propagationSpeed, subElemSize}
+				: rxImpResp{samplingFreq, propagationSpeed, rxElemWidth, rxElemHeight, rxSubElemSize}
 				, decimator{dec}
 		{
 		}
@@ -184,8 +184,8 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 	ArrayUtil::calculateXYArrayParameters(pm, propagationSpeed, simFs_, elemPos_, txDelays_, false);
 
 	txImpResp_ = std::make_unique<NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>>(
-				elemWidth_, elemHeight_, simFs_, propagationSpeed,
-				subElemSize_, elemPos_, txDelays_);
+				simFs_, propagationSpeed, elemWidth_, elemHeight_, subElemSize_,
+				elemPos_, txDelays_);
 
 	decimator_ = std::make_unique<Decimator<FloatType>>();
 	decimator_->prepare(simFs_ / outFs_, SIMULATED_3D_ACQUISITION_DEVICE_DECIMATOR_LP_FILTER_TRANSITION_WIDTH);
@@ -380,10 +380,10 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 		dadtFilter.filter(dadtFilterFreqCoeff_, hTx_, convDadtHTx_);
 
 		ThreadData threadData{
-			elemWidth_,
-			elemHeight_,
 			simFs_,
 			c_,
+			elemWidth_,
+			elemHeight_,
 			subElemSize_,
 			*decimator_
 		};

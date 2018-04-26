@@ -33,10 +33,10 @@ template<typename FloatType>
 class NumericRectangularFlatSourceImpulseResponse {
 public:
 	NumericRectangularFlatSourceImpulseResponse(
-					FloatType sourceWidth,
-					FloatType sourceHeight,
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
+					FloatType sourceWidth,
+					FloatType sourceHeight,
 					FloatType subElemSize);
 	~NumericRectangularFlatSourceImpulseResponse() {}
 
@@ -62,10 +62,10 @@ private:
 
 template<typename FloatType>
 NumericRectangularFlatSourceImpulseResponse<FloatType>::NumericRectangularFlatSourceImpulseResponse(
-		FloatType sourceWidth,
-		FloatType sourceHeight,
 		FloatType samplingFreq,
 		FloatType propagationSpeed,
+		FloatType sourceWidth,
+		FloatType sourceHeight,
 		FloatType subElemSize)
 			: samplingFreq_{samplingFreq}
 			, propagationSpeed_{propagationSpeed}

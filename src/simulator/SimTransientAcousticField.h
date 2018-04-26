@@ -43,13 +43,13 @@ public:
 
 	struct ThreadData {
 		ThreadData(
-			FloatType sourceWidth,
-			FloatType sourceHeight,
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
+			FloatType sourceWidth,
+			FloatType sourceHeight,
 			FloatType subElemSize,
 			const std::vector<FloatType>& dvdt)
-				: ir(sourceWidth, sourceHeight, samplingFreq, propagationSpeed, subElemSize)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, subElemSize)
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
@@ -62,16 +62,16 @@ public:
 
 	struct ArrayThreadData {
 		ArrayThreadData(
-			FloatType sourceWidth,
-			FloatType sourceHeight,
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
+			FloatType sourceWidth,
+			FloatType sourceHeight,
 			FloatType subElemSize,
 			const std::vector<XY<FloatType>>& elemPos,
 			const std::vector<FloatType>& focusDelay,
 			const std::vector<FloatType>& dvdt)
-				: ir(sourceWidth, sourceHeight, samplingFreq,
-					propagationSpeed, subElemSize, elemPos, focusDelay)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, subElemSize,
+					elemPos, focusDelay)
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
@@ -83,20 +83,20 @@ public:
 	};
 
 	void getRectangularFlatSourceAcousticField(
-			FloatType sourceWidth,
-			FloatType sourceHeight,
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
+			FloatType sourceWidth,
+			FloatType sourceHeight,
 			FloatType subElemSize,
 			const std::vector<FloatType>& dvdt,
 			FloatType y,
 			Matrix2<XZValue<FloatType>>& gridData);
 
 	void getArrayOfRectangularFlatSourcesAcousticField(
-			FloatType sourceWidth,
-			FloatType sourceHeight,
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
+			FloatType sourceWidth,
+			FloatType sourceHeight,
 			FloatType subElemSize,
 			const std::vector<FloatType>& dvdt,
 			FloatType y,
@@ -120,20 +120,20 @@ SimTransientAcousticField<FloatType>::SimTransientAcousticField()
 template<typename FloatType>
 void
 SimTransientAcousticField<FloatType>::getRectangularFlatSourceAcousticField(
-					FloatType sourceWidth,
-					FloatType sourceHeight,
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
+					FloatType sourceWidth,
+					FloatType sourceHeight,
 					FloatType subElemSize,
 					const std::vector<FloatType>& dvdt,
 					FloatType y,
 					Matrix2<XZValue<FloatType>>& gridData)
 {
 	ThreadData threadData{
-		sourceWidth,
-		sourceHeight,
 		samplingFreq,
 		propagationSpeed,
+		sourceWidth,
+		sourceHeight,
 		subElemSize,
 		dvdt
 	};
@@ -165,10 +165,10 @@ SimTransientAcousticField<FloatType>::getRectangularFlatSourceAcousticField(
 template<typename FloatType>
 void
 SimTransientAcousticField<FloatType>::getArrayOfRectangularFlatSourcesAcousticField(
-					FloatType sourceWidth,
-					FloatType sourceHeight,
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
+					FloatType sourceWidth,
+					FloatType sourceHeight,
 					FloatType subElemSize,
 					const std::vector<FloatType>& dvdt,
 					FloatType y,
@@ -177,10 +177,10 @@ SimTransientAcousticField<FloatType>::getArrayOfRectangularFlatSourcesAcousticFi
 					Matrix2<XZValue<FloatType>>& gridData)
 {
 	ArrayThreadData threadData{
-		sourceWidth,
-		sourceHeight,
 		samplingFreq,
 		propagationSpeed,
+		sourceWidth,
+		sourceHeight,
 		subElemSize,
 		elemPos,
 		focusDelay,

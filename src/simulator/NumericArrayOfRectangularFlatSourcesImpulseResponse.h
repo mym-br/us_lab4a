@@ -33,10 +33,10 @@ template<typename FloatType>
 class NumericArrayOfRectangularFlatSourcesImpulseResponse {
 public:
 	NumericArrayOfRectangularFlatSourcesImpulseResponse(
-					FloatType sourceWidth,
-					FloatType sourceHeight,
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
+					FloatType sourceWidth,
+					FloatType sourceHeight,
 					FloatType subElemSize,
 					const std::vector<XY<FloatType>>& elemPos,
 					const std::vector<FloatType>& focusDelay);
@@ -56,14 +56,14 @@ private:
 
 template<typename FloatType>
 NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::NumericArrayOfRectangularFlatSourcesImpulseResponse(
-				FloatType sourceWidth,
-				FloatType sourceHeight,
 				FloatType samplingFreq,
 				FloatType propagationSpeed,
+				FloatType sourceWidth,
+				FloatType sourceHeight,
 				FloatType subElemSize,
 				const std::vector<XY<FloatType>>& elemPos,
 				const std::vector<FloatType>& focusDelay)
-		: ir_{sourceWidth, sourceHeight, samplingFreq, propagationSpeed, subElemSize}
+		: ir_{samplingFreq, propagationSpeed, sourceWidth, sourceHeight, subElemSize}
 		, elemPos_{elemPos}
 		, focusDelay_{focusDelay}
 		, offsetList_(elemPos_.size())

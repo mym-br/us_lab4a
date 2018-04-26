@@ -156,10 +156,10 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 
 	auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType>>();
 	acBeam->getRectangularFlatSourceAcousticBeam(
-				sourceWidth,
-				sourceHeight,
 				samplingFreq,
 				propagationSpeed,
+				sourceWidth,
+				sourceHeight,
 				subElemSize,
 				dvdt,
 				inputData,
@@ -259,10 +259,10 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 
 	auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType>>();
 	acBeam->getArrayOfRectangularFlatSourcesAcousticBeam(
-				sourceWidth,
-				sourceHeight,
 				samplingFreq,
 				propagationSpeed,
+				sourceWidth,
+				sourceHeight,
 				subElemSize,
 				dvdt,
 				elemPos,
@@ -332,10 +332,10 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
 
 	auto acField = std::make_unique<SimTransientAcousticField<FloatType>>();
 	acField->getRectangularFlatSourceAcousticField(
-				sourceWidth,
-				sourceHeight,
 				samplingFreq,
 				propagationSpeed,
+				sourceWidth,
+				sourceHeight,
 				subElemSize,
 				dvdt,
 				y,
@@ -407,10 +407,10 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 
 	auto acField = std::make_unique<SimTransientAcousticField<FloatType>>();
 	acField->getArrayOfRectangularFlatSourcesAcousticField(
-				sourceWidth,
-				sourceHeight,
 				samplingFreq,
 				propagationSpeed,
+				sourceWidth,
+				sourceHeight,
 				subElemSize,
 				dvdt,
 				y,
@@ -477,10 +477,10 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 	std::size_t hOffset;
 	std::vector<FloatType> h;
 	auto impResp = std::make_unique<NumericRectangularFlatSourceImpulseResponse<FloatType>>(
-									sourceWidth,
-									sourceHeight,
 									samplingFreq,
 									propagationSpeed,
+									sourceWidth,
+									sourceHeight,
 									subElemSize);
 	impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 
@@ -548,10 +548,10 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 	Util::centralDiff(exc, dt, dvdt);
 
 	auto impResp = std::make_unique<NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>>(
-									sourceWidth,
-									sourceHeight,
 									samplingFreq,
 									propagationSpeed,
+									sourceWidth,
+									sourceHeight,
 									subElemSize,
 									elemPos,
 									focusDelay);

@@ -47,13 +47,13 @@ public:
 #ifdef SIM_TRANSIENT_ACOUSTIC_BEAM_USE_MULTITHREADING
 	struct ThreadData {
 		ThreadData(
-			FloatType sourceWidth,
-			FloatType sourceHeight,
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
+			FloatType sourceWidth,
+			FloatType sourceHeight,
 			FloatType subElemSize,
 			const std::vector<FloatType>& dvdt)
-				: ir(sourceWidth, sourceHeight, samplingFreq, propagationSpeed, subElemSize)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, subElemSize)
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
@@ -66,16 +66,16 @@ public:
 #endif
 	struct ArrayThreadData {
 		ArrayThreadData(
-			FloatType sourceWidth,
-			FloatType sourceHeight,
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
+			FloatType sourceWidth,
+			FloatType sourceHeight,
 			FloatType subElemSize,
 			const std::vector<XY<FloatType>>& elemPos,
 			const std::vector<FloatType>& focusDelay,
 			const std::vector<FloatType>& dvdt)
-				: ir(sourceWidth, sourceHeight, samplingFreq,
-					propagationSpeed, subElemSize, elemPos, focusDelay)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, subElemSize,
+					elemPos, focusDelay)
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
@@ -87,20 +87,20 @@ public:
 	};
 
 	void getRectangularFlatSourceAcousticBeam(
-			FloatType sourceWidth,
-			FloatType sourceHeight,
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
+			FloatType sourceWidth,
+			FloatType sourceHeight,
 			FloatType subElemSize,
 			const std::vector<FloatType>& dvdt,
 			const Matrix2<XYZ<FloatType>>& inputData,
 			Matrix2<XZValue<FloatType>>& gridData);
 
 	void getArrayOfRectangularFlatSourcesAcousticBeam(
-			FloatType sourceWidth,
-			FloatType sourceHeight,
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
+			FloatType sourceWidth,
+			FloatType sourceHeight,
 			FloatType subElemSize,
 			const std::vector<FloatType>& dvdt,
 			const std::vector<XY<FloatType>>& elemPos,
@@ -124,10 +124,10 @@ SimTransientAcousticBeam<FloatType>::SimTransientAcousticBeam()
 template<typename FloatType>
 void
 SimTransientAcousticBeam<FloatType>::getRectangularFlatSourceAcousticBeam(
-					FloatType sourceWidth,
-					FloatType sourceHeight,
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
+					FloatType sourceWidth,
+					FloatType sourceHeight,
 					FloatType subElemSize,
 					const std::vector<FloatType>& dvdt,
 					const Matrix2<XYZ<FloatType>>& inputData,
@@ -135,10 +135,10 @@ SimTransientAcousticBeam<FloatType>::getRectangularFlatSourceAcousticBeam(
 {
 #ifdef SIM_TRANSIENT_ACOUSTIC_BEAM_USE_MULTITHREADING
 	ThreadData threadData{
-		sourceWidth,
-		sourceHeight,
 		samplingFreq,
 		propagationSpeed,
+		sourceWidth,
+		sourceHeight,
 		subElemSize,
 		dvdt
 	};
@@ -169,10 +169,10 @@ SimTransientAcousticBeam<FloatType>::getRectangularFlatSourceAcousticBeam(
 	std::size_t hOffset;
 	std::vector<FloatType> h;
 	auto impResp = std::make_unique<NumericRectangularFlatSourceImpulseResponse<FloatType>>(
-									sourceWidth,
-									sourceHeight,
 									samplingFreq,
 									propagationSpeed,
+									sourceWidth,
+									sourceHeight,
 									subElemSize);
 
 	std::vector<std::complex<FloatType>> filterFreqCoeff;
@@ -197,10 +197,10 @@ SimTransientAcousticBeam<FloatType>::getRectangularFlatSourceAcousticBeam(
 template<typename FloatType>
 void
 SimTransientAcousticBeam<FloatType>::getArrayOfRectangularFlatSourcesAcousticBeam(
-					FloatType sourceWidth,
-					FloatType sourceHeight,
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
+					FloatType sourceWidth,
+					FloatType sourceHeight,
 					FloatType subElemSize,
 					const std::vector<FloatType>& dvdt,
 					const std::vector<XY<FloatType>>& elemPos,
@@ -209,10 +209,10 @@ SimTransientAcousticBeam<FloatType>::getArrayOfRectangularFlatSourcesAcousticBea
 					Matrix2<XZValue<FloatType>>& gridData)
 {
 	ArrayThreadData threadData{
-		sourceWidth,
-		sourceHeight,
 		samplingFreq,
 		propagationSpeed,
+		sourceWidth,
+		sourceHeight,
 		subElemSize,
 		elemPos,
 		focusDelay,
