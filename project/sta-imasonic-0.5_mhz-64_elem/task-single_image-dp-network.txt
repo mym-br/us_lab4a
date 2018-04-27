@@ -1,0 +1,14 @@
+
+method = sta_sectorial_dp_network
+
+sta_config_file = config-sta.txt
+
+output_dir = output
+
+coherence_factor_config_file = config-coherence_factor.txt
+
+grid_config_file = config-grid.txt
+
+base_element = 0
+
+peak_offset = 0.0

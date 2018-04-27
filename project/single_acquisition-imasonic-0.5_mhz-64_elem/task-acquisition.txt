@@ -1,0 +1,37 @@
+
+method = single_acquisition
+
+saved_acquisition_dir = saved_acquisition
+
+# (Hz)
+sampling_frequency = 2.5e6
+
+# (Hz)
+center_frequency = 0.5e6
+
+# (s)
+acquisition_time = 667.0e-6
+
+# (dB)
+min_gain = 20.0
+
+# (dB)
+#max_gain = 20.0
+
+# Do not change.
+num_elements_mux = 128
+
+# Do not change.
+num_elements = 32
+
+# 0 .. (num_elements_mux - 1)
+base_element = 0
+
+# 0 .. (num_elements - 1)
+tx_group_element = 15
+
+# 0 .. (num_elements - 1)
+rx_group_element = 15
+
+# 1 .. 256
+average_n = 1

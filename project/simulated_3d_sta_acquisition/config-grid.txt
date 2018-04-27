@@ -1,0 +1,41 @@
+
+image_grid_type = rectangular
+#image_grid_type = sectorial
+
+###############################################################################
+# Rectangular grid parameters.
+
+# (m)
+rectangular_min_x = -40.0e-3
+rectangular_max_x = 40.0e-3
+
+# (m)
+rectangular_min_z = 10.0e-3
+rectangular_max_z = 50.0e-3
+
+# One wavelength (at Nyquist rate) divided by this number.
+rectangular_x_step_div = 8.0
+rectangular_z_step_div = 8.0
+
+# (m)
+rectangular_origin_x = 0.0
+rectangular_origin_z = 0.0
+
+###############################################################################
+# Sectorial grid parameters.
+
+# (m)
+sectorial_min_radius = 13.0e-3
+sectorial_max_radius = 30.0e-3
+
+# (degree)
+sectorial_min_angle = -45.0
+sectorial_max_angle = 45.0
+sectorial_angle_step = 0.5
+
+# One wavelength (at Nyquist rate) divided by this number.
+sectorial_radius_step_div = 1.0
+
+# (m)
+sectorial_origin_x = 0.0
+sectorial_origin_z = 0.0

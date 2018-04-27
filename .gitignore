@@ -2,3 +2,10 @@
 *.pro.user*
 *.pyc
 fftw_wisdom*
+*.h5
+*.png
+*.xcf
+*.pdf
+
+!data/**
+!test/*.h5

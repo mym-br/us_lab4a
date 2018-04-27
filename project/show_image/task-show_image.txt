@@ -1,0 +1,13 @@
+
+method = show_image
+
+data_dir = ../sta-imasonic-0.5_mhz-64_elem/output
+
+x_file = image_x
+x_dataset = x
+
+z_file = image_z
+z_dataset = z
+
+image_file = image_value
+image_dataset = value

@@ -1,0 +1,58 @@
+#
+num_elements = 32
+
+#
+num_elements_mux = 128
+
+# 0 .. (num_elements_mux - num_elements)
+base_element = 0
+
+# 0: Raw / 1: Envelope
+signal_mode = 1
+
+# (m)
+pitch = 1.5e-3
+
+# (Hz)
+center_frequency = 0.5e6
+
+# (dB)
+gain = 10.0
+
+# (m/s)
+propagation_speed = 1500.0
+
+# (s)
+acquisition_delay = 0.0
+
+# (Hz)
+# When using Sitau, it must be 4x center_frequency,
+# or 2.5 MHz (the minimum value).
+sampling_frequency = 2.5e6
+
+# (m)
+focus_emission_distance = 150e-3
+
+# (m)
+focus_reception_distance = 150e-3
+
+# (m)
+range_start = 30e-3
+
+# (m)
+range_end = 500e-3
+
+# (degree)
+start_angle = -45.0
+
+# (degree)
+end_angle = 45.0
+
+# (degree)
+angle_step = 0.5
+
+#
+enable_focusing = true
+
+# 0.0: normalize
+value_scale = 32767.0

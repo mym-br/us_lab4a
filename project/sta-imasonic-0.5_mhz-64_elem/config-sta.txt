@@ -1,0 +1,33 @@
+
+# Do not change.
+num_elements = 32
+
+# Do not change.
+num_elements_mux = 128
+
+# (m)
+pitch = 1.5e-3
+
+# (Hz)
+center_frequency = 0.5e6
+
+# (s)
+acquisition_time = 667.0e-6
+
+# 0 - 48 (dB)
+min_gain = 10.0
+
+# 0 - 48 (dB)
+max_gain = 10.0
+
+# (m/s) [T = 22.14 °C]
+propagation_speed_1 = 1488.76
+
+# (s)
+acquisition_delay = 0.0
+
+# (Hz)
+sampling_frequency = 2.5e6
+
+# (m)
+dead_zone_m = 10.0e-3

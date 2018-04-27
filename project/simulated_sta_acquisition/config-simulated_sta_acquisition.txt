@@ -1,0 +1,20 @@
+
+# (m)
+element_width = 0.5e-3
+
+# (m)
+element_height = 12.0e-3
+
+#
+num_width_div = 4
+#num_width_div = 8
+
+#
+reflectors_file_name = reflectors
+
+# (m)
+#reflectors_x_offset = 9.3e-3
+reflectors_x_offset = 0.0
+
+#
+noise_amplitude = 27.2579e-2
