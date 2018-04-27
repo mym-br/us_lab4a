@@ -104,7 +104,7 @@ public:
 			FloatType subElemSize,
 			const std::vector<FloatType>& dvdt,
 			const std::vector<XY<FloatType>>& elemPos,
-			const std::vector<FloatType>& focusDelay,
+			const std::vector<FloatType>& focusDelay /* s */,
 			const Matrix2<XYZ<FloatType>>& inputData,
 			Matrix2<XZValue<FloatType>>& gridData);
 private:

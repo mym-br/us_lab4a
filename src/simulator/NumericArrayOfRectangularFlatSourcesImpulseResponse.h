@@ -45,6 +45,7 @@ public:
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
 				std::vector<unsigned int>* activeElemList=nullptr);
 private:
+	const FloatType samplingFreq_;
 	NumericRectangularFlatSourceImpulseResponse<FloatType> ir_;
 	const std::vector<XY<FloatType>>& elemPos_;
 	const std::vector<FloatType>& focusDelay_;
@@ -62,8 +63,9 @@ NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::NumericArrayOfRe
 				FloatType sourceHeight,
 				FloatType subElemSize,
 				const std::vector<XY<FloatType>>& elemPos,
-				const std::vector<FloatType>& focusDelay)
-		: ir_{samplingFreq, propagationSpeed, sourceWidth, sourceHeight, subElemSize}
+				const std::vector<FloatType>& focusDelay /* s */)
+		: samplingFreq_{samplingFreq}
+		, ir_{samplingFreq, propagationSpeed, sourceWidth, sourceHeight, subElemSize}
 		, elemPos_{elemPos}
 		, focusDelay_{focusDelay}
 		, offsetList_(elemPos_.size())
@@ -97,7 +99,7 @@ NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::getImpulseRespon
 
 		ir_.getImpulseResponse(x - pos.x, y - pos.y, z, offsetList_[i], hList_[i]);
 
-		offsetList_[i] += static_cast<std::size_t>(std::nearbyint(focusDelay_[i]));
+		offsetList_[i] += static_cast<std::size_t>(std::nearbyint(focusDelay_[i] * samplingFreq_));
 		const std::size_t start = offsetList_[i];
 		if (start < iMin) iMin = start;
 		const std::size_t end = offsetList_[i] + hList_[i].size();

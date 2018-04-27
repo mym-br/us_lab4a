@@ -119,9 +119,9 @@ private:
 	const FloatType invC_;
 	FloatType simFs_; // simulation sampling frequency (Hz)
 	FloatType outFs_; // output sampling frequency (Hz)
-	FloatType elemWidth_; // width of each element (m)
-	FloatType elemHeight_; // height of each element (m)
-	FloatType subElemSize_; // target size of sub-elements (m)
+	FloatType rxElemWidth_; // width of each element (m)
+	FloatType rxElemHeight_; // height of each element (m)
+	FloatType rxSubElemSize_; // target size of sub-elements (m)
 	FloatType noiseAmplitude_;
 	std::string excitationType_;
 	FloatType excNumPeriods_;
@@ -138,7 +138,8 @@ private:
 	std::vector<std::complex<FloatType>> dadtFilterFreqCoeff_;
 	std::vector<FloatType> convDadtHTx_;
 	std::vector<std::complex<FloatType>> convDadtHTxFilterFreqCoeff_;
-	std::vector<XY<FloatType>> elemPos_;
+	std::vector<XY<FloatType>> txElemPos_;
+	std::vector<XY<FloatType>> rxElemPos_;
 	std::vector<FloatType> txDelays_;
 	std::unique_ptr<NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>> txImpResp_;
 	std::unique_ptr<Decimator<FloatType>> decimator_;
@@ -156,9 +157,9 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 			, invC_{1 / c_}
 			, simFs_{}
 			, outFs_{}
-			, elemWidth_{}
-			, elemHeight_{}
-			, subElemSize_{}
+			, rxElemWidth_{}
+			, rxElemHeight_{}
+			, rxSubElemSize_{}
 			, noiseAmplitude_{}
 			, excNumPeriods_{}
 			, signalLength_{}
@@ -166,26 +167,38 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 			, reflectorsOffsetY_{}
 			, prng_{SIMULATED_3D_ACQUISITION_DEVICE_PSEUDORANDOM_NUMBER_GENERATOR_SEED}
 {
-	elemWidth_      = pm.value<FloatType>(  "element_width"         , 1.0e-6, 1000.0e-3);
-	elemHeight_     = pm.value<FloatType>(  "element_height"        , 1.0e-6, 1000.0e-3);
-	noiseAmplitude_ = pm.value<FloatType>(  "noise_amplitude"       ,    0.0,   1.0e100);
+	const FloatType txElemWidth  = pm.value<FloatType>("tx_element_width" , 1.0e-6, 1000.0e-3);
+	const FloatType txElemHeight = pm.value<FloatType>("tx_element_height", 1.0e-6, 1000.0e-3);
+	rxElemWidth_                 = pm.value<FloatType>("rx_element_width" , 1.0e-6, 1000.0e-3);
+	rxElemHeight_                = pm.value<FloatType>("rx_element_height", 1.0e-6, 1000.0e-3);
+
+	noiseAmplitude_ = pm.value<FloatType>(  "noise_amplitude"       , 0.0, 1.0e100);
 	excitationType_ = pm.value<std::string>("excitation_type");
-	excNumPeriods_  = pm.value<FloatType>(  "excitation_num_periods",    0.0,     100.0);
+	excNumPeriods_  = pm.value<FloatType>(  "excitation_num_periods", 0.0, 100.0);
 	const FloatType nyquistRate = 2.0 * maxFrequency;
-	subElemSize_ = propagationSpeed / (nyquistRate * pm.value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
+	const FloatType txSubElemSize = propagationSpeed /
+					(nyquistRate * pm.value<FloatType>("tx_sub_elem_size_factor", 0.0, 1000.0));
+	rxSubElemSize_                = propagationSpeed /
+					(nyquistRate * pm.value<FloatType>("rx_sub_elem_size_factor", 0.0, 1000.0));
 	simFs_ = outputSamplingFreq * pm.value<unsigned int>("sim_sampling_frequency_factor", 1, 10000);
 	outFs_ = outputSamplingFreq;
 
-	if (subElemSize_ == 0.0) {
-		THROW_EXCEPTION(InvalidParameterException, "The size of sub-elements is equal to zero.");
+	if (txSubElemSize == 0.0) {
+		THROW_EXCEPTION(InvalidParameterException, "The size of the transmit sub-elements is equal to zero.");
+	}
+	if (rxSubElemSize_ == 0.0) {
+		THROW_EXCEPTION(InvalidParameterException, "The size of the receive sub-elements is equal to zero.");
 	}
 
 	// Calculate the coordinates of the centers of the elements.
-	ArrayUtil::calculateXYArrayParameters(pm, propagationSpeed, simFs_, elemPos_, txDelays_, false);
+	ArrayUtil::calculateTxElementPositions(pm, txElemPos_);
+	ArrayUtil::calculateRxElementPositions(pm, rxElemPos_);
+
+	txDelays_.assign(txElemPos_.size(), 0.0);
 
 	txImpResp_ = std::make_unique<NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>>(
-				simFs_, propagationSpeed, elemWidth_, elemHeight_, subElemSize_,
-				elemPos_, txDelays_);
+				simFs_, propagationSpeed, txElemWidth, txElemHeight, txSubElemSize,
+				txElemPos_, txDelays_);
 
 	decimator_ = std::make_unique<Decimator<FloatType>>();
 	decimator_->prepare(simFs_ / outFs_, SIMULATED_3D_ACQUISITION_DEVICE_DECIMATOR_LP_FILTER_TRANSITION_WIDTH);
@@ -263,9 +276,9 @@ template<typename FloatType>
 void
 Simulated3DAcquisitionDevice<FloatType>::setActiveTxElements(const std::vector<bool>& mask)
 {
-	if (mask.size() != elemPos_.size()) {
+	if (mask.size() != txElemPos_.size()) {
 		THROW_EXCEPTION(InvalidValueException, "Wrong size of the tx mask: " << mask.size()
-				<< " (should be " << elemPos_.size() << ").");
+				<< " (should be " << txElemPos_.size() << ").");
 	}
 
 	activeTxElem_.clear();
@@ -286,9 +299,9 @@ Simulated3DAcquisitionDevice<FloatType>::setActiveRxElements(const std::vector<b
 	if (signalLength_ == 0) {
 		THROW_EXCEPTION(InvalidStateException, "The acquisition time has not been set.");
 	}
-	if (mask.size() != elemPos_.size()) {
+	if (mask.size() != rxElemPos_.size()) {
 		THROW_EXCEPTION(InvalidValueException, "Wrong size of the rx mask: " << mask.size()
-				<< " (should be " << elemPos_.size() << ").");
+				<< " (should be " << rxElemPos_.size() << ").");
 	}
 
 	activeRxElem_.clear();
@@ -327,10 +340,8 @@ Simulated3DAcquisitionDevice<FloatType>::setTxFocalPoint(FloatType xf, FloatType
 
 	// For each active transmit element:
 	for (auto iter = activeTxElem_.begin(); iter != activeTxElem_.end(); ++iter) {
-		const FloatType dx = xf - elemPos_[*iter].x;
-		const FloatType dy = yf - elemPos_[*iter].y;
-		const FloatType r = std::sqrt(dx * dx + dy * dy + zf * zf);
-		const FloatType dt = r * invC_; // transit time from the element to the focal point
+		const FloatType dt = Geometry::distance3DZ0(txElemPos_[*iter].x, txElemPos_[*iter].y,
+								xf, yf, zf) * invC_;
 		if (dt > maxDt) maxDt = dt;
 		txDelays_[*iter] = dt;
 	}
@@ -382,9 +393,9 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 		ThreadData threadData{
 			simFs_,
 			c_,
-			elemWidth_,
-			elemHeight_,
-			subElemSize_,
+			rxElemWidth_,
+			rxElemHeight_,
+			rxSubElemSize_,
 			*decimator_
 		};
 		threadData.convDadtHTxFilter.setCoefficients(convDadtHTx_, convDadtHTxFilterFreqCoeff_);
@@ -397,7 +408,7 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 			// For each active receive element:
 			for (std::size_t iActiveRx = r.begin(); iActiveRx != r.end(); ++iActiveRx) {
 				const unsigned int activeRxElem = activeRxElem_[iActiveRx];
-				const XY<FloatType>& pos = elemPos_[activeRxElem];
+				const XY<FloatType>& pos = rxElemPos_[activeRxElem];
 
 				// Calculate the impulse response in reception (only for the active element).
 				std::size_t hRxOffset;

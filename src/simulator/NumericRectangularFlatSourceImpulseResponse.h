@@ -40,7 +40,8 @@ public:
 					FloatType subElemSize);
 	~NumericRectangularFlatSourceImpulseResponse() {}
 
-	void getImpulseResponse(FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h);
+	void getImpulseResponse(FloatType x, FloatType y, FloatType z,
+				std::size_t& hOffset /* samples */, std::vector<FloatType>& h);
 private:
 	struct SubElem {
 		FloatType x;

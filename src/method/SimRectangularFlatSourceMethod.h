@@ -205,7 +205,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 
 	std::vector<XY<FloatType>> elemPos;
 	std::vector<FloatType> focusDelay;
-	ArrayUtil::calculateXYArrayParameters(*taskPM, propagationSpeed, samplingFreq, elemPos, focusDelay);
+	ArrayUtil::calculateTxElementPositions(*taskPM, elemPos);
+	ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
 
 	std::vector<FloatType> exc;
 	if (excitationType == "1") {
@@ -377,7 +378,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 
 	std::vector<XY<FloatType>> elemPos;
 	std::vector<FloatType> focusDelay;
-	ArrayUtil::calculateXYArrayParameters(*taskPM, propagationSpeed, samplingFreq, elemPos, focusDelay);
+	ArrayUtil::calculateTxElementPositions(*taskPM, elemPos);
+	ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
 
 	std::vector<FloatType> exc;
 	if (excitationType == "1") {
@@ -526,7 +528,8 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 
 	std::vector<XY<FloatType>> elemPos;
 	std::vector<FloatType> focusDelay;
-	ArrayUtil::calculateXYArrayParameters(*taskPM, propagationSpeed, samplingFreq, elemPos, focusDelay);
+	ArrayUtil::calculateTxElementPositions(*taskPM, elemPos);
+	ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
 
 	std::vector<FloatType> exc;
 	if (excitationType == "1") {

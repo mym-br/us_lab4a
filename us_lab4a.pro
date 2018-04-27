@@ -136,7 +136,8 @@ HEADERS  += \
     src/util/Decimator.h \
     src/simulator/Simulated3DAcquisitionDevice.h \
     src/simulator/Simulated3DSTAAcquisition.h \
-    src/util/XYZValue.h
+    src/util/XYZValue.h \
+    src/util/Geometry.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

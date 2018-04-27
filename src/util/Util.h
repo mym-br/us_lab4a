@@ -36,9 +36,6 @@
 
 #include "Exception.h"
 #include "Matrix2.h"
-#include "XZ.h"
-#include "XZValue.h"
-#include "XZValueFactor.h"
 
 #define PI 3.14159265358979323846
 
@@ -68,7 +65,7 @@ template<typename T> void clipAngleInDegrees180(T& angle);
 template<typename T> void clip(T& value, T minValue, T maxValue);
 template<typename T> T max(const std::vector<T>& list);
 template<typename T> T maxAbsolute(const std::vector<T>& list);
-template<typename T> T maxAbsolute(const std::vector<std::complex<T> >& list);
+template<typename T> T maxAbsolute(const std::vector<std::complex<T>>& list);
 template<typename T> T maxAbsolute(const Matrix2<T>& data);
 template<typename T, typename U> U maxValueField(const Matrix2<T>& data);
 template<typename T, typename U> U maxAbsoluteValueField(const Matrix2<T>& data);
@@ -118,18 +115,6 @@ template<typename T> T nextPowerOf2(T v);
 template<typename T> T multiplyElements(const std::vector<T>& v);
 
 template<typename InputIterator, typename OutputIterator, typename T> void copyUsingOperator(InputIterator orig, InputIterator origEnd, OutputIterator dest, T copyOp);
-
-// arc step = arcStepFactor * lambda
-template<typename FloatType>
-	void generateArc2D(FloatType centerX, FloatType centerZ,
-				FloatType radius, FloatType angle1, FloatType angle2,
-				FloatType arcStepFactor, FloatType lambda,
-				std::vector<XZ<FloatType> >& pointList);
-
-template<typename FloatType>
-	void calculateDelays2D(FloatType propagationSpeed, XZ<FloatType> focus,
-				const std::vector<XZ<FloatType> >& arrayElemPosList, unsigned int numElements,
-				std::vector<FloatType>& delays);
 
 template<typename Iterator> void resetValueFactor(Iterator iter, Iterator iterEnd);
 
@@ -375,10 +360,10 @@ maxAbsolute(const std::vector<T>& list)
 
 template<typename T>
 T
-maxAbsolute(const std::vector<std::complex<T> >& list)
+maxAbsolute(const std::vector<std::complex<T>>& list)
 {
 	T max = 0;
-	for (typename std::vector<std::complex<T> >::const_iterator iter = list.begin(); iter != list.end(); ++iter) {
+	for (typename std::vector<std::complex<T>>::const_iterator iter = list.begin(); iter != list.end(); ++iter) {
 		const T a = std::abs(*iter);
 		if (max < a) max = a;
 	}
@@ -831,49 +816,6 @@ copyUsingOperator(InputIterator orig, InputIterator origEnd, OutputIterator dest
 {
 	while (orig != origEnd) {
 		copyOp(*orig++, *dest++);
-	}
-}
-
-template<typename FloatType>
-void
-generateArc2D(FloatType centerX, FloatType centerZ,
-		FloatType radius, FloatType angle1, FloatType angle2,
-		FloatType arcStepFactor, FloatType lambda,
-		std::vector<XZ<FloatType> >& pointList)
-{
-	if (radius == 0) THROW_EXCEPTION(InvalidParameterException, "radius = 0.");
-
-	const FloatType angleStep = ((angle2 < angle1) ? -arcStepFactor : arcStepFactor) * lambda / radius;
-	std::vector<FloatType> angleList;
-	fillSequence(angleList, angle1, angle2, angleStep);
-	pointList.resize(angleList.size());
-	for (std::size_t i = 0; i < pointList.size(); ++i) {
-		const FloatType ang = angleList[i];
-		pointList[i] = XZ<FloatType>(centerX + radius * std::cos(ang), centerZ + radius * std::sin(ang));
-	}
-}
-
-template<typename FloatType>
-void
-calculateDelays2D(FloatType propagationSpeed, XZ<FloatType> focus,
-			const std::vector<XZ<FloatType> >& arrayElemPosList, unsigned int numElements,
-			std::vector<FloatType>& delays)
-{
-	if (propagationSpeed == 0) THROW_EXCEPTION(InvalidParameterException, "propagationSpeed = 0.");
-	if (arrayElemPosList.empty()) THROW_EXCEPTION(InvalidParameterException, "arrayElemPosList is empty.");
-
-	if (delays.size() != numElements) delays.resize(numElements);
-
-	for (unsigned int elem = 0; elem < numElements; ++elem) {
-		const FloatType dx = focus.x - arrayElemPosList[elem].x;
-		const FloatType dz = focus.z - arrayElemPosList[elem].z;
-		const FloatType r = std::sqrt(dx * dx + dz * dz);
-		const FloatType dt = r / propagationSpeed;
-		delays[elem] = dt;
-	}
-	const FloatType maxDelay = *std::max_element(delays.begin(), delays.end());
-	for (unsigned int elem = 0; elem < numElements; ++elem) {
-		delays[elem] = maxDelay - delays[elem];
 	}
 }
 

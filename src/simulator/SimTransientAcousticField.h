@@ -101,7 +101,7 @@ public:
 			const std::vector<FloatType>& dvdt,
 			FloatType y,
 			const std::vector<XY<FloatType>>& elemPos,
-			const std::vector<FloatType>& focusDelay,
+			const std::vector<FloatType>& focusDelay /* s */,
 			Matrix2<XZValue<FloatType>>& gridData);
 private:
 	SimTransientAcousticField(const SimTransientAcousticField&) = delete;
