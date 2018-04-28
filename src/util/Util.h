@@ -121,6 +121,8 @@ template<typename Iterator> void resetValueFactor(Iterator iter, Iterator iterEn
 template<typename T> void removeDC(T* data, std::size_t size);
 template<typename T> void removeDC(T* data, std::size_t size, std::size_t beginOffset);
 
+template<typename T> T sign(T value);
+
 //#############################################################################
 
 template<typename T>
@@ -847,6 +849,15 @@ removeDC(T* data, std::size_t size, std::size_t beginOffset)
 	}
 	const T sum = std::accumulate(data + beginOffset, data + size, T(0)); // doesn't use the entire data
 	std::for_each(data, data + size, Add<T>(-sum / (size - beginOffset))); // applies to the entire data
+}
+
+template<typename T>
+T
+sign(T value)
+{
+	if (value > 0) return 1;
+	if (value < 0) return -1;
+	return 0;
 }
 
 } // namespace Util

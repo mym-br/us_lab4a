@@ -21,6 +21,7 @@
 #include <cmath>
 #include <memory>
 
+#include "AnalyticRectangularFlatSourceImpulseResponse.h"
 #include "ArrayUtil.h"
 #include "Exception.h"
 #include "FFTWFilter2.h"
@@ -442,6 +443,7 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 
+	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
 	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
@@ -450,7 +452,6 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
 	const FloatType nyquistRate = 2.0 * maxFreq;
 	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const FloatType subElemSize      = propagationSpeed / (nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
 	const std::string excitationType = taskPM->value<std::string>("excitation_type");
 	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
 	const FloatType pointX           = taskPM->value<FloatType>("point_x", 0.0, 10000.0);
@@ -478,13 +479,26 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 
 	std::size_t hOffset;
 	std::vector<FloatType> h;
-	auto impResp = std::make_unique<NumericRectangularFlatSourceImpulseResponse<FloatType>>(
-									samplingFreq,
-									propagationSpeed,
-									sourceWidth,
-									sourceHeight,
-									subElemSize);
-	impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+	if (irMethod == "numeric") {
+		const FloatType subElemSize = propagationSpeed /
+				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
+		auto impResp = std::make_unique<NumericRectangularFlatSourceImpulseResponse<FloatType>>(
+										samplingFreq,
+										propagationSpeed,
+										sourceWidth,
+										sourceHeight,
+										subElemSize);
+		impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+	} else {
+		const unsigned int minADivisor = taskPM->value<unsigned int>("min_a_divisor", 0, 1000000);
+		auto impResp = std::make_unique<AnalyticRectangularFlatSourceImpulseResponse<FloatType>>(
+										samplingFreq,
+										propagationSpeed,
+										sourceWidth * 0.5,
+										sourceHeight * 0.5,
+										minADivisor);
+		impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+	}
 
 	std::vector<FloatType> tH;
 	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset / samplingFreq, dt, h.size());

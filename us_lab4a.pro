@@ -137,7 +137,8 @@ HEADERS  += \
     src/simulator/Simulated3DAcquisitionDevice.h \
     src/simulator/Simulated3DSTAAcquisition.h \
     src/util/XYZValue.h \
-    src/util/Geometry.h
+    src/util/Geometry.h \
+    src/simulator/AnalyticRectangularFlatSourceImpulseResponse.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
