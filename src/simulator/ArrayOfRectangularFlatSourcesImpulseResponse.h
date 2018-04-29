@@ -14,14 +14,13 @@
  *  You should have received a copy of the GNU General Public License      *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef NUMERICARRAYOFRECTANGULARFLATSOURCESIMPULSERESPONSE_H
-#define NUMERICARRAYOFRECTANGULARFLATSOURCESIMPULSERESPONSE_H
+#ifndef ARRAYOFRECTANGULARFLATSOURCESIMPULSERESPONSE_H
+#define ARRAYOFRECTANGULARFLATSOURCESIMPULSERESPONSE_H
 
 #include <limits>
 #include <vector>
 
 #include "Exception.h"
-#include "NumericRectangularFlatSourceImpulseResponse.h"
 #include "Util.h"
 #include "XY.h"
 
@@ -29,24 +28,24 @@
 
 namespace Lab {
 
-template<typename FloatType>
-class NumericArrayOfRectangularFlatSourcesImpulseResponse {
+template<typename FloatType, typename ImpulseResponse>
+class ArrayOfRectangularFlatSourcesImpulseResponse {
 public:
-	NumericArrayOfRectangularFlatSourcesImpulseResponse(
+	ArrayOfRectangularFlatSourcesImpulseResponse(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,
 					FloatType sourceHeight,
-					FloatType subElemSize,
+					FloatType discretization,
 					const std::vector<XY<FloatType>>& elemPos,
 					const std::vector<FloatType>& focusDelay);
-	~NumericArrayOfRectangularFlatSourcesImpulseResponse() {}
+	~ArrayOfRectangularFlatSourcesImpulseResponse() {}
 
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
 				std::vector<unsigned int>* activeElemList=nullptr);
 private:
 	const FloatType samplingFreq_;
-	NumericRectangularFlatSourceImpulseResponse<FloatType> ir_;
+	ImpulseResponse ir_;
 	const std::vector<XY<FloatType>>& elemPos_;
 	const std::vector<FloatType>& focusDelay_;
 	std::vector<std::size_t> offsetList_;
@@ -55,17 +54,17 @@ private:
 
 
 
-template<typename FloatType>
-NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::NumericArrayOfRectangularFlatSourcesImpulseResponse(
+template<typename FloatType, typename ImpulseResponse>
+ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::ArrayOfRectangularFlatSourcesImpulseResponse(
 				FloatType samplingFreq,
 				FloatType propagationSpeed,
 				FloatType sourceWidth,
 				FloatType sourceHeight,
-				FloatType subElemSize,
+				FloatType discretization,
 				const std::vector<XY<FloatType>>& elemPos,
 				const std::vector<FloatType>& focusDelay /* s */)
 		: samplingFreq_{samplingFreq}
-		, ir_{samplingFreq, propagationSpeed, sourceWidth, sourceHeight, subElemSize}
+		, ir_{samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization}
 		, elemPos_{elemPos}
 		, focusDelay_{focusDelay}
 		, offsetList_(elemPos_.size())
@@ -73,9 +72,9 @@ NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::NumericArrayOfRe
 {
 }
 
-template<typename FloatType>
+template<typename FloatType, typename ImpulseResponse>
 void
-NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::getImpulseResponse(
+ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::getImpulseResponse(
 		FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
 		std::vector<unsigned int>* activeElemList)
 {
@@ -126,4 +125,4 @@ NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>::getImpulseRespon
 
 } // namespace Lab
 
-#endif // NUMERICARRAYOFRECTANGULARFLATSOURCESIMPULSERESPONSE_H
+#endif // ARRAYOFRECTANGULARFLATSOURCESIMPULSERESPONSE_H

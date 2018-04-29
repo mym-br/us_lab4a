@@ -132,13 +132,13 @@ HEADERS  += \
     src/util/XYZ.h \
     src/simulator/SimTransientAcousticField.h \
     src/util/ArrayUtil.h \
-    src/simulator/NumericArrayOfRectangularFlatSourcesImpulseResponse.h \
     src/util/Decimator.h \
     src/simulator/Simulated3DAcquisitionDevice.h \
     src/simulator/Simulated3DSTAAcquisition.h \
     src/util/XYZValue.h \
     src/util/Geometry.h \
-    src/simulator/AnalyticRectangularFlatSourceImpulseResponse.h
+    src/simulator/AnalyticRectangularFlatSourceImpulseResponse.h \
+    src/simulator/ArrayOfRectangularFlatSourcesImpulseResponse.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

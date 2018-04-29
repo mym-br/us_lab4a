@@ -22,6 +22,7 @@
 #include <memory>
 
 #include "AnalyticRectangularFlatSourceImpulseResponse.h"
+#include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "ArrayUtil.h"
 #include "Exception.h"
 #include "FFTWFilter2.h"
@@ -29,7 +30,6 @@
 #include "Log.h"
 #include "Matrix2.h"
 #include "Method.h"
-#include "NumericArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "NumericRectangularFlatSourceImpulseResponse.h"
 #include "ParameterMap.h"
 #include "Project.h"
@@ -89,6 +89,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 
+	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType beamDistance     = taskPM->value<FloatType>("beam_distance", 0.0, 100.0);
 	const FloatType beamThetaYStep   = taskPM->value<FloatType>("beam_theta_y_step", 0.0, 10.0);
 	const FloatType beamThetaYMax    = taskPM->value<FloatType>("beam_theta_y_max" , 0.0, 90.0);
@@ -101,7 +102,6 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
 	const FloatType nyquistRate = 2.0 * maxFreq;
 	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const FloatType subElemSize      = propagationSpeed / (nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
 	const std::string excitationType = taskPM->value<std::string>("excitation_type");
 	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
 
@@ -155,16 +155,24 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 		}
 	}
 
-	auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType>>();
-	acBeam->getRectangularFlatSourceAcousticBeam(
-				samplingFreq,
-				propagationSpeed,
-				sourceWidth,
-				sourceHeight,
-				subElemSize,
-				dvdt,
-				inputData,
-				gridData);
+	if (irMethod == "numeric") {
+		const FloatType subElemSize = propagationSpeed /
+				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
+		auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
+		acBeam->getRectangularFlatSourceAcousticBeam(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					subElemSize,
+					dvdt, inputData, gridData);
+	} else if (irMethod == "analytic") {
+		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+		auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
+		acBeam->getRectangularFlatSourceAcousticBeam(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					minEdgeDivisor,
+					dvdt, inputData, gridData);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
+	}
 
 	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
 	const FloatType k = 1.0 / maxAbsValue;
@@ -188,6 +196,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 
+	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType beamDistance     = taskPM->value<FloatType>("beam_distance", 0.0, 100.0);
 	const FloatType beamThetaYStep   = taskPM->value<FloatType>("beam_theta_y_step", 0.0, 10.0);
 	const FloatType beamThetaYMax    = taskPM->value<FloatType>("beam_theta_y_max" , 0.0, 90.0);
@@ -200,7 +209,6 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
 	const FloatType nyquistRate = 2.0 * maxFreq;
 	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const FloatType subElemSize      = propagationSpeed / (nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
 	const std::string excitationType = taskPM->value<std::string>("excitation_type");
 	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
 
@@ -259,18 +267,24 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 		}
 	}
 
-	auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType>>();
-	acBeam->getArrayOfRectangularFlatSourcesAcousticBeam(
-				samplingFreq,
-				propagationSpeed,
-				sourceWidth,
-				sourceHeight,
-				subElemSize,
-				dvdt,
-				elemPos,
-				focusDelay,
-				inputData,
-				gridData);
+	if (irMethod == "numeric") {
+		const FloatType subElemSize = propagationSpeed /
+				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
+		auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
+		acBeam->getArrayOfRectangularFlatSourcesAcousticBeam(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					subElemSize,
+					dvdt, elemPos, focusDelay, inputData, gridData);
+	} else if (irMethod == "analytic") {
+		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+		auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
+		acBeam->getArrayOfRectangularFlatSourcesAcousticBeam(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					minEdgeDivisor,
+					dvdt, elemPos, focusDelay, inputData, gridData);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
+	}
 
 	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
 	const FloatType k = 1.0 / maxAbsValue;
@@ -294,6 +308,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 
+	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
 	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
@@ -301,7 +316,6 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
 	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
 	const FloatType nyquistRate = 2.0 * maxFreq;
 	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const FloatType subElemSize      = propagationSpeed / (nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
 	const std::string excitationType = taskPM->value<std::string>("excitation_type");
 	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
 	const FloatType y                = taskPM->value<FloatType>("y", -1000.0, 1000.0);
@@ -332,16 +346,24 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
 	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
-	auto acField = std::make_unique<SimTransientAcousticField<FloatType>>();
-	acField->getRectangularFlatSourceAcousticField(
-				samplingFreq,
-				propagationSpeed,
-				sourceWidth,
-				sourceHeight,
-				subElemSize,
-				dvdt,
-				y,
-				gridData);
+	if (irMethod == "numeric") {
+		const FloatType subElemSize = propagationSpeed /
+				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
+		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
+		acField->getRectangularFlatSourceAcousticField(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					subElemSize,
+					dvdt, y, gridData);
+	} else if (irMethod == "analytic") {
+		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
+		acField->getRectangularFlatSourceAcousticField(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					minEdgeDivisor,
+					dvdt, y, gridData);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
+	}
 
 	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
 	const FloatType k = 1.0 / maxAbsValue;
@@ -365,6 +387,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 
+	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
 	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
@@ -372,7 +395,6 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
 	const FloatType nyquistRate = 2.0 * maxFreq;
 	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const FloatType subElemSize      = propagationSpeed / (nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
 	const std::string excitationType = taskPM->value<std::string>("excitation_type");
 	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
 	const FloatType y                = taskPM->value<FloatType>("y", -1000.0, 1000.0);
@@ -408,18 +430,24 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
-	auto acField = std::make_unique<SimTransientAcousticField<FloatType>>();
-	acField->getArrayOfRectangularFlatSourcesAcousticField(
-				samplingFreq,
-				propagationSpeed,
-				sourceWidth,
-				sourceHeight,
-				subElemSize,
-				dvdt,
-				y,
-				elemPos,
-				focusDelay,
-				gridData);
+	if (irMethod == "numeric") {
+		const FloatType subElemSize = propagationSpeed /
+				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
+		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
+		acField->getArrayOfRectangularFlatSourcesAcousticField(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					subElemSize,
+					dvdt, y, elemPos, focusDelay, gridData);
+	} else if (irMethod == "analytic") {
+		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
+		acField->getArrayOfRectangularFlatSourcesAcousticField(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					minEdgeDivisor,
+					dvdt, y, elemPos, focusDelay, gridData);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
+	}
 
 	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
 	const FloatType k = 1.0 / maxAbsValue;
@@ -481,23 +509,19 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 	std::vector<FloatType> h;
 	if (irMethod == "numeric") {
 		const FloatType subElemSize = propagationSpeed /
-				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
+				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
 		auto impResp = std::make_unique<NumericRectangularFlatSourceImpulseResponse<FloatType>>(
-										samplingFreq,
-										propagationSpeed,
-										sourceWidth,
-										sourceHeight,
-										subElemSize);
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					subElemSize);
+		impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+	} else if (irMethod == "analytic") {
+		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+		auto impResp = std::make_unique<AnalyticRectangularFlatSourceImpulseResponse<FloatType>>(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					minEdgeDivisor);
 		impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 	} else {
-		const unsigned int minADivisor = taskPM->value<unsigned int>("min_a_divisor", 0, 1000000);
-		auto impResp = std::make_unique<AnalyticRectangularFlatSourceImpulseResponse<FloatType>>(
-										samplingFreq,
-										propagationSpeed,
-										sourceWidth * 0.5,
-										sourceHeight * 0.5,
-										minADivisor);
-		impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
 	}
 
 	std::vector<FloatType> tH;
@@ -525,6 +549,7 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 
+	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
 	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
@@ -533,7 +558,6 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
 	const FloatType nyquistRate = 2.0 * maxFreq;
 	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const FloatType subElemSize      = propagationSpeed / (nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1000.0));
 	const std::string excitationType = taskPM->value<std::string>("excitation_type");
 	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
 	const FloatType pointX           = taskPM->value<FloatType>("point_x", 0.0, 10000.0);
@@ -564,17 +588,26 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 	std::vector<FloatType> dvdt;
 	Util::centralDiff(exc, dt, dvdt);
 
-	auto impResp = std::make_unique<NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>>(
-									samplingFreq,
-									propagationSpeed,
-									sourceWidth,
-									sourceHeight,
-									subElemSize,
-									elemPos,
-									focusDelay);
 	std::size_t hOffset;
 	std::vector<FloatType> h;
-	impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+	if (irMethod == "numeric") {
+		const FloatType subElemSize = propagationSpeed /
+				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
+		auto impResp = std::make_unique<ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					subElemSize,
+					elemPos, focusDelay);
+		impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+	} else if (irMethod == "analytic") {
+		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+		auto impResp = std::make_unique<ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>(
+					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+					minEdgeDivisor,
+					elemPos, focusDelay);
+		impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
+	}
 
 	std::vector<FloatType> tH;
 	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset / samplingFreq, dt, h.size());

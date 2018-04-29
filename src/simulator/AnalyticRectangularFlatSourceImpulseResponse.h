@@ -47,9 +47,9 @@ public:
 	AnalyticRectangularFlatSourceImpulseResponse(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
-					FloatType a, // 2a is the width of the source (m)
-					FloatType b, // 2b is the height of the source (m)
-					unsigned int minADivisor);
+					FloatType sourceWidth,
+					FloatType sourceHeight,
+					FloatType minEdgeDivisor);
 	~AnalyticRectangularFlatSourceImpulseResponse() {}
 
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z,
@@ -59,7 +59,7 @@ private:
 	FloatType propagationSpeed_;
 	FloatType a_;
 	FloatType b_;
-	unsigned int minADivisor_;
+	FloatType minADivisor_;
 	bool swapXY_;
 };
 
@@ -69,14 +69,14 @@ template<typename FloatType>
 AnalyticRectangularFlatSourceImpulseResponse<FloatType>::AnalyticRectangularFlatSourceImpulseResponse(
 		FloatType samplingFreq,
 		FloatType propagationSpeed,
-		FloatType a,
-		FloatType b,
-		unsigned int minADivisor)
+		FloatType sourceWidth,
+		FloatType sourceHeight,
+		FloatType minEdgeDivisor)
 			: samplingFreq_{samplingFreq}
 			, propagationSpeed_{propagationSpeed}
-			, a_{a}
-			, b_{b}
-			, minADivisor_{minADivisor}
+			, a_{sourceWidth / 2}
+			, b_{sourceHeight / 2}
+			, minADivisor_{minEdgeDivisor / 2}
 			, swapXY_{}
 {
 	if (a_ > b_) {
@@ -366,7 +366,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 	}
 	}
 
-	Util::multiply(h, propagationSpeed_ / (2.0 * PI));
+	Util::multiply(h, propagationSpeed_ / static_cast<FloatType>(2.0 * PI));
 	hOffset = minAbsoluteIndex;
 }
 

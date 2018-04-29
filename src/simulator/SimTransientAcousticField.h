@@ -23,11 +23,10 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
+#include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "FFTWFilter2.h"
 #include "Log.h"
 #include "Matrix2.h"
-#include "NumericArrayOfRectangularFlatSourcesImpulseResponse.h"
-#include "NumericRectangularFlatSourceImpulseResponse.h"
 #include "Util.h"
 #include "XZValue.h"
 
@@ -35,7 +34,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename FloatType, typename ImpulseResponse>
 class SimTransientAcousticField {
 public:
 	SimTransientAcousticField();
@@ -47,13 +46,13 @@ public:
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
 			FloatType sourceHeight,
-			FloatType subElemSize,
+			FloatType discretization,
 			const std::vector<FloatType>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, subElemSize)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization)
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
-		NumericRectangularFlatSourceImpulseResponse<FloatType> ir;
+		ImpulseResponse ir;
 		std::vector<std::complex<FloatType>> filterFreqCoeff;
 		std::vector<FloatType> h;
 		std::vector<FloatType> signal;
@@ -66,16 +65,16 @@ public:
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
 			FloatType sourceHeight,
-			FloatType subElemSize,
+			FloatType discretization,
 			const std::vector<XY<FloatType>>& elemPos,
 			const std::vector<FloatType>& focusDelay,
 			const std::vector<FloatType>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, subElemSize,
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
 					elemPos, focusDelay)
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
-		NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType> ir;
+		ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse> ir;
 		std::vector<std::complex<FloatType>> filterFreqCoeff;
 		std::vector<FloatType> h;
 		std::vector<FloatType> signal;
@@ -87,7 +86,7 @@ public:
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
 			FloatType sourceHeight,
-			FloatType subElemSize,
+			FloatType discretization,
 			const std::vector<FloatType>& dvdt,
 			FloatType y,
 			Matrix2<XZValue<FloatType>>& gridData);
@@ -97,7 +96,7 @@ public:
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
 			FloatType sourceHeight,
-			FloatType subElemSize,
+			FloatType discretization,
 			const std::vector<FloatType>& dvdt,
 			FloatType y,
 			const std::vector<XY<FloatType>>& elemPos,
@@ -112,19 +111,19 @@ private:
 
 
 
-template<typename FloatType>
-SimTransientAcousticField<FloatType>::SimTransientAcousticField()
+template<typename FloatType, typename ImpulseResponse>
+SimTransientAcousticField<FloatType, ImpulseResponse>::SimTransientAcousticField()
 {
 }
 
-template<typename FloatType>
+template<typename FloatType, typename ImpulseResponse>
 void
-SimTransientAcousticField<FloatType>::getRectangularFlatSourceAcousticField(
+SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularFlatSourceAcousticField(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,
 					FloatType sourceHeight,
-					FloatType subElemSize,
+					FloatType discretization,
 					const std::vector<FloatType>& dvdt,
 					FloatType y,
 					Matrix2<XZValue<FloatType>>& gridData)
@@ -134,7 +133,7 @@ SimTransientAcousticField<FloatType>::getRectangularFlatSourceAcousticField(
 		propagationSpeed,
 		sourceWidth,
 		sourceHeight,
-		subElemSize,
+		discretization,
 		dvdt
 	};
 	tbb::enumerable_thread_specific<ThreadData> tls{threadData};
@@ -162,14 +161,14 @@ SimTransientAcousticField<FloatType>::getRectangularFlatSourceAcousticField(
 	}
 }
 
-template<typename FloatType>
+template<typename FloatType, typename ImpulseResponse>
 void
-SimTransientAcousticField<FloatType>::getArrayOfRectangularFlatSourcesAcousticField(
+SimTransientAcousticField<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSourcesAcousticField(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,
 					FloatType sourceHeight,
-					FloatType subElemSize,
+					FloatType discretization,
 					const std::vector<FloatType>& dvdt,
 					FloatType y,
 					const std::vector<XY<FloatType>>& elemPos,
@@ -181,7 +180,7 @@ SimTransientAcousticField<FloatType>::getArrayOfRectangularFlatSourcesAcousticFi
 		propagationSpeed,
 		sourceWidth,
 		sourceHeight,
-		subElemSize,
+		discretization,
 		elemPos,
 		focusDelay,
 		dvdt

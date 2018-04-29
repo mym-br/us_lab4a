@@ -26,13 +26,14 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
+#include "AnalyticRectangularFlatSourceImpulseResponse.h"
+#include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "ArrayUtil.h"
 #include "Decimator.h"
 #include "Exception.h"
 #include "FFTWFilter2.h"
 #include "Log.h"
 #include "MinstdPseudorandomNumberGenerator.h"
-#include "NumericArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "NumericRectangularFlatSourceImpulseResponse.h"
 #include "ParameterMap.h"
 #include "Util.h"
@@ -59,19 +60,20 @@ class Project;
 template<typename FloatType>
 class Simulated3DAcquisitionDevice {
 public:
+	template<typename ImpulseResponse>
 	struct ThreadData {
 		ThreadData(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType rxElemWidth,
 			FloatType rxElemHeight,
-			FloatType rxSubElemSize,
+			FloatType rxDiscretization,
 			const Decimator<FloatType>& dec)
-				: rxImpResp{samplingFreq, propagationSpeed, rxElemWidth, rxElemHeight, rxSubElemSize}
+				: rxImpResp{samplingFreq, propagationSpeed, rxElemWidth, rxElemHeight, rxDiscretization}
 				, decimator{dec}
 		{
 		}
-		NumericRectangularFlatSourceImpulseResponse<FloatType> rxImpResp;
+		ImpulseResponse rxImpResp;
 		std::vector<FloatType> hRx;
 		std::vector<FloatType> p;
 		std::vector<FloatType> pDown;
@@ -114,14 +116,20 @@ private:
 	Simulated3DAcquisitionDevice& operator=(const Simulated3DAcquisitionDevice&) = delete;
 
 	void prepareExcitationDadt(const std::vector<FloatType>& vExc);
+	template<typename ImpulseResponse> void processReflector(const XYZValue<FloatType>& reflector,
+									FFTWFilter2<FloatType>& dadtFilter);
 
 	const FloatType c_; // propagation speed (m/s)
 	const FloatType invC_;
 	FloatType simFs_; // simulation sampling frequency (Hz)
 	FloatType outFs_; // output sampling frequency (Hz)
+	FloatType txElemWidth_; // width of each element (m)
+	FloatType txElemHeight_; // height of each element (m)
 	FloatType rxElemWidth_; // width of each element (m)
 	FloatType rxElemHeight_; // height of each element (m)
-	FloatType rxSubElemSize_; // target size of sub-elements (m)
+	bool useNumericMethod_;
+	FloatType txDiscretization_;
+	FloatType rxDiscretization_;
 	FloatType noiseAmplitude_;
 	std::string excitationType_;
 	FloatType excNumPeriods_;
@@ -141,7 +149,6 @@ private:
 	std::vector<XY<FloatType>> txElemPos_;
 	std::vector<XY<FloatType>> rxElemPos_;
 	std::vector<FloatType> txDelays_;
-	std::unique_ptr<NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>> txImpResp_;
 	std::unique_ptr<Decimator<FloatType>> decimator_;
 };
 
@@ -157,9 +164,13 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 			, invC_{1 / c_}
 			, simFs_{}
 			, outFs_{}
+			, txElemWidth_{}
+			, txElemHeight_{}
 			, rxElemWidth_{}
 			, rxElemHeight_{}
-			, rxSubElemSize_{}
+			, useNumericMethod_{}
+			, txDiscretization_{}
+			, rxDiscretization_{}
 			, noiseAmplitude_{}
 			, excNumPeriods_{}
 			, signalLength_{}
@@ -167,38 +178,48 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 			, reflectorsOffsetY_{}
 			, prng_{SIMULATED_3D_ACQUISITION_DEVICE_PSEUDORANDOM_NUMBER_GENERATOR_SEED}
 {
-	const FloatType txElemWidth  = pm.value<FloatType>("tx_element_width" , 1.0e-6, 1000.0e-3);
-	const FloatType txElemHeight = pm.value<FloatType>("tx_element_height", 1.0e-6, 1000.0e-3);
-	rxElemWidth_                 = pm.value<FloatType>("rx_element_width" , 1.0e-6, 1000.0e-3);
-	rxElemHeight_                = pm.value<FloatType>("rx_element_height", 1.0e-6, 1000.0e-3);
+	txElemWidth_  = pm.value<FloatType>("tx_element_width" , 1.0e-6, 1000.0e-3);
+	txElemHeight_ = pm.value<FloatType>("tx_element_height", 1.0e-6, 1000.0e-3);
+	rxElemWidth_  = pm.value<FloatType>("rx_element_width" , 1.0e-6, 1000.0e-3);
+	rxElemHeight_ = pm.value<FloatType>("rx_element_height", 1.0e-6, 1000.0e-3);
 
 	noiseAmplitude_ = pm.value<FloatType>(  "noise_amplitude"       , 0.0, 1.0e100);
 	excitationType_ = pm.value<std::string>("excitation_type");
 	excNumPeriods_  = pm.value<FloatType>(  "excitation_num_periods", 0.0, 100.0);
+
+	const std::string irMethod = pm.value<std::string>("impulse_response_method");
 	const FloatType nyquistRate = 2.0 * maxFrequency;
-	const FloatType txSubElemSize = propagationSpeed /
-					(nyquistRate * pm.value<FloatType>("tx_sub_elem_size_factor", 0.0, 1000.0));
-	rxSubElemSize_                = propagationSpeed /
-					(nyquistRate * pm.value<FloatType>("rx_sub_elem_size_factor", 0.0, 1000.0));
+	if (irMethod == "numeric") {
+		useNumericMethod_ = true;
+		const FloatType txSubElemSize = propagationSpeed /
+						(nyquistRate * pm.value<FloatType>("tx_sub_elem_size_factor", 0.0, 1.0e3));
+		const FloatType rxSubElemSize = propagationSpeed /
+						(nyquistRate * pm.value<FloatType>("rx_sub_elem_size_factor", 0.0, 1.0e3));
+		if (txSubElemSize == 0.0) {
+			THROW_EXCEPTION(InvalidParameterException, "The size of the transmit sub-elements is equal to zero.");
+		}
+		if (rxSubElemSize == 0.0) {
+			THROW_EXCEPTION(InvalidParameterException, "The size of the receive sub-elements is equal to zero.");
+		}
+		txDiscretization_ = txSubElemSize;
+		rxDiscretization_ = rxSubElemSize;
+	} else if (irMethod == "analytic") {
+		const FloatType txMinEdgeDivisor = pm.value<FloatType>("tx_min_edge_divisor", 0.0, 1.0e6);
+		const FloatType rxMinEdgeDivisor = pm.value<FloatType>("rx_min_edge_divisor", 0.0, 1.0e6);
+		txDiscretization_ = txMinEdgeDivisor;
+		rxDiscretization_ = rxMinEdgeDivisor;
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
+	}
+
 	simFs_ = outputSamplingFreq * pm.value<unsigned int>("sim_sampling_frequency_factor", 1, 10000);
 	outFs_ = outputSamplingFreq;
-
-	if (txSubElemSize == 0.0) {
-		THROW_EXCEPTION(InvalidParameterException, "The size of the transmit sub-elements is equal to zero.");
-	}
-	if (rxSubElemSize_ == 0.0) {
-		THROW_EXCEPTION(InvalidParameterException, "The size of the receive sub-elements is equal to zero.");
-	}
 
 	// Calculate the coordinates of the centers of the elements.
 	ArrayUtil::calculateTxElementPositions(pm, txElemPos_);
 	ArrayUtil::calculateRxElementPositions(pm, rxElemPos_);
 
 	txDelays_.assign(txElemPos_.size(), 0.0);
-
-	txImpResp_ = std::make_unique<NumericArrayOfRectangularFlatSourcesImpulseResponse<FloatType>>(
-				simFs_, propagationSpeed, txElemWidth, txElemHeight, txSubElemSize,
-				txElemPos_, txDelays_);
 
 	decimator_ = std::make_unique<Decimator<FloatType>>();
 	decimator_->prepare(simFs_ / outFs_, SIMULATED_3D_ACQUISITION_DEVICE_DECIMATOR_LP_FILTER_TRANSITION_WIDTH);
@@ -353,6 +374,70 @@ Simulated3DAcquisitionDevice<FloatType>::setTxFocalPoint(FloatType xf, FloatType
 }
 
 template<typename FloatType>
+template<typename ImpulseResponse>
+void
+Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatType>& reflector, FFTWFilter2<FloatType>& dadtFilter)
+{
+	const FloatType refX = reflector.x;
+	const FloatType refY = reflector.y;
+	const FloatType refZ = reflector.z;
+	const FloatType refCoeff = reflector.value;
+
+	auto txImpResp = std::make_unique<ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>>(
+				simFs_, c_, txElemWidth_, txElemHeight_, txDiscretization_, txElemPos_, txDelays_);
+
+	// Calculate the impulse response in transmission (all active elements).
+	std::size_t hTxOffset;
+	txImpResp->getImpulseResponse(refX, refY, refZ, hTxOffset, hTx_, &activeTxElem_);//TODO: multi-threading
+
+	// dadt * hTx
+	dadtFilter.filter(dadtFilterFreqCoeff_, hTx_, convDadtHTx_);
+
+	ThreadData<ImpulseResponse> threadData{
+		simFs_,
+		c_,
+		rxElemWidth_,
+		rxElemHeight_,
+		rxDiscretization_,
+		*decimator_
+	};
+	threadData.convDadtHTxFilter.setCoefficients(convDadtHTx_, convDadtHTxFilterFreqCoeff_);
+	tbb::enumerable_thread_specific<ThreadData<ImpulseResponse>> tls{threadData};
+
+	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, activeRxElem_.size()),
+	[&, refX, refY, refZ, hTxOffset](const tbb::blocked_range<std::size_t>& r) {
+		auto& local = tls.local();
+
+		// For each active receive element:
+		for (std::size_t iActiveRx = r.begin(); iActiveRx != r.end(); ++iActiveRx) {
+			const unsigned int activeRxElem = activeRxElem_[iActiveRx];
+			const XY<FloatType>& pos = rxElemPos_[activeRxElem];
+
+			// Calculate the impulse response in reception (only for the active element).
+			std::size_t hRxOffset;
+			local.rxImpResp.getImpulseResponse(refX - pos.x, refY - pos.y, refZ, hRxOffset, local.hRx);
+
+			local.convDadtHTxFilter.filter(convDadtHTxFilterFreqCoeff_, local.hRx, local.p);
+
+			const std::size_t pOffset = hTxOffset + hRxOffset;
+			// Offset due to the low-pass filter applied to the excitation waveform.
+			const std::size_t lpOffset = (decimator_->lowPassFIRFilter().size() - 1) / 2;
+
+			// Downsample to the output sampling frequency.
+			std::size_t pDownOffset;
+			decimator_->downsample(lpOffset, pOffset, local.p, pDownOffset, local.pDown);
+
+			const std::size_t signalListOffset = iActiveRx * signalLength_;
+			for (std::size_t i = 0, iEnd = local.pDown.size(), j = pDownOffset;
+					(i < iEnd) && (j < signalLength_);
+					++i, ++j) {
+				signalList_[signalListOffset + j] += local.pDown[i] * refCoeff;
+			}
+		}
+	});
+}
+
+template<typename FloatType>
 const std::vector<FloatType>&
 Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 {
@@ -377,61 +462,11 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 	for (std::size_t iRef = 0, iRefEnd = reflectorList_.size(); iRef < iRefEnd; ++iRef) {
 		LOG_INFO << "ACQ Reflector: " << iRef << " < " << iRefEnd;
 
-		const XYZValue<FloatType>& reflector = reflectorList_[iRef];
-		const FloatType refX = reflector.x;
-		const FloatType refY = reflector.y;
-		const FloatType refZ = reflector.z;
-		const FloatType refCoeff = reflector.value;
-
-		// Calculate the impulse response in transmission (all active elements).
-		std::size_t hTxOffset;
-		txImpResp_->getImpulseResponse(refX, refY, refZ, hTxOffset, hTx_, &activeTxElem_);//TODO: multi-threading
-
-		// dadt * hTx
-		dadtFilter.filter(dadtFilterFreqCoeff_, hTx_, convDadtHTx_);
-
-		ThreadData threadData{
-			simFs_,
-			c_,
-			rxElemWidth_,
-			rxElemHeight_,
-			rxSubElemSize_,
-			*decimator_
-		};
-		threadData.convDadtHTxFilter.setCoefficients(convDadtHTx_, convDadtHTxFilterFreqCoeff_);
-		tbb::enumerable_thread_specific<ThreadData> tls{threadData};
-
-		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, activeRxElem_.size()),
-		[&, refX, refY, refZ, hTxOffset](const tbb::blocked_range<std::size_t>& r) {
-			auto& local = tls.local();
-
-			// For each active receive element:
-			for (std::size_t iActiveRx = r.begin(); iActiveRx != r.end(); ++iActiveRx) {
-				const unsigned int activeRxElem = activeRxElem_[iActiveRx];
-				const XY<FloatType>& pos = rxElemPos_[activeRxElem];
-
-				// Calculate the impulse response in reception (only for the active element).
-				std::size_t hRxOffset;
-				local.rxImpResp.getImpulseResponse(refX - pos.x, refY - pos.y, refZ, hRxOffset, local.hRx);
-
-				local.convDadtHTxFilter.filter(convDadtHTxFilterFreqCoeff_, local.hRx, local.p);
-
-				const std::size_t pOffset = hTxOffset + hRxOffset;
-				// Offset due to the low-pass filter applied to the excitation waveform.
-				const std::size_t lpOffset = (decimator_->lowPassFIRFilter().size() - 1) / 2;
-
-				// Downsample to the output sampling frequency.
-				std::size_t pDownOffset;
-				decimator_->downsample(lpOffset, pOffset, local.p, pDownOffset, local.pDown);
-
-				const std::size_t signalListOffset = iActiveRx * signalLength_;
-				for (std::size_t i = 0, iEnd = local.pDown.size(), j = pDownOffset;
-						(i < iEnd) && (j < signalLength_);
-						++i, ++j) {
-					signalList_[signalListOffset + j] += local.pDown[i] * refCoeff;
-				}
-			}
-		});
+		if (useNumericMethod_) {
+			processReflector<NumericRectangularFlatSourceImpulseResponse<FloatType>>(reflectorList_[iRef], dadtFilter);
+		} else {
+			processReflector<AnalyticRectangularFlatSourceImpulseResponse<FloatType>>(reflectorList_[iRef], dadtFilter);
+		}
 	}
 
 	if (noiseAmplitude_ != 0.0) {

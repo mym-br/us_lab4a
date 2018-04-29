@@ -1,4 +1,9 @@
 
+impulse_response_method = numeric
+#impulse_response_method = analytic
+
+#-------------------------------------------------------------------------------
+
 # (m)
 tx_array_pitch_x = 0.6e-3
 tx_array_pitch_y = 13.0e-3
@@ -11,8 +16,13 @@ tx_num_array_elem_y = 1
 tx_element_width = 0.5e-3
 tx_element_height = 12.0e-3
 
+# [numeric impulse response]
 # tx_sub_elem_size = propagation_speed / (nyquist_rate * tx_sub_elem_size_factor)
 tx_sub_elem_size_factor = 2.0
+
+# [analytic impulse response]
+# 0.0: disable
+tx_min_edge_divisor = 0.0
 
 #-------------------------------------------------------------------------------
 
@@ -28,8 +38,13 @@ rx_num_array_elem_y = 1
 rx_element_width = 0.5e-3
 rx_element_height = 12.0e-3
 
+# [numeric impulse response]
 # rx_sub_elem_size = propagation_speed / (nyquist_rate * rx_sub_elem_size_factor)
 rx_sub_elem_size_factor = 2.0
+
+# [analytic impulse response]
+# 0.0: disable
+rx_min_edge_divisor = 0.0
 
 #-------------------------------------------------------------------------------
 
