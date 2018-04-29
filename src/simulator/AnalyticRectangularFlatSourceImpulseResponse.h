@@ -151,7 +151,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 	}
 
 	const FloatType dt = 1 / samplingFreq_;
-	if (minADivisor_ > 0) {
+	if (minADivisor_ > 0.0) {
 		const FloatType deltaA = a_ / minADivisor_;
 		const FloatType sigma1 = std::sqrt(std::max(c2 * tMin * tMin - z2, FloatType{0}));
 		const FloatType sigma2 = sigma1 + deltaA;
@@ -169,6 +169,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 	const std::size_t minAbsoluteIndex = std::rint(tMin * samplingFreq_);
 	const std::size_t maxAbsoluteIndex = std::rint(td * samplingFreq_);
 	h.assign(maxAbsoluteIndex - minAbsoluteIndex + 1, 0);
+	const FloatType tOffset = minAbsoluteIndex * dt;
 
 	switch (region) {
 	case 1:
@@ -177,7 +178,6 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 		const std::size_t i2 = static_cast<std::size_t>(std::ceil(tm1 * samplingFreq_)) - minAbsoluteIndex;
 		const std::size_t i3 = static_cast<std::size_t>(std::ceil(tm2 * samplingFreq_)) - minAbsoluteIndex;
 		const std::size_t i4 = static_cast<std::size_t>(std::ceil(td  * samplingFreq_)) - minAbsoluteIndex;
-		const FloatType tOffset = minAbsoluteIndex * dt;
 
 		for (std::size_t i = i1; i < i2; ++i) {
 			const FloatType t = tOffset + i * dt;
@@ -220,7 +220,6 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 		const std::size_t i2 = static_cast<std::size_t>(std::ceil(tm1 * samplingFreq_)) - minAbsoluteIndex;
 		const std::size_t i3 = static_cast<std::size_t>(std::ceil(tm2 * samplingFreq_)) - minAbsoluteIndex;
 		const std::size_t i4 = static_cast<std::size_t>(std::ceil(td  * samplingFreq_)) - minAbsoluteIndex;
-		const FloatType tOffset = minAbsoluteIndex * dt;
 
 		for (std::size_t i = i0; i < i1; ++i) {
 			const FloatType t = tOffset + i * dt;
@@ -261,7 +260,6 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 		const std::size_t i2 = static_cast<std::size_t>(std::ceil(tm1 * samplingFreq_)) - minAbsoluteIndex;
 		const std::size_t i3 = static_cast<std::size_t>(std::ceil(tm2 * samplingFreq_)) - minAbsoluteIndex;
 		const std::size_t i4 = static_cast<std::size_t>(std::ceil(td  * samplingFreq_)) - minAbsoluteIndex;
-		const FloatType tOffset = minAbsoluteIndex * dt;
 
 		for (std::size_t i = i0; i < i1; ++i) {
 			const FloatType t = tOffset + i * dt;
@@ -314,7 +312,6 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 		const std::size_t i2 = static_cast<std::size_t>(std::ceil(tm1 * samplingFreq_)) - minAbsoluteIndex;
 		const std::size_t i3 = static_cast<std::size_t>(std::ceil(tm2 * samplingFreq_)) - minAbsoluteIndex;
 		const std::size_t i4 = static_cast<std::size_t>(std::ceil(td  * samplingFreq_)) - minAbsoluteIndex;
-		const FloatType tOffset = minAbsoluteIndex * dt;
 
 		for (std::size_t i = i0; i < i1; ++i) {
 			const FloatType t = tOffset + i * dt;
