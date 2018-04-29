@@ -144,7 +144,7 @@ SimTransientAcousticBeam<FloatType, ImpulseResponse>::getRectangularFlatSourceAc
 	tbb::enumerable_thread_specific<ThreadData> tls{threadData};
 
 	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
-		LOG_DEBUG << "i = " << i << " / " << iEnd - 1;
+		LOG_INFO << "i: " << i << " < " << iEnd;
 
 		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
 			[&, i](const tbb::blocked_range<std::size_t>& r) {
@@ -220,7 +220,7 @@ SimTransientAcousticBeam<FloatType, ImpulseResponse>::getArrayOfRectangularFlatS
 	tbb::enumerable_thread_specific<ArrayThreadData> tls{threadData};
 
 	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
-		LOG_DEBUG << "i = " << i << " / " << iEnd - 1;
+		LOG_INFO << "i: " << i << " < " << iEnd;
 
 		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
 			[&, i](const tbb::blocked_range<std::size_t>& r) {
