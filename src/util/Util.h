@@ -48,8 +48,11 @@ void fillSequence(std::vector<unsigned int>& v, unsigned int startValue, unsigne
 void fillSequence(std::vector<int>& v, int startValue, int endValue, int step = 1);
 
 // This function may not give good results with integer values.
-// The sequence will contain _startValue_ and _endValue_. The step may be different.
+// The sequence will contain _startValue_ and _endValue_. The effective step may be less than the requested.
 template<typename T> void fillSequenceFromStartToEndWithMaximumStep(std::vector<T>& v, T startValue, T endValue, T step = 1);
+
+// The sequence will contain _startValue_ and may not contain _endValue_.
+template<typename T> void fillSequenceFromStartWithStep(std::vector<T>& v, T startValue, T endValue, T step = 1);
 
 // This function may not give good results with integer values.
 // The sequence will contain _startValue_ and _endValue_, with exactly _size_ items.
@@ -226,10 +229,45 @@ fillSequenceFromStartToEndWithMaximumStep(std::vector<T>& v, T startValue, T end
 	}
 
 	const int n = 1 + static_cast<int>(numSteps);
+	if (n == 1) {
+		THROW_EXCEPTION(InvalidParameterException, "Sequence with only one element.");
+	}
 	const double newStep = (endValue - startValue) / (n - 1);
 	v.resize(n);
 	for (int i = 0; i < n; ++i) {
 		v[i] = startValue + i * newStep;
+	}
+}
+
+template<typename T>
+void
+fillSequenceFromStartWithStep(std::vector<T>& v, T startValue, T endValue, T step)
+{
+	if (step == 0) {
+		THROW_EXCEPTION(InvalidParameterException, "The step must not be zero.");
+	}
+	if (startValue < endValue && step < 0) {
+		THROW_EXCEPTION(InvalidParameterException, "The step must be positive.");
+	}
+	if (startValue > endValue && step > 0) {
+		THROW_EXCEPTION(InvalidParameterException, "The step must be negative.");
+	}
+
+	v.clear();
+	T value = startValue;
+	std::size_t i = 0;
+	if (step > 0) {
+		while (value <= endValue) {
+			v.push_back(value);
+			++i;
+			value = startValue + i * step;
+		}
+	} else {
+		while (value >= endValue) {
+			v.push_back(value);
+			++i;
+			value = startValue + i * step;
+		}
 	}
 }
 
