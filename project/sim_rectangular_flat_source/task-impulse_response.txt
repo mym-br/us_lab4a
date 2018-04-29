@@ -3,8 +3,8 @@ method = sim_impulse_response_rectangular_flat_source
 
 output_dir = output
 
-#impulse_response_method = numeric
-impulse_response_method = analytic
+impulse_response_method = numeric
+#impulse_response_method = analytic
 
 # [numeric impulse response]
 # sub_elem_size = propagation_speed / (nyquist_rate * sub_elem_size_factor)
@@ -39,4 +39,6 @@ sampling_frequency_factor = 4.0
 # (m)
 point_x = 10.0e-3
 point_y = 10.0e-3
+#point_x = 2.0e-3
+#point_y = 2.0e-3
 point_z = 25.0e-3
