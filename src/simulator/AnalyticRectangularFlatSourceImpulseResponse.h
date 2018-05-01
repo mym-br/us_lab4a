@@ -160,7 +160,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 		const FloatType maxDt = std::sqrt(sigma2 * sigma2 + z2) * invC - tMin;
 		if (dt > maxDt) {
 			THROW_EXCEPTION(InvalidValueException,
-				"The sampling rate is too low (dt=" << dt << " max_dt=" << maxDt << ").");
+				"The sampling rate is too low (fs=" << samplingFreq_ << " min_fs=" << 1.0 / maxDt << ").");
 		}
 	}
 
