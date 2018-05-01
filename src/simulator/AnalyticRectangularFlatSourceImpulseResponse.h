@@ -196,7 +196,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 				const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
 				const FloatType alpha1 = std::asin(std::min(d1 * invSigma, FloatType{1}));
 				const FloatType alpha3 = std::asin(std::min(d3 * invSigma, FloatType{1}));
-				h[i] = -alpha1 + alpha3;
+				h[i] = alpha3 - alpha1;
 			}
 		} else {
 			for (std::size_t i = i2; i < i3; ++i) {
@@ -204,7 +204,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 				const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
 				const FloatType alpha2 = std::asin(std::min(d2 * invSigma, FloatType{1}));
 				const FloatType alpha4 = std::asin(std::min(d4 * invSigma, FloatType{1}));
-				h[i] = -alpha2 + alpha4;
+				h[i] = alpha4 - alpha2;
 			}
 		}
 		for (std::size_t i = i3; i < i4; ++i) {
@@ -212,7 +212,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 			const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
 			const FloatType alpha3 = std::asin(std::min(d3 * invSigma, FloatType{1}));
 			const FloatType alpha4 = std::asin(std::min(d4 * invSigma, FloatType{1}));
-			h[i] = -halfPi + alpha3 + alpha4;
+			h[i] = alpha3 + alpha4 - halfPi;
 		}
 		break;
 	}
@@ -246,14 +246,14 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 			const FloatType alpha1 = -std::asin(std::min(-d1 * invSigma, FloatType{1}));
 			const FloatType alpha3 =  std::asin(std::min( d3 * invSigma, FloatType{1}));
 			const FloatType alpha4 =  std::asin(std::min( d4 * invSigma, FloatType{1}));
-			h[i] = -static_cast<FloatType>(PI) - alpha1 + alpha3 + 2 * alpha4;
+			h[i] = alpha3 - alpha1 - static_cast<FloatType>(PI) + 2 * alpha4;
 		}
 		for (std::size_t i = i3; i < i4; ++i) {
 			const FloatType t = tOffset + i * dt;
 			const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
 			const FloatType alpha3 = std::asin(std::min(d3 * invSigma, FloatType{1}));
 			const FloatType alpha4 = std::asin(std::min(d4 * invSigma, FloatType{1}));
-			h[i] = -halfPi + alpha3 + alpha4;
+			h[i] = alpha3 + alpha4 - halfPi;
 		}
 		break;
 	}
