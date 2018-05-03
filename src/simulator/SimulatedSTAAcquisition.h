@@ -71,7 +71,7 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 	const FloatType widthElem            = pm->value<FloatType>(   "element_width"      , 1.0e-6,  10.0e-3);
 	const FloatType heightElem           = pm->value<FloatType>(   "element_height"     , 1.0e-3, 100.0e-3);
 	const unsigned int numDivWidth       = pm->value<unsigned int>("num_width_div"      ,      1,     1000);
-	const std::string reflectorsFileName = pm->value<std::string>( "reflectors_file_name");
+	const std::string reflectorsFileName = pm->value<std::string>( "reflectors_file");
 	const FloatType reflectorsXOffset    = pm->value<FloatType>(   "reflectors_x_offset",   -0.2,      0.2);
 	const FloatType noiseAmplitude       = pm->value<FloatType>(   "noise_amplitude"    ,    0.0,   1.0e10);
 

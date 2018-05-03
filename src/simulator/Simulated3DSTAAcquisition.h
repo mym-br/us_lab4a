@@ -68,7 +68,7 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 	ConstParameterMapPtr pm = project_.loadChildParameterMap(taskPM, "simulated_3d_sta_acquisition_config_file");
 
-	const std::string reflectorsFileName = pm->value<std::string>("reflectors_file_name");
+	const std::string reflectorsFileName = pm->value<std::string>("reflectors_file");
 	const FloatType reflectorsOffsetX    = pm->value<FloatType>(  "reflectors_offset_x", -10000.0, 10000.0);
 	const FloatType reflectorsOffsetY    = pm->value<FloatType>(  "reflectors_offset_y", -10000.0, 10000.0);
 
