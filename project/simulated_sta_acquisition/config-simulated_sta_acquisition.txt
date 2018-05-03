@@ -10,7 +10,7 @@ num_width_div = 4
 #num_width_div = 8
 
 #
-reflectors_file_name = reflectors
+reflectors_file = reflectors
 
 # (m)
 #reflectors_x_offset = 9.3e-3
