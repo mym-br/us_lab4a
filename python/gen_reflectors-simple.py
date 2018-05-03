@@ -6,7 +6,7 @@ from util import hdf5util
 
 
 
-PROJECT_DIR = "../lab4a/simulated_3d_sta_acquisition/"
+PROJECT_DIR = "../project/simulated_3d_sta_acquisition/"
 DATASET_NAME = "reflectors"
 
 def gen_reflectors_file(x, y, z, coeff, n_file):
