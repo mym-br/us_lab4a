@@ -83,14 +83,14 @@ template<typename T>
 void
 ImageGrid<FloatType>::getSectorialGrid(ConstParameterMapPtr pm, FloatType lambda, T& grid)
 {
-	const FloatType minRadius         = pm->value<FloatType>("sectorial_min_radius"     ,             1.0e-4, 10000.0);
-	const FloatType maxRadius         = pm->value<FloatType>("sectorial_max_radius"     , minRadius + 1.0e-6, 10000.0);
-	const FloatType radiusStepDiv     = pm->value<FloatType>("sectorial_radius_step_div",             1.0e-2,  1000.0);
-	const FloatType minAngle          = pm->value<FloatType>("sectorial_min_angle"      ,              -88.0,    88.0);
-	const FloatType maxAngle          = pm->value<FloatType>("sectorial_max_angle"      ,  minAngle + 1.0e-3,    88.0);
-	const FloatType angleStep         = pm->value<FloatType>("sectorial_angle_step"     ,             1.0e-6,    10.0);
-	const FloatType originX           = pm->value<FloatType>("sectorial_origin_x"       ,           -10000.0, 10000.0);
-	const FloatType originZ           = pm->value<FloatType>("sectorial_origin_z"       ,           -10000.0, 10000.0);
+	const FloatType minRadius     = pm->value<FloatType>("sectorial_min_radius"     ,             1.0e-4, 10000.0);
+	const FloatType maxRadius     = pm->value<FloatType>("sectorial_max_radius"     , minRadius + 1.0e-6, 10000.0);
+	const FloatType radiusStepDiv = pm->value<FloatType>("sectorial_radius_step_div",             1.0e-2,  1000.0);
+	const FloatType minAngle      = pm->value<FloatType>("sectorial_min_angle"      ,              -88.0,    88.0);
+	const FloatType maxAngle      = pm->value<FloatType>("sectorial_max_angle"      ,  minAngle + 1.0e-3,    88.0);
+	const FloatType angleStep     = pm->value<FloatType>("sectorial_angle_step"     ,             1.0e-6,    10.0);
+	const FloatType originX       = pm->value<FloatType>("sectorial_origin_x"       ,           -10000.0, 10000.0);
+	const FloatType originZ       = pm->value<FloatType>("sectorial_origin_z"       ,           -10000.0, 10000.0);
 
 	std::vector<FloatType> radiusList;
 	Util::fillSequenceFromStartToEndWithMaximumStep(radiusList,
