@@ -1,9 +1,6 @@
 
 - Decimate the excitation instead of the result of the convolution.
 
-- Method.cpp:
-	Remove "sectorial"? They can use rectangular grid.
-
 - Add Util::normalize().
 
 - Use nyquistRate to define the image grid.
