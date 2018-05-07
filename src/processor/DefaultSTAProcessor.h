@@ -19,13 +19,14 @@
 #define DEFAULTSTAPROCESSOR_H_
 
 #include <cmath>
-#include <cstddef>
+#include <cstddef> /* std::size_t */
 #include <numeric> /* accumulate */
 #include <vector>
 
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
+#include "ArrayGeometry.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
 #include "Interpolator4X.h"
@@ -67,10 +68,8 @@ private:
 		std::vector<FloatType> delayList;
 	};
 
-	class ProcessColumn;
-
-	DefaultSTAProcessor(const DefaultSTAProcessor&);
-	DefaultSTAProcessor& operator=(const DefaultSTAProcessor&);
+	DefaultSTAProcessor(const DefaultSTAProcessor&) = delete;
+	DefaultSTAProcessor& operator=(const DefaultSTAProcessor&) = delete;
 
 	const STAConfiguration<FloatType>& config_;
 	unsigned int deadZoneSamplesUp_;
@@ -78,10 +77,9 @@ private:
 	CoherenceFactorProcessor<FloatType>& coherenceFactor_;
 	Matrix3<FloatType> signalMatrix_;
 	typename STAAcquisition<FloatType>::AcquisitionDataType acqData_;
-	std::vector<FloatType> signal_;
+	std::vector<FloatType> tempSignal_;
 	FloatType signalOffset_;
 	Interpolator4X<FloatType> interpolator_;
-	//LinearInterpolator interpolator_;
 };
 
 
@@ -96,18 +94,17 @@ DefaultSTAProcessor<FloatType>::DefaultSTAProcessor(
 		, deadZoneSamplesUp_((DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
 		, acquisition_(acquisition)
 		, coherenceFactor_(coherenceFactor)
-		//, interpolator_(DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR)
 {
-	signalOffset_ = (config_.samplingFrequency * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR) * peakOffset / config_.centerFrequency;
-	LOG_DEBUG << "signalOffset_=" << signalOffset_;
-
-	// This acquisition is done to obtain the ascan length.
+	// This acquisition is done to obtain the signal length.
 	acquisition_.execute(0, 0, acqData_);
 	const std::size_t signalLength = acqData_.n2() * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR;
 
-	signal_.resize(signalLength);
+	tempSignal_.resize(signalLength);
 	signalMatrix_.resize(config_.numElements, config_.numElements, signalLength);
 	//signalMatrix_ = 0.0;
+
+	signalOffset_ = (config_.samplingFrequency * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR) * peakOffset / config_.centerFrequency;
+	LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
 
 	if (deadZoneSamplesUp_ >= signalLength) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: deadZoneSamplesUp_ (" << deadZoneSamplesUp_ <<
@@ -121,43 +118,34 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZValu
 {
 	LOG_DEBUG << "BEGIN ========== DefaultSTAProcessor::process ==========";
 
-	// Clear the values in gridData.
-	for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
-		iter->value = 0.0;
-		iter->factor = 1.0;
-	}
+	Util::resetValueFactor(gridData.begin(), gridData.end());
 
 	// Prepare the signal matrix.
 	for (std::size_t txElem = 0; txElem < config_.numElements; ++txElem) {
-		LOG_INFO << "ACQ txElem: " << txElem << " < " << config_.numElements;
+		LOG_INFO << "ACQ/PREP txElem: " << txElem << " < " << config_.numElements;
 
 		acquisition_.execute(baseElement, txElem, acqData_);
 
 		const std::size_t samplesPerChannelLow = acqData_.n2();
-		//const std::size_t samplesPerChannel = samplesPerChannelLow * STA_PROCESSOR_UPSAMPLING_FACTOR;
 
 		for (std::size_t rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 
-			// Interpolate the signal.
-			interpolator_.interpolate(&acqData_(rxElem, 0), samplesPerChannelLow, &signal_[0]);
+			interpolator_.interpolate(&acqData_(rxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
 
 			// Copy the signal to the signal matrix.
 			typename Matrix3<FloatType>::Dim3Interval interval = signalMatrix_.dim3Interval(txElem, rxElem);
-			std::copy(signal_.begin(), signal_.end(), interval.first);
+			std::copy(tempSignal_.begin(), tempSignal_.end(), interval.first);
 
 			Util::removeDC(&signalMatrix_(txElem, rxElem, 0), signalMatrix_.n3(), deadZoneSamplesUp_);
 		}
 	}
 
+	std::vector<FloatType> xArray;
+	ArrayGeometry::getElementXCentered2D(config_.numElements, config_.pitch, xArray);
+
 	ThreadData threadData;
 	threadData.coherenceFactor = coherenceFactor_;
 	tbb::enumerable_thread_specific<ThreadData> tls{threadData};
-
-	std::vector<FloatType> xArray(config_.numElements);
-	const FloatType xArrayCenter = (config_.numElementsMux - 1) * config_.pitch / 2.0;
-	for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
-		xArray[elem] = (baseElement + elem) * config_.pitch - xArrayCenter;
-	}
 
 	const FloatType invCT = (config_.samplingFrequency * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR) / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
@@ -186,9 +174,9 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZValu
 					local.delayList[elem] = std::sqrt(dx * dx + dz * dz) * invCT;
 				}
 
-				for (std::size_t txElem = 0; txElem < config_.numElements; ++txElem) {
+				for (unsigned int txElem = 0; txElem < config_.numElements; ++txElem) {
 					const FloatType txDelay = local.delayList[txElem];
-					for (std::size_t rxElem = 0; rxElem < config_.numElements; ++rxElem) {
+					for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 #if 0
 						// Nearest neighbor.
 						const std::size_t delayIdx = static_cast<std::size_t>(FloatType{0.5} + signalOffset_ + txDelay + local.delayList[rxElem]);
