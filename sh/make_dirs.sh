@@ -3,5 +3,5 @@
 set -e
 
 for d in ../project/*; do
-  mkdir -p ${d}/output
+  mkdir -pv ${d}/output
 done
