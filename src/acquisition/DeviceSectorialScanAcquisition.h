@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef SECTORIALSCANACQUISITION_H
-#define SECTORIALSCANACQUISITION_H
+#ifndef DEVICESECTORIALSCANACQUISITION_H
+#define DEVICESECTORIALSCANACQUISITION_H
 
 #include "Matrix2.h"
 #include "XZValue.h"
@@ -25,17 +25,18 @@
 
 namespace Lab {
 
+// The image formation is executed on the acquisition device.
 template<typename FloatType>
-class SectorialScanAcquisition {
+class DeviceSectorialScanAcquisition {
 public:
 	typedef Matrix2<XZValue<FloatType>> AcquisitionDataType;
 
-	SectorialScanAcquisition() {}
-	virtual ~SectorialScanAcquisition() {}
+	DeviceSectorialScanAcquisition() {}
+	virtual ~DeviceSectorialScanAcquisition() {}
 
 	virtual void execute(AcquisitionDataType& acqData) = 0;
 };
 
 } // namespace Lab
 
-#endif // SECTORIALSCANACQUISITION_H
+#endif // DEVICESECTORIALSCANACQUISITION_H

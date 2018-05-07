@@ -120,7 +120,6 @@ HEADERS  += \
     src/util/ExecutionTimeMeasurement.h \
     src/util/FileUtil.h \
     src/USLab4a.h \
-    src/acquisition/SectorialScanAcquisition.h \
     src/network_acquisition/PhasedArrayAcqClient.h \
     src/network_acquisition/PhasedArrayAcqProtocol.h \
     src/method/SimRectangularFlatSourceMethod.h \
@@ -138,7 +137,8 @@ HEADERS  += \
     src/simulator/ArrayOfRectangularFlatSourcesImpulseResponse.h \
     src/configuration/DeviceSectorialScanConfiguration.h \
     src/network_acquisition/NetworkDeviceSectorialScanAcquisition.h \
-    src/method/DeviceSectorialScanMethod.h
+    src/method/DeviceSectorialScanMethod.h \
+    src/acquisition/DeviceSectorialScanAcquisition.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

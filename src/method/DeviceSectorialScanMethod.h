@@ -23,13 +23,13 @@
 #include <sstream>
 #include <string>
 
+#include "DeviceSectorialScanConfiguration.h"
 #include "Log.h"
 #include "Matrix2.h"
 #include "Method.h"
 #include "NetworkDeviceSectorialScanAcquisition.h"
 #include "ParameterMap.h"
 #include "Project.h"
-#include "DeviceSectorialScanConfiguration.h"
 #include "Timer.h"
 #include "Util.h"
 #include "XZValue.h"
@@ -78,16 +78,16 @@ void
 DeviceSectorialScanMethod<FloatType>::execute()
 {
 	switch (project_.method()) {
-	case MethodType::sectorial_scan_sp_network:
+	case MethodType::device_sectorial_scan_sp_network:
 		getSingleImageFromNetwork();
 		break;
-	case MethodType::sectorial_scan_sp_saved:
+	case MethodType::device_sectorial_scan_sp_saved:
 		showSavedImage();
 		break;
-	case MethodType::sectorial_scan_sp_network_continuous:
+	case MethodType::device_sectorial_scan_sp_network_continuous:
 		execContinuousNetworkImaging();
 		break;
-	case MethodType::sectorial_scan_sp_network_trigger:
+	case MethodType::device_sectorial_scan_sp_network_trigger:
 		execTriggeredNetworkImaging();
 		break;
 	default:

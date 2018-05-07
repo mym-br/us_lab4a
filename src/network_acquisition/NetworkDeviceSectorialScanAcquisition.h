@@ -24,25 +24,25 @@
 
 #include <boost/cstdint.hpp>
 
+#include "DeviceSectorialScanAcquisition.h"
+#include "DeviceSectorialScanConfiguration.h"
 #include "ParameterMap.h"
 #include "PhasedArrayAcqClient.h"
 #include "Project.h"
-#include "SectorialScanAcquisition.h"
-#include "DeviceSectorialScanConfiguration.h"
 
 
 
 namespace Lab {
 
 template<typename FloatType>
-class NetworkDeviceSectorialScanAcquisition : public SectorialScanAcquisition<FloatType> {
+class NetworkDeviceSectorialScanAcquisition : public DeviceSectorialScanAcquisition<FloatType> {
 public:
 	NetworkDeviceSectorialScanAcquisition(
 		const Project& project,
 		const DeviceSectorialScanConfiguration<FloatType>& config);
 	virtual ~NetworkDeviceSectorialScanAcquisition();
 
-	virtual void execute(typename SectorialScanAcquisition<FloatType>::AcquisitionDataType& acqData);
+	virtual void execute(typename DeviceSectorialScanAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
 	NetworkDeviceSectorialScanAcquisition(const NetworkDeviceSectorialScanAcquisition&);
 	NetworkDeviceSectorialScanAcquisition& operator=(const NetworkDeviceSectorialScanAcquisition&);
@@ -95,7 +95,7 @@ NetworkDeviceSectorialScanAcquisition<FloatType>::~NetworkDeviceSectorialScanAcq
 
 template<typename FloatType>
 void
-NetworkDeviceSectorialScanAcquisition<FloatType>::execute(typename SectorialScanAcquisition<FloatType>::AcquisitionDataType& acqData)
+NetworkDeviceSectorialScanAcquisition<FloatType>::execute(typename DeviceSectorialScanAcquisition<FloatType>::AcquisitionDataType& acqData)
 {
 	LOG_DEBUG << "ACQ";
 
