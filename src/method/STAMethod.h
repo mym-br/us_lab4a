@@ -90,19 +90,19 @@ STAMethod<FloatType>::execute()
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
 	switch (project_.method()) {
-	case MethodType::sta_sectorial_simple_simulated: // falls through
-	case MethodType::sta_sectorial_simulated:
+	case MethodType::sta_simple_simulated: // falls through
+	case MethodType::sta_simulated:
 		acquisition = std::make_unique<SimulatedSTAAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodType::sta_sectorial_dp_network: // falls through
+	case MethodType::sta_dp_network:   // falls through
 	case MethodType::sta_save_signals:
 		acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodType::sta_sectorial_simple_saved:       // falls through
-	case MethodType::sta_sectorial_dp_saved:           // falls through
-	case MethodType::sta_sectorial_vectorial_dp_saved: // falls through
-	case MethodType::sta_sectorial_sp_saved:           // falls through
-	case MethodType::sta_sectorial_vectorial_sp_saved:
+	case MethodType::sta_simple_saved:       // falls through
+	case MethodType::sta_dp_saved:           // falls through
+	case MethodType::sta_vectorial_dp_saved: // falls through
+	case MethodType::sta_sp_saved:           // falls through
+	case MethodType::sta_vectorial_sp_saved:
 		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(project_, config.numElements);
 		break;
 	case MethodType::sta_simulated_3d:           // falls through
@@ -131,8 +131,8 @@ STAMethod<FloatType>::execute()
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 
 	switch (project_.method()) {
-	case MethodType::sta_sectorial_simple_simulated: // falls through
-	case MethodType::sta_sectorial_simple_saved:
+	case MethodType::sta_simple_simulated: // falls through
+	case MethodType::sta_simple_saved:
 		{
 			CoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			coherenceFactorEnabled = coherenceFactor.enabled();
@@ -143,8 +143,8 @@ STAMethod<FloatType>::execute()
 			LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 		}
 		break;
-	case MethodType::sta_sectorial_vectorial_dp_saved: // falls through
-	case MethodType::sta_sectorial_vectorial_sp_saved: // falls through
+	case MethodType::sta_vectorial_dp_saved:     // falls through
+	case MethodType::sta_vectorial_sp_saved:     // falls through
 	case MethodType::sta_vectorial_simulated_3d:
 		{
 			vectorialProcessingWithEnvelope     = taskPM->value<bool>(        "calculate_envelope_in_processing");

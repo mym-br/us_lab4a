@@ -41,14 +41,14 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sectorial_scan_sp_network_continuous);
 	ADD_MAP_ITEM(sectorial_scan_sp_network_trigger);
 	ADD_MAP_ITEM(sectorial_scan_sp_saved);
-	ADD_MAP_ITEM(sta_sectorial_simple_saved);
-	ADD_MAP_ITEM(sta_sectorial_simple_simulated);
-	ADD_MAP_ITEM(sta_sectorial_simulated);
-	ADD_MAP_ITEM(sta_sectorial_dp_network);
-	ADD_MAP_ITEM(sta_sectorial_dp_saved);
-	ADD_MAP_ITEM(sta_sectorial_vectorial_dp_saved);
-	ADD_MAP_ITEM(sta_sectorial_sp_saved);
-	ADD_MAP_ITEM(sta_sectorial_vectorial_sp_saved);
+	ADD_MAP_ITEM(sta_simple_saved);
+	ADD_MAP_ITEM(sta_simple_simulated);
+	ADD_MAP_ITEM(sta_simulated);
+	ADD_MAP_ITEM(sta_dp_network);
+	ADD_MAP_ITEM(sta_dp_saved);
+	ADD_MAP_ITEM(sta_vectorial_dp_saved);
+	ADD_MAP_ITEM(sta_sp_saved);
+	ADD_MAP_ITEM(sta_vectorial_sp_saved);
 	ADD_MAP_ITEM(sta_save_signals);
 	ADD_MAP_ITEM(sim_acoustic_beam_array_of_rectangular_flat_sources_transient);
 	ADD_MAP_ITEM(sim_acoustic_beam_rectangular_flat_source_transient);
@@ -87,18 +87,18 @@ Method::get(Project& project)
 	case MethodType::sectorial_scan_sp_network_trigger:    // falls through
 	case MethodType::sectorial_scan_sp_saved:
 		return new SectorialScanMethod<float>(project);
-	case MethodType::sta_sectorial_simple_simulated:   // falls through
-	case MethodType::sta_sectorial_simple_saved:       // falls through
-	case MethodType::sta_sectorial_simulated:          // falls through
-	case MethodType::sta_sectorial_dp_network:         // falls through
-	case MethodType::sta_sectorial_dp_saved:           // falls through
-	case MethodType::sta_sectorial_vectorial_dp_saved: // falls through
-	case MethodType::sta_save_signals:                 // falls through
-	case MethodType::sta_simulated_3d:                 // falls through
+	case MethodType::sta_simple_simulated:   // falls through
+	case MethodType::sta_simple_saved:       // falls through
+	case MethodType::sta_simulated:          // falls through
+	case MethodType::sta_dp_network:         // falls through
+	case MethodType::sta_dp_saved:           // falls through
+	case MethodType::sta_vectorial_dp_saved: // falls through
+	case MethodType::sta_save_signals:       // falls through
+	case MethodType::sta_simulated_3d:       // falls through
 	case MethodType::sta_vectorial_simulated_3d:
 		return new STAMethod<double>(project);
-	case MethodType::sta_sectorial_sp_saved:           // falls through
-	case MethodType::sta_sectorial_vectorial_sp_saved:
+	case MethodType::sta_sp_saved:           // falls through
+	case MethodType::sta_vectorial_sp_saved:
 		return new STAMethod<float>(project);
 	case MethodType::sim_acoustic_beam_array_of_rectangular_flat_sources_transient:  // falls through
 	case MethodType::sim_acoustic_beam_rectangular_flat_source_transient:            // falls through
