@@ -105,7 +105,8 @@ STAMethod<FloatType>::execute()
 	case MethodType::sta_sectorial_vectorial_sp_saved:
 		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(project_, config.numElements);
 		break;
-	case MethodType::sta_simulated_3d:
+	case MethodType::sta_simulated_3d:           // falls through
+	case MethodType::sta_vectorial_simulated_3d:
 		acquisition = std::make_unique<Simulated3DSTAAcquisition<FloatType>>(project_, config);
 		break;
 	default:
@@ -125,10 +126,6 @@ STAMethod<FloatType>::execute()
 
 	bool coherenceFactorEnabled = false;
 	bool vectorialProcessingWithEnvelope = false;
-	if (project_.method() == MethodType::sta_sectorial_vectorial_dp_saved ||
-			project_.method() == MethodType::sta_sectorial_vectorial_sp_saved) {
-		vectorialProcessingWithEnvelope = taskPM->value<bool>("calculate_envelope_in_processing");
-	}
 
 	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset", 0.0, 50.0);
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
@@ -147,8 +144,10 @@ STAMethod<FloatType>::execute()
 		}
 		break;
 	case MethodType::sta_sectorial_vectorial_dp_saved: // falls through
-	case MethodType::sta_sectorial_vectorial_sp_saved:
+	case MethodType::sta_sectorial_vectorial_sp_saved: // falls through
+	case MethodType::sta_vectorial_simulated_3d:
 		{
+			vectorialProcessingWithEnvelope     = taskPM->value<bool>(        "calculate_envelope_in_processing");
 			const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
 			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			coherenceFactorEnabled = coherenceFactor.enabled();
@@ -184,14 +183,16 @@ STAMethod<FloatType>::execute()
 
 	Project::GridDataType projGridData;
 	Util::copyXZValue(gridData, projGridData);
-	project_.showFigure3D(1, "Raw", &projGridData, &pointList,
+	project_.showFigure3D(1, "Raw image", &projGridData, &pointList,
 				true, visual, Figure::COLORMAP_VIRIDIS);
 
 	if (coherenceFactorEnabled) {
 		LOG_DEBUG << "Saving the image factors...";
 		project_.saveHDF5(gridData, outputDir + "/image_factor", "image", Util::CopyFactorOp());
 
-		ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData);
+		if (!vectorialProcessingWithEnvelope) {
+			ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData);
+		}
 
 		// Applies the coherence factor method.
 		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
@@ -203,7 +204,7 @@ STAMethod<FloatType>::execute()
 		project_.saveHDF5(gridData, outputDir + "/image_cf", "image", Util::CopyValueOp());
 
 		Util::copyXZValue(gridData, projGridData);
-		project_.showFigure3D(2, "CF", &projGridData, &pointList,
+		project_.showFigure3D(2, "Coherence factor image", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 	}
 }
