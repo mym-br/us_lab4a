@@ -17,9 +17,9 @@
 
 #include "Method.h"
 
+#include "DeviceSectorialScanMethod.h"
 #include "Exception.h"
 #include "Project.h"
-#include "SectorialScanMethod.h"
 #include "ShowImageMethod.h"
 #include "SimRectangularFlatSourceMethod.h"
 #include "SingleAcquisitionMethod.h"
@@ -37,10 +37,10 @@ MethodNameMap Method::nameMap_;
 MethodNameMap::MethodNameMap()
 {
 	ADD_MAP_ITEM(single_acquisition);
-	ADD_MAP_ITEM(sectorial_scan_sp_network);
-	ADD_MAP_ITEM(sectorial_scan_sp_network_continuous);
-	ADD_MAP_ITEM(sectorial_scan_sp_network_trigger);
-	ADD_MAP_ITEM(sectorial_scan_sp_saved);
+	ADD_MAP_ITEM(device_sectorial_scan_sp_network);
+	ADD_MAP_ITEM(device_sectorial_scan_sp_network_continuous);
+	ADD_MAP_ITEM(device_sectorial_scan_sp_network_trigger);
+	ADD_MAP_ITEM(device_sectorial_scan_sp_saved);
 	ADD_MAP_ITEM(sta_simple_saved);
 	ADD_MAP_ITEM(sta_simple_simulated);
 	ADD_MAP_ITEM(sta_simulated);
@@ -82,11 +82,11 @@ Method::get(Project& project)
 	switch (project.method()) {
 	case MethodType::single_acquisition:
 		return new SingleAcquisitionMethod(project);
-	case MethodType::sectorial_scan_sp_network:            // falls through
-	case MethodType::sectorial_scan_sp_network_continuous: // falls through
-	case MethodType::sectorial_scan_sp_network_trigger:    // falls through
-	case MethodType::sectorial_scan_sp_saved:
-		return new SectorialScanMethod<float>(project);
+	case MethodType::device_sectorial_scan_sp_network:            // falls through
+	case MethodType::device_sectorial_scan_sp_network_continuous: // falls through
+	case MethodType::device_sectorial_scan_sp_network_trigger:    // falls through
+	case MethodType::device_sectorial_scan_sp_saved:
+		return new DeviceSectorialScanMethod<float>(project);
 	case MethodType::sta_simple_simulated:   // falls through
 	case MethodType::sta_simple_saved:       // falls through
 	case MethodType::sta_simulated:          // falls through

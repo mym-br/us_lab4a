@@ -123,9 +123,6 @@ HEADERS  += \
     src/acquisition/SectorialScanAcquisition.h \
     src/network_acquisition/PhasedArrayAcqClient.h \
     src/network_acquisition/PhasedArrayAcqProtocol.h \
-    src/configuration/SectorialScanConfiguration.h \
-    src/method/SectorialScanMethod.h \
-    src/network_acquisition/NetworkSectorialScanAcquisition.h \
     src/method/SimRectangularFlatSourceMethod.h \
     src/simulator/NumericRectangularFlatSourceImpulseResponse.h \
     src/simulator/SimTransientAcousticBeam.h \
@@ -138,7 +135,10 @@ HEADERS  += \
     src/util/XYZValue.h \
     src/util/Geometry.h \
     src/simulator/AnalyticRectangularFlatSourceImpulseResponse.h \
-    src/simulator/ArrayOfRectangularFlatSourcesImpulseResponse.h
+    src/simulator/ArrayOfRectangularFlatSourcesImpulseResponse.h \
+    src/configuration/DeviceSectorialScanConfiguration.h \
+    src/network_acquisition/NetworkDeviceSectorialScanAcquisition.h \
+    src/method/DeviceSectorialScanMethod.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

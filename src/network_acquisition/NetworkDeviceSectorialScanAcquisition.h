@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef NETWORKSECTORIALSCANACQUISITION_H
-#define NETWORKSECTORIALSCANACQUISITION_H
+#ifndef NETWORKDEVICESECTORIALSCANACQUISITION_H
+#define NETWORKDEVICESECTORIALSCANACQUISITION_H
 
 #include <cmath>
 #include <memory>
@@ -28,27 +28,27 @@
 #include "PhasedArrayAcqClient.h"
 #include "Project.h"
 #include "SectorialScanAcquisition.h"
-#include "SectorialScanConfiguration.h"
+#include "DeviceSectorialScanConfiguration.h"
 
 
 
 namespace Lab {
 
 template<typename FloatType>
-class NetworkSectorialScanAcquisition : public SectorialScanAcquisition<FloatType> {
+class NetworkDeviceSectorialScanAcquisition : public SectorialScanAcquisition<FloatType> {
 public:
-	NetworkSectorialScanAcquisition(
+	NetworkDeviceSectorialScanAcquisition(
 		const Project& project,
-		const SectorialScanConfiguration<FloatType>& config);
-	virtual ~NetworkSectorialScanAcquisition();
+		const DeviceSectorialScanConfiguration<FloatType>& config);
+	virtual ~NetworkDeviceSectorialScanAcquisition();
 
 	virtual void execute(typename SectorialScanAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
-	NetworkSectorialScanAcquisition(const NetworkSectorialScanAcquisition&);
-	NetworkSectorialScanAcquisition& operator=(const NetworkSectorialScanAcquisition&);
+	NetworkDeviceSectorialScanAcquisition(const NetworkDeviceSectorialScanAcquisition&);
+	NetworkDeviceSectorialScanAcquisition& operator=(const NetworkDeviceSectorialScanAcquisition&);
 
 	const Project& project_;
-	const SectorialScanConfiguration<FloatType>& config_;
+	const DeviceSectorialScanConfiguration<FloatType>& config_;
 	std::unique_ptr<PhasedArrayAcqClient> acq_;
 	std::vector<float> imageBuffer_;
 	std::vector<float> lineStartX_;
@@ -59,7 +59,7 @@ private:
 
 
 template<typename FloatType>
-NetworkSectorialScanAcquisition<FloatType>::NetworkSectorialScanAcquisition(const Project& project, const SectorialScanConfiguration<FloatType>& config)
+NetworkDeviceSectorialScanAcquisition<FloatType>::NetworkDeviceSectorialScanAcquisition(const Project& project, const DeviceSectorialScanConfiguration<FloatType>& config)
 		: project_(project)
 		, config_(config)
 {
@@ -89,13 +89,13 @@ NetworkSectorialScanAcquisition<FloatType>::NetworkSectorialScanAcquisition(cons
 }
 
 template<typename FloatType>
-NetworkSectorialScanAcquisition<FloatType>::~NetworkSectorialScanAcquisition()
+NetworkDeviceSectorialScanAcquisition<FloatType>::~NetworkDeviceSectorialScanAcquisition()
 {
 }
 
 template<typename FloatType>
 void
-NetworkSectorialScanAcquisition<FloatType>::execute(typename SectorialScanAcquisition<FloatType>::AcquisitionDataType& acqData)
+NetworkDeviceSectorialScanAcquisition<FloatType>::execute(typename SectorialScanAcquisition<FloatType>::AcquisitionDataType& acqData)
 {
 	LOG_DEBUG << "ACQ";
 
@@ -124,4 +124,4 @@ NetworkSectorialScanAcquisition<FloatType>::execute(typename SectorialScanAcquis
 
 } // namespace Lab
 
-#endif // NETWORKSECTORIALSCANACQUISITION_H
+#endif // NETWORKDEVICESECTORIALSCANACQUISITION_H

@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef SECTORIALSCANMETHOD_H
-#define SECTORIALSCANMETHOD_H
+#ifndef DEVICESECTORIALSCANMETHOD_H
+#define DEVICESECTORIALSCANMETHOD_H
 
 #include <cstddef> /* std::size_t */
 #include <memory>
@@ -26,10 +26,10 @@
 #include "Log.h"
 #include "Matrix2.h"
 #include "Method.h"
-#include "NetworkSectorialScanAcquisition.h"
+#include "NetworkDeviceSectorialScanAcquisition.h"
 #include "ParameterMap.h"
 #include "Project.h"
-#include "SectorialScanConfiguration.h"
+#include "DeviceSectorialScanConfiguration.h"
 #include "Timer.h"
 #include "Util.h"
 #include "XZValue.h"
@@ -39,16 +39,16 @@
 namespace Lab {
 
 template<typename FloatType>
-class SectorialScanMethod : public Method {
+class DeviceSectorialScanMethod : public Method {
 public:
-	SectorialScanMethod(Project& project);
-	virtual ~SectorialScanMethod();
+	DeviceSectorialScanMethod(Project& project);
+	virtual ~DeviceSectorialScanMethod();
 
 	virtual void execute();
 
 private:
-	SectorialScanMethod(const SectorialScanMethod&);
-	SectorialScanMethod& operator=(const SectorialScanMethod&);
+	DeviceSectorialScanMethod(const DeviceSectorialScanMethod&);
+	DeviceSectorialScanMethod& operator=(const DeviceSectorialScanMethod&);
 
 	void getSingleImageFromNetwork();
 	void showSavedImage();
@@ -56,26 +56,26 @@ private:
 	void execTriggeredNetworkImaging();
 
 	Project& project_;
-	SectorialScanConfiguration<FloatType> config_;
+	DeviceSectorialScanConfiguration<FloatType> config_;
 };
 
 
 
 template<typename FloatType>
-SectorialScanMethod<FloatType>::SectorialScanMethod(Project& project)
+DeviceSectorialScanMethod<FloatType>::DeviceSectorialScanMethod(Project& project)
 		: project_(project)
 {
-	config_.load(project_.loadParameterMap("config-sectorial_scan_method.txt"));
+	config_.load(project_.loadParameterMap("config-device_sectorial_scan_method.txt"));
 }
 
 template<typename FloatType>
-SectorialScanMethod<FloatType>::~SectorialScanMethod()
+DeviceSectorialScanMethod<FloatType>::~DeviceSectorialScanMethod()
 {
 }
 
 template<typename FloatType>
 void
-SectorialScanMethod<FloatType>::execute()
+DeviceSectorialScanMethod<FloatType>::execute()
 {
 	switch (project_.method()) {
 	case MethodType::sectorial_scan_sp_network:
@@ -97,11 +97,11 @@ SectorialScanMethod<FloatType>::execute()
 
 template<typename FloatType>
 void
-SectorialScanMethod<FloatType>::getSingleImageFromNetwork()
+DeviceSectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 {
 	const std::string outputDir = project_.taskParameterMap()->value<std::string>("output_dir");
 
-	auto acquisition = std::make_unique<NetworkSectorialScanAcquisition<FloatType>>(project_, config_);
+	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
 	Matrix2<XZValue<FloatType>> imageData;
 	acquisition->execute(imageData);
 
@@ -115,7 +115,7 @@ SectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 
 template<typename FloatType>
 void
-SectorialScanMethod<FloatType>::showSavedImage()
+DeviceSectorialScanMethod<FloatType>::showSavedImage()
 {
 	const std::string outputDir = project_.taskParameterMap()->value<std::string>("output_dir");
 
@@ -131,9 +131,9 @@ SectorialScanMethod<FloatType>::showSavedImage()
 
 template<typename FloatType>
 void
-SectorialScanMethod<FloatType>::execContinuousNetworkImaging()
+DeviceSectorialScanMethod<FloatType>::execContinuousNetworkImaging()
 {
-	auto acquisition = std::make_unique<NetworkSectorialScanAcquisition<FloatType>>(project_, config_);
+	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
 	Matrix2<XZValue<FloatType>> imageData;
 
 	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
@@ -156,13 +156,13 @@ SectorialScanMethod<FloatType>::execContinuousNetworkImaging()
 
 template<typename FloatType>
 void
-SectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
+DeviceSectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 {
 	project_.resetTrigger();
 
 	const std::string outputDirPrefix = project_.taskParameterMap()->value<std::string>("output_dir_prefix");
 
-	auto acquisition = std::make_unique<NetworkSectorialScanAcquisition<FloatType>>(project_, config_);
+	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
 	Matrix2<XZValue<FloatType>> imageData;
 
 	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
@@ -186,4 +186,4 @@ SectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 
 } // namespace Lab
 
-#endif // SECTORIALSCANMETHOD_H
+#endif // DEVICESECTORIALSCANMETHOD_H

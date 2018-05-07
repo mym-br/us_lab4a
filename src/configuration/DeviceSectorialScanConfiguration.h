@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef SECTORIALSCANCONFIGURATION_H
-#define SECTORIALSCANCONFIGURATION_H
+#ifndef DEVICESECTORIALSCANCONFIGURATION_H
+#define DEVICESECTORIALSCANCONFIGURATION_H
 
 #include "ParameterMap.h"
 
@@ -25,7 +25,7 @@
 namespace Lab {
 
 template<typename FloatType>
-struct SectorialScanConfiguration {
+struct DeviceSectorialScanConfiguration {
 	unsigned int numElements;
 	unsigned int numElementsMux;
 	unsigned int baseElement;         // first element: 0
@@ -56,7 +56,7 @@ struct SectorialScanConfiguration {
 
 template<typename FloatType>
 void
-SectorialScanConfiguration<FloatType>::load(ConstParameterMapPtr pm)
+DeviceSectorialScanConfiguration<FloatType>::load(ConstParameterMapPtr pm)
 {
 	numElementsMux         = pm->value<unsigned int>("num_elements_mux"        ,       8,      1024);
 	numElements            = pm->value<unsigned int>("num_elements"            ,       8, numElementsMux);
@@ -91,4 +91,4 @@ SectorialScanConfiguration<FloatType>::load(ConstParameterMapPtr pm)
 
 } // namespace Lab
 
-#endif // SECTORIALSCANCONFIGURATION_H
+#endif // DEVICESECTORIALSCANCONFIGURATION_H
