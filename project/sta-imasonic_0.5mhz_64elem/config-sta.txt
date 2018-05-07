@@ -10,6 +10,7 @@ pitch = 1.5e-3
 
 # (Hz)
 center_frequency = 0.5e6
+max_frequency = 1.0e6
 
 # (s)
 acquisition_time = 667.0e-6
