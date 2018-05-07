@@ -1,7 +1,7 @@
 
 method = show_image
 
-data_dir = ../sta-imasonic-0.5_mhz-64_elem/output
+data_dir = ../sta-imasonic_0.5mhz_64elem/output
 
 x_file = image_x
 x_dataset = x

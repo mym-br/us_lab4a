@@ -1,0 +1,2 @@
+
+method = device_sectorial_scan_sp_network_continuous

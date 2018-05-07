@@ -1,0 +1,4 @@
+
+method = device_sectorial_scan_sp_network_trigger
+
+output_dir_prefix = trigger/output-

@@ -1,5 +1,5 @@
 
-method = sta_sectorial_sp_saved
+method = sta_sp_saved
 
 sta_config_file = config-sta.txt
 

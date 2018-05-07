@@ -1,0 +1,4 @@
+
+method = device_sectorial_scan_sp_saved
+
+output_dir = output

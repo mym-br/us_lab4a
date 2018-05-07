@@ -1,5 +1,5 @@
 
-method = sta_sectorial_vectorial_sp_saved
+method = sta_vectorial_sp_saved
 
 sta_config_file = config-sta.txt
 

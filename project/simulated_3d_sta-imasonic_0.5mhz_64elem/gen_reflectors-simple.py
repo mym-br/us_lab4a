@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-sys.path.append("../../../python")
+sys.path.append("../../python")
 
 import numpy as np
 from util import hdf5util

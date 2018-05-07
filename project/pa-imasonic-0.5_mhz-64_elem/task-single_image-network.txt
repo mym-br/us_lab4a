@@ -1,4 +1,0 @@
-
-method = sectorial_scan_sp_network
-
-output_dir = output

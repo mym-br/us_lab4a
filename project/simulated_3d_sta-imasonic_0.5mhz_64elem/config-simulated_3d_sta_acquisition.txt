@@ -5,16 +5,16 @@ impulse_response_method = numeric
 #-------------------------------------------------------------------------------
 
 # (m)
-tx_array_pitch_x = 0.6e-3
-tx_array_pitch_y = 12.1e-3
+tx_array_pitch_x = 1.5e-3
+tx_array_pitch_y = 20.3e-3
 
 # 1..n
-tx_num_array_elem_x = 128
+tx_num_array_elem_x = 64
 tx_num_array_elem_y = 1
 
 # (m)
-tx_element_width = 0.5e-3
-tx_element_height = 12.0e-3
+tx_element_width = 1.2e-3
+tx_element_height = 20.0e-3
 
 # [numeric impulse response]
 # tx_sub_elem_size = propagation_speed / (nyquist_rate * tx_sub_elem_size_factor)
@@ -27,16 +27,16 @@ tx_min_edge_divisor = 0.0
 #-------------------------------------------------------------------------------
 
 # (m)
-rx_array_pitch_x = 0.6e-3
-rx_array_pitch_y = 12.1e-3
+rx_array_pitch_x = 1.5e-3
+rx_array_pitch_y = 20.3e-3
 
 # 1..n
-rx_num_array_elem_x = 128
+rx_num_array_elem_x = 64
 rx_num_array_elem_y = 1
 
 # (m)
-rx_element_width = 0.5e-3
-rx_element_height = 12.0e-3
+rx_element_width = 1.2e-3
+rx_element_height = 20.0e-3
 
 # [numeric impulse response]
 # rx_sub_elem_size = propagation_speed / (nyquist_rate * rx_sub_elem_size_factor)
@@ -49,7 +49,7 @@ rx_min_edge_divisor = 0.0
 #-------------------------------------------------------------------------------
 
 #
-reflectors_file = imasonic_5mhz_128elem/reflectors1
+reflectors_file = reflectors1
 
 # (m)
 reflectors_offset_x = 0.0
