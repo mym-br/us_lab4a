@@ -1,0 +1,14 @@
+
+method = sta_simple_simulated
+
+sta_config_file = config-sta.txt
+
+simulated_sta_acquisition_config_file = config-simulated_sta_acquisition.txt
+
+output_dir = output
+
+grid_config_file = config-grid.txt
+
+base_element = 24
+
+peak_offset = 0.0

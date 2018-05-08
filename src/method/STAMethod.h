@@ -134,8 +134,6 @@ STAMethod<FloatType>::execute()
 	case MethodType::sta_simple_simulated: // falls through
 	case MethodType::sta_simple_saved:
 		{
-			CoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
-			coherenceFactorEnabled = coherenceFactor.enabled();
 			auto processor = std::make_unique<SimpleSTAProcessor<FloatType>>(config, *acquisition, peakOffset);
 
 			Timer tProc;
