@@ -1,4 +1,8 @@
 
+- SimpleSTAProcessor: Use lambda.
+
+- Simulated sta: Bug with envelope.
+
 - Decimate the excitation instead of the result of the convolution.
 
 - Add Util::normalize().
