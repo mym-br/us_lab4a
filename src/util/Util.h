@@ -77,8 +77,6 @@ template<typename T, typename U> void minMaxValueField(const Matrix2<T>& data, U
 template<typename T> void multiply(std::vector<T>& list, T coefficient);
 template<typename T, typename U> void multiply(const std::vector<T>& factorList, std::vector<U>& data);
 template<typename T> void centralDiff(const std::vector<T>& inputList, T period, std::vector<T>& outputList);
-//template<typename FloatType, typename IntType, typename InputIterator, typename OutputIterator>
-//	void copyFloatToInt(InputIterator input, InputIterator inputEnd, OutputIterator output);
 template<typename T> void deleteObjects(T& container);
 template<typename T> T decibelsToLinear(T decibels);
 template<typename T> T linearToDecibels(T linear);
@@ -521,19 +519,6 @@ centralDiff(const std::vector<T>& inputList, T period, std::vector<T>& outputLis
 	outputList[outputList.size() - 2] = -coeff * inputList[inputSize - 2];
 	outputList[outputList.size() - 1] = -coeff * inputList[inputSize - 1];
 }
-
-//template<typename FloatType, typename IntType, typename InputIterator, typename OutputIterator>
-//void
-//copyFloatToInt(InputIterator input, InputIterator inputEnd, OutputIterator output)
-//{
-//	for (; input != inputEnd; ++input, ++output) {
-//		if (*input >= 0.0) {
-//			*output = static_cast<IntType>(FloatType(0.5) + *input);
-//		} else {
-//			*output = static_cast<IntType>(FloatType(-0.5) + *input);
-//		}
-//	}
-//}
 
 template<typename T>
 T
