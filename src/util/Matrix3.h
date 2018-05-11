@@ -60,11 +60,11 @@ public:
 		bool operator==(const Dim1Iterator& iter) const { return !(valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_); }
 		bool operator!=(const Dim1Iterator& iter) const { return valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_; }
 		Dim1Iterator& operator++() { valuePtr_ += increment_; return *this; }
+		Dim1Iterator operator++(int) { Dim1Iterator iter{*this}; valuePtr_ += increment_; return iter; }
 		typename Matrix3<T, Alloc>::Reference operator*() { return *valuePtr_; }
 	private:
 		typename Matrix3<T, Alloc>::Pointer valuePtr_;
 		const typename Matrix3<T, Alloc>::SizeType increment_;
-		friend class ConstDim1Iterator;
 	};
 
 	class ConstDim1Iterator {
@@ -87,6 +87,7 @@ public:
 		bool operator==(const ConstDim1Iterator& iter) const { return !(valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_); }
 		bool operator!=(const ConstDim1Iterator& iter) const { return valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_; }
 		ConstDim1Iterator& operator++() { valuePtr_ += increment_; return *this; }
+		ConstDim1Iterator operator++(int) { ConstDim1Iterator iter{*this}; valuePtr_ += increment_; return iter; }
 		typename Matrix3<T, Alloc>::ConstReference operator*() { return *valuePtr_; }
 	private:
 		typename Matrix3<T, Alloc>::ConstPointer valuePtr_;
