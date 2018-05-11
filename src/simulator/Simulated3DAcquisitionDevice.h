@@ -378,8 +378,8 @@ template<typename ImpulseResponse>
 void
 Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatType>& reflector, FFTWFilter2<FloatType>& dadtFilter)
 {
-	const FloatType refX = reflector.x;
-	const FloatType refY = reflector.y;
+	const FloatType refX = reflector.x + reflectorsOffsetX_;
+	const FloatType refY = reflector.y + reflectorsOffsetY_;
 	const FloatType refZ = reflector.z;
 	const FloatType refCoeff = reflector.value;
 

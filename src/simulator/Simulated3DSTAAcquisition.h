@@ -82,8 +82,8 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 	reflectorList_.resize(inputReflectorList.n1());
 	for (std::size_t i = 0, end = inputReflectorList.n1(); i < end; ++i) {
 		XYZValue<FloatType>& data = reflectorList_[i];
-		data.x     = inputReflectorList(i, 0) + reflectorsOffsetX;
-		data.y     = inputReflectorList(i, 1) + reflectorsOffsetY;
+		data.x     = inputReflectorList(i, 0);
+		data.y     = inputReflectorList(i, 1);
 		data.z     = inputReflectorList(i, 2);
 		data.value = inputReflectorList(i, 3);
 	}

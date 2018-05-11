@@ -18,19 +18,20 @@
 #ifndef SIMULATEDSTAACQUISITION_H_
 #define SIMULATEDSTAACQUISITION_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
-#include <boost/scoped_ptr.hpp>
-
+#include "Exception.h"
 #include "Log.h"
+#include "Matrix2.h"
 #include "ParameterMap.h"
 #include "Project.h"
-#include "SimulatedAcquisitionDevice.h"
+#include "Simulated3DAcquisitionDevice.h"
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
 #include "Util.h"
-#include "XZ.h"
+#include "XYZValue.h"
 
 
 
@@ -45,59 +46,57 @@ public:
 	virtual void execute(unsigned int baseElement, unsigned int txElement,
 				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
-	SimulatedSTAAcquisition(const SimulatedSTAAcquisition&);
-	SimulatedSTAAcquisition& operator=(const SimulatedSTAAcquisition&);
+	SimulatedSTAAcquisition(const SimulatedSTAAcquisition&) = delete;
+	SimulatedSTAAcquisition& operator=(const SimulatedSTAAcquisition&) = delete;
 
 	Project& project_;
 	const STAConfiguration<FloatType>& config_;
-	FloatType maxAbsValue_;
-	boost::scoped_ptr<SimulatedAcquisitionDevice<FloatType> > acqDevice_;
-	std::vector<XZ<FloatType> > reflectorList_;
+	FloatType maxAbsValue_; // auxiliar
+	std::unique_ptr<Simulated3DAcquisitionDevice<FloatType>> acqDevice_;
+	std::vector<XYZValue<FloatType>> reflectorList_;
 };
 
 
 
 template<typename FloatType>
 SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, const STAConfiguration<FloatType>& config)
-		: project_(project)
-		, config_(config)
-		, maxAbsValue_(0.0)
-		, acqDevice_(0)
+		: project_{project}
+		, config_{config}
+		, maxAbsValue_{}
 {
 	//TODO: check numChannels/numChannelsMux and other params
 
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 	ConstParameterMapPtr pm = project_.loadChildParameterMap(taskPM, "simulated_sta_acquisition_config_file");
-	const FloatType widthElem            = pm->value<FloatType>(   "element_width"      , 1.0e-6,  10.0e-3);
-	const FloatType heightElem           = pm->value<FloatType>(   "element_height"     , 1.0e-3, 100.0e-3);
-	const unsigned int numDivWidth       = pm->value<unsigned int>("num_width_div"      ,      1,     1000);
-	const std::string reflectorsFileName = pm->value<std::string>( "reflectors_file");
-	const FloatType reflectorsXOffset    = pm->value<FloatType>(   "reflectors_x_offset",   -0.2,      0.2);
-	const FloatType noiseAmplitude       = pm->value<FloatType>(   "noise_amplitude"    ,    0.0,   1.0e10);
 
-	std::vector<std::pair<FloatType, FloatType> > inputReflectorList;
+	const std::string reflectorsFileName = pm->value<std::string>("reflectors_file");
+	const FloatType reflectorsOffsetX    = pm->value<FloatType>(  "reflectors_offset_x", -10000.0, 10000.0);
+
+	Matrix2<FloatType> inputReflectorList;
 	project_.loadHDF5(reflectorsFileName, "reflectors", inputReflectorList);
-
-	reflectorList_.resize(inputReflectorList.size());
-	for (std::size_t i = 0, end = inputReflectorList.size(); i < end; ++i) {
-		std::pair<FloatType, FloatType>& orig = inputReflectorList[i];
-		XZ<FloatType>& dest = reflectorList_[i];
-		dest.x = orig.first + reflectorsXOffset;
-		dest.z = orig.second;
+	if (inputReflectorList.n2() != 2) {
+		THROW_EXCEPTION(InvalidValueException, "Wrong number of columns (" << inputReflectorList.n2() <<
+				") in the file \"" << reflectorsFileName << ".h5\" (should be 2). ");
 	}
 
-	acqDevice_.reset(new SimulatedAcquisitionDevice<FloatType>(
-							config_.numElementsMux,
-							config_.pitch,
-							config_.samplingFrequency,
-							widthElem,
-							heightElem,
-							numDivWidth,
-							noiseAmplitude));
+	reflectorList_.resize(inputReflectorList.n1());
+	for (std::size_t i = 0, end = inputReflectorList.n1(); i < end; ++i) {
+		XYZValue<FloatType>& data = reflectorList_[i];
+		data.x     = inputReflectorList(i, 0);
+		data.y     = 0.0;
+		data.z     = inputReflectorList(i, 1);
+		data.value = 1.0;
+	}
+
+	acqDevice_ = std::make_unique<Simulated3DAcquisitionDevice<FloatType>>(
+								*pm,
+								config_.samplingFrequency,
+								config_.propagationSpeed,
+								config_.maxFrequency);
 	acqDevice_->setAcquisitionTime(config_.acquisitionTime);
 	acqDevice_->setExcitationWaveform(config_.centerFrequency);
-	acqDevice_->setPropagationSpeed(config_.propagationSpeed);
 	acqDevice_->setReflectorList(reflectorList_);
+	acqDevice_->setReflectorOffset(reflectorsOffsetX, 0.0);
 }
 
 template<typename FloatType>
@@ -112,13 +111,14 @@ SimulatedSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned i
 {
 	LOG_DEBUG << "ACQ baseElement=" << baseElement << " txElement=" << txElement;
 
-	const std::size_t ascanLength = acqDevice_->ascanLength();
-	if (ascanLength == 0) {
-		THROW_EXCEPTION(InvalidValueException, "ascanLength = 0.");
+	const std::size_t signalLength = acqDevice_->signalLength();
+	if (signalLength == 0) {
+		THROW_EXCEPTION(InvalidValueException, "signalLength = 0.");
 	}
-	if (acqData.n1() != config_.numElements || acqData.n2() != ascanLength) {
-		acqData.resize(config_.numElements, ascanLength);
-		LOG_DEBUG << "RESIZE acqData(channels,ascanLength): channels=" << config_.numElements << " ascanLength=" << ascanLength;
+	if (acqData.n1() != config_.numElements || acqData.n2() != signalLength) {
+		acqData.resize(config_.numElements, signalLength);
+		LOG_DEBUG << "RESIZE acqData(channels, signalLength): channels=" << config_.numElements
+				<< " signalLength=" << signalLength;
 	}
 
 	std::vector<bool> txMask(config_.numElementsMux);
@@ -131,14 +131,13 @@ SimulatedSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned i
 	}
 	acqDevice_->setActiveRxElements(rxMask);
 
-	const std::vector<FloatType>& ascanList = acqDevice_->getAscan();
+	const std::vector<FloatType>& signalList = acqDevice_->getSignalList();
 
-	//TODO: copy to SimulatedComplSeqSTAAcquisition
-	const FloatType mx = Util::maxAbsolute(ascanList);
+	const FloatType mx = Util::maxAbsolute(signalList);
 	if (mx > maxAbsValue_) maxAbsValue_ = mx;
-	LOG_INFO << "########## max(abs(acqData)) = " << mx << " global: " << maxAbsValue_;
+	LOG_DEBUG << "########## max(abs(signalList)): " << mx << " global: " << maxAbsValue_;
 
-	std::copy(ascanList.begin(), ascanList.end(), acqData.begin()); //TODO: memcpy? how to avoid this copy?
+	std::copy(signalList.begin(), signalList.end(), acqData.begin()); //TODO: memcpy? how to avoid this copy?
 }
 
 } // namespace Lab

@@ -63,7 +63,6 @@ HEADERS  += \
     src/processor/SimpleSTAProcessor.h \
     src/processor/DefaultSTAProcessor.h \
     src/simulator/SimulatedSTAAcquisition.h \
-    src/simulator/SimulatedAcquisitionDevice.h \
     src/util/XZValueFactor.h \
     src/util/XZValue.h \
     src/util/XZ.h \
