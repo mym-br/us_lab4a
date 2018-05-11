@@ -124,6 +124,8 @@ template<typename T> void removeDC(T* data, std::size_t size, std::size_t beginO
 
 template<typename T> T sign(T value);
 
+template<typename T> void normalize(T& data);
+
 //#############################################################################
 
 template<typename T>
@@ -881,6 +883,14 @@ sign(T value)
 	if (value > 0) return 1;
 	if (value < 0) return -1;
 	return 0;
+}
+
+template<typename T>
+void
+normalize(T& data)
+{
+	const auto coeff = 1 / maxAbsolute(data);
+	multiply(data, coeff);
 }
 
 } // namespace Util

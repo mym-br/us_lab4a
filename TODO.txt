@@ -1,6 +1,4 @@
 
-- Add Util::normalize().
-
 - SimTransientAcousticBeam
 i5
 single-thread 3.75 s

@@ -261,9 +261,7 @@ Simulated3DAcquisitionDevice<FloatType>::prepareExcitationDadt(const std::vector
 	f.setCoefficients(decimator_->lowPassFIRFilter(), filterFreqCoeff);
 	f.filter(filterFreqCoeff, unfilteredDadt, dadt_); // adds delay of (filter size - 1) / 2 samples
 
-	// Normalize.
-	const FloatType coeff = 1 / Util::maxAbsolute(dadt_);
-	Util::multiply(dadt_, coeff);
+	Util::normalize(dadt_);
 }
 
 template<typename FloatType>
