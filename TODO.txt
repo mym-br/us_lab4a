@@ -1,6 +1,4 @@
 
-- Low-pass filter the excitation instead of the result of the convolution.
-
 - Add Util::normalize().
 
 - SimTransientAcousticBeam
