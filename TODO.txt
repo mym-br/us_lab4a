@@ -3,9 +3,6 @@
 
 - Add Util::normalize().
 
-- Use nyquistRate to define the image grid.
-	Add max_frequency.
-
 - SimTransientAcousticBeam
 i5
 single-thread 3.75 s

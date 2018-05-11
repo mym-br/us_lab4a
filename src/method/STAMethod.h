@@ -121,8 +121,9 @@ STAMethod<FloatType>::execute()
 
 	Matrix2<XZValueFactor<FloatType>> gridData;
 
-	const FloatType lambda = config.propagationSpeed / config.centerFrequency;
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), lambda, gridData);
+	const FloatType nyquistRate = 2.0 * config.maxFrequency;
+	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
+	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	bool coherenceFactorEnabled = false;
 	bool vectorialProcessingWithEnvelope = false;
