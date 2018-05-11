@@ -102,7 +102,6 @@ HEADERS  += \
     src/util/Util.h \
     src/util/KaiserWindow.h \
     src/util/Interpolator.h \
-    src/processor/CrossCorrelationSTAProcessor.h \
     src/util/Value.h \
     src/util/RealToComplexFFT.h \
     src/util/ComplexToRealIFFT.h \
