@@ -80,6 +80,7 @@ template<typename T> void centralDiff(const std::vector<T>& inputList, T period,
 template<typename T> void deleteObjects(T& container);
 template<typename T> T decibelsToLinear(T decibels);
 template<typename T> T linearToDecibels(T linear);
+template<typename T> void linearToDecibels(std::vector<T>& data, T minDecibels);
 template<typename T> T degreeToRadian(T d);
 template<typename T> T radianToDegree(T r);
 
@@ -532,6 +533,21 @@ template<typename T>
 T
 linearToDecibels(T linear) {
 	return T(20) * std::log10(linear);
+}
+
+template<typename T>
+void
+linearToDecibels(std::vector<T>& data, T minDecibels)
+{
+	normalize(data);
+	auto minValue = decibelsToLinear(minDecibels);
+	for (auto& value : data) {
+		if (value <= minValue) {
+			value = minDecibels;
+		} else {
+			value = linearToDecibels(value);
+		}
+	}
 }
 
 template<typename T>

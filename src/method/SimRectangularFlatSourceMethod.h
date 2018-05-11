@@ -186,6 +186,18 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	Util::copyXZValue(gridData, projGridData);
 	project_.showFigure3D(1, "Beam", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+
+	std::vector<FloatType> beamTY(gridData.n2());
+	auto tyInterval = gridData.dim2Interval(0);
+	Util::copyUsingOperator(tyInterval.first, tyInterval.second, beamTY.begin(), Util::CopyValueOp{});
+	Util::linearToDecibels(beamTY, -100.0);
+	project_.showFigure2D(1, "Beam theta-y", thetaYList, beamTY);
+
+	std::vector<FloatType> beamTX(gridData.n1());
+	auto txInterval = gridData.dim1Interval(0);
+	Util::copyUsingOperator(txInterval.first, txInterval.second, beamTX.begin(), Util::CopyValueOp{});
+	Util::linearToDecibels(beamTX, -100.0);
+	project_.showFigure2D(2, "Beam theta-x", thetaXList, beamTX);
 }
 
 template<typename FloatType>
@@ -298,6 +310,18 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	Util::copyXZValue(gridData, projGridData);
 	project_.showFigure3D(1, "Beam", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+
+	std::vector<FloatType> beamTY(gridData.n2());
+	auto tyInterval = gridData.dim2Interval(0);
+	Util::copyUsingOperator(tyInterval.first, tyInterval.second, beamTY.begin(), Util::CopyValueOp{});
+	Util::linearToDecibels(beamTY, -100.0);
+	project_.showFigure2D(1, "Beam theta-y", thetaYList, beamTY);
+
+	std::vector<FloatType> beamTX(gridData.n1());
+	auto txInterval = gridData.dim1Interval(0);
+	Util::copyUsingOperator(txInterval.first, txInterval.second, beamTX.begin(), Util::CopyValueOp{});
+	Util::linearToDecibels(beamTX, -100.0);
+	project_.showFigure2D(2, "Beam theta-x", thetaXList, beamTX);
 }
 
 template<typename FloatType>
