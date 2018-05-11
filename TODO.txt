@@ -1,6 +1,4 @@
 
-- SimpleSTAProcessor: Use lambda.
-
 - Decimate the excitation instead of the result of the convolution.
 
 - Add Util::normalize().

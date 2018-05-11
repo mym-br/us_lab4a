@@ -101,7 +101,6 @@ DefaultSTAProcessor<FloatType>::DefaultSTAProcessor(
 
 	tempSignal_.resize(signalLength);
 	signalMatrix_.resize(config_.numElements, config_.numElements, signalLength);
-	//signalMatrix_ = 0.0;
 
 	signalOffset_ = (config_.samplingFrequency * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR) * peakOffset / config_.centerFrequency;
 	LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
