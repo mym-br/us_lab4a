@@ -211,9 +211,11 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType beamDistance     = taskPM->value<FloatType>("beam_distance", 0.0, 100.0);
 	const FloatType beamThetaYStep   = taskPM->value<FloatType>("beam_theta_y_step", 0.0, 10.0);
-	const FloatType beamThetaYMax    = taskPM->value<FloatType>("beam_theta_y_max" , 0.0, 90.0);
+	const FloatType beamThetaYMin    = taskPM->value<FloatType>("beam_theta_y_min" , -90.0, 90.0);
+	const FloatType beamThetaYMax    = taskPM->value<FloatType>("beam_theta_y_max" , beamThetaYMin + 0.1, 90.0);
 	const FloatType beamThetaXStep   = taskPM->value<FloatType>("beam_theta_x_step", 0.0, 10.0);
-	const FloatType beamThetaXMax    = taskPM->value<FloatType>("beam_theta_x_max" , 0.0, 90.0);
+	const FloatType beamThetaXMin    = taskPM->value<FloatType>("beam_theta_x_min" , -90.0, 90.0);
+	const FloatType beamThetaXMax    = taskPM->value<FloatType>("beam_theta_x_max" , beamThetaXMin + 0.1, 90.0);
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
 	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
@@ -251,9 +253,9 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	Util::centralDiff(exc, dt, dvdt);
 
 	std::vector<FloatType> thetaXList;
-	Util::fillSequenceFromStartToEndWithSize(thetaXList, 0.0, beamThetaXMax, std::ceil(beamThetaXMax / beamThetaXStep) + 1);
+	Util::fillSequenceFromStartToEndWithSize(thetaXList, beamThetaXMin, beamThetaXMax, std::ceil((beamThetaXMax - beamThetaXMin) / beamThetaXStep) + 1);
 	std::vector<FloatType> thetaYList;
-	Util::fillSequenceFromStartToEndWithSize(thetaYList, 0.0, beamThetaYMax, std::ceil(beamThetaYMax / beamThetaYStep) + 1);
+	Util::fillSequenceFromStartToEndWithSize(thetaYList, beamThetaYMin, beamThetaYMax, std::ceil((beamThetaYMax - beamThetaYMin) / beamThetaYStep) + 1);
 
 	Matrix2<XZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
 	Matrix2<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
@@ -311,14 +313,28 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	project_.showFigure3D(1, "Beam", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 
+	FloatType sectionTY = 0.0;
+	FloatType sectionTX = 0.0;
+	const bool useFocus = taskPM->value<bool>("use_tx_focus");
+	if (useFocus) {
+		const FloatType focusX = taskPM->value<FloatType>("tx_focus_x", -10000.0, 10000.0);
+		const FloatType focusY = taskPM->value<FloatType>("tx_focus_y", -10000.0, 10000.0);
+		const FloatType focusZ = taskPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
+		sectionTY = Util::radianToDegree(std::atan2(focusX, focusZ));
+		sectionTX = Util::radianToDegree(std::atan2(focusY, focusZ));
+	}
+	std::size_t sectionTYIndex = std::rint(((sectionTY - beamThetaYMin) / (beamThetaYMax - beamThetaYMin)) * (thetaYList.size() - 1));
+	std::size_t sectionTXIndex = std::rint(((sectionTX - beamThetaXMin) / (beamThetaXMax - beamThetaXMin)) * (thetaXList.size() - 1));
+	LOG_DEBUG << "Section theta-x: " << thetaXList[sectionTXIndex] << " theta-y: " << thetaYList[sectionTYIndex];
+
 	std::vector<FloatType> beamTY(gridData.n2());
-	auto tyInterval = gridData.dim2Interval(0);
+	auto tyInterval = gridData.dim2Interval(sectionTXIndex);
 	Util::copyUsingOperator(tyInterval.first, tyInterval.second, beamTY.begin(), Util::CopyValueOp{});
 	Util::linearToDecibels(beamTY, -100.0);
 	project_.showFigure2D(1, "Beam theta-y", thetaYList, beamTY);
 
 	std::vector<FloatType> beamTX(gridData.n1());
-	auto txInterval = gridData.dim1Interval(0);
+	auto txInterval = gridData.dim1Interval(sectionTYIndex);
 	Util::copyUsingOperator(txInterval.first, txInterval.second, beamTX.begin(), Util::CopyValueOp{});
 	Util::linearToDecibels(beamTX, -100.0);
 	project_.showFigure2D(2, "Beam theta-x", thetaXList, beamTX);

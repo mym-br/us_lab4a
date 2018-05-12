@@ -12,14 +12,16 @@ min_edge_divisor = 0.0
 beam_distance = 1.0
 
 # (degree)
-beam_theta_y_step = 0.5
+beam_theta_y_step = 0.1
+beam_theta_y_min = -90.0
 beam_theta_y_max = 90.0
-beam_theta_x_step = 0.01
-beam_theta_x_max = 10.0
+beam_theta_x_step = 0.1
+beam_theta_x_min = -30.0
+beam_theta_x_max = 30.0
 
 # (m)
-source_width = 0.5e-3
-source_height = 12.0e-3
+source_width = 0.15e-3
+source_height = 0.15e-3
 
 # (m/s)
 propagation_speed = 1500.0
@@ -39,11 +41,11 @@ sampling_frequency_factor = 32.0
 # Array parameters.
 use_tx_focus = true
 # (m)
-tx_focus_x = 0.0
-tx_focus_y = 0.0
-tx_focus_z = 40.0e-3
-tx_array_pitch_x = 0.6e-3
-tx_array_pitch_y = 13.0e-3
+tx_focus_x = -100.0e-3
+tx_focus_y = -30.0e-3
+tx_focus_z = 200.0e-3
+tx_array_pitch_x = 0.15e-3
+tx_array_pitch_y = 0.15e-3
 # 1..n
 tx_num_array_elem_x = 32
-tx_num_array_elem_y = 1
+tx_num_array_elem_y = 8
