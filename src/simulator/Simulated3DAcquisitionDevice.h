@@ -439,6 +439,9 @@ template<typename FloatType>
 const std::vector<FloatType>&
 Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 {
+	if (activeTxElem_.empty()) {
+		THROW_EXCEPTION(InvalidStateException, "The active transmit elements have not been defined.");
+	}
 	if (signalList_.empty()) {
 		THROW_EXCEPTION(InvalidStateException, "The active receive elements have not been defined.");
 	}
