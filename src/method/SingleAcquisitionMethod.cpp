@@ -93,9 +93,9 @@ void
 SingleAcquisitionMethod::execute()
 {
 #ifndef TEST_MODE
-	const std::size_t ascanLength = acq_->getAscanLength();
-	std::vector<double> ascan(ascanLength);
-	std::vector<float> ascanBuffer;
+	const std::size_t signalLength = acq_->getSignalLength();
+	std::vector<double> signal(signalLength);
+	std::vector<float> signalBuffer;
 
 	acq_->setBaseElement(config_.baseElement);
 
@@ -106,40 +106,40 @@ SingleAcquisitionMethod::execute()
 	for (unsigned int i = 0; i < config_.averageN; ++i) {
 		LOG_DEBUG << "ACQ " << i;
 
-		acq_->getAscan(ascanBuffer);
+		acq_->getSignal(signalBuffer);
 
-		const float* ascanBase = &ascanBuffer[config_.rxGroupElement * ascanLength];
-		Util::addElements(ascanBase, ascan.begin(), ascan.end());
+		const float* signalBase = &signalBuffer[config_.rxGroupElement * signalLength];
+		Util::addElements(signalBase, signal.begin(), signal.end());
 	}
 
 	if (config_.averageN > 1) {
 		double factor = 1.0 / config_.averageN;
-		Util::multiply(ascan, factor);
+		Util::multiply(signal, factor);
 	}
 
-	std::vector<double> t(ascanLength);
+	std::vector<double> t(signalLength);
 	double dt = 1.0 / config_.samplingFrequency;
-	for (std::size_t i = 0; i < ascanLength; ++i) {
+	for (std::size_t i = 0; i < signalLength; ++i) {
 		t[i] = i * dt;
 	}
 
 #else
-# define ASCAN_LENGTH 1000000
-	std::vector<double> ascan(ASCAN_LENGTH), t(ASCAN_LENGTH), b(ASCAN_LENGTH);
-	for (int i = 0; i < ASCAN_LENGTH / 4; ++i) {
-		ascan[i] = i;
+# define SIGNAL_LENGTH 1000000
+	std::vector<double> signal(SIGNAL_LENGTH), t(SIGNAL_LENGTH), b(SIGNAL_LENGTH);
+	for (int i = 0; i < SIGNAL_LENGTH / 4; ++i) {
+		signal[i] = i;
 		t[i] = i * 1e-12;
-		b[i] = -ascan[i] * 0.5;
+		b[i] = -signal[i] * 0.5;
 	}
-	for (int i = ASCAN_LENGTH / 4; i < ASCAN_LENGTH * 3 / 4; ++i) {
-		ascan[i] = ASCAN_LENGTH / 2 - i;
+	for (int i = SIGNAL_LENGTH / 4; i < SIGNAL_LENGTH * 3 / 4; ++i) {
+		signal[i] = SIGNAL_LENGTH / 2 - i;
 		t[i] = i * 1e-12;
-		b[i] = -ascan[i] * 0.5;
+		b[i] = -signal[i] * 0.5;
 	}
-	for (int i = ASCAN_LENGTH * 3 / 4; i < ASCAN_LENGTH; ++i) {
-		ascan[i] = i - ASCAN_LENGTH;
+	for (int i = SIGNAL_LENGTH * 3 / 4; i < SIGNAL_LENGTH; ++i) {
+		signal[i] = i - SIGNAL_LENGTH;
 		t[i] = i * 1e-12;
-		b[i] = -ascan[i] * 0.5;
+		b[i] = -signal[i] * 0.5;
 	}
 #endif
 
@@ -148,16 +148,16 @@ SingleAcquisitionMethod::execute()
 		std::ostringstream filePath;
 		filePath << config_.savedAcqDir << std::setfill('0') << "/signal-base" << std::setw(4) << config_.baseElement <<
 				"-tx" << std::setw(4) << config_.txGroupElement << "-rx" << std::setw(4) << config_.rxGroupElement;
-		project_.saveHDF5(ascan, filePath.str(), "ascan");
+		project_.saveHDF5(signal, filePath.str(), "signal");
 	}
 
-	project_.showFigure2D(0, "A-scan", t, ascan);
+	project_.showFigure2D(0, "A-scan", t, signal);
 
 #if 0
 	LOG_DEBUG << "Executing the plot script...";
 	std::vector<std::string> args;
 	std::ostringstream arg1;
-	arg1 << config_.savedAcqDir << '/' << config_.ascanFile << ".h5";
+	arg1 << config_.savedAcqDir << '/' << config_.signalFile << ".h5";
 	args.push_back(arg1.str());
 	std::ostringstream arg2;
 	arg2.precision(FLOAT_SCIENTIFIC_NOTATION_NUM_DIGITS_AFTER_DECIMAL_POINT);

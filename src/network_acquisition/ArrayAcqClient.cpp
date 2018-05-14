@@ -95,26 +95,26 @@ ArrayAcqClient::handleOkOrErrorResponse()
 }
 
 boost::uint32_t
-ArrayAcqClient::getAscanLength()
+ArrayAcqClient::getSignalLength()
 {
-	prepareMessage(GET_ASCAN_LENGTH_REQUEST);
+	prepareMessage(GET_SIGNAL_LENGTH_REQUEST);
 	sendMessage(socket_);
 
 	boost::uint32_t messageType = receiveMessage(socket_);
-	if (messageType != GET_ASCAN_LENGTH_RESPONSE) {
+	if (messageType != GET_SIGNAL_LENGTH_RESPONSE) {
 		handleError(messageType);
 	}
 	return dataRawBuffer_.getUInt32();
 }
 
 void
-ArrayAcqClient::getAscan(std::vector<float>& buffer)
+ArrayAcqClient::getSignal(std::vector<float>& buffer)
 {
-	prepareMessage(GET_ASCAN_REQUEST);
+	prepareMessage(GET_SIGNAL_REQUEST);
 	sendMessage(socket_);
 
 	boost::uint32_t messageType = receiveMessage(socket_);
-	if (messageType != GET_ASCAN_RESPONSE) {
+	if (messageType != GET_SIGNAL_RESPONSE) {
 		handleError(messageType);
 	}
 	//dataRawBuffer_.getFloatArray(buffer);
@@ -122,13 +122,13 @@ ArrayAcqClient::getAscan(std::vector<float>& buffer)
 }
 
 void
-ArrayAcqClient::getAscan(float* buffer, std::size_t size)
+ArrayAcqClient::getSignal(float* buffer, std::size_t size)
 {
-	prepareMessage(GET_ASCAN_REQUEST);
+	prepareMessage(GET_SIGNAL_REQUEST);
 	sendMessage(socket_);
 
 	boost::uint32_t messageType = receiveMessage(socket_);
-	if (messageType != GET_ASCAN_RESPONSE) {
+	if (messageType != GET_SIGNAL_RESPONSE) {
 		handleError(messageType);
 	}
 	//dataRawBuffer_.getFloatArray(buffer);

@@ -57,14 +57,14 @@ private:
 
 	void setTxDelays(const std::vector<float>& txDelays);
 	void setTxDelays(const std::vector<double>& txDelays);
-	void getAscan(MultiplexedAcquisition<float>::AcquisitionDataType& acqData);
-	void getAscan(MultiplexedAcquisition<double>::AcquisitionDataType& acqData);
+	void getSignal(MultiplexedAcquisition<float>::AcquisitionDataType& acqData);
+	void getSignal(MultiplexedAcquisition<double>::AcquisitionDataType& acqData);
 
 	const Project& project_;
 	const Config& config_;
 	boost::scoped_ptr<ArrayAcqClient> acq_;
 	std::vector<float> txDelays_;
-	std::vector<float> ascanBuffer_;
+	std::vector<float> signalBuffer_;
 };
 
 
@@ -122,17 +122,17 @@ NetworkMultiplexedAcquisition<FloatType, Config>::setTxDelays(const std::vector<
 
 template<typename FloatType, typename Config>
 void
-NetworkMultiplexedAcquisition<FloatType, Config>::getAscan(MultiplexedAcquisition<float>::AcquisitionDataType& acqData)
+NetworkMultiplexedAcquisition<FloatType, Config>::getSignal(MultiplexedAcquisition<float>::AcquisitionDataType& acqData)
 {
-	acq_->getAscan(&acqData(0, 0), acqData.size());
+	acq_->getSignal(&acqData(0, 0), acqData.size());
 }
 
 template<typename FloatType, typename Config>
 void
-NetworkMultiplexedAcquisition<FloatType, Config>::getAscan(MultiplexedAcquisition<double>::AcquisitionDataType& acqData)
+NetworkMultiplexedAcquisition<FloatType, Config>::getSignal(MultiplexedAcquisition<double>::AcquisitionDataType& acqData)
 {
-	acq_->getAscan(ascanBuffer_);
-	std::copy(ascanBuffer_.begin(), ascanBuffer_.end(), acqData.begin()); // float --> double
+	acq_->getSignal(signalBuffer_);
+	std::copy(signalBuffer_.begin(), signalBuffer_.end(), acqData.begin()); // float --> double
 }
 
 template<typename FloatType, typename Config>
@@ -149,20 +149,20 @@ NetworkMultiplexedAcquisition<FloatType, Config>::execute(
 //		THROW_EXCEPTION(InvalidParameterException, "Invalid txDelays size: " << txDelays.size() << '.');
 //	}
 
-	const std::size_t ascanLength = acq_->getAscanLength();
-	if (ascanLength == 0) {
-		THROW_EXCEPTION(InvalidParameterException, "ascanLength = 0.");
+	const std::size_t signalLength = acq_->getSignalLength();
+	if (signalLength == 0) {
+		THROW_EXCEPTION(InvalidParameterException, "signalLength = 0.");
 	}
-	if (acqData.n1() != config_.numElements || acqData.n2() != ascanLength) {
-		acqData.resize(config_.numElements, ascanLength);
-		LOG_DEBUG << "RESIZE acqData(channels=" << config_.numElements << ", ascanLength=" << ascanLength << ')';
+	if (acqData.n1() != config_.numElements || acqData.n2() != signalLength) {
+		acqData.resize(config_.numElements, signalLength);
+		LOG_DEBUG << "RESIZE acqData(channels=" << config_.numElements << ", signalLength=" << signalLength << ')';
 	}
 
 	acq_->setBaseElement(baseElement);
 
 	setTxDelays(txDelays);
 
-	getAscan(acqData);
+	getSignal(acqData);
 }
 
 } // namespace Lab

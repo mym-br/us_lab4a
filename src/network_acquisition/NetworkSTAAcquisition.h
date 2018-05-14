@@ -53,7 +53,7 @@ private:
 	const Project& project_;
 	const STAConfiguration<FloatType>& config_;
 	boost::scoped_ptr<ArrayAcqClient> acq_;
-	std::vector<float> ascanBuffer_;
+	std::vector<float> signalBuffer_;
 };
 
 
@@ -96,13 +96,13 @@ NetworkSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int
 {
 	LOG_DEBUG << "ACQ baseElement=" << baseElement << " txElement=" << txElement;
 
-	const std::size_t ascanLength = acq_->getAscanLength();
-	if (ascanLength == 0) {
-		THROW_EXCEPTION(InvalidValueException, "ascanLength = 0.");
+	const std::size_t signalLength = acq_->getSignalLength();
+	if (signalLength == 0) {
+		THROW_EXCEPTION(InvalidValueException, "signalLength = 0.");
 	}
-	if (acqData.n1() != config_.numElements || acqData.n2() != ascanLength) {
-		acqData.resize(config_.numElements, ascanLength);
-		LOG_DEBUG << "RESIZE acqData(channels,ascanLength): channels=" << config_.numElements << " ascanLength=" << ascanLength;
+	if (acqData.n1() != config_.numElements || acqData.n2() != signalLength) {
+		acqData.resize(config_.numElements, signalLength);
+		LOG_DEBUG << "RESIZE acqData(channels,signalLength): channels=" << config_.numElements << " signalLength=" << signalLength;
 	}
 
 	acq_->setBaseElement(baseElement);
@@ -111,9 +111,9 @@ NetworkSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int
 	txMask[txElement] = '1';
 	acq_->setActiveTransmitElements(txMask);
 
-	acq_->getAscan(ascanBuffer_);
+	acq_->getSignal(signalBuffer_);
 
-	std::copy(ascanBuffer_.begin(), ascanBuffer_.end(), acqData.begin());
+	std::copy(signalBuffer_.begin(), signalBuffer_.end(), acqData.begin());
 }
 
 } // namespace Lab

@@ -38,9 +38,9 @@ public:
 	ArrayAcqClient(const char* serverAddress, unsigned short portNumber);
 	~ArrayAcqClient();
 
-	void getAscan(std::vector<float>& buffer);
-	void getAscan(float* buffer, std::size_t size);
-	boost::uint32_t getAscanLength();
+	void getSignal(std::vector<float>& buffer);
+	void getSignal(float* buffer, std::size_t size);
+	boost::uint32_t getSignalLength();
 	float getMaxSampleValue();
 	float getMinSampleValue();
 	float getSamplingFrequency();
