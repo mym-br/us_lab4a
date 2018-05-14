@@ -58,6 +58,8 @@ SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
 {
 	fillConfiguration();
 
+	project_.createDirectory(config_.savedAcqDir, false);
+
 	ConstParameterMapPtr pm = project_.loadParameterMap("config-network_acquisition.txt");
 	std::string serverIpAddress = pm->value<std::string>("server_ip_address");
 	unsigned short portNumber = pm->value<unsigned short>("server_port_number", 49152, 65535);

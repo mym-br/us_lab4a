@@ -100,6 +100,7 @@ void
 DeviceSectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 {
 	const std::string outputDir = project_.taskParameterMap()->value<std::string>("output_dir");
+	project_.createDirectory(outputDir, false);
 
 	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
 	Matrix2<XZValue<FloatType>> imageData;

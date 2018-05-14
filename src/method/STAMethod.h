@@ -86,6 +86,9 @@ STAMethod<FloatType>::execute()
 
 	const STAConfiguration<FloatType> config(project_.loadChildParameterMap(taskPM, "sta_config_file"));
 	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
+	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset", 0.0, 50.0);
+	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	project_.createDirectory(outputDir, false);
 
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
@@ -115,6 +118,7 @@ STAMethod<FloatType>::execute()
 
 	if (project_.method() == MethodType::sta_save_signals) {
 		std::string dataDir = taskPM->value<std::string>("data_dir");
+		project_.createDirectory(dataDir, false);
 		saveSignals(config, *acquisition, baseElement, dataDir);
 		return;
 	}
@@ -127,9 +131,6 @@ STAMethod<FloatType>::execute()
 
 	bool coherenceFactorEnabled = false;
 	bool vectorialProcessingWithEnvelope = false;
-
-	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset", 0.0, 50.0);
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
 
 	switch (project_.method()) {
 	case MethodType::sta_simple_simulated: // falls through

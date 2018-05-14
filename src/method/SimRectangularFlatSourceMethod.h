@@ -88,6 +88,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	project_.createDirectory(outputDir, false);
 
 	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType beamDistance     = taskPM->value<FloatType>("beam_distance", 0.0, 100.0);
@@ -198,6 +199,14 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	Util::copyUsingOperator(txInterval.first, txInterval.second, beamTX.begin(), Util::CopyValueOp{});
 	Util::linearToDecibels(beamTX, -100.0);
 	project_.showFigure2D(2, "Beam theta-x", thetaXList, beamTX);
+
+	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
+	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
+	project_.saveImageToHDF5(gridData, outputDir);
+	project_.saveHDF5(thetaYList, outputDir + "/theta_y"     , "value");
+	project_.saveHDF5(beamTY    , outputDir + "/beam_theta_y", "value");
+	project_.saveHDF5(thetaXList, outputDir + "/theta_x"     , "value");
+	project_.saveHDF5(beamTX    , outputDir + "/beam_theta_x", "value");
 }
 
 template<typename FloatType>
@@ -207,6 +216,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	project_.createDirectory(outputDir, false);
 
 	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType beamDistance     = taskPM->value<FloatType>("beam_distance", 0.0, 100.0);
@@ -338,6 +348,14 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	Util::copyUsingOperator(txInterval.first, txInterval.second, beamTX.begin(), Util::CopyValueOp{});
 	Util::linearToDecibels(beamTX, -100.0);
 	project_.showFigure2D(2, "Beam theta-x", thetaXList, beamTX);
+
+	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
+	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
+	project_.saveImageToHDF5(gridData, outputDir);
+	project_.saveHDF5(thetaYList, outputDir + "/theta_y"     , "value");
+	project_.saveHDF5(beamTY    , outputDir + "/beam_theta_y", "value");
+	project_.saveHDF5(thetaXList, outputDir + "/theta_x"     , "value");
+	project_.saveHDF5(beamTX    , outputDir + "/beam_theta_x", "value");
 }
 
 template<typename FloatType>
@@ -347,6 +365,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	project_.createDirectory(outputDir, false);
 
 	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
@@ -417,6 +436,10 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
 	Util::copyXZValue(gridData, projGridData);
 	project_.showFigure3D(1, "Acoustic field", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Figure::COLORMAP_VIRIDIS);
+
+	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
+	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
+	project_.saveImageToHDF5(gridData, outputDir);
 }
 
 template<typename FloatType>
@@ -426,6 +449,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	project_.createDirectory(outputDir, false);
 
 	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
@@ -501,6 +525,10 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 	Util::copyXZValue(gridData, projGridData);
 	project_.showFigure3D(1, "Acoustic field", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Figure::COLORMAP_VIRIDIS);
+
+	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
+	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
+	project_.saveImageToHDF5(gridData, outputDir);
 }
 
 template<typename FloatType>
@@ -510,6 +538,7 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	project_.createDirectory(outputDir, false);
 
 	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
@@ -579,6 +608,13 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset / samplingFreq, dt, signal.size());
 	Util::multiply(signal, density);
 	project_.showFigure2D(3, "Pressure", tSignal, signal);
+
+	project_.saveHDF5(exc    , outputDir + "/excitation"           , "value");
+	project_.saveHDF5(tExc   , outputDir + "/excitation_time"      , "value");
+	project_.saveHDF5(h      , outputDir + "/impulse_response"     , "value");
+	project_.saveHDF5(tH     , outputDir + "/impulse_response_time", "value");
+	project_.saveHDF5(signal , outputDir + "/pressure"             , "value");
+	project_.saveHDF5(tSignal, outputDir + "/pressure_time"        , "value");
 }
 
 template<typename FloatType>
@@ -588,6 +624,7 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	project_.createDirectory(outputDir, false);
 
 	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
@@ -664,6 +701,13 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset / samplingFreq, dt, signal.size());
 	Util::multiply(signal, density);
 	project_.showFigure2D(3, "Pressure", tSignal, signal);
+
+	project_.saveHDF5(exc    , outputDir + "/excitation"           , "value");
+	project_.saveHDF5(tExc   , outputDir + "/excitation_time"      , "value");
+	project_.saveHDF5(h      , outputDir + "/impulse_response"     , "value");
+	project_.saveHDF5(tH     , outputDir + "/impulse_response_time", "value");
+	project_.saveHDF5(signal , outputDir + "/pressure"             , "value");
+	project_.saveHDF5(tSignal, outputDir + "/pressure_time"        , "value");
 }
 
 template<typename FloatType>
