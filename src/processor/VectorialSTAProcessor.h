@@ -112,7 +112,7 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 	const std::size_t signalLength = acqData_.n2() * upsamplingFactor_;
 
 	tempSignal_.resize(signalLength);
-	analyticSignalMatrix_.resize(config_.numElements, config_.numElements, signalLength);
+	analyticSignalMatrix_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
 
 	if (upsamplingFactor_ > 1) {
 		interpolator_.prepare(upsamplingFactor_, VECTORIAL_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
@@ -136,13 +136,14 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZVa
 	Util::resetValueFactor(gridData.begin(), gridData.end());
 
 	// Prepare the signal matrix.
-	for (unsigned int txElem = 0; txElem < config_.numElements; ++txElem) {
+	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 		LOG_INFO << "ACQ/PREP txElem: " << txElem << " < " << config_.numElements;
 
 		acquisition_.execute(baseElement, txElem, acqData_);
 
 		const std::size_t samplesPerChannelLow = acqData_.n2();
 
+		const unsigned int localTxElem = txElem - config_.firstTxElem;
 		for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 			if (upsamplingFactor_ > 1) {
 				interpolator_.interpolate(&acqData_(rxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
@@ -153,7 +154,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZVa
 
 			Util::removeDC(&tempSignal_[0], tempSignal_.size(), deadZoneSamplesUp_);
 
-			envelope_.getAnalyticSignal(&tempSignal_[0], tempSignal_.size(), &analyticSignalMatrix_(txElem, rxElem, 0));
+			envelope_.getAnalyticSignal(&tempSignal_[0], tempSignal_.size(), &analyticSignalMatrix_(localTxElem, rxElem, 0));
 		}
 	}
 
@@ -191,15 +192,16 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZVa
 					local.delayList[elem] = std::sqrt(dx * dx + dz * dz) * invCT;
 				}
 
-				for (unsigned int txElem = 0; txElem < config_.numElements; ++txElem) {
+				for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 					const FloatType txDelay = local.delayList[txElem];
+					const unsigned int localTxElem = txElem - config_.firstTxElem;
 					for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 						// Linear interpolation.
 						const FloatType delay = signalOffset_ + txDelay + local.delayList[rxElem];
 						const std::size_t delayIdx = static_cast<std::size_t>(delay);
 						const FloatType k = delay - delayIdx;
 						if (delayIdx < analyticSignalMatrix_.n3() - 1) {
-							const std::complex<FloatType>* p = &analyticSignalMatrix_(txElem, rxElem, delayIdx);
+							const std::complex<FloatType>* p = &analyticSignalMatrix_(localTxElem, rxElem, delayIdx);
 							local.rxSignalSumList[rxElem] += (1 - k) * *p + k * *(p + 1);
 						}
 					}

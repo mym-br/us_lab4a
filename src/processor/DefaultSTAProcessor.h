@@ -100,7 +100,7 @@ DefaultSTAProcessor<FloatType>::DefaultSTAProcessor(
 	const std::size_t signalLength = acqData_.n2() * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR;
 
 	tempSignal_.resize(signalLength);
-	signalMatrix_.resize(config_.numElements, config_.numElements, signalLength);
+	signalMatrix_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
 
 	signalOffset_ = (config_.samplingFrequency * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR) * peakOffset / config_.centerFrequency;
 	LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
@@ -120,22 +120,23 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZValu
 	Util::resetValueFactor(gridData.begin(), gridData.end());
 
 	// Prepare the signal matrix.
-	for (std::size_t txElem = 0; txElem < config_.numElements; ++txElem) {
+	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 		LOG_INFO << "ACQ/PREP txElem: " << txElem << " < " << config_.numElements;
 
 		acquisition_.execute(baseElement, txElem, acqData_);
 
 		const std::size_t samplesPerChannelLow = acqData_.n2();
 
-		for (std::size_t rxElem = 0; rxElem < config_.numElements; ++rxElem) {
+		const unsigned int localTxElem = txElem - config_.firstTxElem;
+		for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 
 			interpolator_.interpolate(&acqData_(rxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
 
 			// Copy the signal to the signal matrix.
-			typename Matrix3<FloatType>::Dim3Interval interval = signalMatrix_.dim3Interval(txElem, rxElem);
+			typename Matrix3<FloatType>::Dim3Interval interval = signalMatrix_.dim3Interval(localTxElem, rxElem);
 			std::copy(tempSignal_.begin(), tempSignal_.end(), interval.first);
 
-			Util::removeDC(&signalMatrix_(txElem, rxElem, 0), signalMatrix_.n3(), deadZoneSamplesUp_);
+			Util::removeDC(&signalMatrix_(localTxElem, rxElem, 0), signalMatrix_.n3(), deadZoneSamplesUp_);
 		}
 	}
 
@@ -173,14 +174,15 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZValu
 					local.delayList[elem] = std::sqrt(dx * dx + dz * dz) * invCT;
 				}
 
-				for (unsigned int txElem = 0; txElem < config_.numElements; ++txElem) {
+				for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 					const FloatType txDelay = local.delayList[txElem];
+					const unsigned int localTxElem = txElem - config_.firstTxElem;
 					for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 #if 0
 						// Nearest neighbor.
 						const std::size_t delayIdx = static_cast<std::size_t>(FloatType{0.5} + signalOffset_ + txDelay + local.delayList[rxElem]);
 						if (delayIdx < signalMatrix_.n3()) {
-							local.rxSignalSumList[rxElem] += signalMatrix_(txElem, rxElem, delayIdx);
+							local.rxSignalSumList[rxElem] += signalMatrix_(localTxElem, rxElem, delayIdx);
 						}
 #else
 						// Linear interpolation.
@@ -188,7 +190,7 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZValu
 						const std::size_t delayIdx = static_cast<std::size_t>(delay);
 						const FloatType k = delay - delayIdx;
 						if (delayIdx < signalMatrix_.n3() - 1) {
-							const FloatType* p = &signalMatrix_(txElem, rxElem, delayIdx);
+							const FloatType* p = &signalMatrix_(localTxElem, rxElem, delayIdx);
 							local.rxSignalSumList[rxElem] += (1 - k) * *p + k * *(p + 1);
 						}
 #endif
