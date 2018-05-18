@@ -22,10 +22,6 @@
 #include <sstream>
 #include <string>
 
-#include <chrono>
-#include <thread>//TODO: Remove test
-using namespace std::chrono_literals;
-
 #include "CoherenceFactor.h"
 #include "ImageGrid.h"
 #include "Log.h"
@@ -59,7 +55,8 @@ private:
 	NetworkSyncSTAMethod(const NetworkSyncSTAMethod&) = delete;
 	NetworkSyncSTAMethod& operator=(const NetworkSyncSTAMethod&) = delete;
 
-	void saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq, unsigned int baseElement, const std::string& dataDir);
+	void saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
+				unsigned int syncServerPort, unsigned int baseElement, const std::string& dataDir);
 
 	Project& project_;
 };
@@ -100,9 +97,10 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	}
 
 	if (project_.method() == MethodType::sta_network_sync_save_signals) {
-		std::string dataDir = taskPM->value<std::string>("data_dir");
+		const unsigned int serverPort = taskPM->value<unsigned int>("sync_server_port" , 1024, 65535);
+		const std::string dataDir     = taskPM->value<std::string>( "data_dir");
 		project_.createDirectory(dataDir, true);
-		saveSignals(config, *acquisition, baseElement, dataDir);
+		saveSignals(config, *acquisition, serverPort, baseElement, dataDir);
 		return;
 	}
 
@@ -170,29 +168,25 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 template<typename FloatType>
 void
-NetworkSyncSTAMethod<FloatType>::saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq, unsigned int baseElement, const std::string& dataDir)
+NetworkSyncSTAMethod<FloatType>::saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
+						unsigned int syncServerPort, unsigned int baseElement, const std::string& dataDir)
 {
-	SyncServer server(5544);
-
-	while (true) {
-		if (!server.waitForTrigger()) break;
-		std::this_thread::sleep_for(3s);
-		server.freeTrigger();
-	}
-
-#if 0
+	SyncServer server(syncServerPort);
 	typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 
-	for (unsigned int txElem = 0; txElem < config.numElements; ++txElem) {
-		acq.execute(baseElement, txElem, acqData);
+	unsigned int acqNumber = 0;
+	while (true) {
+		if (!server.waitForTrigger()) break;
 
-		std::ostringstream filePath;
-		filePath << dataDir << std::setfill('0') << "/signal-base" << std::setw(4) << baseElement << "-tx" << std::setw(4) << txElem;
-		std::string filePathStr = filePath.str();
-		LOG_DEBUG << "Saving " << filePathStr << "...";
-		project_.saveHDF5(acqData, filePathStr, "signal");
+		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
+			acq.execute(baseElement, txElem, acqData);
+			project_.saveSTASignalsToHDF5(acqData, dataDir, acqNumber, baseElement, txElem);
+		}
+
+		server.freeTrigger();
+
+		++acqNumber;
 	}
-#endif
 }
 
 } // namespace Lab

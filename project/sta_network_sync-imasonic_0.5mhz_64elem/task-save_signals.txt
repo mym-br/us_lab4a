@@ -6,3 +6,5 @@ sta_config_file = config-sta.txt
 data_dir = saved_acquisition
 
 base_element = 0
+
+sync_server_port = 5544
