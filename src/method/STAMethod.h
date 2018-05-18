@@ -57,10 +57,8 @@ public:
 	virtual void execute();
 
 private:
-	STAMethod(const STAMethod&);
-	STAMethod& operator=(const STAMethod&);
-
-	void saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq, unsigned int baseElement, const std::string& dataDir);
+	STAMethod(const STAMethod&) = delete;
+	STAMethod& operator=(const STAMethod&) = delete;
 
 	Project& project_;
 };
@@ -117,8 +115,11 @@ STAMethod<FloatType>::execute()
 	if (project_.method() == MethodType::sta_save_signals ||
 			project_.method() == MethodType::sta_simulated_3d_save_signals) {
 		std::string dataDir = taskPM->value<std::string>("data_dir");
-		project_.createDirectory(dataDir, false);
-		saveSignals(config, *acquisition, baseElement, dataDir);
+		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
+			acquisition->execute(baseElement, txElem, acqData);
+			project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
+		}
 		return;
 	}
 
@@ -209,19 +210,6 @@ STAMethod<FloatType>::execute()
 		Util::copyXZValue(gridData, projGridData);
 		project_.showFigure3D(2, "Coherence factor image", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
-	}
-}
-
-template<typename FloatType>
-void
-STAMethod<FloatType>::saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq, unsigned int baseElement, const std::string& dataDir)
-{
-	typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
-
-	for (unsigned int txElem = 0; txElem < config.numElements; ++txElem) {
-		acq.execute(baseElement, txElem, acqData);
-
-		project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
 	}
 }
 
