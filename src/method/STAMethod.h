@@ -21,10 +21,11 @@
 #include <algorithm>
 #include <iomanip>
 #include <memory>
+#include <sstream>
+#include <string>
 
 #include "CoherenceFactor.h"
 #include "DefaultSTAProcessor.h"
-#include "HilbertEnvelope.h"
 #include "ImageGrid.h"
 #include "Log.h"
 #include "Method.h"
@@ -37,11 +38,10 @@
 #include "SimulatedSTAAcquisition.h"
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
-#include "STAProcessor.h"
 #include "Timer.h"
 #include "VectorialSTAProcessor.h"
 #include "Util.h"
-#include "XZValue.h"
+#include "XZ.h"
 #include "XZValueFactor.h"
 
 
@@ -85,9 +85,9 @@ STAMethod<FloatType>::execute()
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
 	const STAConfiguration<FloatType> config(project_.loadChildParameterMap(taskPM, "sta_config_file"));
-	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset", 0.0, 50.0);
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	const unsigned int baseElement = taskPM->value<unsigned int>("base_element",   0, config.numElementsMux - config.numElements);
+	const FloatType peakOffset     = taskPM->value<FloatType>(   "peak_offset" , 0.0, 50.0);
+	const std::string outputDir    = taskPM->value<std::string>( "output_dir");
 	project_.createDirectory(outputDir, false);
 
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
