@@ -1,0 +1,38 @@
+
+# Do not change.
+num_elements = 32
+
+# Do not change.
+num_elements_mux = 64
+
+# 0 .. num_elements - 1
+first_tx_elem = 15
+last_tx_elem = 15
+
+# (m)
+pitch = 1.5e-3
+
+# (Hz)
+center_frequency = 0.5e6
+max_frequency = 1.0e6
+
+# (s)
+acquisition_time = 667.0e-6
+
+# 0 - 48 (dB)
+min_gain = 10.0
+
+# 0 - 48 (dB)
+max_gain = 10.0
+
+# (m/s)
+propagation_speed_1 = 1500.0
+
+# (s)
+acquisition_delay = 0.0
+
+# (Hz)
+sampling_frequency = 2.5e6
+
+# (m)
+dead_zone_m = 10.0e-3

@@ -34,7 +34,8 @@ SOURCES += src/main.cpp\
     src/Figure2DWindow.cpp \
     src/USLab4a.cpp \
     src/network_acquisition/PhasedArrayAcqClient.cpp \
-    src/util/Util.cpp
+    src/util/Util.cpp \
+    src/network_sync/SyncServer.cpp
 
 HEADERS  += \
     src/Project.h \
@@ -136,7 +137,9 @@ HEADERS  += \
     src/configuration/DeviceSectorialScanConfiguration.h \
     src/network_acquisition/NetworkDeviceSectorialScanAcquisition.h \
     src/method/DeviceSectorialScanMethod.h \
-    src/acquisition/DeviceSectorialScanAcquisition.h
+    src/acquisition/DeviceSectorialScanAcquisition.h \
+    src/network_sync/SyncServer.h \
+    src/method/NetworkSyncSTAMethod.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
@@ -152,6 +155,7 @@ INCLUDEPATH += src \
     src/simulator \
     src/util \
     src/network_acquisition \
+    src/network_sync \
     src/qcustomplot \
     src/parallel
 LIBS += -ltbb \

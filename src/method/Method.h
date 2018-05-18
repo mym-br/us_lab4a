@@ -42,6 +42,8 @@ enum class MethodType {
 	sta_sp_saved,
 	sta_vectorial_sp_saved,
 	sta_save_signals,
+	sta_network_sync,
+	sta_network_sync_save_signals,
 	sim_acoustic_beam_array_of_rectangular_flat_sources_transient,
 	sim_acoustic_beam_rectangular_flat_source_transient,
 	sim_acoustic_field_array_of_rectangular_flat_sources_transient,

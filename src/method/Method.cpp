@@ -19,6 +19,7 @@
 
 #include "DeviceSectorialScanMethod.h"
 #include "Exception.h"
+#include "NetworkSyncSTAMethod.h"
 #include "Project.h"
 #include "ShowImageMethod.h"
 #include "SimRectangularFlatSourceMethod.h"
@@ -50,6 +51,8 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sta_sp_saved);
 	ADD_MAP_ITEM(sta_vectorial_sp_saved);
 	ADD_MAP_ITEM(sta_save_signals);
+	ADD_MAP_ITEM(sta_network_sync);
+	ADD_MAP_ITEM(sta_network_sync_save_signals);
 	ADD_MAP_ITEM(sim_acoustic_beam_array_of_rectangular_flat_sources_transient);
 	ADD_MAP_ITEM(sim_acoustic_beam_rectangular_flat_source_transient);
 	ADD_MAP_ITEM(sim_acoustic_field_array_of_rectangular_flat_sources_transient);
@@ -87,19 +90,22 @@ Method::get(Project& project)
 	case MethodType::device_sectorial_scan_sp_network_trigger:    // falls through
 	case MethodType::device_sectorial_scan_sp_saved:
 		return new DeviceSectorialScanMethod<float>(project);
-	case MethodType::sta_simple_simulated:   // falls through
-	case MethodType::sta_simple_saved:       // falls through
-	case MethodType::sta_simulated:          // falls through
-	case MethodType::sta_dp_network:         // falls through
-	case MethodType::sta_dp_saved:           // falls through
-	case MethodType::sta_vectorial_dp_saved: // falls through
-	case MethodType::sta_save_signals:       // falls through
-	case MethodType::sta_simulated_3d:       // falls through
+	case MethodType::sta_simple_simulated:       // falls through
+	case MethodType::sta_simple_saved:           // falls through
+	case MethodType::sta_simulated:              // falls through
+	case MethodType::sta_dp_network:             // falls through
+	case MethodType::sta_dp_saved:               // falls through
+	case MethodType::sta_vectorial_dp_saved:     // falls through
+	case MethodType::sta_save_signals:           // falls through
+	case MethodType::sta_simulated_3d:           // falls through
 	case MethodType::sta_vectorial_simulated_3d:
 		return new STAMethod<double>(project);
 	case MethodType::sta_sp_saved:           // falls through
 	case MethodType::sta_vectorial_sp_saved:
 		return new STAMethod<float>(project);
+	case MethodType::sta_network_sync:              // falls through
+	case MethodType::sta_network_sync_save_signals:
+		return new NetworkSyncSTAMethod<double>(project);
 	case MethodType::sim_acoustic_beam_array_of_rectangular_flat_sources_transient:  // falls through
 	case MethodType::sim_acoustic_beam_rectangular_flat_source_transient:            // falls through
 	case MethodType::sim_acoustic_field_array_of_rectangular_flat_sources_transient: // falls through

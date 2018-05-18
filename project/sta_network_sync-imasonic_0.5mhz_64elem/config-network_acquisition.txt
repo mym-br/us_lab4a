@@ -1,0 +1,4 @@
+
+server_ip_address = 192.168.32.2
+
+server_port_number = 55500
