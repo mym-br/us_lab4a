@@ -20,6 +20,7 @@
 
 #include <algorithm> /* copy */
 #include <cstddef> /* std::size_t */
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <utility> /* pair */
@@ -87,6 +88,10 @@ public:
 	template<typename FloatType> void saveHDF5(const std::vector<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
 	//template<typename FloatType> void saveHDF5(const std::vector<std::pair<FloatType, FloatType> >& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename FloatType> void saveHDF5(const Matrix2<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
+	template<typename T> void saveSTASignalsToHDF5(const Matrix2<T>& container, const std::string& outputDir,
+					unsigned int acqNumber, unsigned int baseElement, unsigned int txElem);
+	template<typename T> void loadSTASignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber,
+					unsigned int baseElement, unsigned int txElem, Matrix2<T>& container);
 
 	// These functions may be called by only one thread.
 	template<typename T, typename U> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix2<T>& container, U copyOp);
@@ -260,6 +265,36 @@ Project::saveHDF5(const Matrix2<FloatType>& container, const std::string& fileNa
 {
 	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 	HDF5Util::save2(container, filePath.toStdString(), datasetName);
+}
+
+template<typename T>
+void
+Project::saveSTASignalsToHDF5(const Matrix2<T>& container, const std::string& outputDir,
+				unsigned int acqNumber, unsigned int baseElement, unsigned int txElem)
+{
+	std::ostringstream filePath;
+	filePath << outputDir << std::setfill('0') << '/' << std::setw(4) << acqNumber;
+	createDirectory(filePath.str(), false);
+
+	filePath << "/signal-base" << std::setw(4) << baseElement << "-tx" << std::setw(4) << txElem;
+	std::string filePathStr = filePath.str();
+	LOG_DEBUG << "Saving " << filePathStr << "...";
+
+	saveHDF5(container, filePathStr, "signal");
+}
+
+template<typename T>
+void
+Project::loadSTASignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber, unsigned int baseElement,
+				unsigned int txElem, Matrix2<T>& container)
+{
+	std::ostringstream filePath;
+	filePath << inputDir << std::setfill('0') << '/' << std::setw(4) << acqNumber
+			<< "/signal-base" << std::setw(4) << baseElement
+			<< "-tx" << std::setw(4) << txElem;
+	std::string filePathStr = filePath.str();
+	LOG_DEBUG << "Loading " << filePathStr << "...";
+	loadHDF5(filePathStr, "signal", container);
 }
 
 template<typename T, typename U>

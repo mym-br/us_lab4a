@@ -85,10 +85,7 @@ STAMethod<FloatType>::execute()
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
 	const STAConfiguration<FloatType> config(project_.loadChildParameterMap(taskPM, "sta_config_file"));
-	const unsigned int baseElement = taskPM->value<unsigned int>("base_element",   0, config.numElementsMux - config.numElements);
-	const FloatType peakOffset     = taskPM->value<FloatType>(   "peak_offset" , 0.0, 50.0);
-	const std::string outputDir    = taskPM->value<std::string>( "output_dir");
-	project_.createDirectory(outputDir, false);
+	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
@@ -108,7 +105,8 @@ STAMethod<FloatType>::execute()
 	case MethodType::sta_vectorial_sp_saved:
 		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(project_, config.numElements);
 		break;
-	case MethodType::sta_simulated_3d:           // falls through
+	case MethodType::sta_simulated_3d:              // falls through
+	case MethodType::sta_simulated_3d_save_signals: // falls through
 	case MethodType::sta_vectorial_simulated_3d:
 		acquisition = std::make_unique<Simulated3DSTAAcquisition<FloatType>>(project_, config);
 		break;
@@ -116,12 +114,17 @@ STAMethod<FloatType>::execute()
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
 
-	if (project_.method() == MethodType::sta_save_signals) {
+	if (project_.method() == MethodType::sta_save_signals ||
+			project_.method() == MethodType::sta_simulated_3d_save_signals) {
 		std::string dataDir = taskPM->value<std::string>("data_dir");
 		project_.createDirectory(dataDir, false);
 		saveSignals(config, *acquisition, baseElement, dataDir);
 		return;
 	}
+
+	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset" , 0.0, 50.0);
+	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	project_.createDirectory(outputDir, false);
 
 	Matrix2<XZValueFactor<FloatType>> gridData;
 
@@ -218,11 +221,7 @@ STAMethod<FloatType>::saveSignals(const STAConfiguration<FloatType>& config, STA
 	for (unsigned int txElem = 0; txElem < config.numElements; ++txElem) {
 		acq.execute(baseElement, txElem, acqData);
 
-		std::ostringstream filePath;
-		filePath << dataDir << std::setfill('0') << "/signal-base" << std::setw(4) << baseElement << "-tx" << std::setw(4) << txElem;
-		std::string filePathStr = filePath.str();
-		LOG_DEBUG << "Saving " << filePathStr << "...";
-		project_.saveHDF5(acqData, filePathStr, "signal");
+		project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
 	}
 }
 

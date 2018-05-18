@@ -60,6 +60,7 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sim_impulse_response_array_of_rectangular_flat_sources);
 	ADD_MAP_ITEM(sim_impulse_response_rectangular_flat_source);
 	ADD_MAP_ITEM(sta_simulated_3d);
+	ADD_MAP_ITEM(sta_simulated_3d_save_signals);
 	ADD_MAP_ITEM(sta_vectorial_simulated_3d);
 	ADD_MAP_ITEM(show_image);
 	ADD_MAP_ITEM(test);
@@ -90,14 +91,15 @@ Method::get(Project& project)
 	case MethodType::device_sectorial_scan_sp_network_trigger:    // falls through
 	case MethodType::device_sectorial_scan_sp_saved:
 		return new DeviceSectorialScanMethod<float>(project);
-	case MethodType::sta_simple_simulated:       // falls through
-	case MethodType::sta_simple_saved:           // falls through
-	case MethodType::sta_simulated:              // falls through
-	case MethodType::sta_dp_network:             // falls through
-	case MethodType::sta_dp_saved:               // falls through
-	case MethodType::sta_vectorial_dp_saved:     // falls through
-	case MethodType::sta_save_signals:           // falls through
-	case MethodType::sta_simulated_3d:           // falls through
+	case MethodType::sta_simple_simulated:          // falls through
+	case MethodType::sta_simple_saved:              // falls through
+	case MethodType::sta_simulated:                 // falls through
+	case MethodType::sta_dp_network:                // falls through
+	case MethodType::sta_dp_saved:                  // falls through
+	case MethodType::sta_vectorial_dp_saved:        // falls through
+	case MethodType::sta_save_signals:              // falls through
+	case MethodType::sta_simulated_3d:              // falls through
+	case MethodType::sta_simulated_3d_save_signals: // falls through
 	case MethodType::sta_vectorial_simulated_3d:
 		return new STAMethod<double>(project);
 	case MethodType::sta_sp_saved:           // falls through

@@ -51,6 +51,7 @@ enum class MethodType {
 	sim_impulse_response_array_of_rectangular_flat_sources,
 	sim_impulse_response_rectangular_flat_source,
 	sta_simulated_3d,
+	sta_simulated_3d_save_signals,
 	sta_vectorial_simulated_3d,
 	show_image,
 	test

@@ -18,7 +18,6 @@
 #ifndef NETWORKSYNCSTAMETHOD_H
 #define NETWORKSYNCSTAMETHOD_H
 
-#include <iomanip>
 #include <memory>
 #include <sstream>
 #include <string>
