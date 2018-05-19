@@ -54,7 +54,7 @@ HEADERS  += \
     src/method/TestMethod.h \
     src/method/STAMethod.h \
     src/method/Method.h \
-    src/util/RawBuffer.h \
+    src/network_acquisition/RawBuffer.h \
     src/network_acquisition/NetworkSTAAcquisition.h \
     src/network_acquisition/NetworkMultiplexedAcquisition.h \
     src/network_acquisition/ArrayAcqProtocol.h \
