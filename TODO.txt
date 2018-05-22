@@ -1,6 +1,2 @@
 
 - Drawing of array elements.
-
-- Save / load signals (use project).
-
-- Remove output dir tree before saving series of acquisition data.
