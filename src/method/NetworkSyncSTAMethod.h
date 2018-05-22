@@ -19,10 +19,10 @@
 #define NETWORKSYNCSTAMETHOD_H
 
 #include <memory>
-#include <sstream>
 #include <string>
 
 #include "CoherenceFactor.h"
+#include "FileUtil.h"
 #include "ImageGrid.h"
 #include "Log.h"
 #include "Method.h"
@@ -82,31 +82,21 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 	const STAConfiguration<FloatType> config(project_.loadChildParameterMap(taskPM, "sta_config_file"));
 	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-
-	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
-
-	switch (project_.method()) {
-	case MethodType::sta_network_sync_save_signals:
-		//acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
-		break;
-	case MethodType::sta_network_sync:
-		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(project_, config.numElements);
-		break;
-	default:
-		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
-	}
+	const std::string dataDir      = taskPM->value<std::string>( "data_dir");
 
 	if (project_.method() == MethodType::sta_network_sync_save_signals) {
+		auto acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
 		const unsigned int serverPort = taskPM->value<unsigned int>("sync_server_port" , 1024, 65535);
-		const std::string dataDir     = taskPM->value<std::string>( "data_dir");
 		project_.createDirectory(dataDir, true);
 		saveSignals(config, *acquisition, serverPort, baseElement, dataDir);
 		return;
 	}
 
-	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset" , 0.0, 50.0);
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
-	project_.createDirectory(outputDir, false);
+	const FloatType peakOffset           = taskPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
+	bool vectorialProcessingWithEnvelope = taskPM->value<bool>(        "calculate_envelope_in_processing");
+	const unsigned int upsamplingFactor  = taskPM->value<unsigned int>("upsampling_factor",   1, 128);
+	const std::string outputDir          = taskPM->value<std::string>( "output_dir");
+	project_.createDirectory(outputDir, true);
 
 	Matrix2<XZValueFactor<FloatType>> gridData;
 
@@ -114,56 +104,65 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
-	bool coherenceFactorEnabled = false;
-	bool vectorialProcessingWithEnvelope = false;
-
-	vectorialProcessingWithEnvelope     = taskPM->value<bool>(        "calculate_envelope_in_processing");
-	const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
 	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
-	coherenceFactorEnabled = coherenceFactor.enabled();
+	bool coherenceFactorEnabled = coherenceFactor.enabled();
+	auto acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(project_, config.numElements, "");
 	auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(config, *acquisition, upsamplingFactor, coherenceFactor, peakOffset, vectorialProcessingWithEnvelope);
-
-	Timer tProc;
-	processor->process(baseElement, gridData);
-	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
-
-	project_.saveImageToHDF5(gridData, outputDir);
-
 	Figure::Visualization visual;
 	if (vectorialProcessingWithEnvelope) {
 		visual = Figure::VISUALIZATION_RECTIFIED_LOG;
 	} else {
 		visual = Figure::VISUALIZATION_ENVELOPE_LOG;
 	}
-
 	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
-
 	Project::GridDataType projGridData;
-	Util::copyXZValue(gridData, projGridData);
-	project_.showFigure3D(1, "Raw image", &projGridData, &pointList,
-				true, visual, Figure::COLORMAP_VIRIDIS);
 
-	if (coherenceFactorEnabled) {
-		LOG_DEBUG << "Saving the image factors...";
-		project_.saveHDF5(gridData, outputDir + "/image_factor", "image", Util::CopyFactorOp());
+	Timer timer;
 
-		if (!vectorialProcessingWithEnvelope) {
-			ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData);
+	for (unsigned int acqNumber = 0; ; ++acqNumber) {
+		std::string acqDataDir = FileUtil::path(dataDir, "/", acqNumber);
+		if (!project_.directoryExists(acqDataDir)) {
+			break;
 		}
 
-		// Applies the coherence factor method.
-		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
-			iter->value *= iter->factor;
-			iter->factor = 1.0;
-		}
+		LOG_DEBUG << "ACQ number: " << acqNumber;
 
-		LOG_DEBUG << "Saving the CF image...";
-		project_.saveHDF5(gridData, outputDir + "/image_cf", "image", Util::CopyValueOp());
+		acquisition->setDataDir(acqDataDir);
+		processor->process(baseElement, gridData);
+
+		std::string acqOutputDir = FileUtil::path(outputDir, "/", acqNumber);
+		project_.createDirectory(acqOutputDir, true);
+
+		project_.saveImageToHDF5(gridData, acqOutputDir);
 
 		Util::copyXZValue(gridData, projGridData);
-		project_.showFigure3D(2, "Coherence factor image", &projGridData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+		project_.showFigure3D(1, "Raw image", &projGridData, &pointList,
+					true, visual, Figure::COLORMAP_VIRIDIS);
+
+		if (coherenceFactorEnabled) {
+			LOG_DEBUG << "Saving the image factors...";
+			project_.saveHDF5(gridData, acqOutputDir + "/image_factor", "image", Util::CopyFactorOp());
+
+			if (!vectorialProcessingWithEnvelope) {
+				ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData);
+			}
+
+			// Apply the coherence factor method.
+			for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
+				iter->value *= iter->factor;
+				iter->factor = 1.0;
+			}
+
+			LOG_DEBUG << "Saving the CF image...";
+			project_.saveHDF5(gridData, acqOutputDir + "/image_cf", "image", Util::CopyValueOp());
+
+			Util::copyXZValue(gridData, projGridData);
+			project_.showFigure3D(2, "Coherence factor image", &projGridData, &pointList,
+						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+		}
 	}
+
+	LOG_DEBUG << ">>> Acquisition + processing + saving data time: " << timer.getTime();
 }
 
 template<typename FloatType>
