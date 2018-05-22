@@ -23,7 +23,7 @@
 #include <string>
 
 #include "Exception.h"
-#include "ParameterMap.h"
+#include "FileUtil.h"
 #include "Project.h"
 #include "STAAcquisition.h"
 
@@ -34,19 +34,20 @@ namespace Lab {
 template<typename FloatType>
 class SavedSTAAcquisition : public STAAcquisition<FloatType> {
 public:
-	SavedSTAAcquisition(
-		const Project& project,
-		unsigned int numElements);
+	SavedSTAAcquisition(const Project& project,
+				unsigned int numRxElements,
+				const std::string& dataDir);
 	virtual ~SavedSTAAcquisition();
 
+	void setDataDir(const std::string& dataDir) { dataDir_ = dataDir; }
 	virtual void execute(unsigned int baseElement, unsigned int txElement,
 				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
-	SavedSTAAcquisition(const SavedSTAAcquisition&);
-	SavedSTAAcquisition& operator=(const SavedSTAAcquisition&);
+	SavedSTAAcquisition(const SavedSTAAcquisition&) = delete;
+	SavedSTAAcquisition& operator=(const SavedSTAAcquisition&) = delete;
 
 	const Project& project_;
-	const unsigned int numElements_;
+	const unsigned int numRxElements_;
 	std::string dataDir_;
 };
 
@@ -55,12 +56,12 @@ private:
 template<typename FloatType>
 SavedSTAAcquisition<FloatType>::SavedSTAAcquisition(
 			const Project& project,
-			unsigned int numElements)
-		: project_(project)
-		, numElements_(numElements)
+			unsigned int numRxElements,
+			const std::string& dataDir)
+		: project_{project}
+		, numRxElements_{numRxElements}
+		, dataDir_{dataDir}
 {
-	ConstParameterMapPtr pm = project_.loadParameterMap("config-saved_sta_acquisition.txt");
-	dataDir_ = pm->value<std::string>("data_dir");
 }
 
 template<typename FloatType>
@@ -73,17 +74,12 @@ void
 SavedSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int txElement,
 						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
 {
-	if (txElement >= numElements_) {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid tx element (" << txElement <<"), should be < " << numElements_ << '.');
-	}
+	std::string filePath = FileUtil::staSignalPath(dataDir_, baseElement, txElement);
+	project_.loadHDF5(filePath, "signal", acqData);
 
-	std::ostringstream filePath;
-	filePath << dataDir_ << std::setfill('0') << "/signal-base" << std::setw(4) << baseElement << "-tx" << std::setw(4) << txElement;
-	project_.loadHDF5(filePath.str(), "signal", acqData);
-
-	if (numElements_ != acqData.n1()) {
+	if (numRxElements_ != acqData.n1()) {
 		THROW_EXCEPTION(InvalidFileException, "Invalid number of rx elements (" << acqData.n1() <<
-			") in file " << filePath.str() << ", should be " << numElements_ << '.');
+			") in file " << filePath << ", should be " << numRxElements_ << '.');
 	}
 }
 

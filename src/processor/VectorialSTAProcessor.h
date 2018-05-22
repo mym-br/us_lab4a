@@ -88,6 +88,7 @@ private:
 	Interpolator<FloatType> interpolator_;
 	HilbertEnvelope<FloatType> envelope_;
 	bool calculateEnvelope_;
+	bool initialized_;
 };
 
 
@@ -106,25 +107,13 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 		, upsamplingFactor_(upsamplingFactor)
 		, coherenceFactor_(coherenceFactor)
 		, calculateEnvelope_(calculateEnvelope)
+		, initialized_(false)
 {
-	// This acquisition is done to obtain the signal length.
-	acquisition_.execute(0, 0, acqData_);
-	const std::size_t signalLength = acqData_.n2() * upsamplingFactor_;
-
-	tempSignal_.resize(signalLength);
-	analyticSignalMatrix_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
-
 	if (upsamplingFactor_ > 1) {
 		interpolator_.prepare(upsamplingFactor_, VECTORIAL_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
 	}
 
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * peakOffset / config_.centerFrequency;
-	LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
-
-	if (deadZoneSamplesUp_ >= signalLength) {
-		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: deadZoneSamplesUp_ (" << deadZoneSamplesUp_ <<
-							") >= signalLength (" << signalLength << ").");
-	}
 }
 
 template<typename FloatType>
@@ -140,6 +129,20 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZVa
 		LOG_INFO << "ACQ/PREP txElem: " << txElem << " < " << config_.numElements;
 
 		acquisition_.execute(baseElement, txElem, acqData_);
+		if (!initialized_) {
+			const std::size_t signalLength = acqData_.n2() * upsamplingFactor_;
+			tempSignal_.resize(signalLength);
+			analyticSignalMatrix_.resize(
+						config_.lastTxElem - config_.firstTxElem + 1,
+						config_.numElements, signalLength);
+			LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
+			if (deadZoneSamplesUp_ >= signalLength) {
+				THROW_EXCEPTION(InvalidValueException,
+						"Invalid dead zone: deadZoneSamplesUp_ (" << deadZoneSamplesUp_ <<
+						") >= signalLength (" << signalLength << ").");
+			}
+			initialized_ = true;
+		}
 
 		const std::size_t samplesPerChannelLow = acqData_.n2();
 

@@ -211,10 +211,10 @@ Project::waitForTrigger(std::size_t* triggerCount)
 void
 Project::createDirectory(const std::string &path, bool mustNotExist)
 {
-	QDir dir;
 	QString fullDir = directory_;
 	fullDir.append('/');
 	fullDir.append(path.c_str());
+	QDir dir;
 	if (mustNotExist && dir.exists(fullDir)) {
 		THROW_EXCEPTION(InvalidDirectoryException, "The directory/file " << fullDir.toStdString() << " already exists.");
 	}
@@ -222,6 +222,16 @@ Project::createDirectory(const std::string &path, bool mustNotExist)
 	if (!dir.mkpath(fullDir)) {
 		THROW_EXCEPTION(InvalidDirectoryException, "Could not create the directory " << fullDir.toStdString() << '.');
 	}
+}
+
+bool
+Project::directoryExists(const std::string& path)
+{
+	QString fullDir = directory_;
+	fullDir.append('/');
+	fullDir.append(path.c_str());
+	QDir dir;
+	return dir.exists(fullDir);
 }
 
 } // namespace Lab

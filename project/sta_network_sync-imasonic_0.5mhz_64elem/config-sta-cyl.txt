@@ -17,7 +17,7 @@ center_frequency = 0.5e6
 max_frequency = 1.0e6
 
 # (s)
-acquisition_time = 667.0e-6
+acquisition_time = 1.333e-3
 
 # 0 - 48 (dB)
 min_gain = 10.0
@@ -32,7 +32,7 @@ propagation_speed_1 = 1500.0
 acquisition_delay = 0.0
 
 # (Hz)
-sampling_frequency = 2.5e6
+sampling_frequency = 4.0e6
 
 # (m)
-dead_zone_m = 10.0e-3
+dead_zone_m = 5.0e-3

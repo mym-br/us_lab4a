@@ -15,24 +15,45 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef FILEUTIL_H
-#define FILEUTIL_H
-
-#include <string>
+#include <iomanip>
+#include <sstream>
 
 
 
 namespace Lab {
 namespace FileUtil {
 
-std::string path(const std::string& baseDir,
-			const std::string& str0, unsigned int index0);
-std::string path(const std::string& baseDir,
-			const std::string& str0, unsigned int index0,
-			const std::string& str1, unsigned int index1);
-std::string staSignalPath(const std::string& baseDir, unsigned int baseElement, unsigned int txElem);
+std::string
+path(const std::string& baseDir,
+	const std::string& str0, unsigned int index0)
+{
+	std::ostringstream out;
+	out << baseDir << std::setfill('0')
+		<< str0 << std::setw(4) << index0;
+	return out.str();
+}
+
+std::string
+path(const std::string& baseDir,
+	const std::string& str0, unsigned int index0,
+	const std::string& str1, unsigned int index1)
+{
+	std::ostringstream out;
+	out << baseDir << std::setfill('0')
+		<< str0 << std::setw(4) << index0
+		<< str1 << std::setw(4) << index1;
+	return out.str();
+}
+
+std::string
+staSignalPath(const std::string& baseDir, unsigned int baseElement, unsigned int txElem)
+{
+	std::ostringstream out;
+	out << baseDir << std::setfill('0')
+		<< "/signal-base" << std::setw(4) << baseElement
+		<< "-tx"          << std::setw(4) << txElem;
+	return out.str();
+}
 
 } // namespace FileUtil
 } // namespace Lab
-
-#endif // FILEUTIL_H

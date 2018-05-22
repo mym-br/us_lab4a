@@ -31,6 +31,7 @@
 #include <QWaitCondition>
 
 #include "Exception.h"
+#include "FileUtil.h"
 #include "global.h"
 #include "HDF5Util.h"
 #include "Log.h"
@@ -143,6 +144,7 @@ public:
 	static std::vector<XZ<float>>* emptyPointList;
 
 	void createDirectory(const std::string& path, bool mustNotExist);
+	bool directoryExists(const std::string& path);
 private:
 	struct Figure2DData {
 		Figure2DData()
@@ -272,15 +274,13 @@ void
 Project::saveSTASignalsToHDF5(const Matrix2<T>& container, const std::string& outputDir,
 				unsigned int acqNumber, unsigned int baseElement, unsigned int txElem)
 {
-	std::ostringstream filePath;
-	filePath << outputDir << std::setfill('0') << '/' << std::setw(4) << acqNumber;
-	createDirectory(filePath.str(), false);
+	std::string dirPath = FileUtil::path(outputDir, "/", acqNumber);
+	createDirectory(dirPath, false);
 
-	filePath << "/signal-base" << std::setw(4) << baseElement << "-tx" << std::setw(4) << txElem;
-	std::string filePathStr = filePath.str();
-	LOG_DEBUG << "Saving " << filePathStr << "...";
+	std::string filePath = FileUtil::staSignalPath(dirPath, baseElement, txElem);
 
-	saveHDF5(container, filePathStr, "signal");
+	LOG_DEBUG << "Saving " << filePath << "...";
+	saveHDF5(container, filePath, "signal");
 }
 
 template<typename T>
@@ -288,13 +288,13 @@ void
 Project::loadSTASignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber, unsigned int baseElement,
 				unsigned int txElem, Matrix2<T>& container)
 {
-	std::ostringstream filePath;
-	filePath << inputDir << std::setfill('0') << '/' << std::setw(4) << acqNumber
-			<< "/signal-base" << std::setw(4) << baseElement
-			<< "-tx" << std::setw(4) << txElem;
-	std::string filePathStr = filePath.str();
-	LOG_DEBUG << "Loading " << filePathStr << "...";
-	loadHDF5(filePathStr, "signal", container);
+	std::string dirPath = FileUtil::path(inputDir, "/", acqNumber);
+	createDirectory(dirPath, false);
+
+	std::string filePath = FileUtil::staSignalPath(dirPath, baseElement, txElem);
+
+	LOG_DEBUG << "Loading " << filePath << "...";
+	loadHDF5(filePath, "signal", container);
 }
 
 template<typename T, typename U>

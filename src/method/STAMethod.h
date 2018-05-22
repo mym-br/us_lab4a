@@ -101,7 +101,9 @@ STAMethod<FloatType>::execute()
 	case MethodType::sta_vectorial_dp_saved: // falls through
 	case MethodType::sta_sp_saved:           // falls through
 	case MethodType::sta_vectorial_sp_saved:
-		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(project_, config.numElements);
+		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(
+					project_, config.numElements,
+					taskPM->value<std::string>("data_dir"));
 		break;
 	case MethodType::sta_simulated_3d:              // falls through
 	case MethodType::sta_simulated_3d_save_signals: // falls through

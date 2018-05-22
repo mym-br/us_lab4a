@@ -1,7 +1,7 @@
 
 method = sta_network_sync
 
-sta_config_file = config-sta.txt
+sta_config_file = config-sta-cyl.txt
 
 data_dir = saved_acquisition
 
@@ -11,6 +11,10 @@ coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
 
 grid_config_file = config-grid.txt
 
-base_element = 0
+base_element = 16
 
 peak_offset = 0.0
+
+calculate_envelope_in_processing = true
+
+upsampling_factor = 4

@@ -35,7 +35,8 @@ SOURCES += src/main.cpp\
     src/USLab4a.cpp \
     src/network_acquisition/PhasedArrayAcqClient.cpp \
     src/util/Util.cpp \
-    src/network_sync/SyncServer.cpp
+    src/network_sync/SyncServer.cpp \
+    src/util/FileUtil.cpp
 
 HEADERS  += \
     src/Project.h \
