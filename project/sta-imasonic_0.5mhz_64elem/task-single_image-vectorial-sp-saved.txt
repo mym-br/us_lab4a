@@ -3,6 +3,8 @@ method = sta_vectorial_sp_saved
 
 sta_config_file = config-sta.txt
 
+data_dir = saved_acquisition
+
 output_dir = output
 
 coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
