@@ -89,6 +89,9 @@ public:
 	template<typename FloatType> void saveHDF5(const std::vector<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
 	//template<typename FloatType> void saveHDF5(const std::vector<std::pair<FloatType, FloatType> >& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename FloatType> void saveHDF5(const Matrix2<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
+	template<typename T> void saveSignalToHDF5(const std::vector<T>& container, const std::string& outputDir,
+					unsigned int acqNumber, unsigned int baseElement,
+					unsigned int txElem, unsigned int rxElem);
 	template<typename T> void saveSTASignalsToHDF5(const Matrix2<T>& container, const std::string& outputDir,
 					unsigned int acqNumber, unsigned int baseElement, unsigned int txElem);
 	template<typename T> void loadSTASignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber,
@@ -267,6 +270,21 @@ Project::saveHDF5(const Matrix2<FloatType>& container, const std::string& fileNa
 {
 	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 	HDF5Util::save2(container, filePath.toStdString(), datasetName);
+}
+
+template<typename T>
+void
+Project::saveSignalToHDF5(const std::vector<T>& container, const std::string& outputDir,
+				unsigned int acqNumber, unsigned int baseElement,
+				unsigned int txElem, unsigned int rxElem)
+{
+	std::string dirPath = FileUtil::path(outputDir, "/", acqNumber);
+	createDirectory(dirPath, false);
+
+	std::string filePath = FileUtil::signalPath(dirPath, baseElement, txElem, rxElem);
+
+	LOG_DEBUG << "Saving " << filePath << "...";
+	saveHDF5(container, filePath, "signal");
 }
 
 template<typename T>

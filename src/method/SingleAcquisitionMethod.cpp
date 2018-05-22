@@ -145,10 +145,9 @@ SingleAcquisitionMethod::execute()
 
 	{
 		LOG_DEBUG << "Saving the signal...";
-		std::ostringstream filePath;
-		filePath << config_.savedAcqDir << std::setfill('0') << "/signal-base" << std::setw(4) << config_.baseElement <<
-				"-tx" << std::setw(4) << config_.txGroupElement << "-rx" << std::setw(4) << config_.rxGroupElement;
-		project_.saveHDF5(signal, filePath.str(), "signal");
+		project_.saveSignalToHDF5(signal, config_.savedAcqDir,
+						0, config_.baseElement,
+						config_.txGroupElement, config_.rxGroupElement);
 	}
 
 	project_.showFigure2D(0, "A-scan", t, signal);

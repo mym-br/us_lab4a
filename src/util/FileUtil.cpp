@@ -55,5 +55,16 @@ staSignalPath(const std::string& baseDir, unsigned int baseElement, unsigned int
 	return out.str();
 }
 
+std::string
+signalPath(const std::string& baseDir, unsigned int baseElement, unsigned int txElem, unsigned int rxElem)
+{
+	std::ostringstream out;
+	out << baseDir << std::setfill('0')
+		<< "/signal-base" << std::setw(4) << baseElement
+		<< "-tx"          << std::setw(4) << txElem
+		<< "-rx"          << std::setw(4) << rxElem;
+	return out.str();
+}
+
 } // namespace FileUtil
 } // namespace Lab

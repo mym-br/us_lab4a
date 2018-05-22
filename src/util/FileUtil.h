@@ -31,6 +31,7 @@ std::string path(const std::string& baseDir,
 			const std::string& str0, unsigned int index0,
 			const std::string& str1, unsigned int index1);
 std::string staSignalPath(const std::string& baseDir, unsigned int baseElement, unsigned int txElem);
+std::string signalPath(const std::string& baseDir, unsigned int baseElement, unsigned int txElem, unsigned int rxElem);
 
 } // namespace FileUtil
 } // namespace Lab
