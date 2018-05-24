@@ -1,2 +1,6 @@
 
+- Implement sta_vectorial_simulated_3d_seq_y.
+
+- Normalization.
+
 - Drawing of array elements.
