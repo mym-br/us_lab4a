@@ -53,6 +53,7 @@ enum class MethodType {
 	sta_simulated_3d,
 	sta_simulated_3d_save_signals,
 	sta_vectorial_simulated_3d,
+	sta_vectorial_simulated_3d_seq_y,
 	show_image,
 	test
 };
