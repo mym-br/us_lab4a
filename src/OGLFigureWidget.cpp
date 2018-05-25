@@ -52,7 +52,6 @@
 #include <algorithm> /* std::max */
 #include <cstddef> /* std::size_t */
 #include <cmath>
-#include <limits>
 
 #include <QColor>
 #include <QKeyEvent>
@@ -1265,26 +1264,28 @@ struct RedWhiteBlueColormap {
 namespace Lab {
 
 OGLFigureWidget::OGLFigureWidget(QWidget* parent)
-		: QOpenGLWidget(parent)
-		, valuesInDecibel_(false)
-		, editingDistanceMarkers_(false)
-		, rotationMode_(false)
-		, showPoints_(true)
-		, showInfo_(true)
-		, colormap_(Figure::COLORMAP_GRAY)
-		, visualization_(Figure::VISUALIZATION_RAW_LINEAR)
-		, minDecibels_(DEFAULT_MIN_DECIBELS)
-		, minValue_(Util::decibelsToLinear(minDecibels_))
-		, scale_(1.0)
-		, rotX_(0.0)
-		, rotZ_(0.0)
-		, minX_(0.0)
-		, maxX_(0.0)
-		, minZ_(0.0)
-		, maxZ_(0.0)
-		, valueScale_(1.0)
-		, offsetX_(0.0)
-		, offsetY_(0.0)
+		: QOpenGLWidget{parent}
+		, valuesInDecibel_{}
+		, editingDistanceMarkers_{}
+		, rotationMode_{}
+		, showPoints_{true}
+		, showInfo_{true}
+		, colormap_{Figure::COLORMAP_GRAY}
+		, visualization_{Figure::VISUALIZATION_RAW_LINEAR}
+		, minDecibels_{DEFAULT_MIN_DECIBELS}
+		, minValue_{Util::decibelsToLinear(minDecibels_)}
+		, scale_{1.0}
+		, rotX_{}
+		, rotZ_{}
+		, minX_{}
+		, maxX_{}
+		, minZ_{}
+		, maxZ_{}
+		, valueScale_{1.0}
+		, maxAbsLevel_{}
+		, maxAbsLevelDecibels_{}
+		, offsetX_{}
+		, offsetY_{}
 {
 	//setAttribute(Qt::WA_OpaquePaintEvent);
 	setMinimumWidth(MININUM_WIDTH);
@@ -1295,11 +1296,12 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 float
 OGLFigureWidget::calcValueFactor(float valueScale, const Matrix2<XZValue<float>>& data)
 {
+	maxAbsLevel_ = Util::maxAbsoluteValueField<XZValue<float>, float>(data);
+	maxAbsLevelDecibels_ = Util::linearToDecibels(maxAbsLevel_);
 	if (valueScale != 0.0) {
 		return 1.0f / static_cast<float>(valueScale);
 	} else {
-		const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(data);
-		return 1.0f / std::max(maxAbsValue, VALUE_EPS);
+		return 1.0f / std::max(maxAbsLevel_, VALUE_EPS);
 	}
 }
 
@@ -1771,6 +1773,8 @@ OGLFigureWidget::paintGL()
 		painter.drawText(10, 120, QString("rot z ") + QString::number(rotZ_));
 		painter.drawText(10, 140, QString("zoom  ") + QString::number(scale_));
 		painter.drawText(10, 160, QString("scale ") + QString::number(valueScale_));
+		painter.drawText(10, 180, QString("level ") + QString::number(maxAbsLevel_));
+		painter.drawText(10, 200, QString("   dB ") + QString::number(maxAbsLevelDecibels_));
 	}
 }
 

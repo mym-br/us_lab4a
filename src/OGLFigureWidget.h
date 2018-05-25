@@ -77,8 +77,8 @@ public:
 	float minDecibels() const { return minDecibels_; }
 	void setColormap(Figure::Colormap colormap) { colormap_ = colormap; }
 	Figure::Colormap colormap() const { return colormap_; }
-	void updateGridData(double valueScale, const Matrix2<XZValue<float> >& gridData);
-	void updatePointList(const std::vector<XZ<float> >& pointList);
+	void updateGridData(double valueScale, const Matrix2<XZValue<float>>& gridData);
+	void updatePointList(const std::vector<XZ<float>>& pointList);
 	void setRotationMode(bool enabled) {
 		editingDistanceMarkers_ = false;
 		distanceMarker1_ = QPoint(); // clear
@@ -112,7 +112,7 @@ private:
 	template<typename ColorScale>
 	void fillOGLGridDataWithLogAbsValues(const Matrix2<XZValue<float>>& data, float valueFactor);
 
-	template<typename ColorScale> void fillOGLGridData(double valueScale, const Matrix2<XZValue<float> >& gridData);
+	template<typename ColorScale> void fillOGLGridData(double valueScale, const Matrix2<XZValue<float>>& gridData);
 
 	void createVertex(const OGLPoint3D& point, float valueScale);
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
@@ -136,14 +136,16 @@ private:
 	float minZ_;
 	float maxZ_;
 	float valueScale_;
+	float maxAbsLevel_;
+	float maxAbsLevelDecibels_;
 	float offsetX_;
 	float offsetY_;
 	QPoint mouseAnchor_;
 	QPoint distanceMarker1_;
 	QPoint distanceMarker2_;
 	Matrix2<OGLPoint3D> oglGridData_;
-	std::vector<XY<float> > pointList_;
-	Matrix2<XZValue<float> > gridData_;
+	std::vector<XY<float>> pointList_;
+	Matrix2<XZValue<float>> gridData_;
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
 	std::vector<OGLPos3D> vertexArray_;
 	std::vector<OGLColor> colorArray_;
