@@ -126,6 +126,7 @@ template<typename T> void removeDC(T* data, std::size_t size, std::size_t beginO
 template<typename T> T sign(T value);
 
 template<typename T> void normalize(T& data);
+template<typename T> void normalizeBySumOfAbs(std::vector<T>& data);
 
 //#############################################################################
 
@@ -905,7 +906,22 @@ template<typename T>
 void
 normalize(T& data)
 {
-	const auto coeff = 1 / maxAbsolute(data);
+	const auto maxAbs = maxAbsolute(data);
+	if (maxAbs == 0) return;
+	const auto coeff = 1 / maxAbs;
+	multiply(data, coeff);
+}
+
+template<typename T>
+void
+normalizeBySumOfAbs(std::vector<T>& data)
+{
+	T sumAbs = 0;
+	for (const auto item : data) {
+		sumAbs += std::abs(item);
+	}
+	if (sumAbs == 0) return;
+	const auto coeff = 1 / sumAbs;
 	multiply(data, coeff);
 }
 

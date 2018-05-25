@@ -62,7 +62,9 @@ private:
 	void execTransientArrayAcousticBeam();
 	void execTransientAcousticField();
 	void execTransientArrayAcousticField();
+	// Return p/(c*density).
 	void execImpulseResponse();
+	// Return p/(c*density).
 	void execArrayImpulseResponse();
 
 	Project& project_;
@@ -544,7 +546,7 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
 	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
-	const FloatType density          = taskPM->value<FloatType>("density", 0.0, 100000.0);
+	//const FloatType density          = taskPM->value<FloatType>("density", 0.0, 100000.0);
 	const FloatType centerFreq       = taskPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
 	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
 	const FloatType nyquistRate = 2.0 * maxFreq;
@@ -569,10 +571,14 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 	const FloatType dt = 1.0 / samplingFreq;
 	std::vector<FloatType> tExc;
 	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, exc.size());
-	project_.showFigure2D(1, "Excitation", tExc, exc);
+	project_.showFigure2D(1, "v", tExc, exc);
 
 	std::vector<FloatType> dvdt;
 	Util::centralDiff(exc, dt, dvdt);
+	Util::normalizeBySumOfAbs(dvdt);
+	std::vector<FloatType> tDvdt;
+	Util::fillSequenceFromStartWithStepAndSize(tDvdt, 0.0, dt, dvdt.size());
+	project_.showFigure2D(2, "dv/dt", tDvdt, dvdt);
 
 	std::size_t hOffset;
 	std::vector<FloatType> h;
@@ -595,7 +601,7 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 
 	std::vector<FloatType> tH;
 	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset / samplingFreq, dt, h.size());
-	project_.showFigure2D(2, "Impulse response", tH, h);
+	project_.showFigure2D(3, "Impulse response", tH, h);
 
 	std::vector<std::complex<FloatType>> filterFreqCoeff;
 	auto filter = std::make_unique<FFTWFilter2<FloatType>>();
@@ -606,8 +612,8 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse()
 
 	std::vector<FloatType> tSignal;
 	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset / samplingFreq, dt, signal.size());
-	Util::multiply(signal, density);
-	project_.showFigure2D(3, "Pressure", tSignal, signal);
+	//Util::multiply(signal, density);
+	project_.showFigure2D(4, "Pressure", tSignal, signal);
 
 	project_.saveHDF5(exc    , outputDir + "/excitation"           , "value");
 	project_.saveHDF5(tExc   , outputDir + "/excitation_time"      , "value");
@@ -630,7 +636,7 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
 	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
-	const FloatType density          = taskPM->value<FloatType>("density", 0.0, 100000.0);
+	//const FloatType density          = taskPM->value<FloatType>("density", 0.0, 100000.0);
 	const FloatType centerFreq       = taskPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
 	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
 	const FloatType nyquistRate = 2.0 * maxFreq;
@@ -660,10 +666,14 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 	const FloatType dt = 1.0 / samplingFreq;
 	std::vector<FloatType> tExc;
 	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, exc.size());
-	project_.showFigure2D(1, "Excitation", tExc, exc);
+	project_.showFigure2D(1, "v", tExc, exc);
 
 	std::vector<FloatType> dvdt;
 	Util::centralDiff(exc, dt, dvdt);
+	Util::normalizeBySumOfAbs(dvdt);
+	std::vector<FloatType> tDvdt;
+	Util::fillSequenceFromStartWithStepAndSize(tDvdt, 0.0, dt, dvdt.size());
+	project_.showFigure2D(2, "dv/dt", tDvdt, dvdt);
 
 	std::size_t hOffset;
 	std::vector<FloatType> h;
@@ -688,7 +698,7 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 
 	std::vector<FloatType> tH;
 	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset / samplingFreq, dt, h.size());
-	project_.showFigure2D(2, "Impulse response", tH, h);
+	project_.showFigure2D(3, "Impulse response", tH, h);
 
 	std::vector<std::complex<FloatType>> filterFreqCoeff;
 	auto filter = std::make_unique<FFTWFilter2<FloatType>>();
@@ -699,8 +709,8 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 
 	std::vector<FloatType> tSignal;
 	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset / samplingFreq, dt, signal.size());
-	Util::multiply(signal, density);
-	project_.showFigure2D(3, "Pressure", tSignal, signal);
+	//Util::multiply(signal, density);
+	project_.showFigure2D(4, "Pressure", tSignal, signal);
 
 	project_.saveHDF5(exc    , outputDir + "/excitation"           , "value");
 	project_.saveHDF5(tExc   , outputDir + "/excitation_time"      , "value");

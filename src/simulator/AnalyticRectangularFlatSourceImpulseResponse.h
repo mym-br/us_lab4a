@@ -52,6 +52,7 @@ public:
 					FloatType minEdgeDivisor);
 	~AnalyticRectangularFlatSourceImpulseResponse() {}
 
+	// Return h/c.
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z,
 				std::size_t& hOffset /* samples */, std::vector<FloatType>& h);
 private:
@@ -390,7 +391,8 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 	}
 	}
 
-	Util::multiply(h, propagationSpeed_ / static_cast<FloatType>(2.0 * PI));
+	//Util::multiply(h, propagationSpeed_ / static_cast<FloatType>(2.0 * PI));
+	Util::multiply(h, 1 / static_cast<FloatType>(2.0 * PI));
 	hOffset = minAbsoluteIndex;
 }
 
