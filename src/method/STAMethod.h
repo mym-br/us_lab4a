@@ -18,6 +18,7 @@
 #ifndef STAMETHOD_H_
 #define STAMETHOD_H_
 
+#include <cstddef> /* std::size_t */
 #include <algorithm>
 #include <iomanip>
 #include <memory>
@@ -157,10 +158,10 @@ STAMethod<FloatType>::execute()
 					project_, config.numElements,
 					taskPM->value<std::string>("data_dir"));
 		break;
-	case MethodType::sta_simulated_3d:                 // falls through
-	case MethodType::sta_simulated_3d_save_signals:    // falls through
-	case MethodType::sta_vectorial_simulated_3d:       // falls through
-	case MethodType::sta_vectorial_simulated_3d_seq_y:
+	case MethodType::sta_simulated_3d:                    // falls through
+	case MethodType::sta_simulated_3d_save_signals:       // falls through
+	case MethodType::sta_simulated_3d_seq_y_save_signals: // falls through
+	case MethodType::sta_vectorial_simulated_3d:
 		acquisition = std::make_unique<Simulated3DSTAAcquisition<FloatType>>(project_, config);
 		break;
 	default:
@@ -169,11 +170,30 @@ STAMethod<FloatType>::execute()
 
 	if (project_.method() == MethodType::sta_save_signals ||
 			project_.method() == MethodType::sta_simulated_3d_save_signals) {
-		std::string dataDir = taskPM->value<std::string>("data_dir");
+		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
 			acquisition->execute(baseElement, txElem, acqData);
 			project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
+		}
+		return;
+	} else if (project_.method() == MethodType::sta_simulated_3d_seq_y_save_signals) {
+		const std::string dataDir = taskPM->value<std::string>("data_dir");
+		const FloatType yStep     = taskPM->value<FloatType>(  "y_step",          0.0,   100.0);
+		const FloatType minY      = taskPM->value<FloatType>(  "min_y" ,     -10000.0, 10000.0);
+		const FloatType maxY      = taskPM->value<FloatType>(  "max_y" , minY + yStep, 10000.0);
+		project_.createDirectory(dataDir, true);
+		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+		std::vector<FloatType> yList;
+		Util::fillSequenceFromStartWithStep(yList, minY, maxY, yStep);
+		auto& simAcq = dynamic_cast<Simulated3DSTAAcquisition<FloatType>&>(*acquisition);
+		for (std::size_t i = 0, end = yList.size(); i < end; ++i) {
+			const FloatType y = yList[i];
+			simAcq.modifyReflectorsOffset(0.0, -y);
+			for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
+				acquisition->execute(baseElement, txElem, acqData);
+				project_.saveSTASignalsToHDF5(acqData, dataDir, i, baseElement, txElem);
+			}
 		}
 		return;
 	}
@@ -200,18 +220,18 @@ STAMethod<FloatType>::execute()
 	case MethodType::sta_vectorial_sp_saved:     // falls through
 	case MethodType::sta_vectorial_simulated_3d:
 		{
-			bool vectorialProcessingWithEnvelope = taskPM->value<bool>(        "calculate_envelope_in_processing");
-			const unsigned int upsamplingFactor  = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
-			if (vectorialProcessingWithEnvelope) {
+			const bool processingWithEnvelope   = taskPM->value<bool>(        "calculate_envelope_in_processing");
+			const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
+			if (processingWithEnvelope) {
 				visual_ = Figure::VISUALIZATION_RECTIFIED_LOG;
 			}
 			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(
 							config, *acquisition, upsamplingFactor,
-							coherenceFactor, peakOffset, vectorialProcessingWithEnvelope);
+							coherenceFactor, peakOffset, processingWithEnvelope);
 			process(*processor, baseElement, outputDir);
 			if (coherenceFactor.enabled()) {
-				useCoherenceFactor(!vectorialProcessingWithEnvelope, outputDir);
+				useCoherenceFactor(!processingWithEnvelope, outputDir);
 			}
 		}
 		break;

@@ -44,6 +44,8 @@ public:
 
 	virtual void execute(unsigned int baseElement, unsigned int txElement,
 				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
+
+	void modifyReflectorsOffset(FloatType offsetX, FloatType offsetY);
 private:
 	Simulated3DSTAAcquisition(const Simulated3DSTAAcquisition&) = delete;
 	Simulated3DSTAAcquisition& operator=(const Simulated3DSTAAcquisition&) = delete;
@@ -53,6 +55,8 @@ private:
 	FloatType maxAbsValue_; // auxiliar
 	std::unique_ptr<Simulated3DAcquisitionDevice<FloatType>> acqDevice_;
 	std::vector<XYZValue<FloatType>> reflectorList_;
+	FloatType reflectorsOffsetX_;
+	FloatType reflectorsOffsetY_;
 };
 
 
@@ -69,8 +73,8 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 	ConstParameterMapPtr pm = project_.loadChildParameterMap(taskPM, "simulated_3d_sta_acquisition_config_file");
 
 	const std::string reflectorsFileName = pm->value<std::string>("reflectors_file");
-	const FloatType reflectorsOffsetX    = pm->value<FloatType>(  "reflectors_offset_x", -10000.0, 10000.0);
-	const FloatType reflectorsOffsetY    = pm->value<FloatType>(  "reflectors_offset_y", -10000.0, 10000.0);
+	reflectorsOffsetX_                   = pm->value<FloatType>(  "reflectors_offset_x", -10000.0, 10000.0);
+	reflectorsOffsetY_                   = pm->value<FloatType>(  "reflectors_offset_y", -10000.0, 10000.0);
 
 	Matrix2<FloatType> inputReflectorList;
 	project_.loadHDF5(reflectorsFileName, "reflectors", inputReflectorList);
@@ -96,7 +100,7 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 	acqDevice_->setAcquisitionTime(config_.acquisitionTime);
 	acqDevice_->setExcitationWaveform(config_.centerFrequency);
 	acqDevice_->setReflectorList(reflectorList_);
-	acqDevice_->setReflectorOffset(reflectorsOffsetX, reflectorsOffsetY);
+	acqDevice_->setReflectorOffset(reflectorsOffsetX_, reflectorsOffsetY_);
 }
 
 template<typename FloatType>
@@ -138,6 +142,13 @@ Simulated3DSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned
 	LOG_DEBUG << "########## max(abs(signalList)): " << mx << " global: " << maxAbsValue_;
 
 	std::copy(signalList.begin(), signalList.end(), acqData.begin()); //TODO: memcpy? how to avoid this copy?
+}
+
+template<typename FloatType>
+void
+Simulated3DSTAAcquisition<FloatType>::modifyReflectorsOffset(FloatType offsetX, FloatType offsetY)
+{
+	acqDevice_->setReflectorOffset(reflectorsOffsetX_ + offsetX, reflectorsOffsetY_ + offsetY);
 }
 
 } // namespace Lab

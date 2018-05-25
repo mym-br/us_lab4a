@@ -1,0 +1,15 @@
+
+method = sta_simulated_3d_seq_y_save_signals
+
+sta_config_file = config-sta-cyl.txt
+
+simulated_3d_sta_acquisition_config_file = config-simulated_3d_sta_acquisition.txt
+
+data_dir = saved_acquisition
+
+base_element = 16
+
+# (m)
+min_y = -50.0e-3
+max_y = 50.0e-3
+y_step = 10.0e-3
