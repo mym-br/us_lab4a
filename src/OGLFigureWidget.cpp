@@ -1129,138 +1129,133 @@ float magmaColormap[256][3] = {
 };
 
 struct GrayScaleColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
-		point.red   = value;
-		point.green = value;
-		point.blue  = value;
+		Util::clip(value, 0.0f, 1.0f);
+		point.color.red   = value;
+		point.color.green = value;
+		point.color.blue  = value;
 	}
 };
 
 struct InvertedGrayScaleColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
 		GrayScaleColormap::setColor(1.0f - value, point);
 	}
 };
 
 struct ViridisColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
 		if (nextPos == 256U) {
-			point.red   = viridisColormap[basePos][0];
-			point.green = viridisColormap[basePos][1];
-			point.blue  = viridisColormap[basePos][2];
+			point.color.red   = viridisColormap[basePos][0];
+			point.color.green = viridisColormap[basePos][1];
+			point.color.blue  = viridisColormap[basePos][2];
 		} else {
 			const float coef = pos - basePos;
-			point.red   = viridisColormap[basePos][0] + (viridisColormap[nextPos][0] - viridisColormap[basePos][0]) * coef;
-			point.green = viridisColormap[basePos][1] + (viridisColormap[nextPos][1] - viridisColormap[basePos][1]) * coef;
-			point.blue  = viridisColormap[basePos][2] + (viridisColormap[nextPos][2] - viridisColormap[basePos][2]) * coef;
+			point.color.red   = viridisColormap[basePos][0] + (viridisColormap[nextPos][0] - viridisColormap[basePos][0]) * coef;
+			point.color.green = viridisColormap[basePos][1] + (viridisColormap[nextPos][1] - viridisColormap[basePos][1]) * coef;
+			point.color.blue  = viridisColormap[basePos][2] + (viridisColormap[nextPos][2] - viridisColormap[basePos][2]) * coef;
 		}
 	}
 };
 
 struct InvertedViridisColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
 		ViridisColormap::setColor(1.0f - value, point);
 	}
 };
 
 struct PlasmaColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
 		if (nextPos == 256U) {
-			point.red   = plasmaColormap[basePos][0];
-			point.green = plasmaColormap[basePos][1];
-			point.blue  = plasmaColormap[basePos][2];
+			point.color.red   = plasmaColormap[basePos][0];
+			point.color.green = plasmaColormap[basePos][1];
+			point.color.blue  = plasmaColormap[basePos][2];
 		} else {
 			const float coef = pos - basePos;
-			point.red   = plasmaColormap[basePos][0] + (plasmaColormap[nextPos][0] - plasmaColormap[basePos][0]) * coef;
-			point.green = plasmaColormap[basePos][1] + (plasmaColormap[nextPos][1] - plasmaColormap[basePos][1]) * coef;
-			point.blue  = plasmaColormap[basePos][2] + (plasmaColormap[nextPos][2] - plasmaColormap[basePos][2]) * coef;
+			point.color.red   = plasmaColormap[basePos][0] + (plasmaColormap[nextPos][0] - plasmaColormap[basePos][0]) * coef;
+			point.color.green = plasmaColormap[basePos][1] + (plasmaColormap[nextPos][1] - plasmaColormap[basePos][1]) * coef;
+			point.color.blue  = plasmaColormap[basePos][2] + (plasmaColormap[nextPos][2] - plasmaColormap[basePos][2]) * coef;
 		}
 	}
 };
 
 struct InvertedPlasmaColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
 		PlasmaColormap::setColor(1.0f - value, point);
 	}
 };
 
 struct InfernoColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
 		if (nextPos == 256U) {
-			point.red   = infernoColormap[basePos][0];
-			point.green = infernoColormap[basePos][1];
-			point.blue  = infernoColormap[basePos][2];
+			point.color.red   = infernoColormap[basePos][0];
+			point.color.green = infernoColormap[basePos][1];
+			point.color.blue  = infernoColormap[basePos][2];
 		} else {
 			const float coef = pos - basePos;
-			point.red   = infernoColormap[basePos][0] + (infernoColormap[nextPos][0] - infernoColormap[basePos][0]) * coef;
-			point.green = infernoColormap[basePos][1] + (infernoColormap[nextPos][1] - infernoColormap[basePos][1]) * coef;
-			point.blue  = infernoColormap[basePos][2] + (infernoColormap[nextPos][2] - infernoColormap[basePos][2]) * coef;
+			point.color.red   = infernoColormap[basePos][0] + (infernoColormap[nextPos][0] - infernoColormap[basePos][0]) * coef;
+			point.color.green = infernoColormap[basePos][1] + (infernoColormap[nextPos][1] - infernoColormap[basePos][1]) * coef;
+			point.color.blue  = infernoColormap[basePos][2] + (infernoColormap[nextPos][2] - infernoColormap[basePos][2]) * coef;
 		}
 	}
 };
 
 struct InvertedInfernoColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
 		InfernoColormap::setColor(1.0f - value, point);
 	}
 };
 
 struct MagmaColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
 		if (nextPos == 256U) {
-			point.red   = magmaColormap[basePos][0];
-			point.green = magmaColormap[basePos][1];
-			point.blue  = magmaColormap[basePos][2];
+			point.color.red   = magmaColormap[basePos][0];
+			point.color.green = magmaColormap[basePos][1];
+			point.color.blue  = magmaColormap[basePos][2];
 		} else {
 			const float coef = pos - basePos;
-			point.red   = magmaColormap[basePos][0] + (magmaColormap[nextPos][0] - magmaColormap[basePos][0]) * coef;
-			point.green = magmaColormap[basePos][1] + (magmaColormap[nextPos][1] - magmaColormap[basePos][1]) * coef;
-			point.blue  = magmaColormap[basePos][2] + (magmaColormap[nextPos][2] - magmaColormap[basePos][2]) * coef;
+			point.color.red   = magmaColormap[basePos][0] + (magmaColormap[nextPos][0] - magmaColormap[basePos][0]) * coef;
+			point.color.green = magmaColormap[basePos][1] + (magmaColormap[nextPos][1] - magmaColormap[basePos][1]) * coef;
+			point.color.blue  = magmaColormap[basePos][2] + (magmaColormap[nextPos][2] - magmaColormap[basePos][2]) * coef;
 		}
 	}
 };
 
 struct InvertedMagmaColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
 		MagmaColormap::setColor(1.0f - value, point);
 	}
 };
 
 struct RedWhiteBlueColormap {
-	// 0.0 <= value <= 1.0
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		if (value >= 0.5f) {
 			const float v = 2.0f - 2.0f * value;
-			point.red   = v;
-			point.green = v;
-			point.blue  = 1.0f;
+			point.color.red   = v;
+			point.color.green = v;
+			point.color.blue  = 1.0f;
 		} else {
 			const float v = 2.0f * value;
-			point.red   = 1.0f;
-			point.green = v;
-			point.blue  = v;
+			point.color.red   = 1.0f;
+			point.color.green = v;
+			point.color.blue  = v;
 		}
 	}
 };
@@ -1297,37 +1292,54 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 //	setAutoFillBackground(false);
 }
 
-template<typename ColorScale, typename SrcIterator, typename DestIterator>
-void
-OGLFigureWidget::fillOGLGridDataWithAbsValues(SrcIterator srcIter, SrcIterator srcEnd, DestIterator destIter, float valueFactor)
+float
+OGLFigureWidget::calcValueFactor(float valueScale, const Matrix2<XZValue<float>>& data)
 {
-	for ( ; srcIter != srcEnd; ++srcIter, ++destIter) {
-		destIter->x = srcIter->x;
-		destIter->y = srcIter->z;
-		const float value = std::abs(srcIter->value) * valueFactor;
-		destIter->z = value;
-		ColorScale::setColor(value, *destIter);
+	if (valueScale != 0.0) {
+		return 1.0f / static_cast<float>(valueScale);
+	} else {
+		const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(data);
+		return 1.0f / std::max(maxAbsValue, VALUE_EPS);
 	}
 }
 
-template<typename ColorScale, typename SrcIterator, typename DestIterator>
+template<typename ColorScale>
 void
-OGLFigureWidget::fillOGLGridDataWithLogAbsValues(SrcIterator srcIter, SrcIterator srcEnd, DestIterator destIter, float valueFactor)
+OGLFigureWidget::fillOGLGridDataWithAbsValues(const Matrix2<XZValue<float>>& data, float valueFactor)
 {
-	const float invMinusMinDecibels = -1.0f / minDecibels_;
+	auto srcIter = data.begin();
+	auto srcEnd = data.end();
+	auto destIter = oglGridData_.begin();
 	for ( ; srcIter != srcEnd; ++srcIter, ++destIter) {
-		destIter->x = srcIter->x;
-		destIter->y = srcIter->z;
-		float value = std::abs(srcIter->value) * valueFactor;
-		value = (value <= minValue_) ? 0.0f : (Util::linearToDecibels(value) - minDecibels_) * invMinusMinDecibels;
-		destIter->z = value;
+		destIter->pos.x = srcIter->x;
+		destIter->pos.y = srcIter->z;
+		const float value = std::abs(srcIter->value) * valueFactor;
+		destIter->pos.z = value;
 		ColorScale::setColor(value, *destIter);
 	}
 }
 
 template<typename ColorScale>
 void
-OGLFigureWidget::fillOGLGridData(double valueScale, const Matrix2<XZValue<float> >& gridData)
+OGLFigureWidget::fillOGLGridDataWithLogAbsValues(const Matrix2<XZValue<float>>& data, float valueFactor)
+{
+	const float invMinusMinDecibels = -1.0f / minDecibels_;
+	auto srcIter = data.begin();
+	auto srcEnd = data.end();
+	auto destIter = oglGridData_.begin();
+	for ( ; srcIter != srcEnd; ++srcIter, ++destIter) {
+		destIter->pos.x = srcIter->x;
+		destIter->pos.y = srcIter->z;
+		float value = std::abs(srcIter->value) * valueFactor;
+		value = (value <= minValue_) ? 0.0f : (Util::linearToDecibels(value) - minDecibels_) * invMinusMinDecibels;
+		destIter->pos.z = value;
+		ColorScale::setColor(value, *destIter);
+	}
+}
+
+template<typename ColorScale>
+void
+OGLFigureWidget::fillOGLGridData(double valueScale, const Matrix2<XZValue<float>>& gridData)
 {
 	if (oglGridData_.n1() != gridData.n1() || oglGridData_.n2() != gridData.n2()) {
 		oglGridData_.resize(gridData.n1(), gridData.n2());
@@ -1337,76 +1349,45 @@ OGLFigureWidget::fillOGLGridData(double valueScale, const Matrix2<XZValue<float>
 	case Figure::VISUALIZATION_DEFAULT: // falls through
 	case Figure::VISUALIZATION_RAW_LINEAR:
 		{
-			float valueFactor;
-			if (valueScale != 0.0) {
-				valueFactor = 0.5f / static_cast<float>(valueScale);
-			} else {
-				float minValue, maxValue;
-				Util::minMaxValueField(gridData, minValue, maxValue);
-				valueFactor = 0.5f / std::max(std::max(std::abs(maxValue), std::abs(minValue)), VALUE_EPS);
-			}
-			Matrix2<OGLPoint3D>::Iterator destIter = oglGridData_.begin();
-			for (Matrix2<XZValue<float> >::ConstIterator srcIter = gridData.begin(); srcIter != gridData.end(); ++srcIter, ++destIter) {
-				destIter->x = srcIter->x;
-				destIter->y = srcIter->z;
-				float value = srcIter->value * valueFactor + 0.5f;
-				destIter->z = value;
+			const float valueFactor = 0.5f * calcValueFactor(valueScale, gridData);
+			auto srcIter = gridData.begin();
+			auto srcEnd = gridData.end();
+			auto destIter = oglGridData_.begin();
+			for ( ; srcIter != srcEnd; ++srcIter, ++destIter) {
+				destIter->pos.x = srcIter->x;
+				destIter->pos.y = srcIter->z;
+				const float value = srcIter->value * valueFactor + 0.5f;
+				destIter->pos.z = value;
 				ColorScale::setColor(value, *destIter);
 			}
 		}
 		break;
 	case Figure::VISUALIZATION_RECTIFIED_LINEAR:
 		{
-			float valueFactor;
-			if (valueScale != 0.0) {
-				valueFactor = 1.0f / static_cast<float>(valueScale);
-			} else {
-				const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(gridData);
-				valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
-			}
-			fillOGLGridDataWithAbsValues<ColorScale>(gridData.begin(), gridData.end(), oglGridData_.begin(), valueFactor);
+			const float valueFactor = calcValueFactor(valueScale, gridData);
+			fillOGLGridDataWithAbsValues<ColorScale>(gridData, valueFactor);
 		}
 		break;
 	case Figure::VISUALIZATION_RECTIFIED_LOG:
 		{
-			float valueFactor;
-			if (valueScale != 0.0) {
-				valueFactor = 1.0f / static_cast<float>(valueScale);
-			} else {
-				const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(gridData);
-				valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
-			}
-			fillOGLGridDataWithLogAbsValues<ColorScale>(gridData.begin(), gridData.end(), oglGridData_.begin(), valueFactor);
+			const float valueFactor = calcValueFactor(valueScale, gridData);
+			fillOGLGridDataWithLogAbsValues<ColorScale>(gridData, valueFactor);
 		}
 		break;
 	case Figure::VISUALIZATION_ENVELOPE_LINEAR:
 		{
 			Matrix2<XZValue<float>> envelope = gridData;
 			ParallelHilbertEnvelope<float>::calculateDim2Value(envelope);
-
-			float valueFactor;
-			if (valueScale != 0.0) {
-				valueFactor = 1.0f / static_cast<float>(valueScale);
-			} else {
-				const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(envelope);
-				valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
-			}
-			fillOGLGridDataWithAbsValues<ColorScale>(envelope.begin(), envelope.end(), oglGridData_.begin(), valueFactor);
+			const float valueFactor = calcValueFactor(valueScale, envelope);
+			fillOGLGridDataWithAbsValues<ColorScale>(envelope, valueFactor);
 		}
 		break;
 	case Figure::VISUALIZATION_ENVELOPE_LOG:
 		{
 			Matrix2<XZValue<float>> envelope = gridData;
 			ParallelHilbertEnvelope<float>::calculateDim2Value(envelope);
-
-			float valueFactor;
-			if (valueScale != 0.0) {
-				valueFactor = 1.0f / static_cast<float>(valueScale);
-			} else {
-				const float maxAbsValue = Util::maxAbsoluteValueField<XZValue<float>, float>(envelope);
-				valueFactor = 1.0f / std::max(maxAbsValue, VALUE_EPS);
-			}
-			fillOGLGridDataWithLogAbsValues<ColorScale>(envelope.begin(), envelope.end(), oglGridData_.begin(), valueFactor);
+			const float valueFactor = calcValueFactor(valueScale, envelope);
+			fillOGLGridDataWithLogAbsValues<ColorScale>(envelope, valueFactor);
 		}
 		break;
 	}
@@ -1465,7 +1446,7 @@ OGLFigureWidget::updateGridData(double valueScale, const Matrix2<XZValue<float>>
 		break;
 	}
 
-	Matrix2<XZValue<float> >::ConstIterator iter = gridData.begin(), end = gridData.end();
+	Matrix2<XZValue<float>>::ConstIterator iter = gridData.begin(), end = gridData.end();
 
 	// This code handles the case when minX_ > maxX_ or minZ_ > maxZ_.
 	// Assumes the container is not empty.
@@ -1493,14 +1474,14 @@ OGLFigureWidget::updateGridData(double valueScale, const Matrix2<XZValue<float>>
 }
 
 void
-OGLFigureWidget::updatePointList(const std::vector<XZ<float> >& pointList)
+OGLFigureWidget::updatePointList(const std::vector<XZ<float>>& pointList)
 {
 	if (pointList.empty()) return;
 
 	pointList_.resize(pointList.size());
 
-	std::vector<XZ<float> >::const_iterator srcIter = pointList.begin(), srcIterEnd = pointList.end();
-	std::vector<XY<float> >::iterator destIter = pointList_.begin();
+	std::vector<XZ<float>>::const_iterator srcIter = pointList.begin(), srcIterEnd = pointList.end();
+	std::vector<XY<float>>::iterator destIter = pointList_.begin();
 
 	// This code handles the case when minX_ > maxX_ or minZ_ > maxZ_.
 	// Assumes the container is not empty.
@@ -1739,7 +1720,7 @@ OGLFigureWidget::paintGL()
 		glBegin(GL_POINTS);
 		glColor3f(0.0f, 0.5f, 0.0f);
 		const float zReflectors = AUX_LINES_Z * totalValueScale;
-		for (std::vector<XY<float> >::const_iterator iter = pointList_.begin(); iter != pointList_.end(); ++iter) {
+		for (std::vector<XY<float>>::const_iterator iter = pointList_.begin(); iter != pointList_.end(); ++iter) {
 			glVertex3f(iter->x, iter->y, zReflectors);
 		}
 		glEnd();

@@ -41,27 +41,27 @@
 
 namespace Lab {
 
+struct OGLPos3D {
+	float x;
+	float y;
+	float z;
+	OGLPos3D(float ix, float iy, float iz) : x{ix}, y{iy}, z{iz} {}
+};
+
+struct OGLColor {
+	float red;
+	float green;
+	float blue;
+	OGLColor(float r, float g, float b) : red{r}, green{g}, blue{b} {}
+};
+
 struct OGLPoint3D {
-	float x;
-	float y;
-	float z;
-	float red;
-	float green;
-	float blue;
-};
-
-struct OGLVertex3D {
-	float x;
-	float y;
-	float z;
-	OGLVertex3D(float ix, float iy, float iz) : x{ix}, y{iy}, z{iz} {}
-};
-
-struct OGLColor3D {
-	float red;
-	float green;
-	float blue;
-	OGLColor3D(float r, float g, float b) : red{r}, green{g}, blue{b} {}
+	OGLPos3D pos;
+	OGLColor color;
+	OGLPoint3D() : pos{0.0, 0.0, 0.0}, color{0.0, 0.0, 0.0} {}
+	OGLPoint3D(float x, float y, float z, float r, float g, float b)
+		: pos{x, y, z}
+		, color{r, g, b} {}
 };
 
 class OGLFigureWidget : public QOpenGLWidget {
@@ -104,11 +104,13 @@ private:
 	void saveGLState();
 	void restoreGLState();
 
-	template<typename ColorScale, typename SrcIterator, typename DestIterator>
-	void fillOGLGridDataWithAbsValues(SrcIterator srcIter, SrcIterator srcEnd, DestIterator destIter, float valueFactor);
+	float calcValueFactor(float valueScale, const Matrix2<XZValue<float>>& data);
 
-	template<typename ColorScale, typename SrcIterator, typename DestIterator>
-	void fillOGLGridDataWithLogAbsValues(SrcIterator srcIter, SrcIterator srcEnd, DestIterator destIter, float valueFactor);
+	template<typename ColorScale>
+	void fillOGLGridDataWithAbsValues(const Matrix2<XZValue<float>>& data, float valueFactor);
+
+	template<typename ColorScale>
+	void fillOGLGridDataWithLogAbsValues(const Matrix2<XZValue<float>>& data, float valueFactor);
 
 	template<typename ColorScale> void fillOGLGridData(double valueScale, const Matrix2<XZValue<float> >& gridData);
 
@@ -143,8 +145,8 @@ private:
 	std::vector<XY<float> > pointList_;
 	Matrix2<XZValue<float> > gridData_;
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
-	std::vector<OGLVertex3D> vertexArray_;
-	std::vector<OGLColor3D> colorArray_;
+	std::vector<OGLPos3D> vertexArray_;
+	std::vector<OGLColor> colorArray_;
 #endif
 };
 
@@ -152,8 +154,8 @@ inline
 void
 OGLFigureWidget::createVertex(const OGLPoint3D& point, float valueScale)
 {
-	glColor3f(point.red, point.green, point.blue);
-	glVertex3f(point.x, point.y, point.z * valueScale);
+	glColor3f(point.color.red, point.color.green, point.color.blue);
+	glVertex3f(point.pos.x, point.pos.y, point.pos.z * valueScale);
 }
 
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
@@ -161,8 +163,8 @@ inline
 void
 OGLFigureWidget::fillVertexArray(const OGLPoint3D& point, float valueScale)
 {
-	vertexArray_.emplace_back(point.x, point.y, point.z * valueScale);
-	colorArray_.emplace_back(point.red, point.green, point.blue);
+	vertexArray_.emplace_back(point.pos.x, point.pos.y, point.pos.z * valueScale);
+	colorArray_.emplace_back(point.color.red, point.color.green, point.color.blue);
 }
 #endif
 
