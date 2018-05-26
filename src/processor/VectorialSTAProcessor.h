@@ -18,6 +18,7 @@
 #ifndef VECTORIALSTAPROCESSOR_H_
 #define VECTORIALSTAPROCESSOR_H_
 
+#include <algorithm> /* for_each */
 #include <cmath>
 #include <complex>
 #include <cstddef> /* std::size_t */
@@ -124,9 +125,11 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZVa
 
 	Util::resetValueFactor(gridData.begin(), gridData.end());
 
+	const std::size_t numSignals = (config_.lastTxElem - config_.firstTxElem + 1U) * config_.numElements;
+
 	// Prepare the signal matrix.
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
-		LOG_INFO << "ACQ/PREP txElem: " << txElem << " < " << config_.numElements;
+		LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
 		acquisition_.execute(baseElement, txElem, acqData_);
 		if (!initialized_) {
@@ -221,6 +224,9 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZVa
 			}
 		}
 	});
+
+	std::for_each(gridData.begin(), gridData.end(),
+			Util::MultiplyValueBy<XZValueFactor<FloatType>, FloatType>{FloatType{1} / numSignals});
 
 	LOG_DEBUG << "END ========== VectorialSTAProcessor::process ==========";
 }

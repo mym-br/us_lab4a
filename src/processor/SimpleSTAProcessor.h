@@ -18,6 +18,7 @@
 #ifndef SIMPLESTAPROCESSOR_H_
 #define SIMPLESTAPROCESSOR_H_
 
+#include <algorithm> /* for_each */
 #include <cmath>
 #include <cstddef> /* std::size_t */
 #include <vector>
@@ -105,9 +106,11 @@ SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZValue
 
 	Util::resetValueFactor(gridData.begin(), gridData.end());
 
+	const std::size_t numSignals = (config_.lastTxElem - config_.firstTxElem + 1U) * config_.numElements;
+
 	// Prepare the signal matrix.
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
-		LOG_INFO << "ACQ/PREP txElem: " << txElem << " < " << config_.numElements;
+		LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
 		acquisition_.execute(baseElement, txElem, acqData_);
 
@@ -182,6 +185,9 @@ SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZValue
 			}
 		}
 	});
+
+	std::for_each(gridData.begin(), gridData.end(),
+			Util::MultiplyValueBy<XZValueFactor<FloatType>, FloatType>{FloatType{1} / numSignals});
 
 	LOG_DEBUG << "END ========== SimpleSTAProcessor::process ==========";
 }

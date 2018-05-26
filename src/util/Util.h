@@ -137,6 +137,13 @@ struct MultiplyBy {
 	T factor;
 };
 
+template<typename T, typename U>
+struct MultiplyValueBy {
+	explicit MultiplyValueBy(U factor) : factor(factor) {}
+	void operator()(T& item) { item.value *= factor; }
+	U factor;
+};
+
 template<typename T>
 struct Add {
 	explicit Add(T term) : term(term) {}
