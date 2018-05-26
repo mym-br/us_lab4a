@@ -2,6 +2,7 @@
 - Normalization.
 	ok Simulation.
 	Experimental.
+		- Normalize signals in the network servers.
 
 - Drawing of array elements.
 
