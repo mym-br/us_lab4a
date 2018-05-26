@@ -261,7 +261,7 @@ Simulated3DAcquisitionDevice<FloatType>::prepareExcitationDadt(const std::vector
 	f.setCoefficients(decimator_->lowPassFIRFilter(), filterFreqCoeff);
 	f.filter(filterFreqCoeff, unfilteredDadt, dadt_); // adds delay of (filter size - 1) / 2 samples
 
-	Util::normalize(dadt_);
+	Util::normalizeBySumOfAbs(dadt_);
 }
 
 template<typename FloatType>
@@ -289,6 +289,7 @@ void
 Simulated3DAcquisitionDevice<FloatType>::setExcitationWaveform(const std::vector<FloatType>& dadtExc)
 {
 	dadt_ = dadtExc;
+	Util::normalizeBySumOfAbs(dadt_);
 }
 
 template<typename FloatType>
@@ -390,6 +391,7 @@ Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatTy
 
 	// dadt * hTx
 	dadtFilter.filter(dadtFilterFreqCoeff_, hTx_, convDadtHTx_);
+	Util::multiply(convDadtHTx_, 1 / simFs_);
 
 	ThreadData<ImpulseResponse> threadData{
 		simFs_,
@@ -459,9 +461,13 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 	FFTWFilter2<FloatType> dadtFilter;
 	dadtFilter.setCoefficients(dadt_, dadtFilterFreqCoeff_);
 
+	FloatType refCoeffSum = 0.0;
+
 	// For each reflector:
 	for (std::size_t iRef = 0, iRefEnd = reflectorList_.size(); iRef < iRefEnd; ++iRef) {
 		LOG_INFO << "ACQ Reflector: " << iRef << " < " << iRefEnd;
+
+		refCoeffSum += std::abs(reflectorList_[iRef].value);
 
 		if (useNumericMethod_) {
 			processReflector<NumericRectangularFlatSourceImpulseResponse<FloatType>>(reflectorList_[iRef], dadtFilter);
@@ -477,6 +483,8 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 			sample += (prng_.get() - 0.5) * a;
 		}
 	}
+
+	Util::multiply(signalList_, 1 / refCoeffSum);
 
 	return signalList_;
 }
