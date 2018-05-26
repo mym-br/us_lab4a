@@ -22,8 +22,8 @@
 namespace Lab {
 
 ParameterMap::ParameterMap(const QString& filePath)
-		: filePath_(filePath)
-		, reader_(new KeyValueFileReader(filePath))
+		: filePath_{filePath}
+		, reader_{std::make_unique<KeyValueFileReader>(filePath)}
 {
 }
 

@@ -65,7 +65,7 @@ SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
 	unsigned short portNumber = pm->value<unsigned short>("server_port_number", 49152, 65535);
 
 #ifndef TEST_MODE
-	acq_.reset(new ArrayAcqClient(serverIpAddress.c_str(), portNumber));
+	acq_ = std::make_unique<ArrayAcqClient>(serverIpAddress.c_str(), portNumber);
 
 	LOG_DEBUG << "max. sample value = " << acq_->getMaxSampleValue();
 	LOG_DEBUG << "min. sample value = " << acq_->getMinSampleValue();

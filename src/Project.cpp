@@ -115,7 +115,7 @@ Project::executeProgram(std::string& programPath, std::vector<std::string>& prog
 		args << QString(iter->c_str());
 	}
 
-	std::unique_ptr<QProcess> proc(new QProcess);
+	auto proc = std::make_unique<QProcess>();
 	proc->setWorkingDirectory(directory_);
 
 	LOG_DEBUG << "Executing program: " << programPath << " with arguments: " << args.join(" ").toStdString();

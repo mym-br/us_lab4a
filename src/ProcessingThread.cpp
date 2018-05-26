@@ -41,7 +41,7 @@ ProcessingThread::run()
 {
 	LOG_DEBUG << "Processing thread starting...";
 
-	std::unique_ptr<ProcessingNode> processingNode(new ProcessingNode(controller_, project_));
+	auto processingNode = std::make_unique<ProcessingNode>(controller_, project_);
 
 	exec();
 }

@@ -93,7 +93,6 @@ private:
 	void processScriptEntry();
 	void resetScriptData();
 
-	//QErrorMessage* errorMessage_;
 	std::unique_ptr<Controller> controller_;
 	FigureWindowList<Figure2DWindow> figure2DWindowList_;
 	FigureWindowList<Figure3DWindow> figure3DWindowList_;

@@ -67,7 +67,7 @@ NetworkDeviceSectorialScanAcquisition<FloatType>::NetworkDeviceSectorialScanAcqu
 	std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");
 	unsigned short portNumber   = pm->value<unsigned short>("server_port_number", 49152, 65535);
 
-	acq_.reset(new PhasedArrayAcqClient(serverIpAddress.c_str(), portNumber));
+	acq_ = std::make_unique<PhasedArrayAcqClient>(serverIpAddress.c_str(), portNumber);
 
 	acq_->execPreConfiguration();
 

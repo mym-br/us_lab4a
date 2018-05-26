@@ -58,7 +58,7 @@ FigureWindowList<W>::get(int id)
 
 	FigureWindowData data;
 	data.id = id;
-	data.figure.reset(new W);
+	data.figure = std::make_shared<W>();
 	list_.push_back(data);
 	return *(data.figure);
 }

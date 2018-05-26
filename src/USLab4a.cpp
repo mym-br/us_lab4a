@@ -56,7 +56,7 @@ namespace Lab {
 
 USLab4a::USLab4a(QWidget* parent)
 		: QMainWindow(parent)
-		, controller_(new Controller(project_))
+		, controller_(std::make_unique<Controller>(project_))
 		, project_(*this)
 		, figureWindowsTimer_(this)
 		, logWidgetTimer_(this)
@@ -68,11 +68,6 @@ USLab4a::USLab4a(QWidget* parent)
 	connect(controller_.get(), SIGNAL(processingFinished()), this, SLOT(handleControllerFinishedProcessing()));
 
 	ui_.logPlainTextEdit->setMaximumBlockCount(MAX_LOG_BLOCK_COUNT);
-
-	//// Error message.
-	//errorMessage_ = new QErrorMessage(this);
-	//errorMessage_->setWindowTitle(tr("Error Message"));
-	//errorMessage_->setModal(true);
 
 	figureWindowsTimer_.start(FIGURE_WINDOWS_TIMER_PERIOD_MS);
 	connect(&figureWindowsTimer_, SIGNAL(timeout()), this, SLOT(updateFigureWindows()));
