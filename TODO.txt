@@ -1,6 +1,4 @@
 
-- Implement sta_vectorial_simulated_3d_seq_y.
-
 - Normalization.
 	ok Simulation.
 	Experimental.
@@ -10,3 +8,4 @@
 ================================================================================
 
 ok- Simulation: Use gain.
+ok- Implement sta_simulated_3d_seq_y_save_signals.
