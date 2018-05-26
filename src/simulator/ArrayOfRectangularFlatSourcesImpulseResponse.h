@@ -50,6 +50,8 @@ private:
 	const std::vector<FloatType>& focusDelay_;
 	std::vector<std::size_t> offsetList_;
 	std::vector<std::vector<FloatType>> hList_;
+	const FloatType valueFactor_;
+	bool usingFocus_;
 };
 
 
@@ -69,7 +71,16 @@ ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::ArrayO
 		, focusDelay_{focusDelay}
 		, offsetList_(elemPos_.size())
 		, hList_(elemPos_.size())
+		, valueFactor_{FloatType{1} / elemPos_.size()}
 {
+	if (elemPos_.empty()) {
+		THROW_EXCEPTION(InvalidParameterException, "Empty element position list.");
+	}
+	if (focusDelay_.empty()) {
+		THROW_EXCEPTION(InvalidParameterException, "Empty element delay list.");
+	}
+
+	usingFocus_ = (Util::maxAbsolute(focusDelay_) != 0);
 }
 
 template<typename FloatType, typename ImpulseResponse>
@@ -119,6 +130,9 @@ ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::getImp
 		const std::size_t hBegin = offsetList_[i];
 		const std::size_t hEnd = hBegin + hList_[i].size();
 		Util::addElements(hList_[i].begin(), h.begin() + hBegin - iMin, h.begin() + hEnd - iMin);
+	}
+	if (usingFocus_) {
+		Util::multiply(h, valueFactor_);
 	}
 	hOffset = iMin;
 }
