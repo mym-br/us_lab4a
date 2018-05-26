@@ -1775,6 +1775,7 @@ OGLFigureWidget::paintGL()
 		painter.drawText(10, 160, QString("scale ") + QString::number(valueScale_));
 		painter.drawText(10, 180, QString("level ") + QString::number(maxAbsLevel_));
 		painter.drawText(10, 200, QString("   dB ") + QString::number(maxAbsLevelDecibels_));
+		painter.drawText(10, 220, QString("size  %1 x %2").arg(oglGridData_.n1()).arg(oglGridData_.n2()));
 	}
 }
 
