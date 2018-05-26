@@ -101,6 +101,7 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 	acqDevice_->setExcitationWaveform(config_.centerFrequency);
 	acqDevice_->setReflectorList(reflectorList_);
 	acqDevice_->setReflectorOffset(reflectorsOffsetX_, reflectorsOffsetY_);
+	acqDevice_->setGain(config_.minGain);
 }
 
 template<typename FloatType>

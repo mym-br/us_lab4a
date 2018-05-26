@@ -1,6 +1,4 @@
 
-- Simulation: Use gain.
-
 - Implement sta_vectorial_simulated_3d_seq_y.
 
 - Normalization.
@@ -8,3 +6,7 @@
 	Experimental.
 
 - Drawing of array elements.
+
+================================================================================
+
+ok- Simulation: Use gain.

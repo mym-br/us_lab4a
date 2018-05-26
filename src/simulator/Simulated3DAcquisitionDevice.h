@@ -111,6 +111,8 @@ public:
 	void setExcitationWaveform(FloatType centerFrequency /* Hz */);
 	void setExcitationWaveform(const std::vector<FloatType>& dadtExc);
 
+	void setGain(FloatType gain /* dB */);
+
 private:
 	Simulated3DAcquisitionDevice(const Simulated3DAcquisitionDevice&) = delete;
 	Simulated3DAcquisitionDevice& operator=(const Simulated3DAcquisitionDevice&) = delete;
@@ -142,6 +144,7 @@ private:
 	std::vector<XYZValue<FloatType>> reflectorList_; // coordinates of the reflectors
 	FloatType reflectorsOffsetX_;
 	FloatType reflectorsOffsetY_;
+	FloatType signalCoeff_;
 	MinstdPseudorandomNumberGenerator prng_;
 	std::vector<std::complex<FloatType>> dadtFilterFreqCoeff_;
 	std::vector<FloatType> convDadtHTx_;
@@ -176,6 +179,7 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 			, signalLength_{}
 			, reflectorsOffsetX_{}
 			, reflectorsOffsetY_{}
+			, signalCoeff_{1.0}
 			, prng_{SIMULATED_3D_ACQUISITION_DEVICE_PSEUDORANDOM_NUMBER_GENERATOR_SEED}
 {
 	txElemWidth_  = pm.value<FloatType>("tx_element_width" , 1.0e-6, 1000.0e-3);
@@ -290,6 +294,13 @@ Simulated3DAcquisitionDevice<FloatType>::setExcitationWaveform(const std::vector
 {
 	dadt_ = dadtExc;
 	Util::normalizeBySumOfAbs(dadt_);
+}
+
+template<typename FloatType>
+void
+Simulated3DAcquisitionDevice<FloatType>::setGain(FloatType gain)
+{
+	signalCoeff_ = Util::decibelsToLinear(gain);
 }
 
 template<typename FloatType>
@@ -484,7 +495,7 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 		}
 	}
 
-	Util::multiply(signalList_, 1 / refCoeffSum);
+	Util::multiply(signalList_, signalCoeff_ / refCoeffSum);
 
 	return signalList_;
 }

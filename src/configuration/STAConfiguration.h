@@ -39,8 +39,8 @@ struct STAConfiguration {
 	FloatType centerFrequency; // Hz
 	FloatType maxFrequency; // Hz
 	FloatType acquisitionTime; // s
-	FloatType minGain; // (0 - 48) dB
-	FloatType maxGain; // (0 - 48) dB
+	FloatType minGain; // dB
+	FloatType maxGain; // dB
 	FloatType propagationSpeed; // m/s
 	FloatType acquisitionDelay; // s
 	FloatType samplingFrequency; // Hz
@@ -63,8 +63,8 @@ STAConfiguration<FloatType>::load(ConstParameterMapPtr pm)
 	centerFrequency   = pm->value<FloatType>(   "center_frequency"   ,   100.0, 100.0e6);
 	maxFrequency      = pm->value<FloatType>(   "max_frequency"      ,   100.0, 100.0e6);
 	acquisitionTime   = pm->value<FloatType>(   "acquisition_time"   ,  1.0e-6,     1.0);
-	minGain           = pm->value<FloatType>(   "min_gain"           ,     0.0,    48.0);
-	maxGain           = pm->value<FloatType>(   "max_gain"           ,     0.0,    48.0);
+	minGain           = pm->value<FloatType>(   "min_gain"           , -2000.0,  2000.0);
+	maxGain           = pm->value<FloatType>(   "max_gain"           , minGain,  2000.0);
 	propagationSpeed  = pm->value<FloatType>(   "propagation_speed_1",   100.0, 10000.0);
 	acquisitionDelay  = pm->value<FloatType>(   "acquisition_delay"  ,     0.0,     1.0);
 	samplingFrequency = pm->value<FloatType>(   "sampling_frequency" ,   100.0, 200.0e6);
