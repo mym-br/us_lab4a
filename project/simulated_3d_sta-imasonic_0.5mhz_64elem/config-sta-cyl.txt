@@ -23,7 +23,7 @@ acquisition_time = 1.333e-3
 min_gain = 245.0
 
 # (dB)
-max_gain = 0.0
+max_gain = 245.0
 
 # (m/s)
 propagation_speed_1 = 1500.0
