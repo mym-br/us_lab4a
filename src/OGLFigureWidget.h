@@ -145,7 +145,6 @@ private:
 	QPoint distanceMarker2_;
 	Matrix2<OGLPoint3D> oglGridData_;
 	std::vector<XY<float>> pointList_;
-	Matrix2<XZValue<float>> gridData_;
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
 	std::vector<OGLPos3D> vertexArray_;
 	std::vector<OGLColor> colorArray_;
