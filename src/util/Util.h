@@ -577,8 +577,8 @@ addElements(InputIterator first1, InputOutputIterator first2, InputOutputIterato
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator>
 void
 addElements(InputIterator1 first1,
-	    InputIterator2 first2,
-	    OutputIterator first3, OutputIterator last3)
+		InputIterator2 first2,
+		OutputIterator first3, OutputIterator last3)
 {
 	while (first3 != last3) {
 		*first3++ = *first1++ + *first2++;
