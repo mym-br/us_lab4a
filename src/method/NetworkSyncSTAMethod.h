@@ -116,6 +116,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	}
 	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
 	Project::GridDataType projGridData;
+	FloatType valueLevel = 0.0;
 
 	Timer timer;
 
@@ -134,6 +135,8 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		project_.createDirectory(acqOutputDir, true);
 
 		project_.saveImageToHDF5(gridData, acqOutputDir);
+		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValueFactor<FloatType>, FloatType>(gridData);
+		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
 		Util::copyXZValue(gridData, projGridData);
 		project_.showFigure3D(1, "Raw image", &projGridData, &pointList,
@@ -161,6 +164,8 @@ NetworkSyncSTAMethod<FloatType>::execute()
 						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 		}
 	}
+
+	LOG_INFO << "=== value level: " << valueLevel << " (" << Util::linearToDecibels(valueLevel) << " dB)";
 
 	LOG_DEBUG << ">>> Acquisition + processing + saving data time: " << timer.getTime();
 }
