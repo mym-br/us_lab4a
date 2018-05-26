@@ -19,9 +19,8 @@
 #define COHERENCEFACTOR_H
 
 #include <cmath> /* abs, atan2, pow, sqrt */
+#include <memory>
 #include <string>
-
-#include <boost/scoped_ptr.hpp>
 
 #include "MinstdPseudorandomNumberGenerator.h"
 #include "ParameterMap.h"
@@ -76,7 +75,7 @@ CoherenceFactor<FloatType>::get(ConstParameterMapPtr pm)
 template<typename FloatType>
 class CoherenceFactorProcessor {
 public:
-	CoherenceFactorProcessor() : cf_(0) { }
+	CoherenceFactorProcessor() : cf_{} { }
 	CoherenceFactorProcessor(ConstParameterMapPtr pm)
 			: cf_(CoherenceFactor<FloatType>::get(pm)) {
 	}
@@ -99,7 +98,7 @@ public:
 	}
 	bool enabled() { return cf_.get() != nullptr; }
 private:
-	boost::scoped_ptr<CoherenceFactor<FloatType>> cf_;
+	std::unique_ptr<CoherenceFactor<FloatType>> cf_;
 };
 
 //=============================================================================
@@ -148,7 +147,7 @@ AnalyticSignalCoherenceFactor<FloatType>::get(ConstParameterMapPtr pm)
 template<typename FloatType>
 class AnalyticSignalCoherenceFactorProcessor {
 public:
-	AnalyticSignalCoherenceFactorProcessor() : cf_(0) { }
+	AnalyticSignalCoherenceFactorProcessor() : cf_{} { }
 	AnalyticSignalCoherenceFactorProcessor(ConstParameterMapPtr pm)
 			: cf_(AnalyticSignalCoherenceFactor<FloatType>::get(pm)) {
 	}
@@ -172,7 +171,7 @@ public:
 	bool enabled() { return cf_.get() != nullptr; }
 	const AnalyticSignalCoherenceFactor<FloatType>& implementation() const { return *cf_; }
 private:
-	boost::scoped_ptr<AnalyticSignalCoherenceFactor<FloatType>> cf_;
+	std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>> cf_;
 };
 
 //=============================================================================

@@ -19,8 +19,7 @@
 #define METHOD_H_
 
 #include <string>
-
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
 
 
 
@@ -67,7 +66,7 @@ public:
 
 	MethodType findByName(const std::string& name);
 private:
-	typedef boost::unordered_map<std::string, MethodType> Map;
+	typedef std::unordered_map<std::string, MethodType> Map;
 
 	Map map_;
 };

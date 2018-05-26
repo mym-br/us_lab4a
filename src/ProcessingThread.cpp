@@ -17,7 +17,7 @@
 
 #include "ProcessingThread.h"
 
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 #include "Log.h"
 #include "ProcessingNode.h"
@@ -41,7 +41,7 @@ ProcessingThread::run()
 {
 	LOG_DEBUG << "Processing thread starting...";
 
-	boost::scoped_ptr<ProcessingNode> processingNode(new ProcessingNode(controller_, project_));
+	std::unique_ptr<ProcessingNode> processingNode(new ProcessingNode(controller_, project_));
 
 	exec();
 }

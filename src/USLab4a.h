@@ -18,9 +18,8 @@
 #ifndef USLAB4A_H
 #define USLAB4A_H
 
+#include <memory>
 #include <vector>
-
-#include <boost/scoped_ptr.hpp>
 
 #include <QFile>
 #include <QMainWindow>
@@ -95,7 +94,7 @@ private:
 	void resetScriptData();
 
 	//QErrorMessage* errorMessage_;
-	boost::scoped_ptr<Controller> controller_;
+	std::unique_ptr<Controller> controller_;
 	FigureWindowList<Figure2DWindow> figure2DWindowList_;
 	FigureWindowList<Figure3DWindow> figure3DWindowList_;
 	Project project_;

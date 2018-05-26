@@ -18,11 +18,10 @@
 #ifndef PARAMETERMAP_H
 #define PARAMETERMAP_H
 
+#include <memory>
+
 #include <QHash>
 #include <QString>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
 
 #include "Exception.h"
 #include "KeyValueFileReader.h"
@@ -45,10 +44,10 @@ private:
 	template<typename T> T convertValue(const QString s) const;
 
 	const QString filePath_;
-	boost::scoped_ptr<const KeyValueFileReader> reader_;
+	std::unique_ptr<const KeyValueFileReader> reader_;
 };
 
-typedef boost::shared_ptr<const ParameterMap> ConstParameterMapPtr;
+typedef std::shared_ptr<const ParameterMap> ConstParameterMapPtr;
 
 
 

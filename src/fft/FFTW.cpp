@@ -21,7 +21,7 @@
 
 namespace Lab {
 
-boost::mutex FFTW::mutex_;
+std::mutex FFTW::mutex_;
 
 FFTW::FFTW()
 {

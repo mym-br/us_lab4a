@@ -890,7 +890,7 @@ testSCF()
 	v1.push_back(-1.0);
 	v1.push_back(1.0);
 
-	boost::scoped_ptr<Lab::SignCoherenceFactor<double>> scf(new Lab::SignCoherenceFactor<double>(2.0));
+	std::unique_ptr<Lab::SignCoherenceFactor<double>> scf(new Lab::SignCoherenceFactor<double>(2.0));
 
 	const double scfValue = scf->calculate(&v1[0], v1.size());
 	if (scfValue != 3.270805724762158e-3) {

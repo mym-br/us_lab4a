@@ -18,9 +18,8 @@
 #ifndef FIGUREWINDOWLIST_H_
 #define FIGUREWINDOWLIST_H_
 
+#include <memory>
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
 
 
 
@@ -38,7 +37,7 @@ public:
 private:
 	struct FigureWindowData {
 		int id;
-		boost::shared_ptr<W> figure;
+		std::shared_ptr<W> figure;
 	};
 
 	FigureWindowList(const FigureWindowList&);

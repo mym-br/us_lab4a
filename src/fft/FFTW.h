@@ -18,7 +18,8 @@
 #ifndef FFTW_H_
 #define FFTW_H_
 
-#include <boost/thread/mutex.hpp>
+#include <mutex>
+
 #include <fftw3.h>
 
 #include "Exception.h"
@@ -170,7 +171,7 @@ public:
 		fftw_execute(p);
 	}
 private:
-	static boost::mutex mutex_;
+	static std::mutex mutex_;
 };
 
 } // namespace Lab

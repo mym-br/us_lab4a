@@ -19,9 +19,8 @@
 #define NETWORKSTAACQUISITION_H_
 
 #include <cstddef> /* std::size_t */
+#include <memory>
 #include <string>
-
-#include <boost/scoped_ptr.hpp>
 
 #include "ArrayAcqClient.h"
 #include "Exception.h"
@@ -52,7 +51,7 @@ private:
 
 	const Project& project_;
 	const STAConfiguration<FloatType>& config_;
-	boost::scoped_ptr<ArrayAcqClient> acq_;
+	std::unique_ptr<ArrayAcqClient> acq_;
 	std::vector<float> signalBuffer_;
 };
 
@@ -60,9 +59,9 @@ private:
 
 template<typename FloatType>
 NetworkSTAAcquisition<FloatType>::NetworkSTAAcquisition(const Project& project, const STAConfiguration<FloatType>& config)
-		: project_(project)
-		, config_(config)
-		, acq_(0)
+		: project_{project}
+		, config_{config}
+		, acq_{}
 {
 	ConstParameterMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
 	std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");

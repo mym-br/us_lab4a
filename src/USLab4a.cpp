@@ -19,9 +19,8 @@
 
 #include <cstring>
 #include <exception>
+#include <memory>
 #include <string>
-
-#include <boost/shared_ptr.hpp>
 
 #include <QDir>
 #include <QFile>

@@ -20,10 +20,9 @@
 
 #include <algorithm> /* std::copy */
 #include <cstddef> /* std::size_t */
+#include <memory>
 #include <string>
 #include <vector>
-
-#include <boost/scoped_ptr.hpp>
 
 #include "ArrayAcqClient.h"
 #include "Exception.h"
@@ -62,7 +61,7 @@ private:
 
 	const Project& project_;
 	const Config& config_;
-	boost::scoped_ptr<ArrayAcqClient> acq_;
+	std::unique_ptr<ArrayAcqClient> acq_;
 	std::vector<float> txDelays_;
 	std::vector<float> signalBuffer_;
 };

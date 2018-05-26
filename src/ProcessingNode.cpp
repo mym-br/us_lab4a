@@ -17,7 +17,7 @@
 
 #include "ProcessingNode.h"
 
-#include <boost/scoped_ptr.hpp>
+#include <memory>
 
 #include "Controller.h"
 #include "Log.h"
@@ -44,7 +44,7 @@ ProcessingNode::process()
 	LOG_INFO << "========== Processing started.";
 
 	try {
-		boost::scoped_ptr<Method> method(Method::get(project_));
+		std::unique_ptr<Method> method(Method::get(project_));
 
 		Timer procTimer;
 		method->execute();

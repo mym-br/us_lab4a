@@ -19,8 +19,6 @@
 
 #include <string>
 
-#include <boost/make_shared.hpp>
-
 #include <QDir>
 #include <QFile>
 #include <QMutexLocker>
@@ -56,7 +54,7 @@ Project::loadTaskParameters(const std::string& taskFileName)
 //		QFileInfo fileInfo(taskFile);
 
 //		project_.setTaskFilePath(filePath);
-		taskParameterMap_ = boost::make_shared<const ParameterMap>(taskFile.fileName().toStdString().c_str());
+		taskParameterMap_ = std::make_shared<const ParameterMap>(taskFile.fileName().toStdString().c_str());
 	} else {
 		THROW_EXCEPTION(InvalidFileException, "The file \"" << taskFile.fileName().toStdString() << "\" does not exist.");
 	}
@@ -66,7 +64,7 @@ ConstParameterMapPtr
 Project::loadParameterMap(const char* fileName) const
 {
 	QString filePath = directory_ + '/' + fileName;
-	return boost::make_shared<const ParameterMap>(filePath);
+	return std::make_shared<const ParameterMap>(filePath);
 }
 
 ConstParameterMapPtr
@@ -74,7 +72,7 @@ Project::loadChildParameterMap(ConstParameterMapPtr pm, const char* fileNameKey)
 {
 	std::string fileName = pm->value<std::string>(fileNameKey);
 	QString filePath = directory_ + '/' + fileName.c_str();
-	return boost::make_shared<const ParameterMap>(filePath);
+	return std::make_shared<const ParameterMap>(filePath);
 }
 
 void
@@ -117,7 +115,7 @@ Project::executeProgram(std::string& programPath, std::vector<std::string>& prog
 		args << QString(iter->c_str());
 	}
 
-	boost::scoped_ptr<QProcess> proc(new QProcess);
+	std::unique_ptr<QProcess> proc(new QProcess);
 	proc->setWorkingDirectory(directory_);
 
 	LOG_DEBUG << "Executing program: " << programPath << " with arguments: " << args.join(" ").toStdString();
