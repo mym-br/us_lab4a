@@ -52,7 +52,7 @@ private:
 	SharedFixedSizePool(const SharedFixedSizePool&);
 	SharedFixedSizePool& operator=(const SharedFixedSizePool&);
 
-	std::vector<T, tbb::cache_aligned_allocator<T> > pool_;
+	std::vector<T, tbb::cache_aligned_allocator<T>> pool_;
 	tbb::concurrent_bounded_queue<T*> ptrQueue_;
 };
 

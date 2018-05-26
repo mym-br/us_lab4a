@@ -54,7 +54,7 @@ class USLab4a;
 // one thread at a time.
 class Project {
 public:
-	typedef Matrix2<XZValue<float> > GridDataType;
+	typedef Matrix2<XZValue<float>> GridDataType;
 	typedef XZ<float> PointType;
 
 	Project(USLab4a& mainWindow);
@@ -84,10 +84,10 @@ public:
 	//template<typename T> void loadHDF5(const std::string& fileName, const std::string& datasetName, T& container) const;
 	//template<typename T> void saveHDF5(const T& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<FloatType>& container) const;
-	//template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<std::pair<FloatType, FloatType> >& container) const;
+	//template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<std::pair<FloatType, FloatType>>& container) const;
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix2<FloatType>& container) const;
 	template<typename FloatType> void saveHDF5(const std::vector<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
-	//template<typename FloatType> void saveHDF5(const std::vector<std::pair<FloatType, FloatType> >& container, const std::string& fileName, const std::string& datasetName) const;
+	//template<typename FloatType> void saveHDF5(const std::vector<std::pair<FloatType, FloatType>>& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename FloatType> void saveHDF5(const Matrix2<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename T> void saveSignalToHDF5(const std::vector<T>& container, const std::string& outputDir,
 					unsigned int acqNumber, unsigned int baseElement,
@@ -234,7 +234,7 @@ Project::loadHDF5(const std::string& fileName, const std::string& datasetName, s
 
 //template<typename FloatType>
 //void
-//Project::loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<std::pair<FloatType, FloatType> >& container) const
+//Project::loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<std::pair<FloatType, FloatType>>& container) const
 //{
 //	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 //	HDF5Util::load2(filePath.toStdString(), datasetName, container);
@@ -258,7 +258,7 @@ Project::saveHDF5(const std::vector<FloatType>& container, const std::string& fi
 
 //template<typename FloatType>
 //void
-//Project::saveHDF5(const std::vector<std::pair<FloatType, FloatType> >& container, const std::string& fileName, const std::string& datasetName) const
+//Project::saveHDF5(const std::vector<std::pair<FloatType, FloatType>>& container, const std::string& fileName, const std::string& datasetName) const
 //{
 //	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 //	HDF5Util::save2(container, filePath.toStdString(), datasetName);

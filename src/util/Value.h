@@ -50,7 +50,7 @@ template<typename InputIterator, typename OutputIterator>
 template<typename InputIterator, typename OutputIterator, typename T>
 	void transformSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest, T transform);
 template<typename Iterator, typename FloatType>
-	void copyRealImagToComplexSequence(Iterator re, Iterator reEnd, Iterator im, std::vector<std::complex<FloatType> >& cpx);
+	void copyRealImagToComplexSequence(Iterator re, Iterator reEnd, Iterator im, std::vector<std::complex<FloatType>>& cpx);
 template<typename InputIterator, typename OutputIterator>
 	void copyXZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
 template<typename InputIterator, typename OutputIterator>
@@ -213,9 +213,9 @@ transformSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest
 
 template<typename Iterator, typename FloatType>
 void
-copyRealImagToComplexSequence(Iterator re, Iterator reEnd, Iterator im, std::vector<std::complex<FloatType> >& cpx)
+copyRealImagToComplexSequence(Iterator re, Iterator reEnd, Iterator im, std::vector<std::complex<FloatType>>& cpx)
 {
-	typename std::vector<std::complex<FloatType> >::iterator cpxIter = cpx.begin();
+	typename std::vector<std::complex<FloatType>>::iterator cpxIter = cpx.begin();
 	while (re != reEnd) {
 		*cpxIter++ = std::complex<FloatType>(*re++, *im++);
 	}

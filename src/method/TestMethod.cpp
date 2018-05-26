@@ -109,7 +109,7 @@ void
 testFFT(Lab::Project& p)
 {
 	std::vector<double> x1, x2, x3;
-	std::vector<std::complex<double> > y1, y2, y3;
+	std::vector<std::complex<double>> y1, y2, y3;
 	std::vector<double> yr1Ref, yi1Ref, yr2Ref, yi2Ref, yr3Ref, yi3Ref;
 
 	p.loadHDF5("fft_x_4000", "v", x1);
@@ -163,9 +163,9 @@ testFFT(Lab::Project& p)
 		}
 	}
 
-	std::vector<std::complex<double> > yc1(yr1Ref.size());
-	std::vector<std::complex<double> > yc2(yr2Ref.size());
-	std::vector<std::complex<double> > yc3(yr3Ref.size());
+	std::vector<std::complex<double>> yc1(yr1Ref.size());
+	std::vector<std::complex<double>> yc2(yr2Ref.size());
+	std::vector<std::complex<double>> yc3(yr3Ref.size());
 	Lab::Value::copyRealImagToComplexSequence(yr1Ref.begin(), yr1Ref.end(), yi1Ref.begin(), yc1);
 	Lab::Value::copyRealImagToComplexSequence(yr2Ref.begin(), yr2Ref.end(), yi2Ref.begin(), yc2);
 	Lab::Value::copyRealImagToComplexSequence(yr3Ref.begin(), yr3Ref.end(), yi3Ref.begin(), yc3);
@@ -730,7 +730,7 @@ testFFTWFilter2(Lab::Project& p)
 	std::vector<double> y2Ref;
 	p.loadHDF5("filter_y2", "y", y2Ref);
 
-	std::vector<std::complex<double> > filterFreqCoeff;
+	std::vector<std::complex<double>> filterFreqCoeff;
 	std::vector<double> y;
 	Lab::FFTWFilter2<double> filter;
 	filter.setCoefficients(b, filterFreqCoeff);
@@ -757,7 +757,7 @@ testFFTWFilter2(Lab::Project& p)
 	Lab::FFTWFilter2<double> filter2;
 	filter2.setCoefficients(yRef, filterFreqCoeff);
 	Lab::FFTWFilter2<double> filter3;
-	std::vector<std::complex<double> > dummyFilterFreqCoeff;
+	std::vector<std::complex<double>> dummyFilterFreqCoeff;
 	filter3.setCoefficients(yRef, dummyFilterFreqCoeff);
 	std::vector<double> y2;
 	filter3.filter(filterFreqCoeff, x, y2);
@@ -890,7 +890,7 @@ testSCF()
 	v1.push_back(-1.0);
 	v1.push_back(1.0);
 
-	boost::scoped_ptr<Lab::SignCoherenceFactor<double> > scf(new Lab::SignCoherenceFactor<double>(2.0));
+	boost::scoped_ptr<Lab::SignCoherenceFactor<double>> scf(new Lab::SignCoherenceFactor<double>(2.0));
 
 	const double scfValue = scf->calculate(&v1[0], v1.size());
 	if (scfValue != 3.270805724762158e-3) {

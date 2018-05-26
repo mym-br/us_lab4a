@@ -1160,7 +1160,7 @@ public:
 protected:
   // non-property members:
   QCustomPlot *mParentPlot;
-  QHash<QCP::MarginSide, QList<QCPLayoutElement*> > mChildren;
+  QHash<QCP::MarginSide, QList<QCPLayoutElement*>> mChildren;
   
   // introduced virtual methods:
   virtual int commonMargin(QCP::MarginSide side) const;
@@ -1393,7 +1393,7 @@ public:
   
 protected:
   // property members:
-  QList<QList<QCPLayoutElement*> > mElements;
+  QList<QList<QCPLayoutElement*>> mElements;
   QList<double> mColumnStretchFactors;
   QList<double> mRowStretchFactors;
   int mColumnSpacing, mRowSpacing;
@@ -3778,7 +3778,7 @@ protected:
   bool mOpenGl;
   
   // non-property members:
-  QList<QSharedPointer<QCPAbstractPaintBuffer> > mPaintBuffers;
+  QList<QSharedPointer<QCPAbstractPaintBuffer>> mPaintBuffers;
   QPoint mMousePressPos;
   bool mMouseHasMoved;
   QPointer<QCPLayerable> mMouseEventLayerable;
@@ -3891,7 +3891,7 @@ public:
   
 protected:
   // property members:
-  QSharedPointer<QCPDataContainer<DataType> > mDataContainer;
+  QSharedPointer<QCPDataContainer<DataType>> mDataContainer;
   
   // helpers for subclasses:
   void getDataSegments(QList<QCPDataRange> &selectedSegments, QList<QCPDataRange> &unselectedSegments) const;
@@ -4667,15 +4667,15 @@ protected:
   Qt::AspectRatioMode mBackgroundScaledMode;
   QCPLayoutInset *mInsetLayout;
   Qt::Orientations mRangeDrag, mRangeZoom;
-  QList<QPointer<QCPAxis> > mRangeDragHorzAxis, mRangeDragVertAxis;
-  QList<QPointer<QCPAxis> > mRangeZoomHorzAxis, mRangeZoomVertAxis;
+  QList<QPointer<QCPAxis>> mRangeDragHorzAxis, mRangeDragVertAxis;
+  QList<QPointer<QCPAxis>> mRangeZoomHorzAxis, mRangeZoomVertAxis;
   double mRangeZoomFactorHorz, mRangeZoomFactorVert;
   
   // non-property members:
   QList<QCPRange> mDragStartHorzRange, mDragStartVertRange;
   QCP::AntialiasedElements mAADragBackup, mNotAADragBackup;
   bool mDragging;
-  QHash<QCPAxis::AxisType, QList<QCPAxis*> > mAxes;
+  QHash<QCPAxis::AxisType, QList<QCPAxis*>> mAxes;
   
   // reimplemented virtual methods:
   virtual void applyDefaultAntialiasingHint(QCPPainter *painter) const Q_DECL_OVERRIDE;
@@ -5235,7 +5235,7 @@ protected:
   QVector<QPointF> dataToStepCenterLines(const QVector<QCPGraphData> &data) const;
   QVector<QPointF> dataToImpulseLines(const QVector<QCPGraphData> &data) const;
   QVector<QCPDataRange> getNonNanSegments(const QVector<QPointF> *lineData, Qt::Orientation keyOrientation) const;
-  QVector<QPair<QCPDataRange, QCPDataRange> > getOverlappingSegments(QVector<QCPDataRange> thisSegments, const QVector<QPointF> *thisData, QVector<QCPDataRange> otherSegments, const QVector<QPointF> *otherData) const;
+  QVector<QPair<QCPDataRange, QCPDataRange>> getOverlappingSegments(QVector<QCPDataRange> thisSegments, const QVector<QPointF> *thisData, QVector<QCPDataRange> otherSegments, const QVector<QPointF> *otherData) const;
   bool segmentsIntersect(double aLower, double aUpper, double bLower, double bUpper, int &bPrecedence) const;
   QPointF getFillBasePoint(QPointF matchingDataPoint) const;
   const QPolygonF getFillPolygon(const QVector<QPointF> *lineData, QCPDataRange segment) const;

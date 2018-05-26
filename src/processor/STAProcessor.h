@@ -31,7 +31,7 @@ public:
 	STAProcessor() {}
 	virtual ~STAProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix2<XZValueFactor<FloatType> >& gridData) = 0;
+	virtual void process(unsigned int baseElement, Matrix2<XZValueFactor<FloatType>>& gridData) = 0;
 };
 
 } // namespace Lab

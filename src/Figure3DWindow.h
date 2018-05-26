@@ -40,7 +40,7 @@ public:
 	Figure3DWindow(QWidget *parent = 0);
 	~Figure3DWindow();
 
-	void updateData(double valueScale, const Matrix2<XZValue<float> >* gridData = 0, const std::vector<XZ<float> >* pointList = 0);
+	void updateData(double valueScale, const Matrix2<XZValue<float>>* gridData = 0, const std::vector<XZ<float>>* pointList = 0);
 
 	// Will be effective after the next data update.
 	void setVisualization(Figure::Visualization visualization);

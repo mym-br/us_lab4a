@@ -99,7 +99,7 @@ public:
 	}
 	bool enabled() { return cf_.get() != nullptr; }
 private:
-	boost::scoped_ptr<CoherenceFactor<FloatType> > cf_;
+	boost::scoped_ptr<CoherenceFactor<FloatType>> cf_;
 };
 
 //=============================================================================

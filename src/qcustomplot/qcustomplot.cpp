@@ -3026,7 +3026,7 @@ QCPMarginGroup::~QCPMarginGroup()
 */
 bool QCPMarginGroup::isEmpty() const
 {
-  QHashIterator<QCP::MarginSide, QList<QCPLayoutElement*> > it(mChildren);
+  QHashIterator<QCP::MarginSide, QList<QCPLayoutElement*>> it(mChildren);
   while (it.hasNext())
   {
     it.next();
@@ -3043,7 +3043,7 @@ bool QCPMarginGroup::isEmpty() const
 void QCPMarginGroup::clear()
 {
   // make all children remove themselves from this margin group:
-  QHashIterator<QCP::MarginSide, QList<QCPLayoutElement*> > it(mChildren);
+  QHashIterator<QCP::MarginSide, QList<QCPLayoutElement*>> it(mChildren);
   while (it.hasNext())
   {
     it.next();
@@ -15275,7 +15275,7 @@ void QCustomPlot::processRectSelection(QRect rect, QMouseEvent *event)
   
   if (mInteractions.testFlag(QCP::iSelectPlottables))
   {
-    QMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> > potentialSelections; // map key is number of selected data points, so we have selections sorted by size
+    QMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection>> potentialSelections; // map key is number of selected data points, so we have selections sorted by size
     QRectF rectF(rect.normalized());
     if (QCPAxisRect *affectedAxisRect = axisRectAt(rectF.topLeft()))
     {
@@ -15295,7 +15295,7 @@ void QCustomPlot::processRectSelection(QRect rect, QMouseEvent *event)
         // only leave plottable with most selected points in map, since we will only select a single plottable:
         if (!potentialSelections.isEmpty())
         {
-          QMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> >::iterator it = potentialSelections.begin();
+          QMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection>>::iterator it = potentialSelections.begin();
           while (it != potentialSelections.end()-1) // erase all except last element
             it = potentialSelections.erase(it);
         }
@@ -15321,7 +15321,7 @@ void QCustomPlot::processRectSelection(QRect rect, QMouseEvent *event)
       }
       
       // go through selections in reverse (largest selection first) and emit select events:
-      QMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection> >::const_iterator it = potentialSelections.constEnd();
+      QMap<int, QPair<QCPAbstractPlottable*, QCPDataSelection>>::const_iterator it = potentialSelections.constEnd();
       while (it != potentialSelections.constBegin())
       {
         --it;
@@ -16888,7 +16888,7 @@ QList<QCPAxis*> QCPAxisRect::axes(QCPAxis::AxisTypes types) const
 QList<QCPAxis*> QCPAxisRect::axes() const
 {
   QList<QCPAxis*> result;
-  QHashIterator<QCPAxis::AxisType, QList<QCPAxis*> > it(mAxes);
+  QHashIterator<QCPAxis::AxisType, QList<QCPAxis*>> it(mAxes);
   while (it.hasNext())
   {
     it.next();
@@ -16996,7 +16996,7 @@ QList<QCPAxis*> QCPAxisRect::addAxes(QCPAxis::AxisTypes types)
 bool QCPAxisRect::removeAxis(QCPAxis *axis)
 {
   // don't access axis->axisType() to provide safety when axis is an invalid pointer, rather go through all axis containers:
-  QHashIterator<QCPAxis::AxisType, QList<QCPAxis*> > it(mAxes);
+  QHashIterator<QCPAxis::AxisType, QList<QCPAxis*>> it(mAxes);
   while (it.hasNext())
   {
     it.next();
@@ -20777,7 +20777,7 @@ void QCPGraph::drawFill(QCPPainter *painter, QVector<QPointF> *lines) const
     if (!otherLines.isEmpty())
     {
       QVector<QCPDataRange> otherSegments = getNonNanSegments(&otherLines, mChannelFillGraph->keyAxis()->orientation());
-      QVector<QPair<QCPDataRange, QCPDataRange> > segmentPairs = getOverlappingSegments(segments, lines, otherSegments, &otherLines);
+      QVector<QPair<QCPDataRange, QCPDataRange>> segmentPairs = getOverlappingSegments(segments, lines, otherSegments, &otherLines);
       for (int i=0; i<segmentPairs.size(); ++i)
         painter->drawPolygon(getChannelFillPolygon(lines, segmentPairs.at(i).first, &otherLines, segmentPairs.at(i).second));
     }
@@ -21209,9 +21209,9 @@ QVector<QCPDataRange> QCPGraph::getNonNanSegments(const QVector<QPointF> *lineDa
   
   \see getNonNanSegments, segmentsIntersect, drawFill, getChannelFillPolygon
 */
-QVector<QPair<QCPDataRange, QCPDataRange> > QCPGraph::getOverlappingSegments(QVector<QCPDataRange> thisSegments, const QVector<QPointF> *thisData, QVector<QCPDataRange> otherSegments, const QVector<QPointF> *otherData) const
+QVector<QPair<QCPDataRange, QCPDataRange>> QCPGraph::getOverlappingSegments(QVector<QCPDataRange> thisSegments, const QVector<QPointF> *thisData, QVector<QCPDataRange> otherSegments, const QVector<QPointF> *otherData) const
 {
-  QVector<QPair<QCPDataRange, QCPDataRange> > result;
+  QVector<QPair<QCPDataRange, QCPDataRange>> result;
   if (thisData->isEmpty() || otherData->isEmpty() || thisSegments.isEmpty() || otherSegments.isEmpty())
     return result;
   

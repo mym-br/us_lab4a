@@ -48,10 +48,10 @@ public:
 
 	FFTWFilter2& operator=(const FFTWFilter2&);
 
-	void setCoefficients(const std::vector<FloatType>& filterCoeff, std::vector<std::complex<FloatType> >& filterFreqCoeff);
+	void setCoefficients(const std::vector<FloatType>& filterCoeff, std::vector<std::complex<FloatType>>& filterFreqCoeff);
 
 	// y.size() will be x.size() + filterCoeff.size() - 1.
-	void filter(const std::vector<std::complex<FloatType> >& filterFreqCoeff, const std::vector<FloatType>& x, std::vector<FloatType>& y);
+	void filter(const std::vector<std::complex<FloatType>>& filterFreqCoeff, const std::vector<FloatType>& x, std::vector<FloatType>& y);
 private:
 	enum {
 		FFT_SIZE = 512 // must be a power of two
@@ -173,7 +173,7 @@ FFTWFilter2<FloatType>::prepare()
 
 template<typename FloatType>
 void
-FFTWFilter2<FloatType>::setCoefficients(const std::vector<FloatType>& filterCoeff, std::vector<std::complex<FloatType> >& filterFreqCoeff)
+FFTWFilter2<FloatType>::setCoefficients(const std::vector<FloatType>& filterCoeff, std::vector<std::complex<FloatType>>& filterFreqCoeff)
 {
 	if (initialized_) THROW_EXCEPTION(InvalidStateException, "The filter is already initialized.");
 
@@ -240,7 +240,7 @@ FFTWFilter2<FloatType>::copyInput(const std::vector<FloatType>& v, long offset)
 
 template<typename FloatType>
 void
-FFTWFilter2<FloatType>::filter(const std::vector<std::complex<FloatType> >& filterFreqCoeff, const std::vector<FloatType>& x, std::vector<FloatType>& y)
+FFTWFilter2<FloatType>::filter(const std::vector<std::complex<FloatType>>& filterFreqCoeff, const std::vector<FloatType>& x, std::vector<FloatType>& y)
 {
 	if (!initialized_) THROW_EXCEPTION(InvalidStateException, "The filter has not been initialized.");
 

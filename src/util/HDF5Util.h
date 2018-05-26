@@ -41,20 +41,20 @@ using namespace H5;
 #endif
 
 template<typename FloatType> void resize(std::vector<FloatType>& container, hsize_t n1, hsize_t n2);
-template<typename FloatType> void resize(std::vector<std::pair<FloatType, FloatType> >& container, hsize_t n1, hsize_t n2);
+template<typename FloatType> void resize(std::vector<std::pair<FloatType, FloatType>>& container, hsize_t n1, hsize_t n2);
 template<typename FloatType> void resize(Matrix2<FloatType>& container, hsize_t n1, hsize_t n2);
 
 template<typename FloatType> FloatType* getBeginPtr(std::vector<FloatType>& container);
 template<typename FloatType> const FloatType* getBeginPtr(const std::vector<FloatType>& container);
 
-template<typename FloatType> FloatType* getBeginPtr(std::vector<std::pair<FloatType, FloatType> >& container);
-template<typename FloatType> const FloatType* getBeginPtr(const std::vector<std::pair<FloatType, FloatType> >& container);
+template<typename FloatType> FloatType* getBeginPtr(std::vector<std::pair<FloatType, FloatType>>& container);
+template<typename FloatType> const FloatType* getBeginPtr(const std::vector<std::pair<FloatType, FloatType>>& container);
 
 template<typename FloatType> FloatType* getBeginPtr(Matrix2<FloatType>& container);
 template<typename FloatType> const FloatType* getBeginPtr(const Matrix2<FloatType>& container);
 
 template<typename FloatType> void getSize(const std::vector<FloatType>& container, hsize_t& n1, hsize_t& n2);
-template<typename FloatType> void getSize(const std::vector<std::pair<FloatType, FloatType> >& container, hsize_t& n1, hsize_t& n2);
+template<typename FloatType> void getSize(const std::vector<std::pair<FloatType, FloatType>>& container, hsize_t& n1, hsize_t& n2);
 template<typename FloatType> void getSize(const Matrix2<FloatType>& container, hsize_t& n1, hsize_t& n2);
 
 template<typename T> void load2(const std::string& filePath, const std::string& dataSetName, T& container);
@@ -81,7 +81,7 @@ resize(std::vector<FloatType>& container, hsize_t n1, hsize_t n2)
 
 template<typename FloatType>
 void
-resize(std::vector<std::pair<FloatType, FloatType> >& container, hsize_t n1, hsize_t n2)
+resize(std::vector<std::pair<FloatType, FloatType>>& container, hsize_t n1, hsize_t n2)
 {
 	if (n1 == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The first dimension (" << n1 << ") is equal to 0.");
@@ -121,14 +121,14 @@ getBeginPtr(const std::vector<FloatType>& v)
 
 template<typename FloatType>
 FloatType*
-getBeginPtr(std::vector<std::pair<FloatType, FloatType> >& v)
+getBeginPtr(std::vector<std::pair<FloatType, FloatType>>& v)
 {
 	return &(v[0].first);
 }
 
 template<typename FloatType>
 const FloatType*
-getBeginPtr(const std::vector<std::pair<FloatType, FloatType> >& v)
+getBeginPtr(const std::vector<std::pair<FloatType, FloatType>>& v)
 {
 	return &(v[0].first);
 }
@@ -157,7 +157,7 @@ getSize(const std::vector<FloatType>& v, hsize_t& n1, hsize_t& n2)
 
 template<typename FloatType>
 void
-getSize(const std::vector<std::pair<FloatType, FloatType> >& v, hsize_t& n1, hsize_t& n2)
+getSize(const std::vector<std::pair<FloatType, FloatType>>& v, hsize_t& n1, hsize_t& n2)
 {
 	n1 = v.size();
 	n2 = 2;
