@@ -10,6 +10,6 @@ data_dir = saved_acquisition
 base_element = 16
 
 # (m)
-min_y = -50.0e-3
-max_y = 50.0e-3
-y_step = 10.0e-3
+min_y = -100.0e-3
+max_y = 100.0e-3
+y_step = 20.0e-3
