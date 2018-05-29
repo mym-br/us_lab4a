@@ -74,14 +74,10 @@
 #define MAX_OFFSET (1.0e5f)
 #define ZOOM_IN_FACTOR 1.1f
 #define ZOOM_OUT_FACTOR 0.9f
-//#define REFLECTORS_MIN_SCALE 1.05f
 #define REFLECTOR_POINT_SIZE_SMALL 1.0f
 #define REFLECTOR_POINT_SIZE_BIG 3.0f
 #define REFLECTOR_SIZE_THRESHOLD 20
 #define VALUE_EPS (1e-30f)
-
-// linear scale: max(z) = 1.0, dB scale: max(z) = 0.0
-#define AUX_LINES_Z 1.1
 
 
 
@@ -1127,7 +1123,6 @@ float magmaColormap[256][3] = {
 
 struct GrayScaleColormap {
 	static void setColor(float value, OGLPoint3D& point) {
-		Util::clip(value, 0.0f, 1.0f);
 		point.color.red   = value;
 		point.color.green = value;
 		point.color.blue  = value;
@@ -1142,7 +1137,6 @@ struct InvertedGrayScaleColormap {
 
 struct ViridisColormap {
 	static void setColor(float value, OGLPoint3D& point) {
-		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
@@ -1167,7 +1161,6 @@ struct InvertedViridisColormap {
 
 struct PlasmaColormap {
 	static void setColor(float value, OGLPoint3D& point) {
-		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
@@ -1192,7 +1185,6 @@ struct InvertedPlasmaColormap {
 
 struct InfernoColormap {
 	static void setColor(float value, OGLPoint3D& point) {
-		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
@@ -1217,7 +1209,6 @@ struct InvertedInfernoColormap {
 
 struct MagmaColormap {
 	static void setColor(float value, OGLPoint3D& point) {
-		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
@@ -1242,7 +1233,6 @@ struct InvertedMagmaColormap {
 
 struct RedWhiteBlueColormap {
 	static void setColor(float value, OGLPoint3D& point) {
-		Util::clip(value, 0.0f, 1.0f);
 		if (value >= 0.5f) {
 			const float v = 2.0f - 2.0f * value;
 			point.color.red   = v;
@@ -1289,10 +1279,8 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 		, oglDisplayList_{}
 #endif
 {
-	//setAttribute(Qt::WA_OpaquePaintEvent);
 	setMinimumWidth(MININUM_WIDTH);
 	setMinimumHeight(MININUM_HEIGHT);
-//	setAutoFillBackground(false);
 }
 
 float
@@ -1432,8 +1420,6 @@ OGLFigureWidget::updateGridData(double valueScale, const Matrix2<XZValue<float>>
 {
 	if (gridData.empty()) return;
 
-//	LOG_DEBUG << "Grid data size: (" << gridData.n1() << ", " << gridData.n2() << ")";
-
 	switch (colormap_) {
 	case Figure::COLORMAP_DEFAULT: // falls through
 	case Figure::COLORMAP_GRAY:
@@ -1474,7 +1460,6 @@ OGLFigureWidget::updateGridData(double valueScale, const Matrix2<XZValue<float>>
 	Matrix2<XZValue<float>>::ConstIterator iter = gridData.begin(), end = gridData.end();
 
 	// This code handles the case when minX_ > maxX_ or minZ_ > maxZ_.
-	// Assumes the container is not empty.
 	if (iter->x < minX_) minX_ = iter->x;
 	if (iter->x > maxX_) maxX_ = iter->x;
 	if (iter->z < minZ_) minZ_ = iter->z;
@@ -1509,15 +1494,14 @@ OGLFigureWidget::updatePointList(const std::vector<XZ<float>>& pointList)
 
 	std::vector<XZ<float>>::const_iterator srcIter = pointList.begin(), srcIterEnd = pointList.end();
 	std::vector<XY<float>>::iterator destIter = pointList_.begin();
+	destIter->x = srcIter->x;
+	destIter->y = srcIter->z;
 
 	// This code handles the case when minX_ > maxX_ or minZ_ > maxZ_.
-	// Assumes the container is not empty.
 	if (srcIter->x < minX_) minX_ = srcIter->x;
 	if (srcIter->x > maxX_) maxX_ = srcIter->x;
 	if (srcIter->z < minZ_) minZ_ = srcIter->z;
 	if (srcIter->z > maxZ_) maxZ_ = srcIter->z;
-	destIter->x = srcIter->x;
-	destIter->y = srcIter->z;
 
 	for (++srcIter, ++destIter; srcIter != srcIterEnd; ++srcIter, ++destIter) {
 		const float x = srcIter->x;
@@ -1547,77 +1531,39 @@ OGLFigureWidget::setMinDecibels(float minDecibels)
 }
 
 void
-OGLFigureWidget::saveGLState()
-{
-	//TODO: clean?
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
-	glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
-#endif
-}
-
-void
-OGLFigureWidget::restoreGLState()
-{
-	//TODO: clean?
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
-	glPopClientAttrib();
-#endif
-	glPopAttrib();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-}
-
-void
 OGLFigureWidget::paintGL()
 {
 	QPainter painter(this);
 	painter.setFont(QFont("monospace"));
+
+	//==================================================
 	painter.beginNativePainting();
 
-	saveGLState();
-
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
-	if (oglGridData_.n1() >= 2) {
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_COLOR_ARRAY);
-	}
-#endif
-
+	// QPainter disables GL_DEPTH_TEST.
 	glEnable(GL_DEPTH_TEST);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// QPainter clears the depth buffer.
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	const float aspect = static_cast<float>(width()) / height();
-	//gluPerspective(45.0, aspect, 0.1, 10.0);//fovy, aspect, near, far
 	const float yD = std::max((maxX_ - minX_) / aspect, maxZ_ - minZ_) * (0.5 + MARGIN);
 	const float xD = yD * aspect;
-	const float zD = MAX_SCALE * std::max(xD, yD);
-	glOrtho(-xD, xD, -yD, yD, -zD, zD);//l, r, b, t, near, far
+	const float totalValueScale = 0.5f * yD * valueScale_;
+	const float zD = 1.42f * scale_ * std::max(std::max(xD, yD), totalValueScale);
+	glOrtho(-xD, xD, -yD, yD, -zD, zD); // l, r, b, t, near, far
 
 	const float resX = (2.0 * xD) / width() / scale_;
 	const float resY = (2.0 * yD) / height() / scale_;
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	//glTranslated(0.0, 0.0, -2.0);
 	glRotatef(rotX_, 1.0f, 0.0f, 0.0f);
 	glRotatef(rotZ_, 0.0f, 0.0f, 1.0f);
 	glScalef(scale_, scale_, scale_);
 	glTranslatef(-(minX_ + maxX_) * 0.5f + resX * offsetX_, -(minZ_ + maxZ_) * 0.5f + resY * offsetY_, 0.0f);
-
-	GLdouble modelViewMatrix[16], projectionMatrix[16];
-	glGetDoublev(GL_MODELVIEW_MATRIX, modelViewMatrix);
-	glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
-
-	const float totalValueScale = 0.5f * yD * valueScale_;
 
 	if (oglGridData_.n1() >= 2) {
 		glPushMatrix();
@@ -1690,6 +1636,8 @@ OGLFigureWidget::paintGL()
 		glPopMatrix();
 	}
 
+	glDisable(GL_DEPTH_TEST);
+
 	if (showPoints_ && !rotationMode_ && !pointList_.empty()) {
 //		if (pointList_.size() > REFLECTOR_SIZE_THRESHOLD) {
 //			glPointSize(REFLECTOR_POINT_SIZE_SMALL);
@@ -1698,9 +1646,8 @@ OGLFigureWidget::paintGL()
 //		}
 		glBegin(GL_POINTS);
 		glColor3f(0.0f, 0.5f, 0.0f);
-		const float zReflectors = AUX_LINES_Z * totalValueScale;
 		for (std::vector<XY<float>>::const_iterator iter = pointList_.begin(); iter != pointList_.end(); ++iter) {
-			glVertex3f(iter->x, iter->y, zReflectors);
+			glVertex3f(iter->x, iter->y, 0.0f);
 		}
 		glEnd();
 	}
@@ -1708,13 +1655,13 @@ OGLFigureWidget::paintGL()
 	const bool mustShowDistance = !distanceMarker1_.isNull() && !distanceMarker2_.isNull();
 	float distance = 0.0;
 	if (mustShowDistance) {
-		// Calculates the distance between distanceMarker1_ and distanceMarker2_.
+		// Calculate the distance between distanceMarker1_ and distanceMarker2_.
 
 		GLint viewport[4];
-		//GLdouble modelViewMatrix[16], projectionMatrix[16];
+		GLdouble modelViewMatrix[16], projectionMatrix[16];
 		glGetIntegerv(GL_VIEWPORT, viewport);
-//		glGetDoublev(GL_MODELVIEW_MATRIX, modelViewMatrix); //TODO: re-enable?
-//		glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
+		glGetDoublev(GL_MODELVIEW_MATRIX, modelViewMatrix);
+		glGetDoublev(GL_PROJECTION_MATRIX, projectionMatrix);
 
 		const GLint maxGlY = viewport[3] - 1; // viewport[3] is the height of the window in pixels
 		GLdouble p1X, p1Y, p1Z, p2X, p2Y, p2Z;
@@ -1727,13 +1674,10 @@ OGLFigureWidget::paintGL()
 		distance = std::sqrt(dX * dX + dY * dY);
 	}
 
-	restoreGLState();
-
 	painter.endNativePainting();
+	//==================================================
 
 	painter.setRenderHint(QPainter::TextAntialiasing);
-	//painter.setPen(Qt::white);
-	//painter.setPen(Qt::black);
 	painter.setPen(Qt::darkGray);
 
 	if (mustShowDistance) {
@@ -1741,18 +1685,15 @@ OGLFigureWidget::paintGL()
 		painter.drawText(10, 20, QString("Distance = ") + QString::number(distance));
 	}
 	if (showInfo_) {
-		if (rotationMode_) {
-			painter.drawText(10, 40, QString("R"));
-		}
-		painter.drawText(10,  60, QString("off x ") + QString::number(offsetX_));
-		painter.drawText(10,  80, QString("off y ") + QString::number(offsetY_));
-		painter.drawText(10, 100, QString("rot x ") + QString::number(rotX_));
-		painter.drawText(10, 120, QString("rot z ") + QString::number(rotZ_));
-		painter.drawText(10, 140, QString("zoom  ") + QString::number(scale_));
-		painter.drawText(10, 160, QString("scale ") + QString::number(valueScale_));
-		painter.drawText(10, 180, QString("level ") + QString::number(maxAbsLevel_));
-		painter.drawText(10, 200, QString("   dB ") + QString::number(maxAbsLevelDecibels_));
-		painter.drawText(10, 220, QString("size  %1 x %2").arg(oglGridData_.n1()).arg(oglGridData_.n2()));
+		painter.drawText(10,  40, QString("off x ") + QString::number(offsetX_));
+		painter.drawText(10,  60, QString("off y ") + QString::number(offsetY_));
+		painter.drawText(10,  80, QString("rot x ") + QString::number(rotX_));
+		painter.drawText(10, 100, QString("rot z ") + QString::number(rotZ_));
+		painter.drawText(10, 120, QString("zoom  ") + QString::number(scale_));
+		painter.drawText(10, 140, QString("scale ") + QString::number(valueScale_));
+		painter.drawText(10, 160, QString("level ") + QString::number(maxAbsLevel_));
+		painter.drawText(10, 180, QString("   dB ") + QString::number(maxAbsLevelDecibels_));
+		painter.drawText(10, 200, QString("size  %1 x %2").arg(oglGridData_.n1()).arg(oglGridData_.n2()));
 	}
 
 	dataChanged_ = false;
@@ -1879,12 +1820,18 @@ OGLFigureWidget::initializeGL()
 
 	//glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClearColor(1.0, 1.0, 1.0, 1.0);
+
+#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+#endif
 }
 
 void
-OGLFigureWidget::resizeGL(int width, int height)
+OGLFigureWidget::resizeGL(int /*width*/, int /*height*/)
 {
-	glViewport(0, 0, width, height);
+	// paintGL calls glViewport().
+	//glViewport(0, 0, width, height);
 }
 
 } // namespace Lab

@@ -18,7 +18,6 @@
 #ifndef OGLFIGUREWIDGET_H_
 #define OGLFIGUREWIDGET_H_
 
-#include <cmath>
 #include <vector>
 
 #include <GL/glu.h>
@@ -30,10 +29,6 @@
 #include "XY.h"
 #include "XZ.h"
 #include "XZValue.h"
-
-//QT_BEGIN_NAMESPACE
-//class QPaintEvent;
-//QT_END_NAMESPACE
 
 #define OGLFIGUREWIDGET_USE_VERTEX_ARRAY 1
 
@@ -101,9 +96,6 @@ protected:
 	virtual void keyPressEvent(QKeyEvent* e);
 	virtual void keyReleaseEvent(QKeyEvent* e);
 private:
-	void saveGLState();
-	void restoreGLState();
-
 	float calcValueFactor(float valueScale, const Matrix2<XZValue<float>>& data);
 
 	template<typename ColorScale>
