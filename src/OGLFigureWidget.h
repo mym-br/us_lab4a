@@ -114,9 +114,10 @@ private:
 
 	template<typename ColorScale> void fillOGLGridData(double valueScale, const Matrix2<XZValue<float>>& gridData);
 
-	void createVertex(const OGLPoint3D& point, float valueScale);
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
-	void fillVertexArray(const OGLPoint3D& point, float valueScale);
+	void fillVertexArray(const OGLPoint3D& point);
+#else
+	void createVertex(const OGLPoint3D& point);
 #endif
 
 	bool valuesInDecibel_;
@@ -124,6 +125,7 @@ private:
 	bool rotationMode_;
 	bool showPoints_;
 	bool showInfo_;
+	bool dataChanged_;
 	Figure::Colormap colormap_;
 	Figure::Visualization visualization_;
 	float minDecibels_;
@@ -146,26 +148,27 @@ private:
 	Matrix2<OGLPoint3D> oglGridData_;
 	std::vector<XY<float>> pointList_;
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
-	std::vector<OGLPos3D> vertexArray_;
-	std::vector<OGLColor> colorArray_;
+	std::vector<OGLPoint3D> vertexArray_;
+#else
+	GLuint oglDisplayList_;
 #endif
 };
-
-inline
-void
-OGLFigureWidget::createVertex(const OGLPoint3D& point, float valueScale)
-{
-	glColor3f(point.color.red, point.color.green, point.color.blue);
-	glVertex3f(point.pos.x, point.pos.y, point.pos.z * valueScale);
-}
 
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
 inline
 void
-OGLFigureWidget::fillVertexArray(const OGLPoint3D& point, float valueScale)
+OGLFigureWidget::fillVertexArray(const OGLPoint3D& point)
 {
-	vertexArray_.emplace_back(point.pos.x, point.pos.y, point.pos.z * valueScale);
-	colorArray_.emplace_back(point.color.red, point.color.green, point.color.blue);
+	vertexArray_.emplace_back(point.pos.x, point.pos.y, point.pos.z,
+					point.color.red, point.color.green, point.color.blue);
+}
+#else
+inline
+void
+OGLFigureWidget::createVertex(const OGLPoint3D& point)
+{
+	glColor3f(point.color.red, point.color.green, point.color.blue);
+	glVertex3f(point.pos.x, point.pos.y, point.pos.z);
 }
 #endif
 

@@ -1270,6 +1270,7 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 		, rotationMode_{}
 		, showPoints_{true}
 		, showInfo_{true}
+		, dataChanged_{}
 		, colormap_{Figure::COLORMAP_GRAY}
 		, visualization_{Figure::VISUALIZATION_RAW_LINEAR}
 		, minDecibels_{DEFAULT_MIN_DECIBELS}
@@ -1286,6 +1287,9 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 		, maxAbsLevelDecibels_{}
 		, offsetX_{}
 		, offsetY_{}
+#ifndef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
+		, oglDisplayList_{}
+#endif
 {
 	//setAttribute(Qt::WA_OpaquePaintEvent);
 	setMinimumWidth(MININUM_WIDTH);
@@ -1473,6 +1477,8 @@ OGLFigureWidget::updateGridData(double valueScale, const Matrix2<XZValue<float>>
 	}
 
 	update();
+
+	dataChanged_ = true;
 }
 
 void
@@ -1595,6 +1601,8 @@ OGLFigureWidget::paintGL()
 	const float totalValueScale = 0.5f * yD * valueScale_;
 
 	if (oglGridData_.n1() >= 2) {
+		glPushMatrix();
+		glScalef(1.0, 1.0, totalValueScale);
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
 # ifdef PYRAMIDAL_MESH
 		for (unsigned int i = 0; i < oglGridData_.n1() - 1; ++i) {
@@ -1608,109 +1616,117 @@ OGLFigureWidget::paintGL()
 			}
 
 			vertexArray_.clear();
-			colorArray_.clear();
 			Matrix2<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first;
 			Matrix2<OGLPoint3D>::ConstDim2Iterator iterB = intervalB.first;
 			if (iterA != intervalA.second) {
 				const OGLPoint3D pA = *iterA;
-				fillVertexArray(pA, totalValueScale);
+				fillVertexArray(pA);
 
 				const OGLPoint3D pB = *iterB;
-				fillVertexArray(pB, totalValueScale);
+				fillVertexArray(pB);
 
 				++iterA; ++iterB;
 				for (unsigned int j = 0; iterA != intervalA.second; ++iterA, ++iterB, ++j) {
 					const OGLPoint3D pA = *iterA;
 					const OGLPoint3D pB = *iterB;
 					if (j & 1U) {
-						fillVertexArray(pB, totalValueScale);
-						fillVertexArray(pA, totalValueScale);
-						fillVertexArray(pB, totalValueScale); // creates a degenerate triangle
+						fillVertexArray(pB);
+						fillVertexArray(pA);
+						fillVertexArray(pB); // creates a degenerate triangle
 					} else {
-						fillVertexArray(pA, totalValueScale);
-						fillVertexArray(pB, totalValueScale);
-						fillVertexArray(pA, totalValueScale); // creates a degenerate triangle
+						fillVertexArray(pA);
+						fillVertexArray(pB);
+						fillVertexArray(pA); // creates a degenerate triangle
 					}
 				}
 			}
-			glVertexPointer(3, GL_FLOAT, 0, &vertexArray_[0]);
-			glColorPointer(3, GL_FLOAT, 0, &colorArray_[0]);
+			glVertexPointer(3, GL_FLOAT, sizeof(OGLPoint3D), &vertexArray_[0].pos);
+			glColorPointer(3, GL_FLOAT, sizeof(OGLPoint3D), &vertexArray_[0].color);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexArray_.size());
 		}
 # else
 		for (std::size_t i = 0; i < oglGridData_.n1() - 1; ++i) {
 			vertexArray_.clear();
-			colorArray_.clear();
+			//colorArray_.clear();
 			Matrix2<OGLPoint3D>::ConstDim2Interval intervalA = oglGridData_.dim2Interval(i);
 			Matrix2<OGLPoint3D>::ConstDim2Interval intervalB = oglGridData_.dim2Interval(i + 1);
 			for (Matrix2<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first, iterB = intervalB.first; iterA != intervalA.second; ++iterA, ++iterB) {
 				const OGLPoint3D pA = *iterA;
-				fillVertexArray(pA, totalValueScale);
+				fillVertexArray(pA);
 
 				const OGLPoint3D pB = *iterB;
-				fillVertexArray(pB, totalValueScale);
+				fillVertexArray(pB);
 			}
-			glVertexPointer(3, GL_FLOAT, 0, &vertexArray_[0]);
-			glColorPointer(3, GL_FLOAT, 0, &colorArray_[0]);
+			glVertexPointer(3, GL_FLOAT, sizeof(OGLPoint3D), &vertexArray_[0].pos);
+			glColorPointer(3, GL_FLOAT, sizeof(OGLPoint3D), &vertexArray_[0].color);
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexArray_.size());
 		}
 # endif
 #else
+		if (dataChanged_) {
+			glDeleteLists(oglDisplayList_, 1);
+			oglDisplayList_ = glGenLists(1);
+			glNewList(oglDisplayList_, GL_COMPILE);
 # ifdef PYRAMIDAL_MESH
-		for (unsigned int i = 0; i < oglGridData_.n1() - 1; ++i) {
-			Matrix2<OGLPoint3D>::ConstDim2Interval intervalA, intervalB;
-			if (i & 1U) {
-				intervalA = oglGridData_.dim2Interval(i + 1);
-				intervalB = oglGridData_.dim2Interval(i);
-			} else {
-				intervalA = oglGridData_.dim2Interval(i);
-				intervalB = oglGridData_.dim2Interval(i + 1);
-			}
+			for (unsigned int i = 0; i < oglGridData_.n1() - 1; ++i) {
+				Matrix2<OGLPoint3D>::ConstDim2Interval intervalA, intervalB;
+				if (i & 1U) {
+					intervalA = oglGridData_.dim2Interval(i + 1);
+					intervalB = oglGridData_.dim2Interval(i);
+				} else {
+					intervalA = oglGridData_.dim2Interval(i);
+					intervalB = oglGridData_.dim2Interval(i + 1);
+				}
 
-			glBegin(GL_TRIANGLE_STRIP);
-			Matrix2<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first;
-			Matrix2<OGLPoint3D>::ConstDim2Iterator iterB = intervalB.first;
-			if (iterA != intervalA.second) {
-				const OGLPoint3D pA = *iterA;
-				createVertex(pA, totalValueScale);
-
-				const OGLPoint3D pB = *iterB;
-				createVertex(pB, totalValueScale);
-
-				++iterA; ++iterB;
-				for (unsigned int j = 0; iterA != intervalA.second; ++iterA, ++iterB, ++j) {
+				glBegin(GL_TRIANGLE_STRIP);
+				Matrix2<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first;
+				Matrix2<OGLPoint3D>::ConstDim2Iterator iterB = intervalB.first;
+				if (iterA != intervalA.second) {
 					const OGLPoint3D pA = *iterA;
+					createVertex(pA);
+
 					const OGLPoint3D pB = *iterB;
-					if (j & 1U) {
-						createVertex(pB, totalValueScale);
-						createVertex(pA, totalValueScale);
-						createVertex(pB, totalValueScale); // creates a degenerate triangle
-					} else {
-						createVertex(pA, totalValueScale);
-						createVertex(pB, totalValueScale);
-						createVertex(pA, totalValueScale); // creates a degenerate triangle
+					createVertex(pB);
+
+					++iterA; ++iterB;
+					for (unsigned int j = 0; iterA != intervalA.second; ++iterA, ++iterB, ++j) {
+						const OGLPoint3D pA = *iterA;
+						const OGLPoint3D pB = *iterB;
+						if (j & 1U) {
+							createVertex(pB);
+							createVertex(pA);
+							createVertex(pB); // creates a degenerate triangle
+						} else {
+							createVertex(pA);
+							createVertex(pB);
+							createVertex(pA); // creates a degenerate triangle
+						}
 					}
 				}
+				glEnd();
 			}
-			glEnd();
-		}
 # else
-		for (std::size_t i = 0; i < oglGridData_.n1() - 1; ++i) {
-			Matrix2<OGLPoint3D>::ConstDim2Interval intervalA = oglGridData_.dim2Interval(i);
-			Matrix2<OGLPoint3D>::ConstDim2Interval intervalB = oglGridData_.dim2Interval(i + 1);
+			for (std::size_t i = 0; i < oglGridData_.n1() - 1; ++i) {
+				Matrix2<OGLPoint3D>::ConstDim2Interval intervalA = oglGridData_.dim2Interval(i);
+				Matrix2<OGLPoint3D>::ConstDim2Interval intervalB = oglGridData_.dim2Interval(i + 1);
 
-			glBegin(GL_TRIANGLE_STRIP);
-			for (Matrix2<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first, iterB = intervalB.first; iterA != intervalA.second; ++iterA, ++iterB) {
-				const OGLPoint3D pA = *iterA;
-				createVertex(pA, totalValueScale);
+				glBegin(GL_TRIANGLE_STRIP);
+				for (Matrix2<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first, iterB = intervalB.first; iterA != intervalA.second; ++iterA, ++iterB) {
+					const OGLPoint3D pA = *iterA;
+					createVertex(pA);
 
-				const OGLPoint3D pB = *iterB;
-				createVertex(pB, totalValueScale);
+					const OGLPoint3D pB = *iterB;
+					createVertex(pB);
+				}
+				glEnd();
 			}
-			glEnd();
-		}
 # endif
+			glEndList();
+			dataChanged_ = false;
+		}
+		glCallList(oglDisplayList_);
 #endif
+		glPopMatrix();
 	}
 
 	if (showPoints_ && !rotationMode_ && !pointList_.empty()) {
