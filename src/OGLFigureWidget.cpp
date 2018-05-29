@@ -80,8 +80,6 @@
 #define REFLECTOR_SIZE_THRESHOLD 20
 #define VALUE_EPS (1e-30f)
 
-#define PYRAMIDAL_MESH 1
-
 // linear scale: max(z) = 1.0, dB scale: max(z) = 0.0
 #define AUX_LINES_Z 1.1
 
@@ -1287,7 +1285,7 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 		, maxAbsLevelDecibels_{}
 		, offsetX_{}
 		, offsetY_{}
-#ifndef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
+#ifndef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 		, oglDisplayList_{}
 #endif
 {
@@ -1308,6 +1306,27 @@ OGLFigureWidget::calcValueFactor(float valueScale, const Matrix2<XZValue<float>>
 		return 1.0f / std::max(maxAbsLevel_, VALUE_EPS);
 	}
 }
+
+#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
+void
+OGLFigureWidget::fillIndexArray(unsigned int iA, unsigned int iB, std::vector<GLuint>& indexArray)
+{
+	indexArray.clear();
+	indexArray.push_back(iA++);
+	indexArray.push_back(iB++);
+	for (unsigned int j = 0, end = oglGridData_.n2() - 1; j < end; ++j, ++iA, ++iB) {
+		if (j & 1U) {
+			indexArray.push_back(iB);
+			indexArray.push_back(iA);
+			indexArray.push_back(iB); // creates a degenerate triangle
+		} else {
+			indexArray.push_back(iA);
+			indexArray.push_back(iB);
+			indexArray.push_back(iA); // creates a degenerate triangle
+		}
+	}
+}
+#endif
 
 template<typename ColorScale>
 void
@@ -1536,7 +1555,7 @@ OGLFigureWidget::saveGLState()
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
+#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 	glPushClientAttrib(GL_CLIENT_VERTEX_ARRAY_BIT);
 #endif
 }
@@ -1545,7 +1564,7 @@ void
 OGLFigureWidget::restoreGLState()
 {
 	//TODO: clean?
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
+#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 	glPopClientAttrib();
 #endif
 	glPopAttrib();
@@ -1564,7 +1583,7 @@ OGLFigureWidget::paintGL()
 
 	saveGLState();
 
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
+#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 	if (oglGridData_.n1() >= 2) {
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_COLOR_ARRAY);
@@ -1603,71 +1622,28 @@ OGLFigureWidget::paintGL()
 	if (oglGridData_.n1() >= 2) {
 		glPushMatrix();
 		glScalef(1.0, 1.0, totalValueScale);
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
-# ifdef PYRAMIDAL_MESH
+
+#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
+		if (dataChanged_) {
+			fillIndexArray(0, oglGridData_.n2(), evenIndexArray_);
+			fillIndexArray(oglGridData_.n2(), 0, oddIndexArray_);
+		}
+
 		for (unsigned int i = 0; i < oglGridData_.n1() - 1; ++i) {
-			Matrix2<OGLPoint3D>::ConstDim2Interval intervalA, intervalB;
+			glVertexPointer(3, GL_FLOAT, sizeof(OGLPoint3D), &oglGridData_(i, 0).pos);
+			glColorPointer(3, GL_FLOAT, sizeof(OGLPoint3D), &oglGridData_(i, 0).color);
 			if (i & 1U) {
-				intervalA = oglGridData_.dim2Interval(i + 1);
-				intervalB = oglGridData_.dim2Interval(i);
+				glDrawElements(GL_TRIANGLE_STRIP, oddIndexArray_.size(), GL_UNSIGNED_INT, oddIndexArray_.data());
 			} else {
-				intervalA = oglGridData_.dim2Interval(i);
-				intervalB = oglGridData_.dim2Interval(i + 1);
+				glDrawElements(GL_TRIANGLE_STRIP, evenIndexArray_.size(), GL_UNSIGNED_INT, evenIndexArray_.data());
 			}
-
-			vertexArray_.clear();
-			Matrix2<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first;
-			Matrix2<OGLPoint3D>::ConstDim2Iterator iterB = intervalB.first;
-			if (iterA != intervalA.second) {
-				const OGLPoint3D pA = *iterA;
-				fillVertexArray(pA);
-
-				const OGLPoint3D pB = *iterB;
-				fillVertexArray(pB);
-
-				++iterA; ++iterB;
-				for (unsigned int j = 0; iterA != intervalA.second; ++iterA, ++iterB, ++j) {
-					const OGLPoint3D pA = *iterA;
-					const OGLPoint3D pB = *iterB;
-					if (j & 1U) {
-						fillVertexArray(pB);
-						fillVertexArray(pA);
-						fillVertexArray(pB); // creates a degenerate triangle
-					} else {
-						fillVertexArray(pA);
-						fillVertexArray(pB);
-						fillVertexArray(pA); // creates a degenerate triangle
-					}
-				}
-			}
-			glVertexPointer(3, GL_FLOAT, sizeof(OGLPoint3D), &vertexArray_[0].pos);
-			glColorPointer(3, GL_FLOAT, sizeof(OGLPoint3D), &vertexArray_[0].color);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexArray_.size());
 		}
-# else
-		for (std::size_t i = 0; i < oglGridData_.n1() - 1; ++i) {
-			vertexArray_.clear();
-			//colorArray_.clear();
-			Matrix2<OGLPoint3D>::ConstDim2Interval intervalA = oglGridData_.dim2Interval(i);
-			Matrix2<OGLPoint3D>::ConstDim2Interval intervalB = oglGridData_.dim2Interval(i + 1);
-			for (Matrix2<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first, iterB = intervalB.first; iterA != intervalA.second; ++iterA, ++iterB) {
-				const OGLPoint3D pA = *iterA;
-				fillVertexArray(pA);
-
-				const OGLPoint3D pB = *iterB;
-				fillVertexArray(pB);
-			}
-			glVertexPointer(3, GL_FLOAT, sizeof(OGLPoint3D), &vertexArray_[0].pos);
-			glColorPointer(3, GL_FLOAT, sizeof(OGLPoint3D), &vertexArray_[0].color);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexArray_.size());
-		}
-# endif
 #else
 		if (dataChanged_) {
 			glDeleteLists(oglDisplayList_, 1);
 			oglDisplayList_ = glGenLists(1);
 			glNewList(oglDisplayList_, GL_COMPILE);
-# ifdef PYRAMIDAL_MESH
+
 			for (unsigned int i = 0; i < oglGridData_.n1() - 1; ++i) {
 				Matrix2<OGLPoint3D>::ConstDim2Interval intervalA, intervalB;
 				if (i & 1U) {
@@ -1705,25 +1681,10 @@ OGLFigureWidget::paintGL()
 				}
 				glEnd();
 			}
-# else
-			for (std::size_t i = 0; i < oglGridData_.n1() - 1; ++i) {
-				Matrix2<OGLPoint3D>::ConstDim2Interval intervalA = oglGridData_.dim2Interval(i);
-				Matrix2<OGLPoint3D>::ConstDim2Interval intervalB = oglGridData_.dim2Interval(i + 1);
 
-				glBegin(GL_TRIANGLE_STRIP);
-				for (Matrix2<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first, iterB = intervalB.first; iterA != intervalA.second; ++iterA, ++iterB) {
-					const OGLPoint3D pA = *iterA;
-					createVertex(pA);
-
-					const OGLPoint3D pB = *iterB;
-					createVertex(pB);
-				}
-				glEnd();
-			}
-# endif
 			glEndList();
-			dataChanged_ = false;
 		}
+
 		glCallList(oglDisplayList_);
 #endif
 		glPopMatrix();
@@ -1793,6 +1754,8 @@ OGLFigureWidget::paintGL()
 		painter.drawText(10, 200, QString("   dB ") + QString::number(maxAbsLevelDecibels_));
 		painter.drawText(10, 220, QString("size  %1 x %2").arg(oglGridData_.n1()).arg(oglGridData_.n2()));
 	}
+
+	dataChanged_ = false;
 }
 
 void

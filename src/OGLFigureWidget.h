@@ -35,7 +35,7 @@
 //class QPaintEvent;
 //QT_END_NAMESPACE
 
-#define OGLFIGUREWIDGET_USE_VERTEX_ARRAYS 1
+#define OGLFIGUREWIDGET_USE_VERTEX_ARRAY 1
 
 
 
@@ -114,8 +114,8 @@ private:
 
 	template<typename ColorScale> void fillOGLGridData(double valueScale, const Matrix2<XZValue<float>>& gridData);
 
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
-	void fillVertexArray(const OGLPoint3D& point);
+#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
+	void fillIndexArray(unsigned int iA, unsigned int iB, std::vector<GLuint>& indexArray);
 #else
 	void createVertex(const OGLPoint3D& point);
 #endif
@@ -147,22 +147,15 @@ private:
 	QPoint distanceMarker2_;
 	Matrix2<OGLPoint3D> oglGridData_;
 	std::vector<XY<float>> pointList_;
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
-	std::vector<OGLPoint3D> vertexArray_;
+#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
+	std::vector<GLuint> evenIndexArray_;
+	std::vector<GLuint> oddIndexArray_;
 #else
 	GLuint oglDisplayList_;
 #endif
 };
 
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAYS
-inline
-void
-OGLFigureWidget::fillVertexArray(const OGLPoint3D& point)
-{
-	vertexArray_.emplace_back(point.pos.x, point.pos.y, point.pos.z,
-					point.color.red, point.color.green, point.color.blue);
-}
-#else
+#ifndef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 inline
 void
 OGLFigureWidget::createVertex(const OGLPoint3D& point)
