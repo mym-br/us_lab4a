@@ -60,6 +60,7 @@ private:
 	QPoint mouseAnchor_;
 	std::vector<OGLPoint3DA> pointArray_;
 	std::vector<GLuint> indexArray_;
+	std::vector<GLuint> revIndexArray_;
 };
 
 } // namespace Lab

@@ -17,7 +17,7 @@
 
 #include "OGLMultiLayerWidget.h"
 
-#include <algorithm> /* std::max */
+#include <algorithm> /* copy, std::max */
 #include <cmath>
 
 #include <QKeyEvent>
@@ -90,6 +90,9 @@ OGLMultiLayerWidget::updateData(const std::vector<XYZValue<float>>& pointArray, 
 
 	indexArray_ = indexArray;
 
+	revIndexArray_.resize(indexArray_.size());
+	std::copy(indexArray_.rbegin(), indexArray_.rend(), revIndexArray_.begin());
+
 	update();
 }
 
@@ -133,7 +136,11 @@ OGLMultiLayerWidget::paintGL()
 	if (pointArray_.size() >= 2) {
 		glVertexPointer(3, GL_FLOAT, sizeof(OGLPoint3DA), &pointArray_[0].pos);
 		glColorPointer(4, GL_FLOAT, sizeof(OGLPoint3DA), &pointArray_[0].color);
-		glDrawElements(GL_TRIANGLES, indexArray_.size(), GL_UNSIGNED_INT, indexArray_.data());
+		if (std::abs(rotY_) <= 90.0f) {
+			glDrawElements(GL_TRIANGLES, indexArray_.size(), GL_UNSIGNED_INT, indexArray_.data());
+		} else {
+			glDrawElements(GL_TRIANGLES, revIndexArray_.size(), GL_UNSIGNED_INT, revIndexArray_.data());
+		}
 	}
 
 	glDisable(GL_DEPTH_TEST);
@@ -178,7 +185,7 @@ OGLMultiLayerWidget::mouseMoveEvent(QMouseEvent* e)
 		mouseAnchor_ = e->pos();
 
 		rotX_ += diff.y() * (180.0f / height());
-		Util::clipAngleInDegrees180(rotX_);
+		Util::clip(rotX_, -89.0f, 89.0f);
 		rotY_ += diff.x() * (180.0f / width());
 		Util::clipAngleInDegrees180(rotY_);
 

@@ -159,7 +159,7 @@ MultiLayerImageMethod::execute()
 		}
 	}
 
-	// Add bottom and top big "invisible" triangles to send the original limits.
+	// Add points to indicate the original limits.
 	if (!pointArray.empty() && projGridData.n1() >= 2 && projGridData.n2() >= 2) {
 		const float maxY = y - yStep;
 		const auto& firstPoint = projGridData(0, 0);
@@ -176,15 +176,9 @@ MultiLayerImageMethod::execute()
 			if (elem.z < minZ) minZ = z;
 			else if (elem.z > maxZ) maxZ = z;
 		}
-		const unsigned int endIndex = pointArray.size();
 
-		storePoint(endIndex, XYZValue<float>{minX, minY, minZ, 0.0});
-		storePoint(endIndex, XYZValue<float>{minX, maxY, minZ, 0.0});
-		storePoint(endIndex, XYZValue<float>{maxX, minY, minZ, 0.0});
-
-		storePoint(endIndex, XYZValue<float>{minX, minY, maxZ, 0.0});
-		storePoint(endIndex, XYZValue<float>{minX, maxY, maxZ, 0.0});
-		storePoint(endIndex, XYZValue<float>{maxX, minY, maxZ, 0.0});
+		pointArray.push_back(XYZValue<float>{minX, minY, minZ, 0.0});
+		pointArray.push_back(XYZValue<float>{maxX, maxY, maxZ, 0.0});
 	}
 
 	project_.showMultiLayer3D(1, "Figure", pointArray, indexArray);
