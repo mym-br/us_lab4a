@@ -17,6 +17,7 @@
 
 #include "MultiLayerImageMethod.h"
 
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -58,11 +59,20 @@ MultiLayerImageMethod::execute()
 	std::vector<XYZValue<float>> pointArray;
 	std::vector<unsigned int> indexArray;
 	const float minValue = Util::decibelsToLinear(minDecibels);
-	const float valueCoeff = 1.0f / (1.0f - minValue);
+	const float valueCoeff = logScale ? (-1.0f / minDecibels) : (1.0f / (1.0f - minValue));
 	unsigned int j1, j2, j3;
 	float y = minY;
 
-	auto storePoint = [&](const XYZValue<float>& point, unsigned int endIndex) {
+	auto calcValue = [&](float value) -> float {
+		value = std::abs(value);
+		Util::clip(value, 0.0f, 1.0f);
+		if (logScale) {
+			return (Util::linearToDecibels(value) - minDecibels) * valueCoeff;
+		} else {
+			return (value - minValue) * valueCoeff;
+		}
+	};
+	auto storePoint = [&](unsigned int endIndex, const XYZValue<float>& point) {
 		for (unsigned int i = 1; i <= 3; ++i) {
 			if (endIndex < i) break;
 			if (pointArray[endIndex - i] == point) {
@@ -79,18 +89,21 @@ MultiLayerImageMethod::execute()
 				projGridData(i, j3).value >= minValue) {
 
 			const unsigned int endIndex = pointArray.size();
-
-			XYZValue<float> p1{projGridData(i, j1).x, y, projGridData(i, j1).z,
-						(projGridData(i, j1).value - minValue) * valueCoeff}; // linear
-			storePoint(p1, endIndex);
-
-			XYZValue<float> p2{projGridData(i, j2).x, y, projGridData(i, j2).z,
-						(projGridData(i, j2).value - minValue) * valueCoeff}; // linear
-			storePoint(p2, endIndex);
-
-			XYZValue<float> p3{projGridData(i, j3).x, y, projGridData(i, j3).z,
-						(projGridData(i, j3).value - minValue) * valueCoeff}; // linear
-			storePoint(p3, endIndex);
+			storePoint(endIndex, XYZValue<float>{
+						projGridData(i, j1).x,
+						y,
+						projGridData(i, j1).z,
+						calcValue(projGridData(i, j1).value)});
+			storePoint(endIndex, XYZValue<float>{
+						projGridData(i, j2).x,
+						y,
+						projGridData(i, j2).z,
+						calcValue(projGridData(i, j2).value)});
+			storePoint(endIndex, XYZValue<float>{
+						projGridData(i, j3).x,
+						y,
+						projGridData(i, j3).z,
+						calcValue(projGridData(i, j3).value)});
 		}
 	};
 
