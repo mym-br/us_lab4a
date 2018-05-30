@@ -26,8 +26,6 @@
 
 #include <boost/math/special_functions/bessel.hpp>
 
-#include "kiss_fftr.h" /* kiss_fft_cpx */
-
 #include "CoherenceFactor.h"
 #include "ComplexToRealIFFT.h"
 #include "ContainerDumper.h"
@@ -39,8 +37,6 @@
 #include "Interpolator.h"
 #include "Interpolator4X.h"
 #include "KaiserWindow.h"
-#include "KissFFTFilter.h"
-#include "KissFFTFilter2.h"
 #include "LinearInterpolator.h"
 #include "Log.h"
 #include "Matrix2.h"
@@ -511,40 +507,6 @@ testLinearInterpolator()
 }
 
 void
-testKissFFTFilter(Lab::Project& p)
-{
-	std::vector<double> x;
-	p.loadHDF5("filter_x", "x", x);
-	std::vector<double> b;
-	p.loadHDF5("filter_b", "b", b);
-	std::vector<double> yRef;
-	p.loadHDF5("filter_y", "y", yRef);
-
-	std::vector<double> y;
-	Lab::KissFFTFilter filter;
-	filter.prepare();
-	filter.setCoefficients(b);
-	filter.filter(x, y);
-	if (y.size() != x.size() + b.size() - 1) {
-		THROW_EXCEPTION(Lab::TestException, "y.size() != x.size() + b.size() - 1 [y.size()=" << y.size() <<
-			" x.size()=" << x.size() <<
-			" b.size()=" << b.size() << "].");
-	}
-	double maxError = 0.0, maxY = 0.0;
-	for (std::vector<double>::iterator iter1 = yRef.begin(), iter2 = y.begin(); iter1 != yRef.end(); ++iter1, ++iter2) {
-		const double error = std::abs(*iter1 - *iter2);
-		if (error > maxError) maxError = error;
-		if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
-	}
-	const double maxRelError = maxError / maxY;
-	//LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
-	if (maxRelError > FILTER_MAX_RELATIVE_ABS_ERROR) {
-		THROW_EXCEPTION(Lab::TestException, "The maximum relative error is > " << FILTER_MAX_RELATIVE_ABS_ERROR << '.');
-	}
-	LOG_INFO << "Test ok: KissFFTFilter";
-}
-
-void
 testFFTWFilter(Lab::Project& p)
 {
 	std::vector<double> x;
@@ -654,68 +616,6 @@ testDirectFFTWFilter(Lab::Project& p)
 	}
 
 	LOG_INFO << "Test ok: DirectFFTWFilter";
-}
-
-void
-testKissFFTFilter2(Lab::Project& p)
-{
-	std::vector<double> x;
-	p.loadHDF5("filter_x", "x", x);
-	std::vector<double> b;
-	p.loadHDF5("filter_b", "b", b);
-	std::vector<double> yRef;
-	p.loadHDF5("filter_y", "y", yRef);
-	std::vector<double> y2Ref;
-	p.loadHDF5("filter_y2", "y", y2Ref);
-
-	std::vector<kiss_fft_cpx> filterFreqCoeff;
-	std::vector<double> y;
-	Lab::KissFFTFilter2 filter;
-	filter.prepare();
-	filter.setCoefficients(b, filterFreqCoeff);
-	filter.filter(filterFreqCoeff, b.size(), x, y);
-	if (y.size() != x.size() + b.size() - 1) {
-		THROW_EXCEPTION(Lab::TestException, "y.size() != x.size() + b.size() - 1 [y.size()=" << y.size() <<
-			" x.size()=" << x.size() <<
-			" b.size()=" << b.size() << "].");
-	}
-	double maxError = 0.0, maxY = 0.0;
-	for (std::vector<double>::iterator iter1 = yRef.begin(), iter2 = y.begin(); iter1 != yRef.end(); ++iter1, ++iter2) {
-		const double error = std::abs(*iter1 - *iter2);
-		if (error > maxError) maxError = error;
-		if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
-	}
-	const double maxRelError = maxError / maxY;
-	//LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
-	if (maxRelError > FILTER_MAX_RELATIVE_ABS_ERROR) {
-		THROW_EXCEPTION(Lab::TestException, "The maximum relative error is > " << FILTER_MAX_RELATIVE_ABS_ERROR << '.');
-	}
-
-	filter.setCoefficients(y, filterFreqCoeff);
-	Lab::KissFFTFilter2 filter2;
-	filter2.prepare();
-	std::vector<double> y2;
-	filter2.filter(filterFreqCoeff, y.size(), x, y2);
-	{
-		if (y2.size() != x.size() + y.size() - 1) {
-			THROW_EXCEPTION(Lab::TestException, "y2.size() != x.size() + y.size() - 1 [y2.size()=" << y2.size() <<
-				" x.size()=" << x.size() <<
-				" y.size()=" << y.size() << "].");
-		}
-		double maxError = 0.0, maxY = 0.0;
-		for (std::vector<double>::iterator iter1 = y2Ref.begin(), iter2 = y2.begin(); iter1 != y2Ref.end(); ++iter1, ++iter2) {
-			const double error = std::abs(*iter1 - *iter2);
-			if (error > maxError) maxError = error;
-			if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
-		}
-		const double maxRelError = maxError / maxY;
-		//LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
-		if (maxRelError > FILTER_MAX_RELATIVE_ABS_ERROR) {
-			THROW_EXCEPTION(Lab::TestException, "The maximum relative error is > " << FILTER_MAX_RELATIVE_ABS_ERROR << '.');
-		}
-	}
-
-	LOG_INFO << "Test ok: KissFFTFilter2";
 }
 
 void
@@ -1020,10 +920,8 @@ TestMethod::execute()
 	testHilbertTransform(project_);
 	testStatistics();
 	testLinearInterpolator();
-	testKissFFTFilter(project_);
 	testFFTWFilter(project_);
 	testDirectFFTWFilter(project_);
-	testKissFFTFilter2(project_);
 	testFFTWFilter2(project_);
 	testInterpolator4X(project_);
 	testMultiplyBy();

@@ -21,11 +21,6 @@ HDF 5   1.8.11
 	* Permissive.
 	* Only covers the distribution of HDF 5 source/binaries.
 
-KissFFT
-	BSD 3-clause
-	* Permissive.
-	* Compatible with GNU GPL, according to gnu.org.
-
 Qt 4.8.4
 	GNU LGPL 2.1 or GPL 3.
 

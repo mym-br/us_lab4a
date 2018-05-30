@@ -13,16 +13,12 @@ SOURCES += src/main.cpp\
     src/ProcessingNode.cpp \
     src/OGLFigureWidget.cpp \
     src/Controller.cpp \
-    src/fft/kiss_fftr.c \
-    src/fft/kiss_fft.c \
     src/fft/FFTW.cpp \
     src/method/TestMethod.cpp \
     src/network_acquisition/ArrayAcqClient.cpp \
     src/util/MinstdPseudorandomNumberGenerator.cpp \
     src/util/LogSyntaxHighlighter.cpp \
     src/util/Log.cpp \
-    src/util/KissFFTFilter2.cpp \
-    src/util/KissFFTFilter.cpp \
     src/util/KeyValueFileReader.cpp \
     src/util/HDF5Util.cpp \
     src/util/ParameterMap.cpp \
@@ -51,10 +47,7 @@ HEADERS  += \
     src/acquisition/SavedSTAAcquisition.h \
     src/acquisition/MultiplexedAcquisition.h \
     src/configuration/STAConfiguration.h \
-    src/fft/kiss_fftr.h \
-    src/fft/kiss_fft.h \
     src/fft/FFTW.h \
-    src/fft/_kiss_fft_guts.h \
     src/method/TestMethod.h \
     src/method/STAMethod.h \
     src/method/Method.h \
@@ -76,15 +69,12 @@ HEADERS  += \
     src/util/Waveform.h \
     src/util/Timer.h \
     src/util/Statistics.h \
-    src/util/SharedFixedSizePool.h \
     src/util/MinstdPseudorandomNumberGenerator.h \
     src/util/Matrix3.h \
     src/util/Matrix2.h \
     src/util/LogSyntaxHighlighter.h \
     src/util/Log.h \
     src/util/LinearInterpolator.h \
-    src/util/KissFFTFilter2.h \
-    src/util/KissFFTFilter.h \
     src/util/KeyValueFileReader.h \
     src/util/Interpolator4X.h \
     src/util/IndexValue.h \
