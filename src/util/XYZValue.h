@@ -40,6 +40,9 @@ struct XYZValue {
 		}
 		return *this;
 	}
+	bool operator==(const XYZValue<FloatType>& o) {
+		return x == o.x && y == o.y && z == o.z && value == o.value;
+	}
 };
 
 } // namespace Lab

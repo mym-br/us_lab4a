@@ -58,14 +58,48 @@ MultiLayerImageMethod::execute()
 	std::vector<XYZValue<float>> pointArray;
 	std::vector<unsigned int> indexArray;
 	const float minValue = Util::decibelsToLinear(minDecibels);
+	const float valueCoeff = 1.0f / (1.0f - minValue);
 	unsigned int j1, j2, j3;
-
 	float y = minY;
+
+	auto storePoint = [&](const XYZValue<float>& point, unsigned int endIndex) {
+		for (unsigned int i = 1; i <= 3; ++i) {
+			if (endIndex < i) break;
+			if (pointArray[endIndex - i] == point) {
+				indexArray.push_back(endIndex - i);
+				return;
+			}
+		}
+		pointArray.push_back(point);
+		indexArray.push_back(pointArray.size() - 1U);
+	};
+	auto addTriangle = [&](unsigned int i) {
+		if (projGridData(i, j1).value >= minValue &&
+				projGridData(i, j2).value >= minValue &&
+				projGridData(i, j3).value >= minValue) {
+
+			const unsigned int endIndex = pointArray.size();
+
+			XYZValue<float> p1{projGridData(i, j1).x, y, projGridData(i, j1).z,
+						(projGridData(i, j1).value - minValue) * valueCoeff}; // linear
+			storePoint(p1, endIndex);
+
+			XYZValue<float> p2{projGridData(i, j2).x, y, projGridData(i, j2).z,
+						(projGridData(i, j2).value - minValue) * valueCoeff}; // linear
+			storePoint(p2, endIndex);
+
+			XYZValue<float> p3{projGridData(i, j3).x, y, projGridData(i, j3).z,
+						(projGridData(i, j3).value - minValue) * valueCoeff}; // linear
+			storePoint(p3, endIndex);
+		}
+	};
+
 	for (unsigned int acqNumber = 0; ; ++acqNumber, y += yStep) {
 		std::string imageDir = FileUtil::path(imageBaseDir, "/", acqNumber);
 		if (!project_.directoryExists(imageDir)) {
 			break;
 		}
+		LOG_DEBUG << "##### acqNumber: " << acqNumber;
 
 		LOG_DEBUG << "Loading the image...";
 		project_.loadHDF5(imageDir + '/' + imageFile, imageDataset, projGridData, Util::CopyToValueOp());
@@ -74,133 +108,38 @@ MultiLayerImageMethod::execute()
 		LOG_DEBUG << "Loading the Z coordinates...";
 		project_.loadHDF5(imageDir + '/' + zFile, zDataset, projGridData, Util::CopyToZOp());
 
+		if (projGridData.n1() < 2 || projGridData.n2() < 2) continue;
+
 		for (unsigned int i = 0; i < projGridData.n1() - 1; ++i) {
 			unsigned int jA, jB;
 			if (i & 1U) {
-				jA = projGridData.n2();
+				jA = projGridData.n2(); // note: exceeds the maximum column
 				jB = 0;
 			} else {
 				jA = 0;
-				jB = projGridData.n2();
+				jB = projGridData.n2(); // note: exceeds the maximum column
 			}
-//TODO: Don't repeat vertices.
 			for (unsigned int j = 0; j < projGridData.n2() - 1; ++j, ++jA, ++jB) {
 				if (j & 1U) {
 					j1 = jA;
 					j2 = jB;
 					j3 = jA + 1;
-					if (projGridData(i, j1).value >= minValue &&
-							projGridData(i, j2).value >= minValue &&
-							projGridData(i, j3).value >= minValue) {
-						const float coeff = 1.0f / (1.0f - minValue);
-						// The vertices of a triangle.
-						pointArray.emplace_back(
-								projGridData(i, j1).x,
-								y,
-								projGridData(i, j1).z,
-								(projGridData(i, j1).value - minValue) * coeff); // linear
-						pointArray.emplace_back(
-								projGridData(i, j2).x,
-								y,
-								projGridData(i, j2).z,
-								(projGridData(i, j2).value - minValue) * coeff); // linear
-						pointArray.emplace_back(
-								projGridData(i, j3).x,
-								y,
-								projGridData(i, j3).z,
-								(projGridData(i, j3).value - minValue) * coeff); // linear
-						// The indexes of the triangle.
-						indexArray.push_back(pointArray.size() - 3);
-						indexArray.push_back(pointArray.size() - 2);
-						indexArray.push_back(pointArray.size() - 1);
-					}
+					addTriangle(i);
 
 					j1 = jA + 1;
 					j2 = jB;
 					j3 = jB + 1;
-					if (projGridData(i, j1).value >= minValue &&
-							projGridData(i, j2).value >= minValue &&
-							projGridData(i, j3).value >= minValue) {
-						const float coeff = 1.0f / (1.0f - minValue);
-						// The vertices of a triangle.
-						pointArray.emplace_back(
-								projGridData(i, j1).x,
-								y,
-								projGridData(i, j1).z,
-								(projGridData(i, j1).value - minValue) * coeff); // linear
-						pointArray.emplace_back(
-								projGridData(i, j2).x,
-								y,
-								projGridData(i, j2).z,
-								(projGridData(i, j2).value - minValue) * coeff); // linear
-						pointArray.emplace_back(
-								projGridData(i, j3).x,
-								y,
-								projGridData(i, j3).z,
-								(projGridData(i, j3).value - minValue) * coeff); // linear
-						// The indexes of the triangle.
-						indexArray.push_back(pointArray.size() - 3);
-						indexArray.push_back(pointArray.size() - 2);
-						indexArray.push_back(pointArray.size() - 1);
-					}
+					addTriangle(i);
 				} else {
 					j1 = jB;
 					j2 = jB + 1;
 					j3 = jA;
-					if (projGridData(i, j1).value >= minValue &&
-							projGridData(i, j2).value >= minValue &&
-							projGridData(i, j3).value >= minValue) {
-						const float coeff = 1.0f / (1.0f - minValue);
-						// The vertices of a triangle.
-						pointArray.emplace_back(
-								projGridData(i, j1).x,
-								y,
-								projGridData(i, j1).z,
-								(projGridData(i, j1).value - minValue) * coeff); // linear
-						pointArray.emplace_back(
-								projGridData(i, j2).x,
-								y,
-								projGridData(i, j2).z,
-								(projGridData(i, j2).value - minValue) * coeff); // linear
-						pointArray.emplace_back(
-								projGridData(i, j3).x,
-								y,
-								projGridData(i, j3).z,
-								(projGridData(i, j3).value - minValue) * coeff); // linear
-						// The indexes of the triangle.
-						indexArray.push_back(pointArray.size() - 3);
-						indexArray.push_back(pointArray.size() - 2);
-						indexArray.push_back(pointArray.size() - 1);
-					}
+					addTriangle(i);
 
 					j1 = jA;
 					j2 = jB + 1;
 					j3 = jA + 1;
-					if (projGridData(i, j1).value >= minValue &&
-							projGridData(i, j2).value >= minValue &&
-							projGridData(i, j3).value >= minValue) {
-						const float coeff = 1.0f / (1.0f - minValue);
-						// The vertices of a triangle.
-						pointArray.emplace_back(
-								projGridData(i, j1).x,
-								y,
-								projGridData(i, j1).z,
-								(projGridData(i, j1).value - minValue) * coeff); // linear
-						pointArray.emplace_back(
-								projGridData(i, j2).x,
-								y,
-								projGridData(i, j2).z,
-								(projGridData(i, j2).value - minValue) * coeff); // linear
-						pointArray.emplace_back(
-								projGridData(i, j3).x,
-								y,
-								projGridData(i, j3).z,
-								(projGridData(i, j3).value - minValue) * coeff); // linear
-						// The indexes of the triangle.
-						indexArray.push_back(pointArray.size() - 3);
-						indexArray.push_back(pointArray.size() - 2);
-						indexArray.push_back(pointArray.size() - 1);
-					}
+					addTriangle(i);
 				}
 			}
 		}
