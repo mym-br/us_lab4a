@@ -54,6 +54,7 @@ MultiLayerImageMethod::execute()
 	const float yStep              = taskPM->value<float>(      "y_step"      ,      0.0,   100.0);
 	const float minDecibels        = taskPM->value<float>(      "min_decibels",   -100.0,    -1.0);
 	const bool logScale            = taskPM->value<bool>(       "log_scale");
+	const bool invertZ             = taskPM->value<bool>(       "invert_z");
 
 	Project::GridDataType projGridData;
 	std::vector<XYZValue<float>> pointArray;
@@ -92,17 +93,17 @@ MultiLayerImageMethod::execute()
 			storePoint(endIndex, XYZValue<float>{
 						projGridData(i, j1).x,
 						y,
-						projGridData(i, j1).z,
+						invertZ ? -projGridData(i, j1).z : projGridData(i, j1).z,
 						calcValue(projGridData(i, j1).value)});
 			storePoint(endIndex, XYZValue<float>{
 						projGridData(i, j2).x,
 						y,
-						projGridData(i, j2).z,
+						invertZ ? -projGridData(i, j2).z : projGridData(i, j2).z,
 						calcValue(projGridData(i, j2).value)});
 			storePoint(endIndex, XYZValue<float>{
 						projGridData(i, j3).x,
 						y,
-						projGridData(i, j3).z,
+						invertZ ? -projGridData(i, j3).z : projGridData(i, j3).z,
 						calcValue(projGridData(i, j3).value)});
 		}
 	};
@@ -161,16 +162,19 @@ MultiLayerImageMethod::execute()
 	// Add bottom and top big "invisible" triangles to send the original limits.
 	if (!pointArray.empty() && projGridData.n1() >= 2 && projGridData.n2() >= 2) {
 		const float maxY = y - yStep;
-		float minX = projGridData(0, 0).x;
-		float maxX = projGridData(0, 0).x;
-		float minZ = projGridData(0, 0).z;
-		float maxZ = projGridData(0, 0).z;
+		const auto& firstPoint = projGridData(0, 0);
+		float minX = firstPoint.x;
+		float maxX = firstPoint.x;
+		float z = invertZ ? -firstPoint.z : firstPoint.z;
+		float minZ = z;
+		float maxZ = z;
 		for (auto& elem : projGridData) {
 			if (elem.x < minX) minX = elem.x;
 			else if (elem.x > maxX) maxX = elem.x;
 
-			if (elem.z < minZ) minZ = elem.z;
-			else if (elem.z > maxZ) maxZ = elem.z;
+			z = invertZ ? -elem.z : elem.z;
+			if (elem.z < minZ) minZ = z;
+			else if (elem.z > maxZ) maxZ = z;
 		}
 		const unsigned int endIndex = pointArray.size();
 

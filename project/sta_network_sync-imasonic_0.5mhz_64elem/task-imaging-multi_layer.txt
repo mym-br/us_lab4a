@@ -20,5 +20,5 @@ y_step = 20.0e-3
 # (dB)
 min_decibels = -40.0
 
-#
 log_scale = true
+invert_z = true
