@@ -12,7 +12,7 @@
 
 Notes:
 - OGLFigureWidget: TRIANGLE_STRIP is 10% faster than TRIANGLES
-  (OGLFIGUREWIDGET_USE_VERTEX_ARRAY = 1).
+  (OGLFIGUREWIDGET_USE_VERTEX_ARRAY = 1, Intel HD 2500).
 
 ok- Simulation: Use gain.
 ok- Implement sta_simulated_3d_seq_y_save_signals.
