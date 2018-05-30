@@ -1,34 +1,60 @@
-Permissive:
 
-TBB
-	GNU GPL 2 with exception:
+TBB 2018_U2
 
-	"As a special exception, you may use this file as part of a free software
-	library without restriction.  Specifically, if other files instantiate
-	templates or use macros or inline functions from this file, or you compile
-	this file and link it with other files to produce an executable, this
-	file does not by itself cause the resulting executable to be covered by
-	the GNU General Public License.  This exception does not however
-	invalidate any other reasons why the executable file might be covered by
-	the GNU General Public License."
-
-Boost   1.49.0
-	Boost Software License 1
-	* Permissive.
-	* Compatible with GNU GPL, according to gnu.org.
-
-HDF 5   1.8.11
-	* Permissive.
-	* Only covers the distribution of HDF 5 source/binaries.
-
-Qt 4.8.4
-	GNU LGPL 2.1 or GPL 3.
+Apache License Version 2.0
+* Compatible with the GNU GPL 3, according to gnu.org.
 
 -------------------------------------------------------------------------------
-Not permissive:
 
-FFTW   3.3.3
-	GNU GPL 2 or later
+Boost 1.59.0
 
-QCustomPlot
-	GNU GPL 3 or later.
+Boost Software License 1.0
+* Compatible with the GNU GPL, according to gnu.org.
+
+-------------------------------------------------------------------------------
+
+HDF 5 1.8.20
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted for any purpose (including commercial purposes)
+provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions, and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions, and the following disclaimer in the documentation
+   and/or materials provided with the distribution.
+
+3. In addition, redistributions of modified forms of the source or binary
+   code must carry prominent notices stating that the original code was
+   changed and the date of the change.
+
+4. All publications or advertising materials mentioning features or use of
+   this software are asked, but not required, to acknowledge that it was
+   developed by The HDF Group and by the National Center for Supercomputing
+   Applications at the University of Illinois at Urbana-Champaign and
+   credit the contributors.
+
+5. Neither the name of The HDF Group, the name of the University, nor the
+   name of any Contributor may be used to endorse or promote products derived
+   from this software without specific prior written permission from
+   The HDF Group, the University, or the Contributor, respectively.
+
+-------------------------------------------------------------------------------
+
+Qt 5.7.1
+
+GNU LGPL 3 or GPL 3.
+
+-------------------------------------------------------------------------------
+
+FFTW 3.3.4
+
+GNU GPL 2 or later
+
+-------------------------------------------------------------------------------
+
+QCustomPlot 2.0.0
+
+GNU GPL 3 or later.
