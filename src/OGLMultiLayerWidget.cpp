@@ -129,6 +129,7 @@ OGLMultiLayerWidget::paintGL()
 		-(minY_ + maxY_) * 0.5f,
 		-(minZ_ + maxZ_) * 0.5f);
 
+	// Draw the image layers.
 	if (pointArray_.size() >= 2) {
 		glVertexPointer(3, GL_FLOAT, sizeof(OGLPoint3DA), &pointArray_[0].pos);
 		glColorPointer(4, GL_FLOAT, sizeof(OGLPoint3DA), &pointArray_[0].color);
@@ -136,6 +137,21 @@ OGLMultiLayerWidget::paintGL()
 	}
 
 	glDisable(GL_DEPTH_TEST);
+
+	// Bottom frame.
+	glBegin(GL_LINE_LOOP);
+	glVertex3f(minX_, minY_, minZ_);
+	glVertex3f(minX_, minY_, maxZ_);
+	glVertex3f(maxX_, minY_, maxZ_);
+	glVertex3f(maxX_, minY_, minZ_);
+	glEnd();
+	// Top frame.
+	glBegin(GL_LINE_LOOP);
+	glVertex3f(minX_, maxY_, minZ_);
+	glVertex3f(minX_, maxY_, maxZ_);
+	glVertex3f(maxX_, maxY_, maxZ_);
+	glVertex3f(maxX_, maxY_, minZ_);
+	glEnd();
 
 	painter.endNativePainting();
 	//==================================================
