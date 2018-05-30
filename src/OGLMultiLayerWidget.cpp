@@ -106,7 +106,7 @@ OGLMultiLayerWidget::paintGL()
 	painter.beginNativePainting();
 
 	// QPainter disables GL_DEPTH_TEST, GL_BLEND.
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST); // not needed
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
