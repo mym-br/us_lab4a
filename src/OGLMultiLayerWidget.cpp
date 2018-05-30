@@ -136,6 +136,7 @@ OGLMultiLayerWidget::paintGL()
 	if (pointArray_.size() >= 2) {
 		glVertexPointer(3, GL_FLOAT, sizeof(OGLPoint3DA), &pointArray_[0].pos);
 		glColorPointer(4, GL_FLOAT, sizeof(OGLPoint3DA), &pointArray_[0].color);
+		// Use the right drawing order for the alpha blending.
 		if (std::abs(rotY_) <= 90.0f) {
 			glDrawElements(GL_TRIANGLES, indexArray_.size(), GL_UNSIGNED_INT, indexArray_.data());
 		} else {
