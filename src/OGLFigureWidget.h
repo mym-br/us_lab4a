@@ -20,12 +20,11 @@
 
 #include <vector>
 
-#include <GL/glu.h>
-
 #include <QOpenGLWidget>
 
 #include "global.h"
 #include "Matrix2.h"
+#include "OGL.h"
 #include "XY.h"
 #include "XZ.h"
 #include "XZValue.h"
@@ -35,29 +34,6 @@
 
 
 namespace Lab {
-
-struct OGLPos3D {
-	float x;
-	float y;
-	float z;
-	OGLPos3D(float ix, float iy, float iz) : x{ix}, y{iy}, z{iz} {}
-};
-
-struct OGLColor {
-	float red;
-	float green;
-	float blue;
-	OGLColor(float r, float g, float b) : red{r}, green{g}, blue{b} {}
-};
-
-struct OGLPoint3D {
-	OGLPos3D pos;
-	OGLColor color;
-	OGLPoint3D() : pos{0.0, 0.0, 0.0}, color{0.0, 0.0, 0.0} {}
-	OGLPoint3D(float x, float y, float z, float r, float g, float b)
-		: pos{x, y, z}
-		, color{r, g, b} {}
-};
 
 class OGLFigureWidget : public QOpenGLWidget {
 	Q_OBJECT

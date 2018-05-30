@@ -40,6 +40,7 @@
 #include "ParameterMap.h"
 #include "Util.h"
 #include "Value.h"
+#include "XYZValue.h"
 #include "XZ.h"
 #include "XZValue.h"
 
@@ -129,10 +130,21 @@ public:
 						Figure::Colormap colormap = Figure::COLORMAP_DEFAULT,
 						double valueScale = 0.0);
 
+	// Called by the producer.
+	// This function blocks if there is a pending request.
+	// If waitPending = false and there is a pending request, this function does nothing.
+	// This function is thread-safe.
+	template<typename T, typename U> void showMultiLayer3D(
+						int id,
+						const char* figureName,
+						const T& pointArray,
+						const U& indexArray);
+
 	// Called by the consumer.
 	// These functions are thread-safe.
 	void handleShowFigure2DRequest();
 	void handleShowFigure3DRequest();
+	void handleShowMultiLayer3DRequest();
 
 	void executeProgram(std::string& programPath, std::vector<std::string>& programArgs);
 
@@ -191,6 +203,21 @@ private:
 		double valueScale;
 	};
 
+	struct MultiLayer3DData {
+		MultiLayer3DData()
+			: showFigureRequested{}
+			, figureId{}
+			, figureName{"Figure"}
+		{ }
+		QMutex mutex;
+		QWaitCondition requestHandledCondition;
+		bool showFigureRequested;
+		int figureId;
+		std::string figureName;
+		std::vector<XYZValue<float>> pointArray;
+		std::vector<unsigned int> indexArray;
+	};
+
 	struct Control {
 		Control()
 			: triggerCount(0)
@@ -204,8 +231,8 @@ private:
 		bool trigger;
 	};
 
-	Project(const Project&);
-	Project& operator=(const Project&);
+	Project(const Project&) = delete;
+	Project& operator=(const Project&) = delete;
 
 	MethodType method_;
 	USLab4a& mainWindow_;
@@ -214,6 +241,7 @@ private:
 	//QString taskFile_;
 	Figure2DData figure2DData_;
 	Figure3DData figure3DData_;
+	MultiLayer3DData multiLayer3DData_;
 	Control control_;
 
 	// These containers are here to avoid reallocations.
@@ -431,41 +459,64 @@ Project::showFigure3D(
 		Figure::Colormap colormap,
 		double valueScale)
 {
-	{
-		QMutexLocker locker(&figure3DData_.mutex);
+	QMutexLocker locker(&figure3DData_.mutex);
 
-		if (figure3DData_.showFigureRequested) {
-			if (waitPending) {
-				do {
-					figure3DData_.requestHandledCondition.wait(&figure3DData_.mutex);
-				} while (figure3DData_.showFigureRequested);
-			} else {
-				return;
-			}
-		}
-
-		figure3DData_.showFigureRequested = true;
-		figure3DData_.figureId = id;
-		figure3DData_.figureName = figureName;
-		if (gridData) {
-			figure3DData_.gridData.resize(gridData->n1(), gridData->n2());
-			Value::copyXZValueSequence(gridData->begin(), gridData->end(), figure3DData_.gridData.begin());
-			figure3DData_.newGridData = true;
+	if (figure3DData_.showFigureRequested) {
+		if (waitPending) {
+			do {
+				figure3DData_.requestHandledCondition.wait(&figure3DData_.mutex);
+			} while (figure3DData_.showFigureRequested);
 		} else {
-			figure3DData_.newGridData = false;
+			return;
 		}
-		if (pointList) {
-			figure3DData_.pointList.resize(pointList->size());
-			Value::copyXZSequence(pointList->begin(), pointList->end(), figure3DData_.pointList.begin());
-			figure3DData_.newPointList = true;
-		} else {
-			figure3DData_.newPointList = false;
-		}
-
-		figure3DData_.visualization = visualization;
-		figure3DData_.colormap = colormap;
-		figure3DData_.valueScale = valueScale;
 	}
+
+	figure3DData_.showFigureRequested = true;
+	figure3DData_.figureId = id;
+	figure3DData_.figureName = figureName;
+	if (gridData) {
+		figure3DData_.gridData.resize(gridData->n1(), gridData->n2());
+		Value::copyXZValueSequence(gridData->begin(), gridData->end(), figure3DData_.gridData.begin());
+		figure3DData_.newGridData = true;
+	} else {
+		figure3DData_.newGridData = false;
+	}
+	if (pointList) {
+		figure3DData_.pointList.resize(pointList->size());
+		Value::copyXZSequence(pointList->begin(), pointList->end(), figure3DData_.pointList.begin());
+		figure3DData_.newPointList = true;
+	} else {
+		figure3DData_.newPointList = false;
+	}
+
+	figure3DData_.visualization = visualization;
+	figure3DData_.colormap = colormap;
+	figure3DData_.valueScale = valueScale;
+}
+
+template<typename T, typename U>
+void
+Project::showMultiLayer3D(
+		int id,
+		const char* figureName,
+		const T& pointArray,
+		const U& indexArray)
+{
+	QMutexLocker locker(&multiLayer3DData_.mutex);
+
+	if (multiLayer3DData_.showFigureRequested) {
+		do {
+			multiLayer3DData_.requestHandledCondition.wait(&multiLayer3DData_.mutex);
+		} while (multiLayer3DData_.showFigureRequested);
+	}
+
+	multiLayer3DData_.showFigureRequested = true;
+	multiLayer3DData_.figureId = id;
+	multiLayer3DData_.figureName = figureName;
+
+	multiLayer3DData_.pointArray.resize(pointArray.size());
+	Value::copyXYZValueSequence(pointArray.begin(), pointArray.end(), multiLayer3DData_.pointArray.begin());
+	multiLayer3DData_.indexArray = indexArray;
 }
 
 } // namespace Lab

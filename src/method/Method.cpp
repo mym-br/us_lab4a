@@ -19,6 +19,7 @@
 
 #include "DeviceSectorialScanMethod.h"
 #include "Exception.h"
+#include "MultiLayerImageMethod.h"
 #include "NetworkSyncSTAMethod.h"
 #include "Project.h"
 #include "ShowImageMethod.h"
@@ -64,6 +65,7 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sta_simulated_3d_seq_y_save_signals);
 	ADD_MAP_ITEM(sta_vectorial_simulated_3d);
 	ADD_MAP_ITEM(show_image);
+	ADD_MAP_ITEM(multi_layer_image);
 	ADD_MAP_ITEM(test);
 }
 
@@ -119,6 +121,8 @@ Method::get(Project& project)
 		return new SimRectangularFlatSourceMethod<double>(project);
 	case MethodType::show_image:
 		return new ShowImageMethod(project);
+	case MethodType::multi_layer_image:
+		return new MultiLayerImageMethod(project);
 	case MethodType::test:
 		return new TestMethod(project);
 	default:

@@ -52,6 +52,8 @@ template<typename InputIterator, typename OutputIterator, typename T>
 template<typename Iterator, typename FloatType>
 	void copyRealImagToComplexSequence(Iterator re, Iterator reEnd, Iterator im, std::vector<std::complex<FloatType>>& cpx);
 template<typename InputIterator, typename OutputIterator>
+	void copyXYZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
+template<typename InputIterator, typename OutputIterator>
 	void copyXZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
 template<typename InputIterator, typename OutputIterator>
 	void copyXZSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
@@ -218,6 +220,18 @@ copyRealImagToComplexSequence(Iterator re, Iterator reEnd, Iterator im, std::vec
 	typename std::vector<std::complex<FloatType>>::iterator cpxIter = cpx.begin();
 	while (re != reEnd) {
 		*cpxIter++ = std::complex<FloatType>(*re++, *im++);
+	}
+}
+
+template<typename InputIterator, typename OutputIterator>
+void
+copyXYZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest)
+{
+	for ( ; orig != origEnd; ++orig, ++dest) {
+		dest->x = orig->x;
+		dest->y = orig->y;
+		dest->z = orig->z;
+		copy(orig->value, dest->value);
 	}
 }
 

@@ -53,6 +53,8 @@
 #include <cstddef> /* std::size_t */
 #include <cmath>
 
+#include <GL/glu.h>
+
 #include <QColor>
 #include <QKeyEvent>
 #include <QMouseEvent>

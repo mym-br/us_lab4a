@@ -1,0 +1,24 @@
+
+method = multi_layer_image
+
+image_dir = output
+
+x_file = image_x
+x_dataset = x
+
+z_file = image_z
+z_dataset = z
+
+image_file = image_value
+#image_file = image_cf
+image_dataset = value
+
+# (m)
+min_y = -100.0e-3
+y_step = 20.0e-3
+
+# (dB)
+min_decibels = -40.0
+
+#
+log_scale = true

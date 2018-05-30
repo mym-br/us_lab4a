@@ -43,13 +43,13 @@ void
 ShowImageMethod::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	std::string dataDir      = taskPM->value<std::string>("data_dir");
-	std::string xFile        = taskPM->value<std::string>("x_file");
-	std::string xDataset     = taskPM->value<std::string>("x_dataset");
-	std::string zFile        = taskPM->value<std::string>("z_file");
-	std::string zDataset     = taskPM->value<std::string>("z_dataset");
-	std::string imageFile    = taskPM->value<std::string>("image_file");
-	std::string imageDataset = taskPM->value<std::string>("image_dataset");
+	const std::string dataDir      = taskPM->value<std::string>("data_dir");
+	const std::string xFile        = taskPM->value<std::string>("x_file");
+	const std::string xDataset     = taskPM->value<std::string>("x_dataset");
+	const std::string zFile        = taskPM->value<std::string>("z_file");
+	const std::string zDataset     = taskPM->value<std::string>("z_dataset");
+	const std::string imageFile    = taskPM->value<std::string>("image_file");
+	const std::string imageDataset = taskPM->value<std::string>("image_dataset");
 
 	Project::GridDataType projGridData;
 

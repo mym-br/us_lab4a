@@ -40,6 +40,7 @@
 #include "Log.h"
 #include "LogSyntaxHighlighter.h"
 #include "Method.h"
+#include "MultiLayer3DWindow.h"
 #include "ParameterMap.h"
 #include "Util.h"
 
@@ -419,6 +420,7 @@ USLab4a::updateFigureWindows()
 {
 	project_.handleShowFigure2DRequest();
 	project_.handleShowFigure3DRequest();
+	project_.handleShowMultiLayer3DRequest();
 }
 
 void
@@ -498,6 +500,25 @@ USLab4a::showFigure3D(
 		LOG_ERROR << "[USLab4a::showFigure3D] Caught exception: " << e.what() << '.';
 	} catch (...) {
 		LOG_ERROR << "[USLab4a::showFigure3D] Caught an unknown exception.";
+	}
+}
+
+void
+USLab4a::showMultiLayer3D(
+		int id,
+		const std::string& figureName,
+		const std::vector<XYZValue<float>>& pointArray,
+		const std::vector<unsigned int>& indexArray)
+{
+	try {
+		MultiLayer3DWindow& fig = multiLayer3DWindowList_.get(id);
+		fig.setWindowTitle(figureName.c_str());
+		fig.updateData(pointArray, indexArray);
+		fig.show();
+	} catch (std::exception& e) {
+		LOG_ERROR << "[USLab4a::showMultiLayer3D] Caught exception: " << e.what() << '.';
+	} catch (...) {
+		LOG_ERROR << "[USLab4a::showMultiLayer3D] Caught an unknown exception.";
 	}
 }
 

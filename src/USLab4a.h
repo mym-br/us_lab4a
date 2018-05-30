@@ -43,6 +43,7 @@ namespace Lab {
 
 class Figure2DWindow;
 class Figure3DWindow;
+class MultiLayer3DWindow;
 
 struct ScriptEntry {
 	QString project;
@@ -65,11 +66,16 @@ public:
 	void showFigure3D(
 		int id,
 		const std::string& figureName,
-		const Project::GridDataType* gridData = 0,
-		const std::vector<Project::PointType>* pointList = 0,
-		Figure::Visualization visualization = Figure::VISUALIZATION_DEFAULT,
-		Figure::Colormap colormap = Figure::COLORMAP_DEFAULT,
-		double valueScale = 0.0);
+		const Project::GridDataType* gridData=0,
+		const std::vector<Project::PointType>* pointList=0,
+		Figure::Visualization visualization=Figure::VISUALIZATION_DEFAULT,
+		Figure::Colormap colormap=Figure::COLORMAP_DEFAULT,
+		double valueScale=0.0);
+	void showMultiLayer3D(
+		int id,
+		const std::string& figureName,
+		const std::vector<XYZValue<float>>& pointArray,
+		const std::vector<unsigned int>& indexArray);
 private slots:
 	void handleControllerFinishedProcessing();
 	void on_openScriptAction_triggered();
@@ -83,8 +89,8 @@ private slots:
 	void updateFigureWindows();
 	void updateLogWidget();
 private:
-	USLab4a(const USLab4a&);
-	USLab4a& operator=(const USLab4a&);
+	USLab4a(const USLab4a&) = delete;
+	USLab4a& operator=(const USLab4a&) = delete;
 
 	virtual void closeEvent(QCloseEvent* event);
 	void fillTaskListWidget();
@@ -96,6 +102,7 @@ private:
 	std::unique_ptr<Controller> controller_;
 	FigureWindowList<Figure2DWindow> figure2DWindowList_;
 	FigureWindowList<Figure3DWindow> figure3DWindowList_;
+	FigureWindowList<MultiLayer3DWindow> multiLayer3DWindowList_;
 	Project project_;
 	QTimer figureWindowsTimer_;
 	QTimer logWidgetTimer_;

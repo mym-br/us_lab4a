@@ -36,7 +36,10 @@ SOURCES += src/main.cpp\
     src/network_acquisition/PhasedArrayAcqClient.cpp \
     src/util/Util.cpp \
     src/network_sync/SyncServer.cpp \
-    src/util/FileUtil.cpp
+    src/util/FileUtil.cpp \
+    src/MultiLayer3DWindow.cpp \
+    src/OGLMultiLayerWidget.cpp \
+    src/method/MultiLayerImageMethod.cpp
 
 HEADERS  += \
     src/Project.h \
@@ -140,12 +143,17 @@ HEADERS  += \
     src/method/DeviceSectorialScanMethod.h \
     src/acquisition/DeviceSectorialScanAcquisition.h \
     src/network_sync/SyncServer.h \
-    src/method/NetworkSyncSTAMethod.h
+    src/method/NetworkSyncSTAMethod.h \
+    src/OGLMultiLayerWidget.h \
+    src/MultiLayer3DWindow.h \
+    src/util/OGL.h \
+    src/method/MultiLayerImageMethod.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
     ui/Figure2DWindow.ui \
-    ui/USLab4a.ui
+    ui/USLab4a.ui \
+    ui/MultiLayer3DWindow.ui
 
 INCLUDEPATH += src \
     src/acquisition \

@@ -108,6 +108,20 @@ Project::handleShowFigure3DRequest()
 }
 
 void
+Project::handleShowMultiLayer3DRequest()
+{
+	QMutexLocker locker(&multiLayer3DData_.mutex);
+	if (!multiLayer3DData_.showFigureRequested) return;
+	mainWindow_.showMultiLayer3D(
+			multiLayer3DData_.figureId,
+			multiLayer3DData_.figureName,
+			multiLayer3DData_.pointArray,
+			multiLayer3DData_.indexArray);
+	multiLayer3DData_.showFigureRequested = false;
+	multiLayer3DData_.requestHandledCondition.wakeAll();
+}
+
+void
 Project::executeProgram(std::string& programPath, std::vector<std::string>& programArgs)
 {
 	QStringList args;
