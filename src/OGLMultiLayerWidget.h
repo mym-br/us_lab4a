@@ -46,7 +46,7 @@ protected:
 	virtual void keyPressEvent(QKeyEvent* e);
 	virtual void keyReleaseEvent(QKeyEvent* e);
 private:
-	void resetScale();
+	void resetTransformation();
 
 	float scale_;
 	float rotX_;

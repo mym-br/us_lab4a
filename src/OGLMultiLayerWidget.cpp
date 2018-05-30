@@ -47,6 +47,8 @@ OGLMultiLayerWidget::OGLMultiLayerWidget(QWidget* parent)
 		, rotY_{}
 		, minX_{}
 		, maxX_{}
+		, minY_{}
+		, maxY_{}
 		, minZ_{}
 		, maxZ_{}
 {
@@ -60,6 +62,7 @@ OGLMultiLayerWidget::updateData(const std::vector<XYZValue<float>>& pointArray, 
 	if (pointArray.empty()) return;
 	LOG_DEBUG << "pointArray.size(): " << pointArray.size();
 	LOG_DEBUG << "indexArray.size(): " << indexArray.size();
+	resetTransformation();
 
 	minX_ = maxX_ = pointArray[0].x;
 	minY_ = maxY_ = pointArray[0].z; // z -> y
@@ -184,9 +187,7 @@ void
 OGLMultiLayerWidget::keyPressEvent(QKeyEvent* e)
 {
 	if (e->key() == Qt::Key_Space) {
-		scale_ = 1.0;
-		rotX_ = 0.0;
-		rotY_ = 0.0;
+		resetTransformation();
 		update();
 	}
 }
@@ -194,6 +195,14 @@ OGLMultiLayerWidget::keyPressEvent(QKeyEvent* e)
 void
 OGLMultiLayerWidget::keyReleaseEvent(QKeyEvent* /*e*/)
 {
+}
+
+void
+OGLMultiLayerWidget::resetTransformation()
+{
+	scale_ = 1.0;
+	rotX_ = 0.0;
+	rotY_ = 0.0;
 }
 
 void
