@@ -457,6 +457,7 @@ USLab4a::closeAllFigures()
 {
 	figure2DWindowList_.clear();
 	figure3DWindowList_.clear();
+	multiLayer3DWindowList_.clear();
 }
 
 void
