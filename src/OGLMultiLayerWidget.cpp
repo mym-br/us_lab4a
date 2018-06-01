@@ -146,6 +146,8 @@ OGLMultiLayerWidget::paintGL()
 
 	glDisable(GL_DEPTH_TEST);
 
+	glColor3f(1.0f, 1.0f, 1.0f);
+
 	// Bottom frame.
 	glBegin(GL_LINE_LOOP);
 	glVertex3f(minX_, minY_, minZ_);
