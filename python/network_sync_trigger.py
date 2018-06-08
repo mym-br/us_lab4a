@@ -1,8 +1,10 @@
 #!/usr/bin/env python2
 
+# Network trigger.
+
 import socket
 
-HOST = '10.10.184.233'
+HOST = '10.10.184.234'
 PORT = 5544
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
