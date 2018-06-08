@@ -1125,6 +1125,7 @@ float magmaColormap[256][3] = {
 
 struct GrayScaleColormap {
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		point.color.red   = value;
 		point.color.green = value;
 		point.color.blue  = value;
@@ -1139,6 +1140,7 @@ struct InvertedGrayScaleColormap {
 
 struct ViridisColormap {
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
@@ -1163,6 +1165,7 @@ struct InvertedViridisColormap {
 
 struct PlasmaColormap {
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
@@ -1187,6 +1190,7 @@ struct InvertedPlasmaColormap {
 
 struct InfernoColormap {
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
@@ -1211,6 +1215,7 @@ struct InvertedInfernoColormap {
 
 struct MagmaColormap {
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		const float pos = value * 255.0f;
 		const unsigned int basePos = static_cast<unsigned int>(pos);
 		const unsigned int nextPos = basePos + 1U;
@@ -1235,6 +1240,7 @@ struct InvertedMagmaColormap {
 
 struct RedWhiteBlueColormap {
 	static void setColor(float value, OGLPoint3D& point) {
+		Util::clip(value, 0.0f, 1.0f);
 		if (value >= 0.5f) {
 			const float v = 2.0f - 2.0f * value;
 			point.color.red   = v;
