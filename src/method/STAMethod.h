@@ -92,7 +92,7 @@ void
 STAMethod<FloatType>::useCoherenceFactor(bool calculateEnvelope, const std::string& outputDir)
 {
 	LOG_DEBUG << "Saving the image factors...";
-	project_.saveHDF5(gridData_, outputDir + "/image_factor", "image", Util::CopyFactorOp());
+	project_.saveHDF5(gridData_, outputDir + "/image_factor", "factor", Util::CopyFactorOp());
 
 	if (calculateEnvelope) {
 		ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData_);
@@ -105,7 +105,7 @@ STAMethod<FloatType>::useCoherenceFactor(bool calculateEnvelope, const std::stri
 	}
 
 	LOG_DEBUG << "Saving the CF image...";
-	project_.saveHDF5(gridData_, outputDir_ + "/image_cf", "image", Util::CopyValueOp());
+	project_.saveHDF5(gridData_, outputDir_ + "/image_cf", "cf", Util::CopyValueOp());
 
 	Util::copyXZValue(gridData_, projGridData_);
 	project_.showFigure3D(2, "Coherence factor image", &projGridData_, &pointList_,

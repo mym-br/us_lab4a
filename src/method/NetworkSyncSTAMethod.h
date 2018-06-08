@@ -144,7 +144,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 		if (coherenceFactorEnabled) {
 			LOG_DEBUG << "Saving the image factors...";
-			project_.saveHDF5(gridData, acqOutputDir + "/image_factor", "image", Util::CopyFactorOp());
+			project_.saveHDF5(gridData, acqOutputDir + "/image_factor", "factor", Util::CopyFactorOp());
 
 			if (!vectorialProcessingWithEnvelope) {
 				ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData);
@@ -157,7 +157,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 			}
 
 			LOG_DEBUG << "Saving the CF image...";
-			project_.saveHDF5(gridData, acqOutputDir + "/image_cf", "image", Util::CopyValueOp());
+			project_.saveHDF5(gridData, acqOutputDir + "/image_cf", "cf", Util::CopyValueOp());
 
 			Util::copyXZValue(gridData, projGridData);
 			project_.showFigure3D(2, "Coherence factor image", &projGridData, &pointList,
