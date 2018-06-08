@@ -65,7 +65,7 @@ SyncServer::~SyncServer()
 bool
 SyncServer::waitForTrigger()
 {
-	LOG_DEBUG << "[SyncServer] waitForTrigger()";
+	LOG_INFO << "[SyncServer] waitForTrigger()";
 
 	if (socket_.is_open()) {
 		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
@@ -90,14 +90,14 @@ SyncServer::waitForTrigger()
 	std::string line;
 	std::getline(in, line); // line will not contain the delimiter '\n'
 	if (line == "TRIGGER ABORT\r") {
-		LOG_DEBUG << "[SyncServer] Trigger aborted.";
+		LOG_INFO << "[SyncServer] Trigger aborted.";
 		return false;
 	}
 	if (line != "TRIGGER\r") {
 		THROW_EXCEPTION(IOException, "Invalid message: " << line << '.');
 	}
 
-	LOG_DEBUG << "[SyncServer] Trigger received.";
+	LOG_INFO << "[SyncServer] Trigger received.";
 	return true;
 }
 
@@ -107,7 +107,7 @@ SyncServer::waitForTrigger()
 void
 SyncServer::freeTrigger()
 {
-	LOG_DEBUG << "[SyncServer] freeTrigger()";
+	LOG_INFO << "[SyncServer] freeTrigger()";
 
 	boost::system::error_code ec;
 
@@ -117,7 +117,7 @@ SyncServer::freeTrigger()
 		THROW_EXCEPTION(IOException, "Error occurred while writing to the client: " << ec.message() << '.');
 	}
 
-	LOG_DEBUG << "[SyncServer] Waiting for the client to disconnect...";
+	LOG_INFO << "[SyncServer] Waiting for the client to disconnect...";
 
 	boost::asio::streambuf buf;
 	size_t n = boost::asio::read_until(socket_, buf, '\n', ec);
@@ -131,7 +131,7 @@ SyncServer::freeTrigger()
 	socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both);
 	socket_.close();
 
-	LOG_DEBUG << "[SyncServer] Connection closed by the client.";
+	LOG_INFO << "[SyncServer] Connection closed by the client.";
 }
 
 } // namespace Lab
