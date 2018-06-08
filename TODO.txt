@@ -1,6 +1,8 @@
 
-- project_.loadImageFromHDF5(): Add file name as parameter?
+- Remove NetworkMultiplexedAcquisition?
+- NetworkMultiplexedAcquisition: value_scale
 
+- project_.loadImageFromHDF5(): Add file name as parameter?
 
 - Drawing of array elements.
 
