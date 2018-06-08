@@ -1,10 +1,6 @@
 
 - project_.loadImageFromHDF5(): Add file name as parameter?
 
-- Normalization.
-	ok Simulation.
-	Experimental.
-		- Normalize signals in the network servers.
 
 - Drawing of array elements.
 
@@ -14,5 +10,11 @@ Notes:
 - OGLFigureWidget: TRIANGLE_STRIP is 10% faster than TRIANGLES
   (OGLFIGUREWIDGET_USE_VERTEX_ARRAY = 1, Intel HD 2500).
 
+================================================================================
+
+ok- Normalization.
+	ok Simulation.
+	ok Experimental.
+		x- Normalize signals in the network servers.
 ok- Simulation: Use gain.
 ok- Implement sta_simulated_3d_seq_y_save_signals.

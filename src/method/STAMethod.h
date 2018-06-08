@@ -61,8 +61,8 @@ private:
 	STAMethod(const STAMethod&) = delete;
 	STAMethod& operator=(const STAMethod&) = delete;
 
-	void process(STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
-	void useCoherenceFactor(bool calculateEnvelope, const std::string& outputDir);
+	void process(FloatType valueScale, STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
+	void useCoherenceFactor(FloatType valueScale, bool calculateEnvelope, const std::string& outputDir);
 
 	Project& project_;
 	Matrix2<XZValueFactor<FloatType>> gridData_;
@@ -89,7 +89,7 @@ STAMethod<FloatType>::~STAMethod()
 
 template<typename FloatType>
 void
-STAMethod<FloatType>::useCoherenceFactor(bool calculateEnvelope, const std::string& outputDir)
+STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnvelope, const std::string& outputDir)
 {
 	LOG_DEBUG << "Saving the image factors...";
 	project_.saveHDF5(gridData_, outputDir + "/image_factor", "factor", Util::CopyFactorOp());
@@ -109,12 +109,12 @@ STAMethod<FloatType>::useCoherenceFactor(bool calculateEnvelope, const std::stri
 
 	Util::copyXZValue(gridData_, projGridData_);
 	project_.showFigure3D(2, "Coherence factor image", &projGridData_, &pointList_,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
 }
 
 template<typename FloatType>
 void
-STAMethod<FloatType>::process(STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
+STAMethod<FloatType>::process(FloatType valueScale, STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
 {
 	Timer tProc;
 
@@ -124,7 +124,7 @@ STAMethod<FloatType>::process(STAProcessor<FloatType>& processor, unsigned int b
 
 	Util::copyXZValue(gridData_, projGridData_);
 	project_.showFigure3D(1, "Raw image", &projGridData_, &pointList_,
-				true, visual_, Figure::COLORMAP_VIRIDIS);
+				true, visual_, Figure::COLORMAP_VIRIDIS, valueScale);
 
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 }
@@ -213,7 +213,7 @@ STAMethod<FloatType>::execute()
 	case MethodType::sta_simple_saved:
 		{
 			auto processor = std::make_unique<SimpleSTAProcessor<FloatType>>(config, *acquisition, peakOffset);
-			process(*processor, baseElement, outputDir);
+			process(config.valueScale, *processor, baseElement, outputDir);
 		}
 		break;
 	case MethodType::sta_vectorial_dp_saved:     // falls through
@@ -229,9 +229,9 @@ STAMethod<FloatType>::execute()
 			auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset, processingWithEnvelope);
-			process(*processor, baseElement, outputDir);
+			process(config.valueScale, *processor, baseElement, outputDir);
 			if (coherenceFactor.enabled()) {
-				useCoherenceFactor(!processingWithEnvelope, outputDir);
+				useCoherenceFactor(config.valueScale, !processingWithEnvelope, outputDir);
 			}
 		}
 		break;
@@ -240,9 +240,9 @@ STAMethod<FloatType>::execute()
 			CoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			auto processor = std::make_unique<DefaultSTAProcessor<FloatType>>(config, *acquisition,
 												coherenceFactor, peakOffset);
-			process(*processor, baseElement, outputDir);
+			process(config.valueScale, *processor, baseElement, outputDir);
 			if (coherenceFactor.enabled()) {
-				useCoherenceFactor(true, outputDir);
+				useCoherenceFactor(config.valueScale, true, outputDir);
 			}
 		}
 	}

@@ -55,4 +55,4 @@ angle_step = 0.5
 enable_focusing = true
 
 # 0.0: normalize
-value_scale = 32767.0
+value_scale = 1.0

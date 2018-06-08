@@ -45,6 +45,7 @@ struct STAConfiguration {
 	FloatType acquisitionDelay; // s
 	FloatType samplingFrequency; // Hz
 	FloatType deadZoneM; // m
+	FloatType valueScale;
 
 	void load(ConstParameterMapPtr pm);
 };
@@ -69,6 +70,7 @@ STAConfiguration<FloatType>::load(ConstParameterMapPtr pm)
 	acquisitionDelay  = pm->value<FloatType>(   "acquisition_delay"  ,     0.0,     1.0);
 	samplingFrequency = pm->value<FloatType>(   "sampling_frequency" ,   100.0, 200.0e6);
 	deadZoneM         = pm->value<FloatType>(   "dead_zone_m"        ,     0.0, 50.0e-3);
+	valueScale        = pm->value<FloatType>(   "value_scale"        ,     0.0,  1.0e30);
 }
 
 } // namespace Lab

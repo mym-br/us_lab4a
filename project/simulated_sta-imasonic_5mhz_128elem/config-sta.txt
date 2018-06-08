@@ -36,3 +36,6 @@ sampling_frequency = 40.0e6
 
 # (m)
 dead_zone_m = 10.0e-3
+
+# 0.0: normalize
+value_scale = 1.0

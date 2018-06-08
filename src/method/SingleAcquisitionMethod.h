@@ -61,6 +61,7 @@ private:
 	Project& project_;
 	SingleAcquisitionMethodConfiguration config_;
 	std::unique_ptr<ArrayAcqClient> acq_;
+	double valueFactor_;
 };
 
 } // namespace Lab

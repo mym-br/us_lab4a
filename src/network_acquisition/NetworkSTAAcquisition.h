@@ -30,6 +30,7 @@
 #include "Project.h"
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
+#include "Util.h"
 
 
 
@@ -53,6 +54,7 @@ private:
 	const STAConfiguration<FloatType>& config_;
 	std::unique_ptr<ArrayAcqClient> acq_;
 	std::vector<float> signalBuffer_;
+	float valueFactor_;
 };
 
 
@@ -64,8 +66,9 @@ NetworkSTAAcquisition<FloatType>::NetworkSTAAcquisition(const Project& project, 
 		, acq_{}
 {
 	ConstParameterMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
-	std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");
-	unsigned short portNumber   = pm->value<unsigned short>("server_port_number", 49152, 65535);
+	const std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");
+	const unsigned short portNumber   = pm->value<unsigned short>("server_port_number",   49152,  65535);
+	valueFactor_               = 1.0f / pm->value<float>(         "value_scale"       , 1.0e-30, 1.0e30);
 
 	acq_ = std::make_unique<ArrayAcqClient>(serverIpAddress.c_str(), portNumber);
 
@@ -111,6 +114,7 @@ NetworkSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int
 	acq_->setActiveTransmitElements(txMask);
 
 	acq_->getSignal(signalBuffer_);
+	Util::multiply(signalBuffer_, valueFactor_);
 
 	std::copy(signalBuffer_.begin(), signalBuffer_.end(), acqData.begin());
 }

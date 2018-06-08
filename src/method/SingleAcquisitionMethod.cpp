@@ -60,9 +60,10 @@ SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
 
 	project_.createDirectory(config_.savedAcqDir, false);
 
-	ConstParameterMapPtr pm = project_.loadParameterMap("config-network_acquisition.txt");
-	std::string serverIpAddress = pm->value<std::string>("server_ip_address");
-	unsigned short portNumber = pm->value<unsigned short>("server_port_number", 49152, 65535);
+	ConstParameterMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
+	const std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");
+	const unsigned short portNumber   = pm->value<unsigned short>("server_port_number",   49152,  65535);
+	valueFactor_               = 1.0f / pm->value<double>(        "value_scale"       , 1.0e-30, 1.0e30);
 
 #ifndef TEST_MODE
 	acq_ = std::make_unique<ArrayAcqClient>(serverIpAddress.c_str(), portNumber);
@@ -113,8 +114,10 @@ SingleAcquisitionMethod::execute()
 	}
 
 	if (config_.averageN > 1) {
-		double factor = 1.0 / config_.averageN;
+		double factor = valueFactor_ / config_.averageN;
 		Util::multiply(signal, factor);
+	} else {
+		Util::multiply(signal, valueFactor_);
 	}
 
 	std::vector<double> t(signalLength);

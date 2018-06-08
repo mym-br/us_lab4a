@@ -26,9 +26,11 @@
 
 #include "DeviceSectorialScanAcquisition.h"
 #include "DeviceSectorialScanConfiguration.h"
+#include "global.h"
 #include "ParameterMap.h"
 #include "PhasedArrayAcqClient.h"
 #include "Project.h"
+#include "Util.h"
 
 
 
@@ -54,6 +56,7 @@ private:
 	std::vector<float> lineStartX_;
 	std::vector<float> lineStartZ_;
 	std::vector<float> lineAngle_;
+	float valueFactor_;
 };
 
 
@@ -63,9 +66,10 @@ NetworkDeviceSectorialScanAcquisition<FloatType>::NetworkDeviceSectorialScanAcqu
 		: project_(project)
 		, config_(config)
 {
-	ConstParameterMapPtr pm = project_.loadParameterMap("config-network_acquisition.txt");
-	std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");
-	unsigned short portNumber   = pm->value<unsigned short>("server_port_number", 49152, 65535);
+	ConstParameterMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
+	const std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");
+	const unsigned short portNumber   = pm->value<unsigned short>("server_port_number",   49152,  65535);
+	valueFactor_               = 1.0f / pm->value<float>(         "value_scale"       , 1.0e-30, 1.0e30);
 
 	acq_ = std::make_unique<PhasedArrayAcqClient>(serverIpAddress.c_str(), portNumber);
 
@@ -100,6 +104,7 @@ NetworkDeviceSectorialScanAcquisition<FloatType>::execute(typename DeviceSectori
 	LOG_DEBUG << "ACQ";
 
 	acq_->getImageBuffer(imageBuffer_);
+	Util::multiply(imageBuffer_, valueFactor_);
 
 	boost::uint32_t numRows = acq_->getImageNumRows();
 	boost::uint32_t numCols = acq_->getImageNumCols();

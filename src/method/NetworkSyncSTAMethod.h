@@ -140,7 +140,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 		Util::copyXZValue(gridData, projGridData);
 		project_.showFigure3D(1, "Raw image", &projGridData, &pointList,
-					true, visual, Figure::COLORMAP_VIRIDIS, 1.0);
+					true, visual, Figure::COLORMAP_VIRIDIS, config.valueScale);
 
 		if (coherenceFactorEnabled) {
 			LOG_DEBUG << "Saving the image factors...";
@@ -161,7 +161,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 			Util::copyXZValue(gridData, projGridData);
 			project_.showFigure3D(2, "Coherence factor image", &projGridData, &pointList,
-						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, 1.0);
+						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config.valueScale);
 		}
 	}
 
