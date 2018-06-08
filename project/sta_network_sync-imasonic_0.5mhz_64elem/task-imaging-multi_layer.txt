@@ -10,8 +10,9 @@ z_file = image_z
 z_dataset = z
 
 image_file = image_value
-#image_file = image_cf
 image_dataset = value
+#image_file = image_cf
+#image_dataset = image
 
 # (m)
 min_y = -100.0e-3
