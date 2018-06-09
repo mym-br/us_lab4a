@@ -1,4 +1,9 @@
 
+- Normalization network sync.
+	ok-Save signals.
+	- Imaging.
+	- Multi-layer.
+
 - Remove NetworkMultiplexedAcquisition?
 - NetworkMultiplexedAcquisition: value_scale
 
