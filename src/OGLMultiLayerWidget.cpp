@@ -105,6 +105,9 @@ OGLMultiLayerWidget::paintGL()
 	//==================================================
 	painter.beginNativePainting();
 
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+
 	// QPainter disables GL_DEPTH_TEST, GL_BLEND.
 	//glEnable(GL_DEPTH_TEST); // not needed
 	glEnable(GL_BLEND);
@@ -162,6 +165,9 @@ OGLMultiLayerWidget::paintGL()
 	glVertex3f(maxX_, maxY_, maxZ_);
 	glVertex3f(maxX_, maxY_, minZ_);
 	glEnd();
+
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
 
 	painter.endNativePainting();
 	//==================================================
@@ -239,9 +245,6 @@ OGLMultiLayerWidget::initializeGL()
 	//glShadeModel(GL_FLAT);
 
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
 }
 
 void

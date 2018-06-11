@@ -1547,6 +1547,11 @@ OGLFigureWidget::paintGL()
 	//==================================================
 	painter.beginNativePainting();
 
+#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+#endif
+
 	// QPainter disables GL_DEPTH_TEST.
 	glEnable(GL_DEPTH_TEST);
 
@@ -1681,6 +1686,11 @@ OGLFigureWidget::paintGL()
 		const GLdouble dY = p2Y - p1Y;
 		distance = std::sqrt(dX * dX + dY * dY);
 	}
+
+#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+#endif
 
 	painter.endNativePainting();
 	//==================================================
@@ -1828,11 +1838,6 @@ OGLFigureWidget::initializeGL()
 
 	//glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClearColor(1.0, 1.0, 1.0, 1.0);
-
-#ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-#endif
 }
 
 void
