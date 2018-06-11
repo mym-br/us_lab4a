@@ -1,11 +1,6 @@
 
 - Waveform: 2a / 2b: numPeriods should be ignored (?).
 
-- Normalization network sync.
-	ok-Save signals.
-	- Imaging.
-	- Multi-layer.
-
 - Remove NetworkMultiplexedAcquisition?
 - NetworkMultiplexedAcquisition: value_scale
 
@@ -16,11 +11,18 @@
 ================================================================================
 
 Notes:
+
+- After the interpolation, the signals may have maximum absolute value > 1.
+
 - OGLFigureWidget: TRIANGLE_STRIP is 10% faster than TRIANGLES
   (OGLFIGUREWIDGET_USE_VERTEX_ARRAY = 1, Intel HD 2500).
 
 ================================================================================
 
+ok- Normalization network sync.
+	ok- Save signals.
+	ok- Imaging.
+	x- Multi-layer.
 ok- Normalization.
 	ok Simulation.
 	ok Experimental.
