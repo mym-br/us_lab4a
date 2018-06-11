@@ -11,6 +11,9 @@
 ================================================================================
 
 Notes:
+
+- After the interpolation, the signals may have maximum absolute value > 1.
+
 - OGLFigureWidget: TRIANGLE_STRIP is 10% faster than TRIANGLES
   (OGLFIGUREWIDGET_USE_VERTEX_ARRAY = 1, Intel HD 2500).
 
