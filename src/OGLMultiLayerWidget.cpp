@@ -173,7 +173,9 @@ OGLMultiLayerWidget::paintGL()
 	//==================================================
 
 	painter.setRenderHint(QPainter::TextAntialiasing);
-	painter.setPen(Qt::darkGray);
+	painter.setPen(Qt::black);
+	painter.setBackground(QBrush{Qt::white});
+	painter.setBackgroundMode(Qt::OpaqueMode);
 
 	painter.drawText(10,  20, QString("rot x ") + QString::number(rotX_));
 	painter.drawText(10,  40, QString("rot y ") + QString::number(rotY_));

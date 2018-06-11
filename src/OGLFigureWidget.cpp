@@ -1696,7 +1696,9 @@ OGLFigureWidget::paintGL()
 	//==================================================
 
 	painter.setRenderHint(QPainter::TextAntialiasing);
-	painter.setPen(Qt::darkGray);
+	painter.setPen(Qt::white);
+	painter.setBackground(QBrush{Qt::black});
+	painter.setBackgroundMode(Qt::OpaqueMode);
 
 	if (mustShowDistance) {
 		painter.drawLine(distanceMarker1_, distanceMarker2_);
