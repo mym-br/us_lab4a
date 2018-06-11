@@ -1,11 +1,6 @@
 
 - Waveform: 2a / 2b: numPeriods should be ignored (?).
 
-- Normalization network sync.
-	ok-Save signals.
-	- Imaging.
-	- Multi-layer.
-
 - Remove NetworkMultiplexedAcquisition?
 - NetworkMultiplexedAcquisition: value_scale
 
@@ -21,6 +16,10 @@ Notes:
 
 ================================================================================
 
+ok- Normalization network sync.
+	ok- Save signals.
+	ok- Imaging.
+	x- Multi-layer.
 ok- Normalization.
 	ok Simulation.
 	ok Experimental.
