@@ -1829,6 +1829,14 @@ OGLFigureWidget::keyPressEvent(QKeyEvent* e)
 	case Qt::Key_P:
 		showPoints_ = !showPoints_;
 		break;
+	case Qt::Key_X:
+		rotX_ = -90.0;
+		rotZ_ = 90.0;
+		break;
+	case Qt::Key_Y:
+		rotX_ = -90.0;
+		rotZ_ = 0.0;
+		break;
 	default:
 		return;
 	}
