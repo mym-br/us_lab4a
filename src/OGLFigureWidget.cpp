@@ -1568,15 +1568,16 @@ OGLFigureWidget::paintGL()
 	const float zD = 1.42f * scale_ * std::max(std::max(xD, yD), totalValueScale);
 	glOrtho(-xD, xD, -yD, yD, -zD, zD); // l, r, b, t, near, far
 
-	const float resX = (2.0 * xD) / width() / scale_;
-	const float resY = (2.0 * yD) / height() / scale_;
+	const float resX = (2.0 * xD) / width();
+	const float resY = (2.0 * yD) / height();
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	glTranslatef(resX * offsetX_, resY * offsetY_, 0.0f);
 	glRotatef(rotX_, 1.0f, 0.0f, 0.0f);
 	glRotatef(rotZ_, 0.0f, 0.0f, 1.0f);
 	glScalef(scale_, scale_, scale_);
-	glTranslatef(-(minX_ + maxX_) * 0.5f + resX * offsetX_, -(minZ_ + maxZ_) * 0.5f + resY * offsetY_, 0.0f);
+	glTranslatef(-(minX_ + maxX_) * 0.5f, -(minZ_ + maxZ_) * 0.5f, 0.0f);
 
 	// Draw frame.
 	glColor3f(0.5f, 0.5f, 0.5f);
