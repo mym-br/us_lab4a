@@ -1578,6 +1578,21 @@ OGLFigureWidget::paintGL()
 	glScalef(scale_, scale_, scale_);
 	glTranslatef(-(minX_ + maxX_) * 0.5f + resX * offsetX_, -(minZ_ + maxZ_) * 0.5f + resY * offsetY_, 0.0f);
 
+	// Draw frame.
+	glColor3f(0.5f, 0.5f, 0.5f);
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(minX_, minZ_, totalValueScale);
+		glVertex3f(minX_, maxZ_, totalValueScale);
+		glVertex3f(maxX_, maxZ_, totalValueScale);
+		glVertex3f(maxX_, minZ_, totalValueScale);
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(minX_, minZ_, 0.0f);
+		glVertex3f(minX_, maxZ_, 0.0f);
+		glVertex3f(maxX_, maxZ_, 0.0f);
+		glVertex3f(maxX_, minZ_, 0.0f);
+	glEnd();
+
 	if (oglGridData_.n1() >= 2) {
 		glPushMatrix();
 		glScalef(1.0, 1.0, totalValueScale);
