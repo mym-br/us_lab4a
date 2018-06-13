@@ -1785,21 +1785,19 @@ OGLFigureWidget::wheelEvent(QWheelEvent* e)
 	distanceMarker1_ = QPoint(); // clear
 	distanceMarker2_ = QPoint(); // clear
 
-	if (!rotationMode_) {
-		const float oldScale = scale_;
-		if (e->delta() > 0) {
-			scale_ *= ZOOM_IN_FACTOR;
-		} else {
-			scale_ *= ZOOM_OUT_FACTOR;
-		}
-		Util::clip(scale_, MIN_SCALE, MAX_SCALE);
-
-		const float factor = scale_ / oldScale;
-		offsetX_ *= factor;
-		Util::clip(offsetX_, -MAX_OFFSET, MAX_OFFSET);
-		offsetY_ *= factor;
-		Util::clip(offsetY_, -MAX_OFFSET, MAX_OFFSET);
+	const float oldScale = scale_;
+	if (e->delta() > 0) {
+		scale_ *= ZOOM_IN_FACTOR;
+	} else {
+		scale_ *= ZOOM_OUT_FACTOR;
 	}
+	Util::clip(scale_, MIN_SCALE, MAX_SCALE);
+
+	const float factor = scale_ / oldScale;
+	offsetX_ *= factor;
+	Util::clip(offsetX_, -MAX_OFFSET, MAX_OFFSET);
+	offsetY_ *= factor;
+	Util::clip(offsetY_, -MAX_OFFSET, MAX_OFFSET);
 
 	update();
 }
