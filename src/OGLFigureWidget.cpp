@@ -70,8 +70,8 @@
 #define MININUM_HEIGHT 300
 #define MIN_VALUE_SCALE 0.1f
 #define MAX_VALUE_SCALE 10.0f
-#define MIN_SCALE 1.0f
-#define MAX_SCALE 50.0f
+#define MIN_SCALE 0.1f
+#define MAX_SCALE 100.0f
 #define MARGIN 0.005f
 #define MAX_OFFSET (1.0e5f)
 #define ZOOM_IN_FACTOR 1.1f
