@@ -35,6 +35,8 @@
 #define MARGIN 0.005f
 #define ZOOM_IN_FACTOR 1.1f
 #define ZOOM_OUT_FACTOR 0.9f
+#define ARROWHEAD_SIZE_FACTOR 0.015f
+#define ARROW_SIZE_FACTOR 0.1f
 
 
 
@@ -154,17 +156,87 @@ OGLMultiLayerWidget::paintGL()
 
 	// Bottom frame.
 	glBegin(GL_LINE_LOOP);
-	glVertex3f(minX_, minY_, minZ_);
-	glVertex3f(minX_, minY_, maxZ_);
-	glVertex3f(maxX_, minY_, maxZ_);
-	glVertex3f(maxX_, minY_, minZ_);
+		glVertex3f(minX_, minY_, minZ_);
+		glVertex3f(minX_, minY_, maxZ_);
+		glVertex3f(maxX_, minY_, maxZ_);
+		glVertex3f(maxX_, minY_, minZ_);
 	glEnd();
 	// Top frame.
 	glBegin(GL_LINE_LOOP);
-	glVertex3f(minX_, maxY_, minZ_);
-	glVertex3f(minX_, maxY_, maxZ_);
-	glVertex3f(maxX_, maxY_, maxZ_);
-	glVertex3f(maxX_, maxY_, minZ_);
+		glVertex3f(minX_, maxY_, minZ_);
+		glVertex3f(minX_, maxY_, maxZ_);
+		glVertex3f(maxX_, maxY_, maxZ_);
+		glVertex3f(maxX_, maxY_, minZ_);
+	glEnd();
+
+	const float arrowRef = std::max(std::max(maxX_ - minX_, maxY_ - minY_), maxZ_ - minZ_) * scale_;
+	const float arrowSize = ARROW_SIZE_FACTOR * arrowRef;
+	const float arrowheadSize = ARROWHEAD_SIZE_FACTOR * arrowRef;
+	const float arrowheadSize2 = 0.5f * arrowheadSize;
+
+	// X arrow.
+	glBegin(GL_LINES);
+		glVertex3f(minX_            , minY_, minZ_);
+		glVertex3f(minX_ + arrowSize, minY_, minZ_);
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(minX_ + arrowSize                , minY_ + arrowheadSize2, minZ_);
+		glVertex3f(minX_ + arrowSize + arrowheadSize, minY_                 , minZ_);
+		glVertex3f(minX_ + arrowSize                , minY_ - arrowheadSize2, minZ_);
+	glEnd();
+	// X label.
+	glBegin(GL_LINES);
+		glVertex3f(minX_ + arrowSize                , minY_ -        arrowheadSize, minZ_);
+		glVertex3f(minX_ + arrowSize + arrowheadSize, minY_ - 2.0f * arrowheadSize, minZ_);
+
+		glVertex3f(minX_ + arrowSize                , minY_ - 2.0f * arrowheadSize, minZ_);
+		glVertex3f(minX_ + arrowSize + arrowheadSize, minY_ -        arrowheadSize, minZ_);
+	glEnd();
+
+	// Y arrow.
+	glBegin(GL_LINES);
+		glVertex3f(minX_, minY_            , minZ_);
+		glVertex3f(minX_, minY_ + arrowSize, minZ_);
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(minX_ + arrowheadSize2, minY_ + arrowSize                , minZ_);
+		glVertex3f(minX_                 , minY_ + arrowSize + arrowheadSize, minZ_);
+		glVertex3f(minX_ - arrowheadSize2, minY_ + arrowSize                , minZ_);
+	glEnd();
+	// Y label.
+	glBegin(GL_LINE_STRIP);
+		glVertex3f(minX_ - 2.0f * arrowheadSize, minY_ + arrowSize +        arrowheadSize, minZ_);
+		glVertex3f(minX_ - 1.5f * arrowheadSize, minY_ + arrowSize + 0.5f * arrowheadSize, minZ_);
+		glVertex3f(minX_ - 1.5f * arrowheadSize, minY_ + arrowSize                       , minZ_);
+	glEnd();
+	glBegin(GL_LINES);
+		glVertex3f(minX_ - 1.5f * arrowheadSize, minY_ + arrowSize + 0.5f * arrowheadSize, minZ_);
+		glVertex3f(minX_ -        arrowheadSize, minY_ + arrowSize +        arrowheadSize, minZ_);
+	glEnd();
+
+	// Z arrow.
+	glBegin(GL_LINES);
+		glVertex3f(minX_, minY_, minZ_);
+		glVertex3f(minX_, minY_, minZ_ + arrowSize);
+	glEnd();
+	glBegin(GL_LINE_LOOP);
+		glVertex3f(minX_, minY_ + arrowheadSize2, minZ_ + arrowSize);
+		glVertex3f(minX_, minY_                 , minZ_ + arrowSize + arrowheadSize);
+		glVertex3f(minX_, minY_ - arrowheadSize2, minZ_ + arrowSize);
+	glEnd();
+	// Z label.
+	glBegin(GL_LINE_STRIP);
+		if (std::abs(rotY_) <= 90.0f) {
+			glVertex3f(minX_ - 2.0f * arrowheadSize, minY_ -        arrowheadSize, minZ_ + arrowSize);
+			glVertex3f(minX_ -        arrowheadSize, minY_ -        arrowheadSize, minZ_ + arrowSize);
+			glVertex3f(minX_ - 2.0f * arrowheadSize, minY_ - 2.0f * arrowheadSize, minZ_ + arrowSize);
+			glVertex3f(minX_ -        arrowheadSize, minY_ - 2.0f * arrowheadSize, minZ_ + arrowSize);
+		} else {
+			glVertex3f(minX_ -        arrowheadSize, minY_ -        arrowheadSize, minZ_ + arrowSize);
+			glVertex3f(minX_ - 2.0f * arrowheadSize, minY_ -        arrowheadSize, minZ_ + arrowSize);
+			glVertex3f(minX_ -        arrowheadSize, minY_ - 2.0f * arrowheadSize, minZ_ + arrowSize);
+			glVertex3f(minX_ - 2.0f * arrowheadSize, minY_ - 2.0f * arrowheadSize, minZ_ + arrowSize);
+		}
 	glEnd();
 
 	glDisableClientState(GL_COLOR_ARRAY);
