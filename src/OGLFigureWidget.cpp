@@ -1565,7 +1565,7 @@ OGLFigureWidget::paintGL()
 	const float yD = std::max((maxX_ - minX_) / aspect, maxZ_ - minZ_) * (0.5 + MARGIN);
 	const float xD = yD * aspect;
 	const float totalValueScale = 0.5f * yD * valueScale_;
-	const float zD = 1.42f * scale_ * std::max(std::max(xD, yD), totalValueScale);
+	const float zD = scale_ * std::sqrt(xD * xD + yD * yD + totalValueScale * totalValueScale);
 	glOrtho(-xD, xD, -yD, yD, -zD, zD); // l, r, b, t, near, far
 
 	const float resX = (2.0 * xD) / width();
