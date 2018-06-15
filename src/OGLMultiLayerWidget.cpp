@@ -122,7 +122,8 @@ OGLMultiLayerWidget::paintGL()
 	const float aspect = static_cast<float>(width()) / height();
 	const float yD = std::max((maxX_ - minX_) / aspect, maxY_ - minY_) * (0.5f + MARGIN);
 	const float xD = yD * aspect;
-	const float zD = 2.0f * std::max(std::max(xD, yD), (maxZ_ - minZ_) * (0.5f + MARGIN)) * scale_;
+	const float dz = (maxZ_ - minZ_) * (0.5f + MARGIN);
+	const float zD = scale_ * std::sqrt(xD * xD + yD * yD + dz * dz);
 	glOrtho(-xD, xD, -yD, yD, -zD, zD); // l, r, b, t, near, far
 
 	glMatrixMode(GL_MODELVIEW);
