@@ -1,6 +1,6 @@
 
-coherence_factor_method = none
-#coherence_factor_method = sign_coherence_factor
+#coherence_factor_method = none
+coherence_factor_method = sign_coherence_factor
 
 #
 sign_coherence_factor_p = 1.0

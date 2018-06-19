@@ -11,7 +11,7 @@ coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
 
 grid_config_file = config-grid.txt
 
-base_element = 16
+base_element = 0
 
 peak_offset = 0.0
 

@@ -20,10 +20,10 @@ max_frequency = 1.0e6
 acquisition_time = 1.0e-3
 
 # 0 - 48 (dB)
-min_gain = 10.0
+min_gain = 60.0
 
 # 0 - 48 (dB)
-max_gain = 10.0
+max_gain = 60.0
 
 # (m/s)
 propagation_speed_1 = 1500.0
