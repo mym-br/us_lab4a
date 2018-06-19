@@ -42,8 +42,8 @@ SingleAcquisitionMethod::fillConfiguration()
 	config_.samplingFrequency = taskPM->value<double>(      "sampling_frequency",    100.0,  200.0e6);
 	config_.centerFrequency   = taskPM->value<double>(      "center_frequency"  ,    100.0,  100.0e6);
 	config_.acquisitionTime   = taskPM->value<double>(      "acquisition_time"  ,   1.0e-6,      1.0);
-	config_.minGain           = taskPM->value<double>(      "min_gain"          ,      0.0,     48.0);
-	//config_.maxGain           = taskPM->value<double>(      "max_gain"          ,      0.0,     48.0);
+	config_.minGain           = taskPM->value<double>(      "min_gain"          ,      0.0,     100.0);
+	//config_.maxGain           = taskPM->value<double>(      "max_gain"          ,      0.0,     100.0);
 	config_.numElementsMux    = taskPM->value<unsigned int>("num_elements_mux"  ,        8,     1024);
 	config_.numElements       = taskPM->value<unsigned int>("num_elements"      ,        8, config_.numElementsMux);
 	config_.baseElement       = taskPM->value<unsigned int>("base_element"      ,        0, config_.numElementsMux - config_.numElements);
