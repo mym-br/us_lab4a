@@ -75,6 +75,7 @@ template<typename T, typename U> U maxAbsoluteValueField(const Matrix2<T>& data)
 template<typename T> void minMax(const std::vector<T>& list, T& min, T& max);
 template<typename T, typename U> void minMaxValueField(const Matrix2<T>& data, U& min, U& max);
 template<typename T> void multiply(std::vector<T>& list, T coefficient);
+template<typename T> void multiply(Matrix2<T>& data, T coefficient);
 template<typename T, typename U> void multiply(const std::vector<T>& factorList, std::vector<U>& data);
 template<typename T> void centralDiff(const std::vector<T>& inputList, T period, std::vector<T>& outputList);
 template<typename T> void deleteObjects(T& container);
@@ -486,6 +487,15 @@ void
 multiply(std::vector<T>& list, T coefficient)
 {
 	for (typename std::vector<T>::iterator iter = list.begin(); iter != list.end(); ++iter) {
+		*iter *= coefficient;
+	}
+}
+
+template<typename T>
+void
+multiply(Matrix2<T>& data, T coefficient)
+{
+	for (typename Matrix2<T>::Iterator iter = data.begin(); iter != data.end(); ++iter) {
 		*iter *= coefficient;
 	}
 }
