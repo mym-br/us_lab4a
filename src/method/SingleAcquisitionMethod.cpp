@@ -49,7 +49,6 @@ SingleAcquisitionMethod::fillConfiguration()
 	config_.baseElement       = taskPM->value<unsigned int>("base_element"      ,        0, config_.numElementsMux - config_.numElements);
 	config_.txGroupElement    = taskPM->value<unsigned int>("tx_group_element"  ,        0, config_.numElements);
 	config_.rxGroupElement    = taskPM->value<unsigned int>("rx_group_element"  ,        0, config_.numElements);
-	config_.averageN          = taskPM->value<unsigned int>("average_n"         ,        1,      256);
 	config_.savedAcqDir       = taskPM->value<std::string>( "saved_acquisition_dir");
 }
 
@@ -63,7 +62,8 @@ SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
 	ConstParameterMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
 	const std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");
 	const unsigned short portNumber   = pm->value<unsigned short>("server_port_number",   49152,  65535);
-	valueFactor_               = 1.0f / pm->value<double>(        "value_scale"       , 1.0e-30, 1.0e30);
+	valueFactor_                = 1.0 / pm->value<double>(        "value_scale"       , 1.0e-30, 1.0e30);
+	averageN_                         = pm->value<unsigned int>(  "average_n"         ,       1,    256);
 
 #ifndef TEST_MODE
 	acq_ = std::make_unique<ArrayAcqClient>(serverIpAddress.c_str(), portNumber);
@@ -104,7 +104,7 @@ SingleAcquisitionMethod::execute()
 	txMask[config_.txGroupElement] = '1';
 	acq_->setActiveTransmitElements(txMask);
 
-	for (unsigned int i = 0; i < config_.averageN; ++i) {
+	for (unsigned int i = 0; i < averageN_; ++i) {
 		LOG_DEBUG << "ACQ " << i;
 
 		acq_->getSignal(signalBuffer);
@@ -113,8 +113,8 @@ SingleAcquisitionMethod::execute()
 		Util::addElements(signalBase, signal.begin(), signal.end());
 	}
 
-	if (config_.averageN > 1) {
-		double factor = valueFactor_ / config_.averageN;
+	if (averageN_ > 1U) {
+		const double factor = valueFactor_ / averageN_;
 		Util::multiply(signal, factor);
 	} else {
 		Util::multiply(signal, valueFactor_);

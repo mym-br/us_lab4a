@@ -54,7 +54,7 @@ private:
 	const STAConfiguration<FloatType>& config_;
 	std::unique_ptr<ArrayAcqClient> acq_;
 	std::vector<float> signalBuffer_;
-	float valueFactor_;
+	double valueFactor_;
 	unsigned int averageN_;
 };
 
@@ -69,7 +69,7 @@ NetworkSTAAcquisition<FloatType>::NetworkSTAAcquisition(const Project& project, 
 	ConstParameterMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
 	const std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");
 	const unsigned short portNumber   = pm->value<unsigned short>("server_port_number",   49152,  65535);
-	valueFactor_               = 1.0f / pm->value<float>(         "value_scale"       , 1.0e-30, 1.0e30);
+	valueFactor_                = 1.0 / pm->value<double>(        "value_scale"       , 1.0e-30, 1.0e30);
 	averageN_                         = pm->value<unsigned int>(  "average_n"         ,       1,    256);
 
 	acq_ = std::make_unique<ArrayAcqClient>(serverIpAddress.c_str(), portNumber);
@@ -118,6 +118,7 @@ NetworkSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int
 	if (averageN_ > 1U) {
 		acqData = 0.0;
 		for (unsigned int i = 0; i < averageN_; ++i) {
+			LOG_DEBUG << "ACQ " << i;
 			acq_->getSignal(signalBuffer_);
 			Util::addElements(signalBuffer_.begin(), acqData.begin(), acqData.end());
 		}
@@ -125,8 +126,8 @@ NetworkSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int
 		Util::multiply(acqData, factor);
 	} else {
 		acq_->getSignal(signalBuffer_);
-		Util::multiply(signalBuffer_, valueFactor_);
 		std::copy(signalBuffer_.begin(), signalBuffer_.end(), acqData.begin());
+		Util::multiply(acqData, static_cast<FloatType>(valueFactor_));
 	}
 }
 

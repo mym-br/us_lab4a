@@ -41,7 +41,6 @@ struct SingleAcquisitionMethodConfiguration {
 	unsigned int baseElement;
 	unsigned int txGroupElement;
 	unsigned int rxGroupElement;
-	unsigned int averageN;
 	std::string savedAcqDir;
 };
 
@@ -62,6 +61,7 @@ private:
 	SingleAcquisitionMethodConfiguration config_;
 	std::unique_ptr<ArrayAcqClient> acq_;
 	double valueFactor_;
+	unsigned int averageN_;
 };
 
 } // namespace Lab

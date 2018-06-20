@@ -32,6 +32,3 @@ tx_group_element = 15
 
 # 0 .. (num_elements - 1)
 rx_group_element = 15
-
-# 1 .. 256
-average_n = 1
