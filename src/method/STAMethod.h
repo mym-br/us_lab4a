@@ -69,7 +69,6 @@ private:
 	Project::GridDataType projGridData_;
 	std::vector<XZ<float>> pointList_;
 	Figure::Visualization visual_;
-	std::string outputDir_;
 };
 
 
@@ -105,7 +104,7 @@ STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnv
 	}
 
 	LOG_DEBUG << "Saving the CF image...";
-	project_.saveHDF5(gridData_, outputDir_ + "/image_cf", "cf", Util::CopyValueOp());
+	project_.saveHDF5(gridData_, outputDir + "/image_cf", "cf", Util::CopyValueOp());
 
 	Util::copyXZValue(gridData_, projGridData_);
 	project_.showFigure3D(2, "Coherence factor image", &projGridData_, &pointList_,
