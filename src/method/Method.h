@@ -36,6 +36,7 @@ enum class MethodType {
 	sta_simple_saved,
 	sta_simulated,
 	sta_dp_network,
+	sta_vectorial_dp_network,
 	sta_dp_saved,
 	sta_vectorial_dp_saved,
 	sta_sp_saved,

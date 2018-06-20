@@ -47,6 +47,7 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sta_simple_simulated);
 	ADD_MAP_ITEM(sta_simulated);
 	ADD_MAP_ITEM(sta_dp_network);
+	ADD_MAP_ITEM(sta_vectorial_dp_network);
 	ADD_MAP_ITEM(sta_dp_saved);
 	ADD_MAP_ITEM(sta_vectorial_dp_saved);
 	ADD_MAP_ITEM(sta_sp_saved);
@@ -98,6 +99,7 @@ Method::get(Project& project)
 	case MethodType::sta_simple_saved:                    // falls through
 	case MethodType::sta_simulated:                       // falls through
 	case MethodType::sta_dp_network:                      // falls through
+	case MethodType::sta_vectorial_dp_network:            // falls through
 	case MethodType::sta_dp_saved:                        // falls through
 	case MethodType::sta_vectorial_dp_saved:              // falls through
 	case MethodType::sta_save_signals:                    // falls through

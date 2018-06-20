@@ -144,7 +144,8 @@ STAMethod<FloatType>::execute()
 	case MethodType::sta_simulated:
 		acquisition = std::make_unique<SimulatedSTAAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodType::sta_dp_network:   // falls through
+	case MethodType::sta_dp_network:           // falls through
+	case MethodType::sta_vectorial_dp_network: // falls through
 	case MethodType::sta_save_signals:
 		acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
 		break;
@@ -215,6 +216,7 @@ STAMethod<FloatType>::execute()
 			process(config.valueScale, *processor, baseElement, outputDir);
 		}
 		break;
+	case MethodType::sta_vectorial_dp_network:   // falls through
 	case MethodType::sta_vectorial_dp_saved:     // falls through
 	case MethodType::sta_vectorial_sp_saved:     // falls through
 	case MethodType::sta_vectorial_simulated_3d:
