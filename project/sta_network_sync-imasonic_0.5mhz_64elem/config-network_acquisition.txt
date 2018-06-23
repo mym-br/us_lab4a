@@ -6,4 +6,4 @@ server_port_number = 55500
 value_scale = 2048.0
 
 # 1 .. 256
-average_n = 1
+average_n = 64
