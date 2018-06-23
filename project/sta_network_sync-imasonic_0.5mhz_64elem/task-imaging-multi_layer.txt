@@ -9,17 +9,17 @@ x_dataset = x
 z_file = image_z
 z_dataset = z
 
-image_file = image_value
-image_dataset = value
-#image_file = image_cf
-#image_dataset = cf
+#image_file = image_value
+#image_dataset = value
+image_file = image_cf
+image_dataset = cf
 
 # (m)
-min_y = -100.0e-3
-y_step = 20.0e-3
+min_y = -150.0e-3
+y_step = 2.0e-3
 
 # (dB)
-min_decibels = -40.0
+min_decibels = -30.0
 
 log_scale = true
 invert_z = true
