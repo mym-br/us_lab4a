@@ -39,3 +39,4 @@ dead_zone_m = 5.0e-3
 
 # 0.0: normalize
 value_scale = 1.0
+#value_scale = 0.198736

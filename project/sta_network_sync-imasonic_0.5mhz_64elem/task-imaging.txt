@@ -4,6 +4,8 @@ method = sta_network_sync
 sta_config_file = config-sta-cyl.txt
 
 data_dir = saved_acquisition
+#data_dir = t1-saved_acquisition
+#data_dir = t2-saved_acquisition
 
 output_dir = output
 

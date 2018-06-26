@@ -25,8 +25,9 @@ rectangular_origin_z = 0.0
 # Sectorial grid parameters.
 
 # (m)
-sectorial_min_radius = 20.0e-3
+sectorial_min_radius = 50.0e-3
 sectorial_max_radius = 500.0e-3
+#sectorial_max_radius = 345.0e-3
 
 # (degree)
 sectorial_min_angle = -45.0
