@@ -32,24 +32,14 @@
 #include "Util.h"
 
 #define VTK_FILE_NAME "multi_image.vtk"
+#define NUM_CELL_POINTS 8
 
 
 
 namespace {
 
 struct Cell {
-	std::size_t i0;
-	std::size_t i1;
-	std::size_t i2;
-	std::size_t i3;
-	std::size_t i4;
-	std::size_t i5;
-	std::size_t i6;
-	std::size_t i7;
-	Cell(std::size_t i0, std::size_t i1, std::size_t i2, std::size_t i3,
-			std::size_t i4, std::size_t i5, std::size_t i6, std::size_t i7)
-		: i0(i0), i1(i1), i2(i2), i3(i3)
-		, i4(i4), i5(i5), i6(i6), i7(i7) {}
+	std::size_t i[NUM_CELL_POINTS];
 };
 
 } // namespace
@@ -90,7 +80,7 @@ VTKFileMultiImageMethod::execute()
 	std::vector<Cell> cellArray;
 	const float minValue = Util::decibelsToLinear(minDecibels);
 	const float valueCoeff = logScale ? (-1.0f / minDecibels) : (1.0f / (1.0f - minValue));
-	float y = minY;
+	float y = minY, prevY = minY;
 
 	auto calcValue = [&](float value) -> float {
 		value = std::abs(value);
@@ -101,14 +91,14 @@ VTKFileMultiImageMethod::execute()
 			return (value - minValue) * valueCoeff;
 		}
 	};
-	auto storePoint = [&](const XZValue<float>& point, std::size_t& index) -> std::size_t {
+	auto storePoint = [&](const XZValue<float>& point, std::size_t& index, float pointY) -> std::size_t {
 		if (index != std::numeric_limits<std::size_t>::max()) {
 			return index;
 		}
 
 		pointArray.emplace_back(point.x,
-					y,
-					invertZ ? -point.z : point.z,
+					invertZ ? -point.z : point.z, // z -> y
+					pointY,                       // y -> z
 					calcValue(point.value));
 		index = pointArray.size() - 1U;
 		return index;
@@ -124,15 +114,16 @@ VTKFileMultiImageMethod::execute()
 				    gridData(i + 1, j + 1).value >= minValue ||
 				    gridData(i    , j + 1).value >= minValue) {
 
-			cellArray.emplace_back(
-				storePoint(prevGridData(i    , j    ), prevPointIndex(i    , j    )),
-				storePoint(prevGridData(i + 1, j    ), prevPointIndex(i + 1, j    )),
-				storePoint(prevGridData(i + 1, j + 1), prevPointIndex(i + 1, j + 1)),
-				storePoint(prevGridData(i    , j + 1), prevPointIndex(i    , j + 1)),
-				storePoint(    gridData(i    , j    ),     pointIndex(i    , j    )),
-				storePoint(    gridData(i + 1, j    ),     pointIndex(i + 1, j    )),
-				storePoint(    gridData(i + 1, j + 1),     pointIndex(i + 1, j + 1)),
-				storePoint(    gridData(i    , j + 1),     pointIndex(i    , j + 1)));
+			Cell cell;
+			cell.i[0] = storePoint(prevGridData(i    , j    ), prevPointIndex(i    , j    ), prevY);
+			cell.i[1] = storePoint(prevGridData(i + 1, j    ), prevPointIndex(i + 1, j    ), prevY);
+			cell.i[2] = storePoint(prevGridData(i + 1, j + 1), prevPointIndex(i + 1, j + 1), prevY);
+			cell.i[3] = storePoint(prevGridData(i    , j + 1), prevPointIndex(i    , j + 1), prevY);
+			cell.i[4] = storePoint(    gridData(i    , j    ),     pointIndex(i    , j    ), y);
+			cell.i[5] = storePoint(    gridData(i + 1, j    ),     pointIndex(i + 1, j    ), y);
+			cell.i[6] = storePoint(    gridData(i + 1, j + 1),     pointIndex(i + 1, j + 1), y);
+			cell.i[7] = storePoint(    gridData(i    , j + 1),     pointIndex(i    , j + 1), y);
+			cellArray.push_back(cell);
 		}
 	};
 
@@ -157,6 +148,7 @@ VTKFileMultiImageMethod::execute()
 		if (acqNumber == 0) {
 			prevGridData.swap(gridData);
 			prevPointIndex.swap(pointIndex);
+			prevY = y;
 			continue;
 		}
 
@@ -168,6 +160,7 @@ VTKFileMultiImageMethod::execute()
 
 		prevGridData.swap(gridData);
 		prevPointIndex.swap(pointIndex);
+		prevY = y;
 	}
 
 	std::ofstream out{project_.directory() + '/' + VTK_FILE_NAME};
@@ -185,14 +178,11 @@ VTKFileMultiImageMethod::execute()
 		<< cellArray.size() * (1U /* the first column indicates the number of points per cell */ +
 					8U /* indexes of the cell points */) << '\n';
 	for (Cell& c : cellArray) {
-		out << "8 " << c.i0; // number of points per cell
-		out << ' '  << c.i1;
-		out << ' '  << c.i2;
-		out << ' '  << c.i3;
-		out << ' '  << c.i4;
-		out << ' '  << c.i5;
-		out << ' '  << c.i6;
-		out << ' '  << c.i7 << '\n';
+		out << "8"; // number of points per cell
+		for (int i = 0; i < NUM_CELL_POINTS; ++i) {
+			out << ' '  << c.i[i];
+		}
+		out << '\n';
 	}
 
 	out << "CELL_TYPES " << cellArray.size() << '\n';
