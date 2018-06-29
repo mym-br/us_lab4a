@@ -66,7 +66,7 @@ MultiLayerImageMethod::execute()
 
 	auto calcValue = [&](float value) -> float {
 		value = std::abs(value);
-		Util::clip(value, 0.0f, 1.0f);
+		Util::clip(value, minValue, 1.0f);
 		if (logScale) {
 			return (Util::linearToDecibels(value) - minDecibels) * valueCoeff;
 		} else {
@@ -85,8 +85,8 @@ MultiLayerImageMethod::execute()
 		indexArray.push_back(pointArray.size() - 1U);
 	};
 	auto addTriangle = [&](unsigned int i) {
-		if (projGridData(i, j1).value >= minValue &&
-				projGridData(i, j2).value >= minValue &&
+		if (projGridData(i, j1).value >= minValue ||
+				projGridData(i, j2).value >= minValue ||
 				projGridData(i, j3).value >= minValue) {
 
 			const unsigned int endIndex = pointArray.size();
