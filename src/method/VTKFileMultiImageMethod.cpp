@@ -183,10 +183,10 @@ VTKFileMultiImageMethod::execute()
 	}
 
 	out << "CELLS " << cellArray.size() << ' '
-		<< cellArray.size() * (1U /* the first column indicates the number of points per cell */ *
+		<< cellArray.size() * (1U /* the first column indicates the number of points per cell */ +
 					8U /* indexes of the cell points */) << '\n';
 	for (Cell& c : cellArray) {
-		out << "8 " << c.i0;
+		out << "8 " << c.i0; // number of points per cell
 		out << ' '  << c.i1;
 		out << ' '  << c.i2;
 		out << ' '  << c.i3;
