@@ -6,6 +6,7 @@ fftw_wisdom*
 *.png
 *.xcf
 *.pdf
+*.vtk
 
 !data/**
 !test/*.h5
