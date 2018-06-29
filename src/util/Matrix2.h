@@ -137,7 +137,7 @@ public:
 	void reset();
 	void operator=(T value);
 	bool empty() const { return data_.size() == 0; }
-	void swap(Matrix2 other);
+	void swap(Matrix2& other);
 
 	Iterator begin() { return data_.begin(); }
 	Iterator end() { return data_.end(); }
@@ -228,7 +228,7 @@ Matrix2<T, Alloc>::operator=(T value)
 
 template<typename T, typename Alloc>
 void
-Matrix2<T, Alloc>::swap(Matrix2 other)
+Matrix2<T, Alloc>::swap(Matrix2& other)
 {
 	std::swap(n1_, other.n1_);
 	std::swap(n2_, other.n2_);

@@ -17,7 +17,6 @@
 
 #include "VTKFileMultiImageMethod.h"
 
-#include <algorithm> /* swap */
 #include <cmath> /* abs */
 #include <cstddef> /* std::size_t */
 #include <fstream>
@@ -117,13 +116,13 @@ VTKFileMultiImageMethod::execute()
 	auto addHexahedron = [&](std::size_t i, std::size_t j) {
 		if (
 				prevGridData(i    , j    ).value >= minValue ||
-				prevGridData(i    , j + 1).value >= minValue ||
 				prevGridData(i + 1, j    ).value >= minValue ||
 				prevGridData(i + 1, j + 1).value >= minValue ||
+				prevGridData(i    , j + 1).value >= minValue ||
 				    gridData(i    , j    ).value >= minValue ||
-				    gridData(i    , j + 1).value >= minValue ||
 				    gridData(i + 1, j    ).value >= minValue ||
-				    gridData(i + 1, j + 1).value >= minValue) {
+				    gridData(i + 1, j + 1).value >= minValue ||
+				    gridData(i    , j + 1).value >= minValue) {
 
 			cellArray.emplace_back(
 				storePoint(prevGridData(i    , j    ), prevPointIndex(i    , j    )),
@@ -156,8 +155,8 @@ VTKFileMultiImageMethod::execute()
 		pointIndex.resize(gridData.n1(), gridData.n2());
 		pointIndex = std::numeric_limits<std::size_t>::max();
 		if (acqNumber == 0) {
-			std::swap(prevGridData, gridData);
-			std::swap(prevPointIndex, pointIndex);
+			prevGridData.swap(gridData);
+			prevPointIndex.swap(pointIndex);
 			continue;
 		}
 
@@ -167,8 +166,8 @@ VTKFileMultiImageMethod::execute()
 			}
 		}
 
-		std::swap(prevGridData, gridData);
-		std::swap(prevPointIndex, pointIndex);
+		prevGridData.swap(gridData);
+		prevPointIndex.swap(pointIndex);
 	}
 
 	std::ofstream out{project_.directory() + '/' + VTK_FILE_NAME};
