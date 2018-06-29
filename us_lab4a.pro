@@ -36,7 +36,7 @@ SOURCES += src/main.cpp\
     src/MultiLayer3DWindow.cpp \
     src/OGLMultiLayerWidget.cpp \
     src/method/MultiLayerImageMethod.cpp \
-    src/VTKFileMultiImageMethod.cpp
+    src/method/VTKFileMultiImageMethod.cpp
 
 HEADERS  += \
     src/Project.h \
@@ -139,7 +139,7 @@ HEADERS  += \
     src/MultiLayer3DWindow.h \
     src/util/OGL.h \
     src/method/MultiLayerImageMethod.h \
-    src/VTKFileMultiImageMethod.h
+    src/method/VTKFileMultiImageMethod.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
