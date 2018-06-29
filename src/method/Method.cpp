@@ -27,6 +27,7 @@
 #include "SingleAcquisitionMethod.h"
 #include "STAMethod.h"
 #include "TestMethod.h"
+#include "VTKFileMultiImageMethod.h"
 
 #define ADD_MAP_ITEM(A) map_[#A] = MethodType::A
 
@@ -67,6 +68,7 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sta_vectorial_simulated_3d);
 	ADD_MAP_ITEM(show_image);
 	ADD_MAP_ITEM(multi_layer_image);
+	ADD_MAP_ITEM(multi_image_vtk_file);
 	ADD_MAP_ITEM(test);
 }
 
@@ -125,6 +127,8 @@ Method::get(Project& project)
 		return new ShowImageMethod(project);
 	case MethodType::multi_layer_image:
 		return new MultiLayerImageMethod(project);
+	case MethodType::multi_image_vtk_file:
+		return new VTKFileMultiImageMethod(project);
 	case MethodType::test:
 		return new TestMethod(project);
 	default:
