@@ -77,7 +77,7 @@ NetworkSTAAcquisition<FloatType>::NetworkSTAAcquisition(const Project& project, 
 	acq_->execPreConfiguration();
 
 	acq_->setSamplingFrequency(config_.samplingFrequency);
-	acq_->setCenterFrequency(config_.centerFrequency);
+	acq_->setCenterFrequency(config_.centerFrequency, config_.numPulses);
 
 	std::string rxMask(config_.numElements, '1');
 	acq_->setActiveReceiveElements(rxMask);

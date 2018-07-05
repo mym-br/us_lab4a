@@ -49,7 +49,7 @@ public:
 	void setActiveReceiveElements(const std::string& mask /* '0', '1'*/);
 	void setActiveTransmitElements(const std::string& mask /* '0', '1'*/);
 	void setBaseElement(boost::uint32_t baseElement /* 0 ... (NUM_CHANNELS_MUX - NUM_CHANNELS)*/);
-	void setCenterFrequency(float fc /* MHz */);
+	void setCenterFrequency(float fc /* MHz */, unsigned int numPulses);
 	void setGain(float gain /* device-dependent */);
 	void setReceiveDelays(const std::vector<float>& delays /* s */);
 	void setSamplingFrequency(float fs /* MHz */);

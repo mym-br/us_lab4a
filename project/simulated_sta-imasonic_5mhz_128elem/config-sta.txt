@@ -16,6 +16,9 @@ pitch = 0.6e-3
 center_frequency = 5.0e6
 max_frequency = 10.0e6
 
+#
+num_pulses = 1
+
 # (s)
 acquisition_time = 100.0e-6
 

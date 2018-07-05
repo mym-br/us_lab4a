@@ -215,10 +215,11 @@ ArrayAcqClient::setBaseElement(boost::uint32_t baseElement)
 }
 
 void
-ArrayAcqClient::setCenterFrequency(float fc)
+ArrayAcqClient::setCenterFrequency(float fc, unsigned int numPulses)
 {
 	prepareMessage(SET_CENTER_FREQUENCY_REQUEST);
 	dataRawBuffer_.putFloat(fc);
+	dataRawBuffer_.putUInt32(numPulses);
 	sendMessage(socket_);
 
 	handleOkOrErrorResponse();

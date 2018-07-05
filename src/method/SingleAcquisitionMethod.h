@@ -41,6 +41,7 @@ struct SingleAcquisitionMethodConfiguration {
 	unsigned int baseElement;
 	unsigned int txGroupElement;
 	unsigned int rxGroupElement;
+	unsigned int numPulses;
 	std::string savedAcqDir;
 };
 

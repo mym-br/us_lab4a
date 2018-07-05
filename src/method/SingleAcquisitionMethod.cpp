@@ -49,6 +49,7 @@ SingleAcquisitionMethod::fillConfiguration()
 	config_.baseElement       = taskPM->value<unsigned int>("base_element"      ,        0, config_.numElementsMux - config_.numElements);
 	config_.txGroupElement    = taskPM->value<unsigned int>("tx_group_element"  ,        0, config_.numElements);
 	config_.rxGroupElement    = taskPM->value<unsigned int>("rx_group_element"  ,        0, config_.numElements);
+	config_.numPulses         = taskPM->value<unsigned int>("num_pulses"        ,        1, 100);
 	config_.savedAcqDir       = taskPM->value<std::string>( "saved_acquisition_dir");
 }
 
@@ -74,7 +75,7 @@ SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
 	acq_->execPreConfiguration();
 
 	acq_->setSamplingFrequency(config_.samplingFrequency);
-	acq_->setCenterFrequency(config_.centerFrequency);
+	acq_->setCenterFrequency(config_.centerFrequency, config_.numPulses);
 
 	std::string rxMask(config_.numElements, '1');
 	acq_->setActiveReceiveElements(rxMask);

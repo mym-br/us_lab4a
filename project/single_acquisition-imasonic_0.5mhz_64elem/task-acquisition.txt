@@ -9,6 +9,9 @@ sampling_frequency = 2.5e6
 # (Hz)
 center_frequency = 0.5e6
 
+#
+num_pulses = 1
+
 # (s)
 acquisition_time = 667.0e-6
 
