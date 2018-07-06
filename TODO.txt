@@ -1,4 +1,16 @@
 
+
+
+
+- Remove y from config files.
+- [?] Remove XZ*.
+- OGLFigureWidget: Fix limits.
+
+
+
+
+
+
 - Waveform: 2a / 2b: numPeriods should be ignored (?).
 
 - Remove NetworkMultiplexedAcquisition?
