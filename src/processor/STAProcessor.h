@@ -19,7 +19,7 @@
 #define STAPROCESSOR_H_
 
 #include "Matrix2.h"
-#include "XZValueFactor.h"
+#include "XYZValueFactor.h"
 
 
 
@@ -31,7 +31,7 @@ public:
 	STAProcessor() {}
 	virtual ~STAProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix2<XZValueFactor<FloatType>>& gridData) = 0;
+	virtual void process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData) = 0;
 };
 
 } // namespace Lab

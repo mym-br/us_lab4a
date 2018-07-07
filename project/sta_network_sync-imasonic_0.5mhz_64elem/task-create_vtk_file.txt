@@ -6,6 +6,9 @@ image_dir = output
 x_file = image_x
 x_dataset = x
 
+y_file = image_y
+y_dataset = y
+
 z_file = image_z
 z_dataset = z
 
@@ -13,10 +16,6 @@ z_dataset = z
 #image_dataset = value
 image_file = image_cf
 image_dataset = cf
-
-# (m)
-min_y = -150.0e-3
-y_step = 2.0e-3
 
 # (dB)
 min_decibels = -30.0

@@ -44,7 +44,6 @@
 #include "RealToComplexFFT.h"
 #include "Statistics.h"
 #include "Util.h"
-#include "XZValue.h"
 
 //#define TEST_INTERPOLATOR_SHOW_FIGURES 1
 //#define TEST_HILBERT_TRANSFORM_SHOW_FIGURES 1

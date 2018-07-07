@@ -21,19 +21,19 @@
 #include <cmath> /* abs, sqrt */
 #include <complex>
 
-#include "XZValue.h"
-#include "XZValueFactor.h"
+#include "XYZValue.h"
+#include "XYZValueFactor.h"
 
 
 
 namespace Lab {
 namespace Value {
 
-template<typename FloatType> void copy(const XZValue<FloatType>& orig, FloatType& dest);
-template<typename FloatType> void copy(const FloatType& orig, XZValue<FloatType>& dest);
+template<typename FloatType> void copy(const XYZValue<FloatType>& orig, FloatType& dest);
+template<typename FloatType> void copy(const FloatType& orig, XYZValue<FloatType>& dest);
 
-template<typename FloatType> void copy(const XZValueFactor<FloatType>& orig, FloatType& dest);
-template<typename FloatType> void copy(const FloatType& orig, XZValueFactor<FloatType>& dest);
+template<typename FloatType> void copy(const XYZValueFactor<FloatType>& orig, FloatType& dest);
+template<typename FloatType> void copy(const FloatType& orig, XYZValueFactor<FloatType>& dest);
 
 // array of size two --> complex
 template<typename FloatType> void copy(const FloatType (&orig)[2], std::complex<FloatType>& dest);
@@ -54,9 +54,7 @@ template<typename Iterator, typename FloatType>
 template<typename InputIterator, typename OutputIterator>
 	void copyXYZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
 template<typename InputIterator, typename OutputIterator>
-	void copyXZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
-template<typename InputIterator, typename OutputIterator>
-	void copyXZSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
+	void copyXYZSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
 
 
 
@@ -124,28 +122,28 @@ private:
 
 template<typename FloatType>
 void
-copy(const XZValue<FloatType>& orig, FloatType& dest)
+copy(const XYZValue<FloatType>& orig, FloatType& dest)
 {
 	dest = orig.value;
 }
 
 template<typename FloatType>
 void
-copy(const FloatType& orig, XZValue<FloatType>& dest)
+copy(const FloatType& orig, XYZValue<FloatType>& dest)
 {
 	dest.value = orig;
 }
 
 template<typename FloatType>
 void
-copy(const XZValueFactor<FloatType>& orig, FloatType& dest)
+copy(const XYZValueFactor<FloatType>& orig, FloatType& dest)
 {
 	dest = orig.value;
 }
 
 template<typename FloatType>
 void
-copy(const FloatType& orig, XZValueFactor<FloatType>& dest)
+copy(const FloatType& orig, XYZValueFactor<FloatType>& dest)
 {
 	dest.value = orig;
 }
@@ -237,21 +235,11 @@ copyXYZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator d
 
 template<typename InputIterator, typename OutputIterator>
 void
-copyXZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest)
+copyXYZSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest)
 {
 	for ( ; orig != origEnd; ++orig, ++dest) {
 		dest->x = orig->x;
-		dest->z = orig->z;
-		copy(orig->value, dest->value);
-	}
-}
-
-template<typename InputIterator, typename OutputIterator>
-void
-copyXZSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest)
-{
-	for ( ; orig != origEnd; ++orig, ++dest) {
-		dest->x = orig->x;
+		dest->y = orig->y;
 		dest->z = orig->z;
 	}
 }

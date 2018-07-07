@@ -43,7 +43,7 @@
 #include "VectorialSTAProcessor.h"
 #include "Util.h"
 #include "XZ.h"
-#include "XZValueFactor.h"
+#include "XYZValueFactor.h"
 
 
 
@@ -65,9 +65,9 @@ private:
 	void useCoherenceFactor(FloatType valueScale, bool calculateEnvelope, const std::string& outputDir);
 
 	Project& project_;
-	Matrix2<XZValueFactor<FloatType>> gridData_;
+	Matrix2<XYZValueFactor<FloatType>> gridData_;
 	Project::GridDataType projGridData_;
-	std::vector<XZ<float>> pointList_;
+	std::vector<XYZ<float>> pointList_;
 	Figure::Visualization visual_;
 };
 
@@ -76,7 +76,7 @@ private:
 template<typename FloatType>
 STAMethod<FloatType>::STAMethod(Project& project)
 		: project_{project}
-		, pointList_{{0.0, 0.0}}
+		, pointList_{{0.0, 0.0, 0.0}}
 		, visual_{Figure::VISUALIZATION_ENVELOPE_LOG}
 {
 }
@@ -106,7 +106,7 @@ STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnv
 	LOG_DEBUG << "Saving the CF image...";
 	project_.saveHDF5(gridData_, outputDir + "/image_cf", "cf", Util::CopyValueOp());
 
-	Util::copyXZValue(gridData_, projGridData_);
+	Util::copyXYZValue(gridData_, projGridData_);
 	project_.showFigure3D(2, "Coherence factor image", &projGridData_, &pointList_,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
 }
@@ -121,7 +121,7 @@ STAMethod<FloatType>::process(FloatType valueScale, STAProcessor<FloatType>& pro
 
 	project_.saveImageToHDF5(gridData_, outputDir);
 
-	Util::copyXZValue(gridData_, projGridData_);
+	Util::copyXYZValue(gridData_, projGridData_);
 	project_.showFigure3D(1, "Raw image", &projGridData_, &pointList_,
 				true, visual_, Figure::COLORMAP_VIRIDIS, valueScale);
 

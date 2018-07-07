@@ -41,7 +41,7 @@
 #include "XY.h"
 #include "XYZ.h"
 #include "XZ.h"
-#include "XZValue.h"
+#include "XYZValue.h"
 
 
 
@@ -134,7 +134,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	std::vector<FloatType> thetaYList;
 	Util::fillSequenceFromStartToEndWithSize(thetaYList, 0.0, beamThetaYMax, std::ceil(beamThetaYMax / beamThetaYStep) + 1);
 
-	Matrix2<XZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
+	Matrix2<XYZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
 	Matrix2<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
 
 	for (unsigned int ix = 0, xSize = thetaXList.size(); ix < xSize; ++ix) {
@@ -147,8 +147,9 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 			const FloatType rx = beamDistance * std::cos(tY);
 			const FloatType y = rx * sinTX;
 			const FloatType z = rx * cosTX;
-			XZValue<FloatType>& gd = gridData(ix, iy);
+			XYZValue<FloatType>& gd = gridData(ix, iy);
 			gd.x = thetaYList[iy];
+			gd.y = 0.0;
 			gd.z = thetaXList[ix];
 			gd.value = 0.0;
 			XYZ<FloatType>& id = inputData(ix, iy);
@@ -177,16 +178,16 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
 	}
 
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
+	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
 	const FloatType k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
 		it->value *= k;
 	}
 
-	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
+	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	Project::GridDataType projGridData;
-	Util::copyXZValue(gridData, projGridData);
+	Util::copyXYZValue(gridData, projGridData);
 	project_.showFigure3D(1, "Beam", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 
@@ -269,7 +270,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	std::vector<FloatType> thetaYList;
 	Util::fillSequenceFromStartToEndWithSize(thetaYList, beamThetaYMin, beamThetaYMax, std::ceil((beamThetaYMax - beamThetaYMin) / beamThetaYStep) + 1);
 
-	Matrix2<XZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
+	Matrix2<XYZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
 	Matrix2<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
 
 	for (unsigned int ix = 0, xSize = thetaXList.size(); ix < xSize; ++ix) {
@@ -282,8 +283,9 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 			const FloatType rx = beamDistance * std::cos(tY);
 			const FloatType y = rx * sinTX;
 			const FloatType z = rx * cosTX;
-			XZValue<FloatType>& gd = gridData(ix, iy);
+			XYZValue<FloatType>& gd = gridData(ix, iy);
 			gd.x = thetaYList[iy];
+			gd.y = 0.0;
 			gd.z = thetaXList[ix];
 			gd.value = 0.0;
 			XYZ<FloatType>& id = inputData(ix, iy);
@@ -312,16 +314,16 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
 	}
 
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
+	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
 	const FloatType k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
 		it->value *= k;
 	}
 
-	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
+	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	Project::GridDataType projGridData;
-	Util::copyXZValue(gridData, projGridData);
+	Util::copyXYZValue(gridData, projGridData);
 	project_.showFigure3D(1, "Beam", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 
@@ -379,7 +381,6 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
 	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
 	const std::string excitationType = taskPM->value<std::string>("excitation_type");
 	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
-	const FloatType y                = taskPM->value<FloatType>("y", -1000.0, 1000.0);
 
 	std::vector<FloatType> exc;
 	if (excitationType == "1") {
@@ -402,7 +403,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
 	std::vector<FloatType> dvdt;
 	Util::centralDiff(exc, dt, dvdt);
 
-	Matrix2<XZValue<FloatType>> gridData;
+	Matrix2<XYZValue<FloatType>> gridData;
 
 	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
@@ -414,28 +415,28 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
 		acField->getRectangularFlatSourceAcousticField(
 					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
 					subElemSize,
-					dvdt, y, gridData);
+					dvdt, gridData);
 	} else if (irMethod == "analytic") {
 		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
 		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
 		acField->getRectangularFlatSourceAcousticField(
 					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
 					minEdgeDivisor,
-					dvdt, y, gridData);
+					dvdt, gridData);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
 	}
 
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
+	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
 	const FloatType k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
 		it->value *= k;
 	}
 
-	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
+	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	Project::GridDataType projGridData;
-	Util::copyXZValue(gridData, projGridData);
+	Util::copyXYZValue(gridData, projGridData);
 	project_.showFigure3D(1, "Acoustic field", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Figure::COLORMAP_VIRIDIS);
 
@@ -463,7 +464,6 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
 	const std::string excitationType = taskPM->value<std::string>("excitation_type");
 	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
-	const FloatType y                = taskPM->value<FloatType>("y", -1000.0, 1000.0);
 
 	std::vector<XY<FloatType>> elemPos;
 	std::vector<FloatType> focusDelay;
@@ -491,7 +491,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 	std::vector<FloatType> dvdt;
 	Util::centralDiff(exc, dt, dvdt);
 
-	Matrix2<XZValue<FloatType>> gridData;
+	Matrix2<XYZValue<FloatType>> gridData;
 
 	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
@@ -503,28 +503,28 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 		acField->getArrayOfRectangularFlatSourcesAcousticField(
 					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
 					subElemSize,
-					dvdt, y, elemPos, focusDelay, gridData);
+					dvdt, elemPos, focusDelay, gridData);
 	} else if (irMethod == "analytic") {
 		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
 		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
 		acField->getArrayOfRectangularFlatSourcesAcousticField(
 					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
 					minEdgeDivisor,
-					dvdt, y, elemPos, focusDelay, gridData);
+					dvdt, elemPos, focusDelay, gridData);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
 	}
 
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValue<FloatType>, FloatType>(gridData);
+	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
 	const FloatType k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
 		it->value *= k;
 	}
 
-	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
+	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	Project::GridDataType projGridData;
-	Util::copyXZValue(gridData, projGridData);
+	Util::copyXYZValue(gridData, projGridData);
 	project_.showFigure3D(1, "Acoustic field", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Figure::COLORMAP_VIRIDIS);
 

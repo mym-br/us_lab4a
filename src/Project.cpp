@@ -32,8 +32,8 @@
 
 namespace Lab {
 
-Matrix2<XZValue<float>>* Project::emptyGridData;
-std::vector<XZ<float>>*  Project::emptyPointList;
+Matrix2<XYZValue<float>>* Project::emptyGridData;
+std::vector<XYZ<float>>*  Project::emptyPointList;
 
 Project::Project(USLab4a& mainWindow)
 		: method_(MethodType::invalid)

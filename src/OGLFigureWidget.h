@@ -25,9 +25,8 @@
 #include "global.h"
 #include "Matrix2.h"
 #include "OGL.h"
-#include "XY.h"
-#include "XZ.h"
-#include "XZValue.h"
+#include "XYZ.h"
+#include "XYZValue.h"
 
 #define OGLFIGUREWIDGET_USE_VERTEX_ARRAY 1
 
@@ -41,15 +40,16 @@ public:
 	OGLFigureWidget(QWidget* parent = 0);
 	virtual ~OGLFigureWidget() {}
 
-	void resetScale();
-	void setVisualization(Figure::Visualization visualization) { visualization_ = visualization; }
+	void setVisualization(Figure::Visualization visualization);
 	Figure::Visualization visualization() const { return visualization_; }
 	void setMinDecibels(float minDecibels);
 	float minDecibels() const { return minDecibels_; }
-	void setColormap(Figure::Colormap colormap) { colormap_ = colormap; }
+	void setColormap(Figure::Colormap colormap);
 	Figure::Colormap colormap() const { return colormap_; }
-	void updateGridData(double valueScale, const Matrix2<XZValue<float>>& gridData);
-	void updatePointList(const std::vector<XZ<float>>& pointList);
+	void updateData(float dataValueScale,
+			const Matrix2<XYZValue<float>>* gridData,
+			const std::vector<XYZ<float>>* pointList);
+	void updateDataVisualization();
 	void setRotationMode(bool enabled) {
 		editingDistanceMarkers_ = false;
 		distanceMarker1_ = QPoint(); // clear
@@ -72,15 +72,24 @@ protected:
 	virtual void keyPressEvent(QKeyEvent* e);
 	virtual void keyReleaseEvent(QKeyEvent* e);
 private:
-	float calcValueFactor(float valueScale, const Matrix2<XZValue<float>>& data);
+	struct Vector {
+		float x;
+		float y;
+		float z;
+	};
+
+	void updateGridData(float dataValueScale, const Matrix2<XYZValue<float>>& gridData);
+	void updatePointList(const std::vector<XYZ<float>>& pointList);
+
+	float calcValueFactor(const Matrix2<XYZValue<float>>& data);
 
 	template<typename ColorScale>
-	void fillOGLGridDataWithAbsValues(const Matrix2<XZValue<float>>& data, float valueFactor);
+	void fillOGLGridDataWithAbsValues(const Matrix2<XYZValue<float>>& data, float valueFactor);
 
 	template<typename ColorScale>
-	void fillOGLGridDataWithLogAbsValues(const Matrix2<XZValue<float>>& data, float valueFactor);
+	void fillOGLGridDataWithLogAbsValues(const Matrix2<XYZValue<float>>& data, float valueFactor);
 
-	template<typename ColorScale> void fillOGLGridData(double valueScale, const Matrix2<XZValue<float>>& gridData);
+	template<typename ColorScale> void fillOGLGridData();
 
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 	void fillIndexArray(unsigned int iA, unsigned int iB, std::vector<GLuint>& indexArray);
@@ -103,18 +112,23 @@ private:
 	float rotZ_;
 	float minX_;
 	float maxX_;
+	float minY_;
+	float maxY_;
 	float minZ_;
 	float maxZ_;
+	float dataValueScale_;
 	float valueScale_;
 	float maxAbsLevel_;
 	float maxAbsLevelDecibels_;
 	float offsetX_;
 	float offsetY_;
+	Vector normal_;
 	QPoint mouseAnchor_;
 	QPoint distanceMarker1_;
 	QPoint distanceMarker2_;
+	Matrix2<XYZValue<float>> gridData_;
+	std::vector<XYZ<float>> pointList_;
 	Matrix2<OGLPoint3D> oglGridData_;
-	std::vector<XY<float>> pointList_;
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 	std::vector<GLuint> evenIndexArray_;
 	std::vector<GLuint> oddIndexArray_;

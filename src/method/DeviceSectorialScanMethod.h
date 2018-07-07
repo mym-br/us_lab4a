@@ -32,6 +32,8 @@
 #include "Project.h"
 #include "Timer.h"
 #include "Util.h"
+#include "XYZ.h"
+#include "XYZValue.h"
 #include "XZValue.h"
 
 
@@ -103,10 +105,13 @@ DeviceSectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 	project_.createDirectory(outputDir, false);
 
 	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
-	Matrix2<XZValue<FloatType>> imageData;
-	acquisition->execute(imageData);
+	Matrix2<XZValue<FloatType>> acqImageData;
+	acquisition->execute(acqImageData);
 
-	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
+	Matrix2<XYZValue<FloatType>> imageData;
+	Util::copy(acqImageData, imageData);
+
+	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Image", &imageData, &pointList,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);
@@ -120,11 +125,11 @@ DeviceSectorialScanMethod<FloatType>::showSavedImage()
 {
 	const std::string outputDir = project_.taskParameterMap()->value<std::string>("output_dir");
 
-	Matrix2<XZValue<FloatType>> imageData;
+	Matrix2<XYZValue<FloatType>> imageData;
 
 	project_.loadImageFromHDF5(outputDir, imageData);
 
-	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
+	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Image", &imageData, &pointList,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);
@@ -135,14 +140,17 @@ void
 DeviceSectorialScanMethod<FloatType>::execContinuousNetworkImaging()
 {
 	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
-	Matrix2<XZValue<FloatType>> imageData;
+	Matrix2<XZValue<FloatType>> acqImageData;
+	Matrix2<XYZValue<FloatType>> imageData;
 
-	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
+	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
 	int n = 0;
 	Timer t;
 	do {
-		acquisition->execute(imageData);
+		acquisition->execute(acqImageData);
+
+		Util::copy(acqImageData, imageData);
 
 		project_.showFigure3D(1, "Image", &imageData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);
@@ -164,14 +172,17 @@ DeviceSectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 	const std::string outputDirPrefix = project_.taskParameterMap()->value<std::string>("output_dir_prefix");
 
 	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
-	Matrix2<XZValue<FloatType>> imageData;
+	Matrix2<XZValue<FloatType>> acqImageData;
+	Matrix2<XYZValue<FloatType>> imageData;
 
-	std::vector<XZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0}};
+	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
 	std::size_t triggerCount = 0;
 	while (project_.waitForTrigger(&triggerCount)) {
 
-		acquisition->execute(imageData);
+		acquisition->execute(acqImageData);
+
+		Util::copy(acqImageData, imageData);
 
 		project_.showFigure3D(1, "Image", &imageData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);

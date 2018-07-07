@@ -40,7 +40,7 @@
 #include "STAConfiguration.h"
 #include "STAProcessor.h"
 #include "Util.h"
-#include "XZValueFactor.h"
+#include "XYZValueFactor.h"
 
 // Depends on the signal.
 // 1.0 --> pi radian / sample at the original sampling rate.
@@ -65,7 +65,7 @@ public:
 			bool calculateEnvelope);
 	virtual ~VectorialSTAProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix2<XZValueFactor<FloatType>>& gridData);
+	virtual void process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData);
 
 private:
 	struct ThreadData {
@@ -119,7 +119,7 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 
 template<typename FloatType>
 void
-VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZValueFactor<FloatType>>& gridData)
+VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== VectorialSTAProcessor::process ==========";
 
@@ -189,7 +189,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZVa
 			for (std::size_t j = 0; j < numRows; ++j) {
 
 				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>{0});
-				XZValueFactor<FloatType>& point = gridData(i, j);
+				XYZValueFactor<FloatType>& point = gridData(i, j);
 
 				// Calculate the delays.
 				for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
@@ -226,7 +226,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XZVa
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
-			Util::MultiplyValueBy<XZValueFactor<FloatType>, FloatType>{FloatType{1} / numSignals});
+			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>{FloatType{1} / numSignals});
 
 	LOG_DEBUG << "END ========== VectorialSTAProcessor::process ==========";
 }

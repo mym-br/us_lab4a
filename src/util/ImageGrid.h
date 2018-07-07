@@ -52,29 +52,66 @@ template<typename T>
 void
 ImageGrid<FloatType>::getRectangularGrid(ConstParameterMapPtr pm, FloatType lambda, T& grid)
 {
-	const FloatType minX     = pm->value<FloatType>("rectangular_min_x"     ,      -10000.0, 10000.0);
-	const FloatType maxX     = pm->value<FloatType>("rectangular_max_x"     , minX + 1.0e-6, 10000.0);
-	const FloatType xStepDiv = pm->value<FloatType>("rectangular_x_step_div",        1.0e-2,  1000.0);
-	const FloatType minZ     = pm->value<FloatType>("rectangular_min_z"     ,      -10000.0, 10000.0);
-	const FloatType maxZ     = pm->value<FloatType>("rectangular_max_z"     , minZ + 1.0e-6, 10000.0);
-	const FloatType zStepDiv = pm->value<FloatType>("rectangular_z_step_div",        1.0e-2,  1000.0);
-	const FloatType originX  = pm->value<FloatType>("rectangular_origin_x"  ,      -10000.0, 10000.0);
-	const FloatType originZ  = pm->value<FloatType>("rectangular_origin_z"  ,      -10000.0, 10000.0);
+	const FloatType minX    = pm->value<FloatType>("rectangular_min_x"   , -10000.0, 10000.0);
+	const FloatType maxX    = pm->value<FloatType>("rectangular_max_x"   ,     minX, 10000.0);
+	const FloatType minY    = pm->value<FloatType>("rectangular_min_y"   , -10000.0, 10000.0);
+	const FloatType maxY    = pm->value<FloatType>("rectangular_max_y"   ,     minY, 10000.0);
+	const FloatType minZ    = pm->value<FloatType>("rectangular_min_z"   , -10000.0, 10000.0);
+	const FloatType maxZ    = pm->value<FloatType>("rectangular_max_z"   ,     minZ, 10000.0);
+	const FloatType stepDiv = pm->value<FloatType>("rectangular_step_div",   1.0e-2,  1000.0);
+	const FloatType originX = pm->value<FloatType>("rectangular_origin_x", -10000.0, 10000.0);
+	const FloatType originY = pm->value<FloatType>("rectangular_origin_y", -10000.0, 10000.0);
+	const FloatType originZ = pm->value<FloatType>("rectangular_origin_z", -10000.0, 10000.0);
 
-	std::vector<FloatType> xList;
-	Util::fillSequenceFromStartToEndWithMaximumStep(xList, minX, maxX, lambda / xStepDiv);
+	const FloatType maxStep = lambda / stepDiv;
+	const FloatType dx = maxX - minX;
+	const FloatType dy = maxY - minY;
+	const FloatType dz = maxZ - minZ;
 
-	std::vector<FloatType> zList;
-	Util::fillSequenceFromStartToEndWithMaximumStep(zList, minZ, maxZ, lambda / zStepDiv);
-
-	LOG_DEBUG << "xList.size(): " << xList.size() << " zList.size(): " << zList.size();
-
-	grid.resize(xList.size(), zList.size());
-	for (std::size_t i = 0; i < xList.size(); ++i) {
-		for (std::size_t j = 0; j < zList.size(); ++j) {
-			grid(i, j).x = xList[i] + originX;
-			grid(i, j).z = zList[j] + originZ;
+	if (dx == 0.0) { // z-y
+		std::vector<FloatType> zList;
+		std::vector<FloatType> yList;
+		Util::fillSequenceFromStartToEndWithMaximumStep(zList, minZ, maxZ, maxStep);
+		Util::fillSequenceFromStartToEndWithMaximumStep(yList, minY, maxY, maxStep);
+		grid.resize(zList.size(), yList.size());
+		const FloatType x = minX + originX;
+		for (std::size_t i = 0; i < zList.size(); ++i) {
+			for (std::size_t j = 0; j < yList.size(); ++j) {
+				grid(i, j).x = x;
+				grid(i, j).y = yList[j] + originY;
+				grid(i, j).z = zList[i] + originZ;
+			}
 		}
+	} else if (dy == 0.0) { // x-z
+		std::vector<FloatType> xList;
+		std::vector<FloatType> zList;
+		Util::fillSequenceFromStartToEndWithMaximumStep(xList, minX, maxX, maxStep);
+		Util::fillSequenceFromStartToEndWithMaximumStep(zList, minZ, maxZ, maxStep);
+		grid.resize(xList.size(), zList.size());
+		const FloatType y = minY + originY;
+		for (std::size_t i = 0; i < xList.size(); ++i) {
+			for (std::size_t j = 0; j < zList.size(); ++j) {
+				grid(i, j).x = xList[i] + originX;
+				grid(i, j).y = y;
+				grid(i, j).z = zList[j] + originZ;
+			}
+		}
+	} else if (dz == 0.0) { // x-y
+		std::vector<FloatType> xList;
+		std::vector<FloatType> yList;
+		Util::fillSequenceFromStartToEndWithMaximumStep(xList, minX, maxX, maxStep);
+		Util::fillSequenceFromStartToEndWithMaximumStep(yList, minY, maxY, maxStep);
+		grid.resize(xList.size(), yList.size());
+		const FloatType z = minZ + originZ;
+		for (std::size_t i = 0; i < xList.size(); ++i) {
+			for (std::size_t j = 0; j < yList.size(); ++j) {
+				grid(i, j).x = xList[i] + originX;
+				grid(i, j).y = yList[j] + originY;
+				grid(i, j).z = z;
+			}
+		}
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid grid configuration.");
 	}
 }
 
@@ -108,6 +145,7 @@ ImageGrid<FloatType>::getSectorialGrid(ConstParameterMapPtr pm, FloatType lambda
 			const FloatType angle = angleList[i];
 			const FloatType r = radiusList[j];
 			grid(i, j).x = r * std::sin(angle) + originX;
+			grid(i, j).y = 0.0;
 			grid(i, j).z = r * std::cos(angle) + originZ;
 		}
 	}

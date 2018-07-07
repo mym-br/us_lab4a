@@ -29,7 +29,7 @@
 #include "Matrix2.h"
 #include "Util.h"
 #include "XYZ.h"
-#include "XZValue.h"
+#include "XYZValue.h"
 
 #define SIM_TRANSIENT_ACOUSTIC_BEAM_USE_MULTITHREADING 1
 
@@ -93,7 +93,7 @@ public:
 			FloatType discretization,
 			const std::vector<FloatType>& dvdt,
 			const Matrix2<XYZ<FloatType>>& inputData,
-			Matrix2<XZValue<FloatType>>& gridData);
+			Matrix2<XYZValue<FloatType>>& gridData);
 
 	void getArrayOfRectangularFlatSourcesAcousticBeam(
 			FloatType samplingFreq,
@@ -105,7 +105,7 @@ public:
 			const std::vector<XY<FloatType>>& elemPos,
 			const std::vector<FloatType>& focusDelay /* s */,
 			const Matrix2<XYZ<FloatType>>& inputData,
-			Matrix2<XZValue<FloatType>>& gridData);
+			Matrix2<XYZValue<FloatType>>& gridData);
 private:
 	SimTransientAcousticBeam(const SimTransientAcousticBeam&) = delete;
 	SimTransientAcousticBeam& operator=(const SimTransientAcousticBeam&) = delete;
@@ -130,7 +130,7 @@ SimTransientAcousticBeam<FloatType, ImpulseResponse>::getRectangularFlatSourceAc
 					FloatType discretization,
 					const std::vector<FloatType>& dvdt,
 					const Matrix2<XYZ<FloatType>>& inputData,
-					Matrix2<XZValue<FloatType>>& gridData)
+					Matrix2<XYZValue<FloatType>>& gridData)
 {
 #ifdef SIM_TRANSIENT_ACOUSTIC_BEAM_USE_MULTITHREADING
 	ThreadData threadData{
@@ -205,7 +205,7 @@ SimTransientAcousticBeam<FloatType, ImpulseResponse>::getArrayOfRectangularFlatS
 					const std::vector<XY<FloatType>>& elemPos,
 					const std::vector<FloatType>& focusDelay,
 					const Matrix2<XYZ<FloatType>>& inputData,
-					Matrix2<XZValue<FloatType>>& gridData)
+					Matrix2<XYZValue<FloatType>>& gridData)
 {
 	ArrayThreadData threadData{
 		samplingFreq,

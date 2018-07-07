@@ -62,7 +62,6 @@ HEADERS  += \
     src/processor/SimpleSTAProcessor.h \
     src/processor/DefaultSTAProcessor.h \
     src/simulator/SimulatedSTAAcquisition.h \
-    src/util/XZValueFactor.h \
     src/util/XZValue.h \
     src/util/XZ.h \
     src/util/XY.h \
@@ -139,7 +138,8 @@ HEADERS  += \
     src/MultiLayer3DWindow.h \
     src/util/OGL.h \
     src/method/MultiLayerImageMethod.h \
-    src/method/VTKFileMultiImageMethod.h
+    src/method/VTKFileMultiImageMethod.h \
+    src/util/XYZValueFactor.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

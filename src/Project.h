@@ -40,9 +40,8 @@
 #include "ParameterMap.h"
 #include "Util.h"
 #include "Value.h"
+#include "XYZ.h"
 #include "XYZValue.h"
-#include "XZ.h"
-#include "XZValue.h"
 
 
 
@@ -55,8 +54,8 @@ class USLab4a;
 // one thread at a time.
 class Project {
 public:
-	typedef Matrix2<XZValue<float>> GridDataType;
-	typedef XZ<float> PointType;
+	typedef Matrix2<XYZValue<float>> GridDataType;
+	typedef XYZ<float> PointType;
 
 	Project(USLab4a& mainWindow);
 	~Project();
@@ -155,8 +154,8 @@ public:
 	void trigger();
 	bool waitForTrigger(std::size_t* triggerCount = nullptr); // returns false if processing cancellation has been requested
 
-	static Matrix2<XZValue<float>>* emptyGridData;
-	static std::vector<XZ<float>>* emptyPointList;
+	static Matrix2<XYZValue<float>>* emptyGridData;
+	static std::vector<XYZ<float>>* emptyPointList;
 
 	void createDirectory(const std::string& path, bool mustNotExist);
 	bool directoryExists(const std::string& path);
@@ -248,6 +247,7 @@ private:
 	std::vector<double> auxHDF5Vector_;
 	Matrix2<double> auxHDF5Matrix_;
 	Matrix2<double> aux2HDF5Matrix_;
+	Matrix2<double> aux3HDF5Matrix_;
 };
 
 
@@ -378,11 +378,13 @@ Project::saveImageToHDF5(const Matrix2<T>& container, const std::string& outputD
 	LOG_DEBUG << "Saving the image...";
 	saveHDF5(auxHDF5Matrix_, outputDir + "/image_value", "value");
 
-	Util::copyXZToSimpleMatrices(container, auxHDF5Matrix_, aux2HDF5Matrix_);
+	Util::copyXYZToSimpleMatrices(container, auxHDF5Matrix_, aux2HDF5Matrix_, aux3HDF5Matrix_);
 	LOG_DEBUG << "Saving the X coordinates...";
 	saveHDF5(auxHDF5Matrix_, outputDir + "/image_x", "x");
+	LOG_DEBUG << "Saving the Y coordinates...";
+	saveHDF5(aux2HDF5Matrix_, outputDir + "/image_y", "y");
 	LOG_DEBUG << "Saving the Z coordinates...";
-	saveHDF5(aux2HDF5Matrix_, outputDir + "/image_z", "z");
+	saveHDF5(aux3HDF5Matrix_, outputDir + "/image_z", "z");
 }
 
 template<typename T>
@@ -396,9 +398,11 @@ Project::loadImageFromHDF5(const std::string& inputDir, Matrix2<T>& container)
 
 	LOG_DEBUG << "Loading the X coordinates...";
 	loadHDF5(inputDir + "/image_x", "x", auxHDF5Matrix_);
+	LOG_DEBUG << "Loading the Y coordinates...";
+	loadHDF5(inputDir + "/image_y", "y", aux2HDF5Matrix_);
 	LOG_DEBUG << "Loading the Z coordinates...";
-	loadHDF5(inputDir + "/image_z", "z", aux2HDF5Matrix_);
-	Util::copyXZFromSimpleMatrices(auxHDF5Matrix_, aux2HDF5Matrix_, container);
+	loadHDF5(inputDir + "/image_z", "z", aux3HDF5Matrix_);
+	Util::copyXYZFromSimpleMatrices(auxHDF5Matrix_, aux2HDF5Matrix_, aux3HDF5Matrix_, container);
 }
 
 template<typename FloatType>
@@ -476,14 +480,14 @@ Project::showFigure3D(
 	figure3DData_.figureName = figureName;
 	if (gridData) {
 		figure3DData_.gridData.resize(gridData->n1(), gridData->n2());
-		Value::copyXZValueSequence(gridData->begin(), gridData->end(), figure3DData_.gridData.begin());
+		Value::copyXYZValueSequence(gridData->begin(), gridData->end(), figure3DData_.gridData.begin());
 		figure3DData_.newGridData = true;
 	} else {
 		figure3DData_.newGridData = false;
 	}
 	if (pointList) {
 		figure3DData_.pointList.resize(pointList->size());
-		Value::copyXZSequence(pointList->begin(), pointList->end(), figure3DData_.pointList.begin());
+		Value::copyXYZSequence(pointList->begin(), pointList->end(), figure3DData_.pointList.begin());
 		figure3DData_.newPointList = true;
 	} else {
 		figure3DData_.newPointList = false;

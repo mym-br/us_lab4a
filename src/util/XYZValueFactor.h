@@ -15,16 +15,17 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef XZVALUEFACTOR_H_
-#define XZVALUEFACTOR_H_
+#ifndef XYZVALUEFACTOR_H_
+#define XYZVALUEFACTOR_H_
 
 namespace Lab {
 
 template<typename FloatType>
-struct XZValueFactor {
+struct XYZValueFactor {
 	typedef FloatType ValueType;
 
 	FloatType x;
+	FloatType y;
 	FloatType z;
 	FloatType value;
 	FloatType factor;
@@ -32,4 +33,4 @@ struct XZValueFactor {
 
 } // namespace Lab
 
-#endif /* XZVALUEFACTOR_H_ */
+#endif /* XYZVALUEFACTOR_H_ */

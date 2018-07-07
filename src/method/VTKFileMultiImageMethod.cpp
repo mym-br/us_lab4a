@@ -30,6 +30,7 @@
 #include "ParameterMap.h"
 #include "Project.h"
 #include "Util.h"
+#include "XYZValue.h"
 
 #define VTK_FILE_NAME "multi_image.vtk"
 #define NUM_CELL_POINTS 8
@@ -62,12 +63,12 @@ VTKFileMultiImageMethod::execute()
 	const std::string imageBaseDir = taskPM->value<std::string>("image_dir");
 	const std::string xFile        = taskPM->value<std::string>("x_file");
 	const std::string xDataset     = taskPM->value<std::string>("x_dataset");
+	const std::string yFile        = taskPM->value<std::string>("y_file");
+	const std::string yDataset     = taskPM->value<std::string>("y_dataset");
 	const std::string zFile        = taskPM->value<std::string>("z_file");
 	const std::string zDataset     = taskPM->value<std::string>("z_dataset");
 	const std::string imageFile    = taskPM->value<std::string>("image_file");
 	const std::string imageDataset = taskPM->value<std::string>("image_dataset");
-	const float minY               = taskPM->value<float>(      "min_y"       , -10000.0, 10000.0);
-	const float yStep              = taskPM->value<float>(      "y_step"      ,      0.0,   100.0);
 	const float minDecibels        = taskPM->value<float>(      "min_decibels",   -100.0,    -1.0);
 	const bool logScale            = taskPM->value<bool>(       "log_scale");
 	const bool invertZ             = taskPM->value<bool>(       "invert_z");
@@ -80,7 +81,6 @@ VTKFileMultiImageMethod::execute()
 	std::vector<Cell> cellArray;
 	const float minValue = Util::decibelsToLinear(minDecibels);
 	const float valueCoeff = logScale ? (-1.0f / minDecibels) : (1.0f / (1.0f - minValue));
-	float y = minY, prevY = minY;
 
 	auto calcValue = [&](float value) -> float {
 		value = std::abs(value);
@@ -91,14 +91,14 @@ VTKFileMultiImageMethod::execute()
 			return (value - minValue) * valueCoeff;
 		}
 	};
-	auto storePoint = [&](const XZValue<float>& point, std::size_t& index, float pointY) -> std::size_t {
+	auto storePoint = [&](const XYZValue<float>& point, std::size_t& index) -> std::size_t {
 		if (index != std::numeric_limits<std::size_t>::max()) {
 			return index;
 		}
 
 		pointArray.emplace_back(point.x,
 					invertZ ? -point.z : point.z, // z -> y
-					pointY,                       // y -> z
+					point.y,                      // y -> z
 					calcValue(point.value));
 		index = pointArray.size() - 1U;
 		return index;
@@ -115,19 +115,19 @@ VTKFileMultiImageMethod::execute()
 				    gridData(i    , j + 1).value >= minValue) {
 
 			Cell cell;
-			cell.i[0] = storePoint(prevGridData(i    , j    ), prevPointIndex(i    , j    ), prevY);
-			cell.i[1] = storePoint(prevGridData(i + 1, j    ), prevPointIndex(i + 1, j    ), prevY);
-			cell.i[2] = storePoint(prevGridData(i + 1, j + 1), prevPointIndex(i + 1, j + 1), prevY);
-			cell.i[3] = storePoint(prevGridData(i    , j + 1), prevPointIndex(i    , j + 1), prevY);
-			cell.i[4] = storePoint(    gridData(i    , j    ),     pointIndex(i    , j    ), y);
-			cell.i[5] = storePoint(    gridData(i + 1, j    ),     pointIndex(i + 1, j    ), y);
-			cell.i[6] = storePoint(    gridData(i + 1, j + 1),     pointIndex(i + 1, j + 1), y);
-			cell.i[7] = storePoint(    gridData(i    , j + 1),     pointIndex(i    , j + 1), y);
+			cell.i[0] = storePoint(prevGridData(i    , j    ), prevPointIndex(i    , j    ));
+			cell.i[1] = storePoint(prevGridData(i + 1, j    ), prevPointIndex(i + 1, j    ));
+			cell.i[2] = storePoint(prevGridData(i + 1, j + 1), prevPointIndex(i + 1, j + 1));
+			cell.i[3] = storePoint(prevGridData(i    , j + 1), prevPointIndex(i    , j + 1));
+			cell.i[4] = storePoint(    gridData(i    , j    ),     pointIndex(i    , j    ));
+			cell.i[5] = storePoint(    gridData(i + 1, j    ),     pointIndex(i + 1, j    ));
+			cell.i[6] = storePoint(    gridData(i + 1, j + 1),     pointIndex(i + 1, j + 1));
+			cell.i[7] = storePoint(    gridData(i    , j + 1),     pointIndex(i    , j + 1));
 			cellArray.push_back(cell);
 		}
 	};
 
-	for (unsigned int acqNumber = 0; ; ++acqNumber, y += yStep) {
+	for (unsigned int acqNumber = 0; ; ++acqNumber) {
 		std::string imageDir = FileUtil::path(imageBaseDir, "/", acqNumber);
 		if (!project_.directoryExists(imageDir)) {
 			break;
@@ -138,6 +138,8 @@ VTKFileMultiImageMethod::execute()
 		project_.loadHDF5(imageDir + '/' + imageFile, imageDataset, gridData, Util::CopyToValueOp());
 		LOG_DEBUG << "Loading the X coordinates...";
 		project_.loadHDF5(imageDir + '/' + xFile, xDataset, gridData, Util::CopyToXOp());
+		LOG_DEBUG << "Loading the Y coordinates...";
+		project_.loadHDF5(imageDir + '/' + yFile, yDataset, gridData, Util::CopyToYOp());
 		LOG_DEBUG << "Loading the Z coordinates...";
 		project_.loadHDF5(imageDir + '/' + zFile, zDataset, gridData, Util::CopyToZOp());
 		if (gridData.n1() < 2 || gridData.n2() < 2) {
@@ -148,7 +150,6 @@ VTKFileMultiImageMethod::execute()
 		if (acqNumber == 0) {
 			prevGridData.swap(gridData);
 			prevPointIndex.swap(pointIndex);
-			prevY = y;
 			continue;
 		}
 
@@ -160,7 +161,6 @@ VTKFileMultiImageMethod::execute()
 
 		prevGridData.swap(gridData);
 		prevPointIndex.swap(pointIndex);
-		prevY = y;
 	}
 
 	std::ofstream out{project_.directory() + '/' + VTK_FILE_NAME};

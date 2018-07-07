@@ -36,6 +36,8 @@
 
 #include "Exception.h"
 #include "Matrix2.h"
+#include "XYZValue.h"
+#include "XZValue.h"
 
 #define PI 3.14159265358979323846
 
@@ -94,8 +96,8 @@ void addElements(InputIterator first1, InputOutputIterator first2, InputOutputIt
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator>
 void addElements(InputIterator1 first1, InputIterator2 first2, OutputIterator first3, OutputIterator last3);
 
-template<typename T, typename U> void copyXZToSimpleMatrices(const Matrix2<T>& m, Matrix2<U>& mX, Matrix2<U>& mZ);
-template<typename T, typename U> void copyXZFromSimpleMatrices(const Matrix2<T>& mX, const Matrix2<T>& mZ, Matrix2<U>& m);
+template<typename T, typename U> void copyXYZToSimpleMatrices(const Matrix2<T>& m, Matrix2<U>& mX, Matrix2<U>& mZ);
+template<typename T, typename U> void copyXYZFromSimpleMatrices(const Matrix2<T>& mX, const Matrix2<T>& mZ, Matrix2<U>& m);
 
 template<typename T, typename U> void copyValueToSimpleMatrix(const Matrix2<T>& m, Matrix2<U>& mV);
 template<typename T, typename U> void copyValueFromSimpleMatrix(const Matrix2<T>& mV, Matrix2<U>& m);
@@ -105,10 +107,11 @@ template<typename T, typename U> void copyFactorToSimpleMatrix(const Matrix2<T>&
 template<typename T, typename U> void copyXZToSimpleVectors(const std::vector<T>& v, std::vector<U>& vX, std::vector<U>& vZ);
 template<typename T, typename U> void copyXZFromSimpleVectors(const std::vector<T>& vX, const std::vector<T>& vZ, std::vector<U>& v);
 
-template<typename T, typename U> void copyXZValue(const Matrix2<T>& orig, Matrix2<U>& dest);
-template<typename T, typename U> void copyXZFactor(const Matrix2<T>& orig, Matrix2<U>& dest);
+template<typename T, typename U> void copyXYZValue(const Matrix2<T>& orig, Matrix2<U>& dest);
+template<typename T, typename U> void copyXYZFactor(const Matrix2<T>& orig, Matrix2<U>& dest);
 template<typename T, typename U> void copyXZ(const Matrix2<T>& orig, Matrix2<U>& dest);
 template<typename T, typename U> void copyXZ(const std::vector<T>& orig, std::vector<U>& dest);
+template<typename T, typename U> void copy(const Matrix2<XZValue<T>>& orig, Matrix2<XYZValue<U>>& dest);
 
 template<typename T> T minValue();
 template<typename T> T maxValue();
@@ -604,15 +607,18 @@ addElements(InputIterator1 first1,
 
 template<typename T, typename U>
 void
-copyXZToSimpleMatrices(const Matrix2<T>& m, Matrix2<U>& mX, Matrix2<U>& mZ)
+copyXYZToSimpleMatrices(const Matrix2<T>& m, Matrix2<U>& mX, Matrix2<U>& mY, Matrix2<U>& mZ)
 {
 	mX.resize(m.n1(), m.n2());
+	mY.resize(m.n1(), m.n2());
 	mZ.resize(m.n1(), m.n2());
 	typename Matrix2<T>::ConstIterator orig = m.begin();
 	typename Matrix2<U>::Iterator destX = mX.begin();
+	typename Matrix2<U>::Iterator destY = mY.begin();
 	typename Matrix2<U>::Iterator destZ = mZ.begin();
 	while (orig != m.end()) {
 		*destX++ = orig->x;
+		*destY++ = orig->y;
 		*destZ++ = orig->z;
 		++orig;
 	}
@@ -620,17 +626,19 @@ copyXZToSimpleMatrices(const Matrix2<T>& m, Matrix2<U>& mX, Matrix2<U>& mZ)
 
 template<typename T, typename U>
 void
-copyXZFromSimpleMatrices(const Matrix2<T>& mX, const Matrix2<T>& mZ, Matrix2<U>& m)
+copyXYZFromSimpleMatrices(const Matrix2<T>& mX, const Matrix2<T>& mY, const Matrix2<T>& mZ, Matrix2<U>& m)
 {
-	if (mX.n1() != mZ.n1() || mX.n2() != mZ.n2()
+	if (mX.n1() != mY.n1() || mX.n2() != mY.n2() || mX.n1() != mZ.n1() || mX.n2() != mZ.n2()
 			|| mX.n1() != m.n1() || mX.n2() != m.n2()) {
 		THROW_EXCEPTION(InvalidParameterException, "The input and output matrices must have the same sizes.");
 	}
 	typename Matrix2<T>::ConstIterator origX = mX.begin();
+	typename Matrix2<T>::ConstIterator origY = mY.begin();
 	typename Matrix2<T>::ConstIterator origZ = mZ.begin();
 	typename Matrix2<U>::Iterator dest = m.begin();
-	for ( ; origX != mX.end(); ++origX, ++origZ, ++dest) {
+	for ( ; origX != mX.end(); ++origX, ++origY, ++origZ, ++dest) {
 		dest->x = *origX;
+		dest->y = *origY;
 		dest->z = *origZ;
 	}
 }
@@ -706,13 +714,14 @@ copyXZFromSimpleVectors(const std::vector<T>& vX, const std::vector<T>& vZ, std:
 
 template<typename T, typename U>
 void
-copyXZValue(const Matrix2<T>& orig, Matrix2<U>& dest)
+copyXYZValue(const Matrix2<T>& orig, Matrix2<U>& dest)
 {
 	dest.resize(orig.n1(), orig.n2());
 	typename Matrix2<T>::ConstIterator origIter = orig.begin();
 	typename Matrix2<U>::Iterator destIter = dest.begin();
 	while (origIter != orig.end()) {
 		destIter->x     = origIter->x;
+		destIter->y     = origIter->y;
 		destIter->z     = origIter->z;
 		destIter->value = origIter->value;
 		++origIter;
@@ -722,13 +731,14 @@ copyXZValue(const Matrix2<T>& orig, Matrix2<U>& dest)
 
 template<typename T, typename U>
 void
-copyXZFactor(const Matrix2<T>& orig, Matrix2<U>& dest)
+copyXYZFactor(const Matrix2<T>& orig, Matrix2<U>& dest)
 {
 	dest.resize(orig.n1(), orig.n2());
 	typename Matrix2<T>::ConstIterator origIter = orig.begin();
 	typename Matrix2<U>::Iterator destIter = dest.begin();
 	while (origIter != orig.end()) {
 		destIter->x     = origIter->x;
+		destIter->y     = origIter->y;
 		destIter->z     = origIter->z;
 		destIter->value = origIter->factor;
 		++origIter;
@@ -760,6 +770,22 @@ copyXZ(const std::vector<T>& orig, std::vector<U>& dest)
 	typename std::vector<U>::iterator destIter = dest.begin();
 	while (origIter != orig.end()) {
 		destIter->x = origIter->x;
+		destIter->z = origIter->z;
+		++origIter;
+		++destIter;
+	}
+}
+
+template<typename T, typename U>
+void
+copy(const Matrix2<XZValue<T>>& orig, Matrix2<XYZValue<U>>& dest)
+{
+	dest.resize(orig.n1(), orig.n2());
+	typename Matrix2<XZValue<T>>::ConstIterator origIter = orig.begin();
+	typename Matrix2<XYZValue<U>>::Iterator destIter = dest.begin();
+	while (origIter != orig.end()) {
+		destIter->x = origIter->x;
+		destIter->y = 0.0;
 		destIter->z = origIter->z;
 		++origIter;
 		++destIter;
@@ -854,6 +880,20 @@ struct CopyToXOp {
 	template<typename T, typename U>
 	void operator()(const T& orig, U& dest) {
 		dest.x = orig;
+	}
+};
+
+struct CopyYOp {
+	template<typename T, typename U>
+	void operator()(const T& orig, U& dest) {
+		dest = orig.y;
+	}
+};
+
+struct CopyToYOp {
+	template<typename T, typename U>
+	void operator()(const T& orig, U& dest) {
+		dest.y = orig;
 	}
 };
 

@@ -1276,13 +1276,17 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 		, rotZ_{}
 		, minX_{}
 		, maxX_{}
+		, minY_{}
+		, maxY_{}
 		, minZ_{}
 		, maxZ_{}
+		, dataValueScale_{0.0}
 		, valueScale_{1.0}
 		, maxAbsLevel_{}
 		, maxAbsLevelDecibels_{}
 		, offsetX_{}
 		, offsetY_{}
+		, normal_{0.0, 0.0, 0.0}
 #ifndef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 		, oglDisplayList_{}
 #endif
@@ -1292,12 +1296,12 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 }
 
 float
-OGLFigureWidget::calcValueFactor(float valueScale, const Matrix2<XZValue<float>>& data)
+OGLFigureWidget::calcValueFactor(const Matrix2<XYZValue<float>>& data)
 {
-	maxAbsLevel_ = Util::maxAbsoluteValueField<XZValue<float>, float>(data);
+	maxAbsLevel_ = Util::maxAbsoluteValueField<XYZValue<float>, float>(data);
 	maxAbsLevelDecibels_ = Util::linearToDecibels(maxAbsLevel_);
-	if (valueScale != 0.0) {
-		return 1.0f / static_cast<float>(valueScale);
+	if (dataValueScale_ != 0.0) {
+		return 1.0f / static_cast<float>(dataValueScale_);
 	} else {
 		return 1.0f / std::max(maxAbsLevel_, VALUE_EPS);
 	}
@@ -1326,88 +1330,88 @@ OGLFigureWidget::fillIndexArray(unsigned int iA, unsigned int iB, std::vector<GL
 
 template<typename ColorScale>
 void
-OGLFigureWidget::fillOGLGridDataWithAbsValues(const Matrix2<XZValue<float>>& data, float valueFactor)
+OGLFigureWidget::fillOGLGridDataWithAbsValues(const Matrix2<XYZValue<float>>& data, float valueFactor)
 {
 	auto srcIter = data.begin();
 	auto srcEnd = data.end();
 	auto destIter = oglGridData_.begin();
 	for ( ; srcIter != srcEnd; ++srcIter, ++destIter) {
-		destIter->pos.x = srcIter->x;
-		destIter->pos.y = srcIter->z;
 		const float value = std::abs(srcIter->value) * valueFactor;
-		destIter->pos.z = value;
+		destIter->pos.x = srcIter->x + normal_.x * value;
+		destIter->pos.y = srcIter->y + normal_.y * value;
+		destIter->pos.z = srcIter->z + normal_.z * value;
 		ColorScale::setColor(value, *destIter);
 	}
 }
 
 template<typename ColorScale>
 void
-OGLFigureWidget::fillOGLGridDataWithLogAbsValues(const Matrix2<XZValue<float>>& data, float valueFactor)
+OGLFigureWidget::fillOGLGridDataWithLogAbsValues(const Matrix2<XYZValue<float>>& data, float valueFactor)
 {
 	const float invMinusMinDecibels = -1.0f / minDecibels_;
 	auto srcIter = data.begin();
 	auto srcEnd = data.end();
 	auto destIter = oglGridData_.begin();
 	for ( ; srcIter != srcEnd; ++srcIter, ++destIter) {
-		destIter->pos.x = srcIter->x;
-		destIter->pos.y = srcIter->z;
 		float value = std::abs(srcIter->value) * valueFactor;
 		value = (value <= minValue_) ? 0.0f : (Util::linearToDecibels(value) - minDecibels_) * invMinusMinDecibels;
-		destIter->pos.z = value;
+		destIter->pos.x = srcIter->x + normal_.x * value;
+		destIter->pos.y = srcIter->y + normal_.y * value;
+		destIter->pos.z = srcIter->z + normal_.z * value;
 		ColorScale::setColor(value, *destIter);
 	}
 }
 
 template<typename ColorScale>
 void
-OGLFigureWidget::fillOGLGridData(double valueScale, const Matrix2<XZValue<float>>& gridData)
+OGLFigureWidget::fillOGLGridData()
 {
-	if (oglGridData_.n1() != gridData.n1() || oglGridData_.n2() != gridData.n2()) {
-		oglGridData_.resize(gridData.n1(), gridData.n2());
+	if (oglGridData_.n1() != gridData_.n1() || oglGridData_.n2() != gridData_.n2()) {
+		oglGridData_.resize(gridData_.n1(), gridData_.n2());
 	}
 
 	switch (visualization_) {
 	case Figure::VISUALIZATION_DEFAULT: // falls through
 	case Figure::VISUALIZATION_RAW_LINEAR:
 		{
-			const float valueFactor = 0.5f * calcValueFactor(valueScale, gridData);
-			auto srcIter = gridData.begin();
-			auto srcEnd = gridData.end();
+			const float valueFactor = 0.5f * calcValueFactor(gridData_);
+			auto srcIter = gridData_.begin();
+			auto srcEnd = gridData_.end();
 			auto destIter = oglGridData_.begin();
 			for ( ; srcIter != srcEnd; ++srcIter, ++destIter) {
-				destIter->pos.x = srcIter->x;
-				destIter->pos.y = srcIter->z;
 				const float value = srcIter->value * valueFactor + 0.5f;
-				destIter->pos.z = value;
+				destIter->pos.x = srcIter->x + normal_.x * value;
+				destIter->pos.y = srcIter->y + normal_.y * value;
+				destIter->pos.z = srcIter->z + normal_.z * value;
 				ColorScale::setColor(value, *destIter);
 			}
 		}
 		break;
 	case Figure::VISUALIZATION_RECTIFIED_LINEAR:
 		{
-			const float valueFactor = calcValueFactor(valueScale, gridData);
-			fillOGLGridDataWithAbsValues<ColorScale>(gridData, valueFactor);
+			const float valueFactor = calcValueFactor(gridData_);
+			fillOGLGridDataWithAbsValues<ColorScale>(gridData_, valueFactor);
 		}
 		break;
 	case Figure::VISUALIZATION_RECTIFIED_LOG:
 		{
-			const float valueFactor = calcValueFactor(valueScale, gridData);
-			fillOGLGridDataWithLogAbsValues<ColorScale>(gridData, valueFactor);
+			const float valueFactor = calcValueFactor(gridData_);
+			fillOGLGridDataWithLogAbsValues<ColorScale>(gridData_, valueFactor);
 		}
 		break;
 	case Figure::VISUALIZATION_ENVELOPE_LINEAR:
 		{
-			Matrix2<XZValue<float>> envelope = gridData;
+			Matrix2<XYZValue<float>> envelope = gridData_;
 			ParallelHilbertEnvelope<float>::calculateDim2Value(envelope);
-			const float valueFactor = calcValueFactor(valueScale, envelope);
+			const float valueFactor = calcValueFactor(envelope);
 			fillOGLGridDataWithAbsValues<ColorScale>(envelope, valueFactor);
 		}
 		break;
 	case Figure::VISUALIZATION_ENVELOPE_LOG:
 		{
-			Matrix2<XZValue<float>> envelope = gridData;
+			Matrix2<XYZValue<float>> envelope = gridData_;
 			ParallelHilbertEnvelope<float>::calculateDim2Value(envelope);
-			const float valueFactor = calcValueFactor(valueScale, envelope);
+			const float valueFactor = calcValueFactor(envelope);
 			fillOGLGridDataWithLogAbsValues<ColorScale>(envelope, valueFactor);
 		}
 		break;
@@ -1415,71 +1419,49 @@ OGLFigureWidget::fillOGLGridData(double valueScale, const Matrix2<XZValue<float>
 }
 
 void
-OGLFigureWidget::resetScale()
+OGLFigureWidget::updateGridData(float dataValueScale, const Matrix2<XYZValue<float>>& gridData)
 {
-	minX_ = Util::maxValue<float>();
-	maxX_ = Util::minValue<float>();
-	minZ_ = Util::maxValue<float>();
-	maxZ_ = Util::minValue<float>();
-}
+	if (gridData.n1() < 2U || gridData.n2() < 2U) return;
 
-void
-OGLFigureWidget::updateGridData(double valueScale, const Matrix2<XZValue<float>>& gridData)
-{
-	if (gridData.empty()) return;
-
-	switch (colormap_) {
-	case Figure::COLORMAP_DEFAULT: // falls through
-	case Figure::COLORMAP_GRAY:
-		fillOGLGridData<GrayScaleColormap>(valueScale, gridData);
-		break;
-	case Figure::COLORMAP_INVERTED_GRAY:
-		fillOGLGridData<InvertedGrayScaleColormap>(valueScale, gridData);
-		break;
-	case Figure::COLORMAP_VIRIDIS:
-		fillOGLGridData<ViridisColormap>(valueScale, gridData);
-		break;
-	case Figure::COLORMAP_INVERTED_VIRIDIS:
-		fillOGLGridData<InvertedViridisColormap>(valueScale, gridData);
-		break;
-	case Figure::COLORMAP_PLASMA:
-		fillOGLGridData<PlasmaColormap>(valueScale, gridData);
-		break;
-	case Figure::COLORMAP_INVERTED_PLASMA:
-		fillOGLGridData<InvertedPlasmaColormap>(valueScale, gridData);
-		break;
-	case Figure::COLORMAP_INFERNO:
-		fillOGLGridData<InfernoColormap>(valueScale, gridData);
-		break;
-	case Figure::COLORMAP_INVERTED_INFERNO:
-		fillOGLGridData<InvertedInfernoColormap>(valueScale, gridData);
-		break;
-	case Figure::COLORMAP_MAGMA:
-		fillOGLGridData<MagmaColormap>(valueScale, gridData);
-		break;
-	case Figure::COLORMAP_INVERTED_MAGMA:
-		fillOGLGridData<InvertedMagmaColormap>(valueScale, gridData);
-		break;
-	case Figure::COLORMAP_RED_WHITE_BLUE:
-		fillOGLGridData<RedWhiteBlueColormap>(valueScale, gridData);
-		break;
+	const auto& p0 = gridData(0, 0);
+	const auto& p1 = gridData(gridData.n1() - 1U, 0);
+	const auto& p2 = gridData(0, gridData.n2() - 1U);
+	const float dx1 = p1.x - p0.x;
+	const float dy1 = p1.y - p0.y;
+	const float dz1 = p1.z - p0.z;
+	const float dx2 = p2.x - p0.x;
+	const float dy2 = p2.y - p0.y;
+	const float dz2 = p2.z - p0.z;
+	if (dx1 == 0.0 && dx2 == 0.0) {
+		normal_ = {-1.0, 0.0, 0.0};
+	} else if (dy1 == 0.0 && dy2 == 0.0) {
+		normal_ = {0.0, -1.0, 0.0};
+	} else if (dz1 == 0.0 && dz2 == 0.0) {
+		normal_ = {0.0, 0.0, -1.0};
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid grid data.");
 	}
 
-	Matrix2<XZValue<float>>::ConstIterator iter = gridData.begin(), end = gridData.end();
+	dataValueScale_ = dataValueScale;
+	gridData_ = gridData;
 
-	// This code handles the case when minX_ > maxX_ or minZ_ > maxZ_.
-	if (iter->x < minX_) minX_ = iter->x;
-	if (iter->x > maxX_) maxX_ = iter->x;
-	if (iter->z < minZ_) minZ_ = iter->z;
-	if (iter->z > maxZ_) maxZ_ = iter->z;
-
+	Matrix2<XYZValue<float>>::ConstIterator iter = gridData.begin(), end = gridData.end();
+	minX_ = maxX_ = iter->x;
+	minY_ = maxY_ = iter->y;
+	minZ_ = maxZ_ = iter->z;
 	for (++iter; iter != end; ++iter) {
 		const float x = iter->x;
+		const float y = iter->y;
 		const float z = iter->z;
 		if (x < minX_) {
 			minX_ = x;
 		} else if (x > maxX_) {
 			maxX_ = x;
+		}
+		if (y < minY_) {
+			minY_ = y;
+		} else if (y > maxY_) {
+			maxY_ = y;
 		}
 		if (z < minZ_) {
 			minZ_ = z;
@@ -1487,6 +1469,8 @@ OGLFigureWidget::updateGridData(double valueScale, const Matrix2<XZValue<float>>
 			maxZ_ = z;
 		}
 	}
+
+	updateDataVisualization();
 
 	update();
 
@@ -1494,38 +1478,21 @@ OGLFigureWidget::updateGridData(double valueScale, const Matrix2<XZValue<float>>
 }
 
 void
-OGLFigureWidget::updatePointList(const std::vector<XZ<float>>& pointList)
+OGLFigureWidget::updatePointList(const std::vector<XYZ<float>>& pointList)
 {
 	if (pointList.empty()) return;
 
 	pointList_.resize(pointList.size());
 
-	std::vector<XZ<float>>::const_iterator srcIter = pointList.begin(), srcIterEnd = pointList.end();
-	std::vector<XY<float>>::iterator destIter = pointList_.begin();
-	destIter->x = srcIter->x;
-	destIter->y = srcIter->z;
-
-	// This code handles the case when minX_ > maxX_ or minZ_ > maxZ_.
-	if (srcIter->x < minX_) minX_ = srcIter->x;
-	if (srcIter->x > maxX_) maxX_ = srcIter->x;
-	if (srcIter->z < minZ_) minZ_ = srcIter->z;
-	if (srcIter->z > maxZ_) maxZ_ = srcIter->z;
-
-	for (++srcIter, ++destIter; srcIter != srcIterEnd; ++srcIter, ++destIter) {
+	std::vector<XYZ<float>>::const_iterator srcIter = pointList.begin(), srcIterEnd = pointList.end();
+	std::vector<XYZ<float>>::iterator destIter = pointList_.begin();
+	for ( ; srcIter != srcIterEnd; ++srcIter, ++destIter) {
 		const float x = srcIter->x;
+		const float y = srcIter->y;
 		const float z = srcIter->z;
 		destIter->x = x;
-		destIter->y = z;
-		if (x < minX_) {
-			minX_ = x;
-		} else if (x > maxX_) {
-			maxX_ = x;
-		}
-		if (z < minZ_) {
-			minZ_ = z;
-		} else if (z > maxZ_) {
-			maxZ_ = z;
-		}
+		destIter->y = y;
+		destIter->z = z;
 	}
 
 	update();
@@ -1536,6 +1503,82 @@ OGLFigureWidget::setMinDecibels(float minDecibels)
 {
 	minDecibels_ = minDecibels;
 	minValue_ = Util::decibelsToLinear(minDecibels_);
+
+	if (visualization_ == Figure::VISUALIZATION_RECTIFIED_LOG ||
+			visualization_ == Figure::VISUALIZATION_ENVELOPE_LOG) {
+		updateDataVisualization();
+		update();
+	}
+}
+
+void
+OGLFigureWidget::updateData(float dataValueScale,
+				const Matrix2<XYZValue<float>>* gridData,
+				const std::vector<XYZ<float>>* pointList)
+{
+	if (!gridData) return;
+
+	updateGridData(dataValueScale, *gridData);
+	if (pointList) updatePointList(*pointList);
+}
+
+void
+OGLFigureWidget::updateDataVisualization()
+{
+	if (gridData_.empty()) return;
+
+	switch (colormap_) {
+	case Figure::COLORMAP_DEFAULT: // falls through
+	case Figure::COLORMAP_GRAY:
+		fillOGLGridData<GrayScaleColormap>();
+		break;
+	case Figure::COLORMAP_INVERTED_GRAY:
+		fillOGLGridData<InvertedGrayScaleColormap>();
+		break;
+	case Figure::COLORMAP_VIRIDIS:
+		fillOGLGridData<ViridisColormap>();
+		break;
+	case Figure::COLORMAP_INVERTED_VIRIDIS:
+		fillOGLGridData<InvertedViridisColormap>();
+		break;
+	case Figure::COLORMAP_PLASMA:
+		fillOGLGridData<PlasmaColormap>();
+		break;
+	case Figure::COLORMAP_INVERTED_PLASMA:
+		fillOGLGridData<InvertedPlasmaColormap>();
+		break;
+	case Figure::COLORMAP_INFERNO:
+		fillOGLGridData<InfernoColormap>();
+		break;
+	case Figure::COLORMAP_INVERTED_INFERNO:
+		fillOGLGridData<InvertedInfernoColormap>();
+		break;
+	case Figure::COLORMAP_MAGMA:
+		fillOGLGridData<MagmaColormap>();
+		break;
+	case Figure::COLORMAP_INVERTED_MAGMA:
+		fillOGLGridData<InvertedMagmaColormap>();
+		break;
+	case Figure::COLORMAP_RED_WHITE_BLUE:
+		fillOGLGridData<RedWhiteBlueColormap>();
+		break;
+	}
+}
+
+void
+OGLFigureWidget::setVisualization(Figure::Visualization visualization)
+{
+	visualization_ = visualization;
+	updateDataVisualization();
+	update();
+}
+
+void
+OGLFigureWidget::setColormap(Figure::Colormap colormap)
+{
+	colormap_ = colormap;
+	updateDataVisualization();
+	update();
 }
 
 void
@@ -1559,17 +1602,22 @@ OGLFigureWidget::paintGL()
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClear(GL_COLOR_BUFFER_BIT);
 
+	const float dx = maxX_ - minX_;
+	const float dy = maxY_ - minY_;
+	const float dz = maxZ_ - minZ_;
+	const float maxDelta = std::max(std::max(dx, dy), dz);
+
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	const float aspect = static_cast<float>(width()) / height();
-	const float yD = std::max((maxX_ - minX_) / aspect, maxZ_ - minZ_) * (0.5 + MARGIN);
-	const float xD = yD * aspect;
-	const float totalValueScale = 0.5f * yD * valueScale_;
-	const float zD = scale_ * std::sqrt(xD * xD + yD * yD + totalValueScale * totalValueScale);
-	glOrtho(-xD, xD, -yD, yD, -zD, zD); // l, r, b, t, near, far
+	const float yL = maxDelta * (0.5 + MARGIN);
+	const float xL = yL * aspect;
+	const float totalValueScale = 0.5f * yL * valueScale_;
+	const float zL = scale_ * std::sqrt(xL * xL + yL * yL + totalValueScale * totalValueScale);
+	glOrtho(-xL, xL, -yL, yL, -zL, zL); // l, r, b, t, near, far
 
-	const float resX = (2.0 * xD) / width();
-	const float resY = (2.0 * yD) / height();
+	const float resX = (2.0 * xL) / width();
+	const float resY = (2.0 * yL) / height();
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -1577,27 +1625,65 @@ OGLFigureWidget::paintGL()
 	glRotatef(rotX_, 1.0f, 0.0f, 0.0f);
 	glRotatef(rotZ_, 0.0f, 0.0f, 1.0f);
 	glScalef(scale_, scale_, scale_);
-	glTranslatef(-(minX_ + maxX_) * 0.5f, -(minZ_ + maxZ_) * 0.5f, 0.0f);
+	glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+
+	glPushMatrix();
+
+	glScalef(
+		normal_.x != 0.0f ? totalValueScale : 1.0f,
+		normal_.y != 0.0f ? totalValueScale : 1.0f,
+		normal_.z != 0.0f ? totalValueScale : 1.0f);
 
 	// Draw frame.
 	glColor3f(0.5f, 0.5f, 0.5f);
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(minX_, minZ_, totalValueScale);
-		glVertex3f(minX_, maxZ_, totalValueScale);
-		glVertex3f(maxX_, maxZ_, totalValueScale);
-		glVertex3f(maxX_, minZ_, totalValueScale);
-	glEnd();
-	glBegin(GL_LINE_LOOP);
-		glVertex3f(minX_, minZ_, 0.0f);
-		glVertex3f(minX_, maxZ_, 0.0f);
-		glVertex3f(maxX_, maxZ_, 0.0f);
-		glVertex3f(maxX_, minZ_, 0.0f);
-	glEnd();
+	if (normal_.x != 0.0f) {
+		glTranslatef(0.0f, -(minY_ + maxY_) * 0.5f, -(minZ_ + maxZ_) * 0.5f);
+		glBegin(GL_LINE_LOOP);
+			glVertex3f(normal_.x, minY_, minZ_);
+			glVertex3f(normal_.x, minY_, maxZ_);
+			glVertex3f(normal_.x, maxY_, maxZ_);
+			glVertex3f(normal_.x, maxY_, minZ_);
+		glEnd();
+		glBegin(GL_LINE_LOOP);
+			glVertex3f(0.0f, minY_, minZ_);
+			glVertex3f(0.0f, minY_, maxZ_);
+			glVertex3f(0.0f, maxY_, maxZ_);
+			glVertex3f(0.0f, maxY_, minZ_);
+		glEnd();
+		glTranslatef(-(minX_ + maxX_) * 0.5f, 0.0f, 0.0f);
+	} else if (normal_.y != 0.0f) {
+		glTranslatef(-(minX_ + maxX_) * 0.5f, 0.0f, -(minZ_ + maxZ_) * 0.5f);
+		glBegin(GL_LINE_LOOP);
+			glVertex3f(minX_, normal_.y, minZ_);
+			glVertex3f(minX_, normal_.y, maxZ_);
+			glVertex3f(maxX_, normal_.y, maxZ_);
+			glVertex3f(maxX_, normal_.y, minZ_);
+		glEnd();
+		glBegin(GL_LINE_LOOP);
+			glVertex3f(minX_, 0.0f, minZ_);
+			glVertex3f(minX_, 0.0f, maxZ_);
+			glVertex3f(maxX_, 0.0f, maxZ_);
+			glVertex3f(maxX_, 0.0f, minZ_);
+		glEnd();
+		glTranslatef(0.0f, -(minY_ + maxY_) * 0.5f, 0.0f);
+	} else if (normal_.z != 0.0f) {
+		glTranslatef(-(minX_ + maxX_) * 0.5f, -(minY_ + maxY_) * 0.5f, 0.0f);
+		glBegin(GL_LINE_LOOP);
+			glVertex3f(minX_, minY_, normal_.z);
+			glVertex3f(minX_, maxY_, normal_.z);
+			glVertex3f(maxX_, maxY_, normal_.z);
+			glVertex3f(maxX_, minY_, normal_.z);
+		glEnd();
+		glBegin(GL_LINE_LOOP);
+			glVertex3f(minX_, minY_, 0.0f);
+			glVertex3f(minX_, maxY_, 0.0f);
+			glVertex3f(maxX_, maxY_, 0.0f);
+			glVertex3f(maxX_, minY_, 0.0f);
+		glEnd();
+		glTranslatef(0.0f, 0.0f, -(minZ_ + maxZ_) * 0.5f);
+	}
 
 	if (oglGridData_.n1() >= 2) {
-		glPushMatrix();
-		glScalef(1.0, 1.0, totalValueScale);
-
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 		if (dataChanged_) {
 			fillIndexArray(0, oglGridData_.n2(), evenIndexArray_);
@@ -1662,8 +1748,11 @@ OGLFigureWidget::paintGL()
 
 		glCallList(oglDisplayList_);
 #endif
-		glPopMatrix();
 	}
+
+	glPopMatrix();
+
+	glTranslatef(-(minX_ + maxX_) * 0.5f, -(minY_ + maxY_) * 0.5f, -(minZ_ + maxZ_) * 0.5f);
 
 	glDisable(GL_DEPTH_TEST);
 
@@ -1675,15 +1764,15 @@ OGLFigureWidget::paintGL()
 //		}
 		glBegin(GL_POINTS);
 		glColor3f(0.0f, 0.5f, 0.0f);
-		for (std::vector<XY<float>>::const_iterator iter = pointList_.begin(); iter != pointList_.end(); ++iter) {
-			glVertex3f(iter->x, iter->y, 0.0f);
+		for (std::vector<XYZ<float>>::const_iterator iter = pointList_.begin(); iter != pointList_.end(); ++iter) {
+			glVertex3f(iter->x, iter->y, iter->z);
 		}
 		glEnd();
 	}
 
 	const bool mustShowDistance = !distanceMarker1_.isNull() && !distanceMarker2_.isNull();
 	float distance = 0.0;
-	if (mustShowDistance) {
+	if (mustShowDistance && normal_.y != 0.0) {
 		// Calculate the distance between distanceMarker1_ and distanceMarker2_.
 
 		GLint viewport[4];
@@ -1699,8 +1788,8 @@ OGLFigureWidget::paintGL()
 		gluUnProject(static_cast<GLfloat>(distanceMarker2_.x()), static_cast<GLfloat>(maxGlY - distanceMarker2_.y()), 0.0,
 				modelViewMatrix, projectionMatrix, viewport, &p2X, &p2Y, &p2Z);
 		const GLdouble dX = p2X - p1X;
-		const GLdouble dY = p2Y - p1Y;
-		distance = std::sqrt(dX * dX + dY * dY);
+		const GLdouble dZ = p2Z - p1Z;
+		distance = std::sqrt(dX * dX + dZ * dZ);
 	}
 
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
@@ -1716,8 +1805,10 @@ OGLFigureWidget::paintGL()
 	painter.setBackground(QBrush{Qt::black});
 	painter.setBackgroundMode(Qt::OpaqueMode);
 
-	if (mustShowDistance) {
+	if (mustShowDistance && normal_.y != 0.0) {
+		painter.setPen(Qt::darkGray);
 		painter.drawLine(distanceMarker1_, distanceMarker2_);
+		painter.setPen(Qt::white);
 		painter.drawText(10, 20, QString("Distance = ") + QString::number(distance));
 	}
 	if (showInfo_) {
@@ -1834,7 +1925,7 @@ OGLFigureWidget::keyPressEvent(QKeyEvent* e)
 		rotX_ = -90.0;
 		rotZ_ = 90.0;
 		break;
-	case Qt::Key_Y:
+	case Qt::Key_Z:
 		rotX_ = -90.0;
 		rotZ_ = 0.0;
 		break;

@@ -36,8 +36,8 @@
 #include "Timer.h"
 #include "VectorialSTAProcessor.h"
 #include "Util.h"
-#include "XZ.h"
-#include "XZValueFactor.h"
+#include "XYZ.h"
+#include "XYZValueFactor.h"
 
 
 
@@ -98,7 +98,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	const std::string outputDir          = taskPM->value<std::string>( "output_dir");
 	project_.createDirectory(outputDir, true);
 
-	Matrix2<XZValueFactor<FloatType>> gridData;
+	Matrix2<XYZValueFactor<FloatType>> gridData;
 
 	const FloatType nyquistRate = 2.0 * config.maxFrequency;
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
@@ -114,7 +114,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	} else {
 		visual = Figure::VISUALIZATION_ENVELOPE_LOG;
 	}
-	std::vector<XZ<float>> pointList = {{0.0, 0.0}};
+	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	Project::GridDataType projGridData;
 	FloatType valueLevel = 0.0;
 
@@ -135,10 +135,10 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		project_.createDirectory(acqOutputDir, true);
 
 		project_.saveImageToHDF5(gridData, acqOutputDir);
-		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XZValueFactor<FloatType>, FloatType>(gridData);
+		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
-		Util::copyXZValue(gridData, projGridData);
+		Util::copyXYZValue(gridData, projGridData);
 		project_.showFigure3D(1, "Raw image", &projGridData, &pointList,
 					true, visual, Figure::COLORMAP_VIRIDIS, config.valueScale);
 
@@ -159,7 +159,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 			LOG_DEBUG << "Saving the CF image...";
 			project_.saveHDF5(gridData, acqOutputDir + "/image_cf", "cf", Util::CopyValueOp());
 
-			Util::copyXZValue(gridData, projGridData);
+			Util::copyXYZValue(gridData, projGridData);
 			project_.showFigure3D(2, "Coherence factor image", &projGridData, &pointList,
 						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config.valueScale);
 		}
