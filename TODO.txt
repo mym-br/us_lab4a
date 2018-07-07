@@ -1,10 +1,9 @@
 
 
 
-
+- Sectorial grid in z-y.
 - Remove y from config files.
 - [?] Remove XZ*.
-- OGLFigureWidget: Fix limits.
 
 
 
