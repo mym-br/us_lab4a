@@ -1,14 +1,6 @@
 
-
-
 - Sectorial grid in z-y.
-- Remove y from config files.
 - [?] Remove XZ*.
-
-
-
-
-
 
 - Waveform: 2a / 2b: numPeriods should be ignored (?).
 

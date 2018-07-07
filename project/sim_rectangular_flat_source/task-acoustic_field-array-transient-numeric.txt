@@ -29,9 +29,6 @@ excitation_num_periods = 0.0
 # sampling_frequency = nyquist_rate * sampling_frequency_factor
 sampling_frequency_factor = 8.0
 
-# (m)
-y = 0.0
-
 # Array parameters.
 use_tx_focus = true
 # (m)
