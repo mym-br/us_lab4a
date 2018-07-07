@@ -63,7 +63,6 @@ HEADERS  += \
     src/processor/DefaultSTAProcessor.h \
     src/simulator/SimulatedSTAAcquisition.h \
     src/util/XZValue.h \
-    src/util/XZ.h \
     src/util/XY.h \
     src/util/Window.h \
     src/util/Waveform.h \
@@ -105,8 +104,6 @@ HEADERS  += \
     src/util/CoherenceFactor.h \
     src/util/String.h \
     src/util/ArrayGeometry.h \
-    src/util/XZComplexValueFactor.h \
-    src/util/XZComplexValue.h \
     src/util/DirectFFTWFilter.h \
     src/fft/FFTUtil.h \
     src/util/MeasurementList.h \

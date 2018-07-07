@@ -1,6 +1,5 @@
 
 - Sectorial grid in z-y.
-- [?] Remove XZ*.
 
 - Waveform: 2a / 2b: numPeriods should be ignored (?).
 
