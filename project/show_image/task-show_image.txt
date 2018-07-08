@@ -6,6 +6,9 @@ data_dir = ../simulated_3d_sta-imasonic_0.5mhz_64elem/output
 x_file = image_x
 x_dataset = x
 
+y_file = image_y
+y_dataset = y
+
 z_file = image_z
 z_dataset = z
 

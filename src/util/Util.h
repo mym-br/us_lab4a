@@ -104,8 +104,14 @@ template<typename T, typename U> void copyValueFromSimpleMatrix(const Matrix2<T>
 
 template<typename T, typename U> void copyFactorToSimpleMatrix(const Matrix2<T>& m, Matrix2<U>& mF);
 
-template<typename T, typename U> void copyXZToSimpleVectors(const std::vector<T>& v, std::vector<U>& vX, std::vector<U>& vZ);
-template<typename T, typename U> void copyXZFromSimpleVectors(const std::vector<T>& vX, const std::vector<T>& vZ, std::vector<U>& v);
+template<typename T, typename U> void copyXYZToSimpleVectors(const std::vector<T>& v,
+								std::vector<U>& vX,
+								std::vector<U>& vY,
+								std::vector<U>& vZ);
+template<typename T, typename U> void copyXYZFromSimpleVectors(const std::vector<T>& vX,
+								const std::vector<T>& vY,
+								const std::vector<T>& vZ,
+								std::vector<U>& v);
 
 template<typename T, typename U> void copyXYZValue(const Matrix2<T>& orig, Matrix2<U>& dest);
 template<typename T, typename U> void copyXYZFactor(const Matrix2<T>& orig, Matrix2<U>& dest);
@@ -683,31 +689,42 @@ copyFactorToSimpleMatrix(const Matrix2<T>& m, Matrix2<U>& mF)
 
 template<typename T, typename U>
 void
-copyXZToSimpleVectors(const std::vector<T>& v, std::vector<U>& vX, std::vector<U>& vZ)
+copyXYZToSimpleVectors(const std::vector<T>& v,
+			std::vector<U>& vX,
+			std::vector<U>& vY,
+			std::vector<U>& vZ)
 {
 	vX.resize(v.size());
+	vY.resize(v.size());
 	vZ.resize(v.size());
 	typename std::vector<T>::const_iterator orig = v.begin();
 	typename std::vector<U>::iterator destX = vX.begin();
+	typename std::vector<U>::iterator destY = vY.begin();
 	typename std::vector<U>::iterator destZ = vZ.begin();
 	for ( ; orig != v.end(); ++orig) {
 		*destX++ = orig->x;
+		*destY++ = orig->y;
 		*destZ++ = orig->z;
 	}
 }
 
 template<typename T, typename U>
 void
-copyXZFromSimpleVectors(const std::vector<T>& vX, const std::vector<T>& vZ, std::vector<U>& v)
+copyXYZFromSimpleVectors(const std::vector<T>& vX,
+				const std::vector<T>& vY,
+				const std::vector<T>& vZ,
+				std::vector<U>& v)
 {
-	if (vX.size() != vZ.size() || vX.size() != v.size()) {
+	if (vX.size() != vY.size() || vX.size() != vZ.size() || vX.size() != v.size()) {
 		THROW_EXCEPTION(InvalidParameterException, "The input and output vectors must have the same sizes.");
 	}
 	typename std::vector<T>::const_iterator origX = vX.begin();
+	typename std::vector<T>::const_iterator origY = vY.begin();
 	typename std::vector<T>::const_iterator origZ = vZ.begin();
 	typename std::vector<U>::iterator dest = v.begin();
-	for ( ; origX != vX.end(); ++origX, ++origZ, ++dest) {
+	for ( ; origX != vX.end(); ++origX, ++origY, ++origZ, ++dest) {
 		dest->x = *origX;
+		dest->y = *origY;
 		dest->z = *origZ;
 	}
 }

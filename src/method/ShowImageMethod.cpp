@@ -46,6 +46,8 @@ ShowImageMethod::execute()
 	const std::string dataDir      = taskPM->value<std::string>("data_dir");
 	const std::string xFile        = taskPM->value<std::string>("x_file");
 	const std::string xDataset     = taskPM->value<std::string>("x_dataset");
+	const std::string yFile        = taskPM->value<std::string>("y_file");
+	const std::string yDataset     = taskPM->value<std::string>("y_dataset");
 	const std::string zFile        = taskPM->value<std::string>("z_file");
 	const std::string zDataset     = taskPM->value<std::string>("z_dataset");
 	const std::string imageFile    = taskPM->value<std::string>("image_file");
@@ -57,18 +59,22 @@ ShowImageMethod::execute()
 	project_.loadHDF5(dataDir + '/' + imageFile, imageDataset, projGridData, Util::CopyToValueOp());
 	LOG_DEBUG << "Loading the X coordinates...";
 	project_.loadHDF5(dataDir + '/' + xFile, xDataset, projGridData, Util::CopyToXOp());
+	LOG_DEBUG << "Loading the Y coordinates...";
+	project_.loadHDF5(dataDir + '/' + yFile, yDataset, projGridData, Util::CopyToYOp());
 	LOG_DEBUG << "Loading the Z coordinates...";
 	project_.loadHDF5(dataDir + '/' + zFile, zDataset, projGridData, Util::CopyToZOp());
 
 	if (taskPM->contains("points_x_file")) {
 		std::vector<Project::PointType> projPointList;
-		std::vector<float> pointsX, pointsZ;
+		std::vector<float> pointsX, pointsY, pointsZ;
 		std::string pointsXFile = taskPM->value<std::string>("points_x_file");
 		project_.loadHDF5(dataDir + '/' + pointsXFile, "x", pointsX);
+		std::string pointsYFile = taskPM->value<std::string>("points_y_file");
+		project_.loadHDF5(dataDir + '/' + pointsYFile, "y", pointsY);
 		std::string pointsZFile = taskPM->value<std::string>("points_z_file");
 		project_.loadHDF5(dataDir + '/' + pointsZFile, "z", pointsZ);
 		projPointList.resize(pointsX.size());
-		Util::copyXZFromSimpleVectors(pointsX, pointsZ, projPointList);
+		Util::copyXYZFromSimpleVectors(pointsX, pointsY, pointsZ, projPointList);
 		project_.showFigure3D(1, "Image", &projGridData, &projPointList,
 					true, Figure::VISUALIZATION_ENVELOPE_LOG, Figure::COLORMAP_VIRIDIS);
 	} else {
