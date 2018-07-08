@@ -20,3 +20,7 @@ peak_offset = 0.0
 calculate_envelope_in_processing = true
 
 upsampling_factor = 4
+
+# (m)
+min_y = -150.0e-3
+y_step = 2.0e-3

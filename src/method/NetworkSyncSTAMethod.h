@@ -92,10 +92,13 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		return;
 	}
 
-	const FloatType peakOffset           = taskPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
+	const FloatType peakOffset           = taskPM->value<FloatType>(   "peak_offset"      ,      0.0,    50.0);
 	bool vectorialProcessingWithEnvelope = taskPM->value<bool>(        "calculate_envelope_in_processing");
-	const unsigned int upsamplingFactor  = taskPM->value<unsigned int>("upsampling_factor",   1, 128);
+	const unsigned int upsamplingFactor  = taskPM->value<unsigned int>("upsampling_factor",        1,     128);
 	const std::string outputDir          = taskPM->value<std::string>( "output_dir");
+	const FloatType minY                 = taskPM->value<FloatType>(   "min_y"            , -10000.0, 10000.0);
+	const FloatType yStep                = taskPM->value<FloatType>(   "y_step"           ,   1.0e-6,  1000.0);
+
 	project_.createDirectory(outputDir, true);
 
 	Matrix2<XYZValueFactor<FloatType>> gridData;
@@ -120,7 +123,8 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 	Timer timer;
 
-	for (unsigned int acqNumber = 0; ; ++acqNumber) {
+	FloatType y = minY;
+	for (unsigned int acqNumber = 0; ; ++acqNumber, y += yStep) {
 		std::string acqDataDir = FileUtil::path(dataDir, "/", acqNumber);
 		if (!project_.directoryExists(acqDataDir)) {
 			break;
@@ -128,6 +132,9 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 		LOG_DEBUG << "ACQ number: " << acqNumber;
 
+		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
+			iter->y = y;
+		}
 		acquisition->setDataDir(acqDataDir);
 		processor->process(baseElement, gridData);
 
