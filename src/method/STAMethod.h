@@ -157,10 +157,10 @@ STAMethod<FloatType>::execute()
 					project_, config.numElements,
 					taskPM->value<std::string>("data_dir"));
 		break;
-	case MethodType::sta_simulated_3d:                    // falls through
-	case MethodType::sta_simulated_3d_save_signals:       // falls through
-	case MethodType::sta_simulated_3d_seq_y_save_signals: // falls through
-	case MethodType::sta_vectorial_simulated_3d:
+	case MethodType::sta_3d_simulated:                    // falls through
+	case MethodType::sta_3d_simulated_save_signals:       // falls through
+	case MethodType::sta_3d_simulated_seq_y_save_signals: // falls through
+	case MethodType::sta_3d_vectorial_simulated:
 		acquisition = std::make_unique<Simulated3DSTAAcquisition<FloatType>>(project_, config);
 		break;
 	default:
@@ -168,7 +168,7 @@ STAMethod<FloatType>::execute()
 	}
 
 	if (project_.method() == MethodType::sta_save_signals ||
-			project_.method() == MethodType::sta_simulated_3d_save_signals) {
+			project_.method() == MethodType::sta_3d_simulated_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
@@ -176,7 +176,7 @@ STAMethod<FloatType>::execute()
 			project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
 		}
 		return;
-	} else if (project_.method() == MethodType::sta_simulated_3d_seq_y_save_signals) {
+	} else if (project_.method() == MethodType::sta_3d_simulated_seq_y_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		const FloatType yStep     = taskPM->value<FloatType>(  "y_step",          0.0,   100.0);
 		const FloatType minY      = taskPM->value<FloatType>(  "min_y" ,     -10000.0, 10000.0);
@@ -218,7 +218,7 @@ STAMethod<FloatType>::execute()
 	case MethodType::sta_vectorial_dp_network:   // falls through
 	case MethodType::sta_vectorial_dp_saved:     // falls through
 	case MethodType::sta_vectorial_sp_saved:     // falls through
-	case MethodType::sta_vectorial_simulated_3d:
+	case MethodType::sta_3d_vectorial_simulated:
 		{
 			const bool processingWithEnvelope   = taskPM->value<bool>(        "calculate_envelope_in_processing");
 			const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);

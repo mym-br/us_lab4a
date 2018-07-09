@@ -1,5 +1,5 @@
 
-method = sta_vectorial_simulated_3d
+method = sta_3d_vectorial_simulated
 
 sta_config_file = config-sta-cyl.txt
 

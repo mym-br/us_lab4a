@@ -1,5 +1,5 @@
 
-method = sta_simulated_3d_seq_y_save_signals
+method = sta_3d_simulated_seq_y_save_signals
 
 sta_config_file = config-sta-cyl.txt
 

@@ -62,10 +62,10 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sim_acoustic_field_rectangular_flat_source_transient);
 	ADD_MAP_ITEM(sim_impulse_response_array_of_rectangular_flat_sources);
 	ADD_MAP_ITEM(sim_impulse_response_rectangular_flat_source);
-	ADD_MAP_ITEM(sta_simulated_3d);
-	ADD_MAP_ITEM(sta_simulated_3d_save_signals);
-	ADD_MAP_ITEM(sta_simulated_3d_seq_y_save_signals);
-	ADD_MAP_ITEM(sta_vectorial_simulated_3d);
+	ADD_MAP_ITEM(sta_3d_simulated);
+	ADD_MAP_ITEM(sta_3d_simulated_save_signals);
+	ADD_MAP_ITEM(sta_3d_simulated_seq_y_save_signals);
+	ADD_MAP_ITEM(sta_3d_vectorial_simulated);
 	ADD_MAP_ITEM(show_image);
 	ADD_MAP_ITEM(multi_layer_image);
 	ADD_MAP_ITEM(multi_image_vtk_file);
@@ -105,10 +105,10 @@ Method::get(Project& project)
 	case MethodType::sta_dp_saved:                        // falls through
 	case MethodType::sta_vectorial_dp_saved:              // falls through
 	case MethodType::sta_save_signals:                    // falls through
-	case MethodType::sta_simulated_3d:                    // falls through
-	case MethodType::sta_simulated_3d_save_signals:       // falls through
-	case MethodType::sta_simulated_3d_seq_y_save_signals: // falls through
-	case MethodType::sta_vectorial_simulated_3d:
+	case MethodType::sta_3d_simulated:                    // falls through
+	case MethodType::sta_3d_simulated_save_signals:       // falls through
+	case MethodType::sta_3d_simulated_seq_y_save_signals: // falls through
+	case MethodType::sta_3d_vectorial_simulated:
 		return new STAMethod<double>(project);
 	case MethodType::sta_sp_saved:           // falls through
 	case MethodType::sta_vectorial_sp_saved:
