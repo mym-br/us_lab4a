@@ -118,7 +118,7 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XY
 
 	Util::resetValueFactor(gridData.begin(), gridData.end());
 
-	const std::size_t numSignals = config_.activeTxElem.size() * config_.rxElemPos.size();
+	const std::size_t numSignals = config_.activeTxElem.size() * config_.activeRxElem.size();
 
 	// Prepare the signal matrix.
 	for (unsigned int iTxElem = 0, txEnd = config_.activeTxElem.size(); iTxElem < txEnd; ++iTxElem) {
