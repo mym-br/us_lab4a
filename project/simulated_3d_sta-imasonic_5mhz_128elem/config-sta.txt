@@ -1,13 +1,13 @@
 
 # Do not change.
-num_elements = 32
-
-# Do not change.
 num_elements_mux = 128
 
 # 0 .. num_elements - 1
-first_tx_elem = 0
-last_tx_elem = 31
+# list of element indexes separated by spaces
+# indexes relative to the base element
+# range: e1:e2
+active_tx_elem = 0:31
+active_rx_elem = 0:31
 
 # (m)
 pitch = 0.6e-3

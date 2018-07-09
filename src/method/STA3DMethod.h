@@ -15,32 +15,28 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef STAMETHOD_H_
-#define STAMETHOD_H_
+#ifndef STA3DMETHOD_H
+#define STA3DMETHOD_H
 
+#include <algorithm> /* max */
 #include <cstddef> /* std::size_t */
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "CoherenceFactor.h"
-#include "DefaultSTAProcessor.h"
 #include "Exception.h"
 #include "global.h"
 #include "ImageGrid.h"
 #include "Log.h"
 #include "Matrix2.h"
 #include "Method.h"
-#include "NetworkSTAAcquisition.h"
-#include "ParallelHilbertEnvelope.h"
 #include "Project.h"
-#include "SavedSTAAcquisition.h"
-#include "SimpleSTAProcessor.h"
-#include "SimulatedSTAAcquisition.h"
+#include "Simulated3DSTAAcquisition.h"
 #include "STAAcquisition.h"
-#include "STAConfiguration.h"
+#include "STA3DConfiguration.h"
 #include "Timer.h"
-#include "VectorialSTAProcessor.h"
+#include "Vectorial3DSTAProcessor.h"
 #include "Util.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
@@ -50,19 +46,19 @@
 namespace Lab {
 
 template<typename FloatType>
-class STAMethod : public Method {
+class STA3DMethod : public Method {
 public:
-	STAMethod(Project& project);
-	virtual ~STAMethod();
+	STA3DMethod(Project& project);
+	virtual ~STA3DMethod();
 
 	virtual void execute();
 
 private:
-	STAMethod(const STAMethod&) = delete;
-	STAMethod& operator=(const STAMethod&) = delete;
+	STA3DMethod(const STA3DMethod&) = delete;
+	STA3DMethod& operator=(const STA3DMethod&) = delete;
 
 	void process(FloatType valueScale, STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
-	void useCoherenceFactor(FloatType valueScale, bool calculateEnvelope, const std::string& outputDir);
+	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
 
 	Project& project_;
 	Matrix2<XYZValueFactor<FloatType>> gridData_;
@@ -74,28 +70,24 @@ private:
 
 
 template<typename FloatType>
-STAMethod<FloatType>::STAMethod(Project& project)
+STA3DMethod<FloatType>::STA3DMethod(Project& project)
 		: project_{project}
 		, pointList_{{0.0, 0.0, 0.0}}
-		, visual_{Figure::VISUALIZATION_ENVELOPE_LOG}
+		, visual_{Figure::VISUALIZATION_RECTIFIED_LOG}
 {
 }
 
 template<typename FloatType>
-STAMethod<FloatType>::~STAMethod()
+STA3DMethod<FloatType>::~STA3DMethod()
 {
 }
 
 template<typename FloatType>
 void
-STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnvelope, const std::string& outputDir)
+STA3DMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std::string& outputDir)
 {
 	LOG_DEBUG << "Saving the image factors...";
 	project_.saveHDF5(gridData_, outputDir + "/image_factor", "factor", Util::CopyFactorOp());
-
-	if (calculateEnvelope) {
-		ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData_);
-	}
 
 	// Applies the coherence factor method.
 	for (auto iter = gridData_.begin(); iter != gridData_.end(); ++iter) {
@@ -113,7 +105,7 @@ STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnv
 
 template<typename FloatType>
 void
-STAMethod<FloatType>::process(FloatType valueScale, STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
+STA3DMethod<FloatType>::process(FloatType valueScale, STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
 {
 	Timer tProc;
 
@@ -130,44 +122,52 @@ STAMethod<FloatType>::process(FloatType valueScale, STAProcessor<FloatType>& pro
 
 template<typename FloatType>
 void
-STAMethod<FloatType>::execute()
+STA3DMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
+	ConstParameterMapPtr staPM   = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	const STA3DConfiguration<FloatType> config(staPM, arrayPM);
 
-	const STAConfiguration<FloatType> config(project_.loadChildParameterMap(taskPM, "sta_config_file"));
-	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
+	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
 
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
 	switch (project_.method()) {
-	case MethodType::sta_simple_simulated: // falls through
-	case MethodType::sta_simulated:
-		acquisition = std::make_unique<SimulatedSTAAcquisition<FloatType>>(project_, config);
-		break;
-	case MethodType::sta_dp_network:           // falls through
-	case MethodType::sta_vectorial_dp_network: // falls through
-	case MethodType::sta_save_signals:
-		acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
-		break;
-	case MethodType::sta_simple_saved:       // falls through
-	case MethodType::sta_dp_saved:           // falls through
-	case MethodType::sta_vectorial_dp_saved: // falls through
-	case MethodType::sta_sp_saved:           // falls through
-	case MethodType::sta_vectorial_sp_saved:
-		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(
-					project_, config.numElements,
-					taskPM->value<std::string>("data_dir"));
+	case MethodType::sta_3d_simulated_save_signals:       // falls through
+	case MethodType::sta_3d_simulated_seq_y_save_signals: // falls through
+	case MethodType::sta_3d_vectorial_simulated:
+		acquisition = std::make_unique<Simulated3DSTAAcquisition<FloatType>>(project_, config);
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
 
-	if (project_.method() == MethodType::sta_save_signals) {
+	if (project_.method() == MethodType::sta_3d_simulated_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
-		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
+		for (unsigned int txElem : config.activeTxElem) {
 			acquisition->execute(baseElement, txElem, acqData);
 			project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
+		}
+		return;
+	} else if (project_.method() == MethodType::sta_3d_simulated_seq_y_save_signals) {
+		const std::string dataDir = taskPM->value<std::string>("data_dir");
+		const FloatType yStep     = taskPM->value<FloatType>(  "y_step",          0.0,   100.0);
+		const FloatType minY      = taskPM->value<FloatType>(  "min_y" ,     -10000.0, 10000.0);
+		const FloatType maxY      = taskPM->value<FloatType>(  "max_y" , minY + yStep, 10000.0);
+		project_.createDirectory(dataDir, true);
+		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+		std::vector<FloatType> yList;
+		Util::fillSequenceFromStartWithStep(yList, minY, maxY, yStep);
+		auto& simAcq = dynamic_cast<Simulated3DSTAAcquisition<FloatType>&>(*acquisition);
+		for (std::size_t i = 0, end = yList.size(); i < end; ++i) {
+			const FloatType y = yList[i];
+			simAcq.modifyReflectorsOffset(0.0, -y);
+			for (unsigned int txElem : config.activeTxElem) {
+				acquisition->execute(baseElement, txElem, acqData);
+				project_.saveSTASignalsToHDF5(acqData, dataDir, i, baseElement, txElem);
+			}
 		}
 		return;
 	}
@@ -180,48 +180,21 @@ STAMethod<FloatType>::execute()
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
-	visual_ = Figure::VISUALIZATION_ENVELOPE_LOG;
-
-	switch (project_.method()) {
-	case MethodType::sta_simple_simulated: // falls through
-	case MethodType::sta_simple_saved:
-		{
-			auto processor = std::make_unique<SimpleSTAProcessor<FloatType>>(config, *acquisition, peakOffset);
-			process(config.valueScale, *processor, baseElement, outputDir);
-		}
-		break;
-	case MethodType::sta_vectorial_dp_network: // falls through
-	case MethodType::sta_vectorial_dp_saved:   // falls through
-	case MethodType::sta_vectorial_sp_saved:
-		{
-			const bool processingWithEnvelope   = taskPM->value<bool>(        "calculate_envelope_in_processing");
-			const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
-			if (processingWithEnvelope) {
-				visual_ = Figure::VISUALIZATION_RECTIFIED_LOG;
-			}
-			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
-			auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(
+	if (project_.method() == MethodType::sta_3d_vectorial_simulated) {
+		const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
+		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
+		auto processor = std::make_unique<Vectorial3DSTAProcessor<FloatType>>(
 							config, *acquisition, upsamplingFactor,
-							coherenceFactor, peakOffset, processingWithEnvelope);
-			process(config.valueScale, *processor, baseElement, outputDir);
-			if (coherenceFactor.enabled()) {
-				useCoherenceFactor(config.valueScale, !processingWithEnvelope, outputDir);
-			}
+							coherenceFactor, peakOffset);
+		process(config.valueScale, *processor, baseElement, outputDir);
+		if (coherenceFactor.enabled()) {
+			useCoherenceFactor(config.valueScale, outputDir);
 		}
-		break;
-	default:
-		{
-			CoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
-			auto processor = std::make_unique<DefaultSTAProcessor<FloatType>>(config, *acquisition,
-												coherenceFactor, peakOffset);
-			process(config.valueScale, *processor, baseElement, outputDir);
-			if (coherenceFactor.enabled()) {
-				useCoherenceFactor(config.valueScale, true, outputDir);
-			}
-		}
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
 }
 
 } // namespace Lab
 
-#endif /* STAMETHOD_H_ */
+#endif // STA3DMETHOD_H

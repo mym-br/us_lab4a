@@ -136,7 +136,10 @@ HEADERS  += \
     src/util/OGL.h \
     src/method/MultiLayerImageMethod.h \
     src/method/VTKFileMultiImageMethod.h \
-    src/util/XYZValueFactor.h
+    src/util/XYZValueFactor.h \
+    src/method/STA3DMethod.h \
+    src/configuration/STA3DConfiguration.h \
+    src/processor/Vectorial3DSTAProcessor.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

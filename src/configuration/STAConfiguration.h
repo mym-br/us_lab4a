@@ -62,7 +62,7 @@ STAConfiguration<FloatType>::load(ConstParameterMapPtr pm)
 	firstTxElem       = pm->value<unsigned int>("first_tx_elem"      ,           0, numElements - 1);
 	lastTxElem        = pm->value<unsigned int>("last_tx_elem"       , firstTxElem, numElements - 1);
 	numPulses         = pm->value<unsigned int>("num_pulses"         ,       1,     100);
-	pitch             = pm->value<FloatType>(   "pitch"              , 0.01e-3, 10.0e-3);
+	pitch             = pm->value<FloatType>(   "pitch"              ,  1.0e-6,  1000.0);
 	centerFrequency   = pm->value<FloatType>(   "center_frequency"   ,   100.0, 100.0e6);
 	maxFrequency      = pm->value<FloatType>(   "max_frequency"      ,   100.0, 100.0e6);
 	acquisitionTime   = pm->value<FloatType>(   "acquisition_time"   ,  1.0e-6,     1.0);

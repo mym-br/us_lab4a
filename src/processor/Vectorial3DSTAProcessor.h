@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef VECTORIALSTAPROCESSOR_H_
-#define VECTORIALSTAPROCESSOR_H_
+#ifndef VECTORIAL3DSTAPROCESSOR_H
+#define VECTORIAL3DSTAPROCESSOR_H
 
 #include <algorithm> /* for_each */
 #include <cmath>
@@ -28,7 +28,6 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
-#include "ArrayGeometry.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
 #include "HilbertEnvelope.h"
@@ -37,33 +36,29 @@
 #include "Matrix2.h"
 #include "Matrix3.h"
 #include "STAAcquisition.h"
-#include "STAConfiguration.h"
+#include "STA3DConfiguration.h"
 #include "STAProcessor.h"
 #include "Util.h"
 #include "XYZValueFactor.h"
 
 // Depends on the signal.
 // 1.0 --> pi radian / sample at the original sampling rate.
-#define VECTORIAL_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH 0.2
+#define VECTORIAL_3D_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH 0.2
 
 
 
 namespace Lab {
 
-// x = 0 is at the center of the element group.
-// y = 0
-// z = 0 is at the surface of the array.
 template<typename FloatType>
-class VectorialSTAProcessor : public STAProcessor<FloatType> {
+class Vectorial3DSTAProcessor : public STAProcessor<FloatType> {
 public:
-	VectorialSTAProcessor(
-			const STAConfiguration<FloatType>& config,
+	Vectorial3DSTAProcessor(
+			const STA3DConfiguration<FloatType>& config,
 			STAAcquisition<FloatType>& acquisition,
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
-			FloatType peakOffset,
-			bool calculateEnvelope);
-	virtual ~VectorialSTAProcessor() {}
+			FloatType peakOffset);
+	virtual ~Vectorial3DSTAProcessor() {}
 
 	virtual void process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData);
 
@@ -71,13 +66,14 @@ private:
 	struct ThreadData {
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor;
 		std::vector<std::complex<FloatType>> rxSignalSumList;
-		std::vector<FloatType> delayList;
+		std::vector<FloatType> txDelayList;
+		std::vector<FloatType> rxDelayList;
 	};
 
-	VectorialSTAProcessor(const VectorialSTAProcessor&) = delete;
-	VectorialSTAProcessor& operator=(const VectorialSTAProcessor&) = delete;
+	Vectorial3DSTAProcessor(const Vectorial3DSTAProcessor&) = delete;
+	Vectorial3DSTAProcessor& operator=(const Vectorial3DSTAProcessor&) = delete;
 
-	const STAConfiguration<FloatType>& config_;
+	const STA3DConfiguration<FloatType>& config_;
 	unsigned int deadZoneSamplesUp_;
 	STAAcquisition<FloatType>& acquisition_;
 	unsigned int upsamplingFactor_;
@@ -88,30 +84,27 @@ private:
 	FloatType signalOffset_;
 	Interpolator<FloatType> interpolator_;
 	HilbertEnvelope<FloatType> envelope_;
-	bool calculateEnvelope_;
 	bool initialized_;
 };
 
 
 
 template<typename FloatType>
-VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
-			const STAConfiguration<FloatType>& config,
+Vectorial3DSTAProcessor<FloatType>::Vectorial3DSTAProcessor(
+			const STA3DConfiguration<FloatType>& config,
 			STAAcquisition<FloatType>& acquisition,
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
-			FloatType peakOffset,
-			bool calculateEnvelope)
+			FloatType peakOffset)
 		: config_(config)
 		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
 		, acquisition_(acquisition)
 		, upsamplingFactor_(upsamplingFactor)
 		, coherenceFactor_(coherenceFactor)
-		, calculateEnvelope_(calculateEnvelope)
 		, initialized_(false)
 {
 	if (upsamplingFactor_ > 1) {
-		interpolator_.prepare(upsamplingFactor_, VECTORIAL_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
+		interpolator_.prepare(upsamplingFactor_, VECTORIAL_3D_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
 	}
 
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * peakOffset / config_.centerFrequency;
@@ -119,25 +112,27 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 
 template<typename FloatType>
 void
-VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData)
+Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData)
 {
-	LOG_DEBUG << "BEGIN ========== VectorialSTAProcessor::process ==========";
+	LOG_DEBUG << "BEGIN ========== Vectorial3DSTAProcessor::process ==========";
 
 	Util::resetValueFactor(gridData.begin(), gridData.end());
 
-	const std::size_t numSignals = (config_.lastTxElem - config_.firstTxElem + 1U) * config_.numElements;
+	const std::size_t numSignals = config_.activeTxElem.size() * config_.rxElemPos.size();
 
 	// Prepare the signal matrix.
-	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
-		LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
+	for (unsigned int iTxElem = 0, txEnd = config_.activeTxElem.size(); iTxElem < txEnd; ++iTxElem) {
+		LOG_INFO << "ACQ/PREP txElem: " << config_.activeTxElem[iTxElem];
 
-		acquisition_.execute(baseElement, txElem, acqData_);
+		acquisition_.execute(baseElement, config_.activeTxElem[iTxElem], acqData_);
+
 		if (!initialized_) {
 			const std::size_t signalLength = acqData_.n2() * upsamplingFactor_;
 			tempSignal_.resize(signalLength);
 			analyticSignalMatrix_.resize(
-						config_.lastTxElem - config_.firstTxElem + 1,
-						config_.numElements, signalLength);
+						config_.activeTxElem.size(),
+						config_.activeRxElem.size(),
+						signalLength);
 			LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
 			if (deadZoneSamplesUp_ >= signalLength) {
 				THROW_EXCEPTION(InvalidValueException,
@@ -149,23 +144,20 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZV
 
 		const std::size_t samplesPerChannelLow = acqData_.n2();
 
-		const unsigned int localTxElem = txElem - config_.firstTxElem;
-		for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
+		for (unsigned int iRxElem = 0, rxEnd = config_.activeRxElem.size(); iRxElem < rxEnd; ++iRxElem) {
 			if (upsamplingFactor_ > 1) {
-				interpolator_.interpolate(&acqData_(rxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
+				interpolator_.interpolate(&acqData_(iRxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
 			} else {
-				typename Matrix2<FloatType>::Dim2Interval interval = acqData_.dim2Interval(rxElem);
+				typename Matrix2<FloatType>::Dim2Interval interval = acqData_.dim2Interval(iRxElem);
 				std::copy(interval.first, interval.second, tempSignal_.begin());
 			}
 
 			Util::removeDC(&tempSignal_[0], tempSignal_.size(), deadZoneSamplesUp_);
 
-			envelope_.getAnalyticSignal(&tempSignal_[0], tempSignal_.size(), &analyticSignalMatrix_(localTxElem, rxElem, 0));
+			envelope_.getAnalyticSignal(&tempSignal_[0], tempSignal_.size(),
+							&analyticSignalMatrix_(iTxElem, iRxElem, 0));
 		}
 	}
-
-	std::vector<FloatType> xArray;
-	ArrayGeometry::getElementXCentered2D(config_.numElements, config_.pitch, xArray);
 
 	ThreadData threadData;
 	threadData.coherenceFactor = coherenceFactor_;
@@ -180,8 +172,9 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZV
 
 		auto& local = tls.local();
 
-		local.rxSignalSumList.resize(config_.numElements);
-		local.delayList.resize(config_.numElements);
+		local.rxSignalSumList.resize(config_.activeRxElem.size());
+		local.txDelayList.resize(config_.activeTxElem.size());
+		local.rxDelayList.resize(config_.activeRxElem.size());
 
 		// For each column:
 		for (std::size_t i = r.begin(); i != r.end(); ++i) {
@@ -192,23 +185,31 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZV
 				XYZValueFactor<FloatType>& point = gridData(i, j);
 
 				// Calculate the delays.
-				for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
-					const FloatType dx = point.x - xArray[elem];
-					const FloatType dz = point.z /* - zArray*/; // zArray = 0
-					local.delayList[elem] = std::sqrt(dx * dx + dz * dz) * invCT;
+				for (unsigned int iTxElem = 0, end = config_.activeTxElem.size(); iTxElem < end; ++iTxElem) {
+					const XY<FloatType>& elemPos = config_.txElemPos[baseElement + config_.activeTxElem[iTxElem]];
+					const FloatType dx = point.x - elemPos.x;
+					const FloatType dy = point.y - elemPos.y;
+					const FloatType dz = point.z; // z array = 0
+					local.txDelayList[iTxElem] = std::sqrt(dx * dx + dy * dy + dz * dz) * invCT;
+				}
+				for (unsigned int iRxElem = 0, end = config_.activeRxElem.size(); iRxElem < end; ++iRxElem) {
+					const XY<FloatType>& elemPos = config_.rxElemPos[baseElement + config_.activeRxElem[iRxElem]];
+					const FloatType dx = point.x - elemPos.x;
+					const FloatType dy = point.y - elemPos.y;
+					const FloatType dz = point.z; // z array = 0
+					local.rxDelayList[iRxElem] = std::sqrt(dx * dx + dy * dy + dz * dz) * invCT;
 				}
 
-				for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
-					const FloatType txDelay = local.delayList[txElem];
-					const unsigned int localTxElem = txElem - config_.firstTxElem;
-					for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
+				for (unsigned int iTxElem = 0, txEnd = config_.activeTxElem.size(); iTxElem < txEnd; ++iTxElem) {
+					const FloatType txDelay = local.txDelayList[iTxElem];
+					for (unsigned int iRxElem = 0, rxEnd = config_.activeRxElem.size(); iRxElem < rxEnd; ++iRxElem) {
 						// Linear interpolation.
-						const FloatType delay = signalOffset_ + txDelay + local.delayList[rxElem];
+						const FloatType delay = signalOffset_ + txDelay + local.rxDelayList[iRxElem];
 						const std::size_t delayIdx = static_cast<std::size_t>(delay);
 						const FloatType k = delay - delayIdx;
 						if (delayIdx + 1U < analyticSignalMatrix_.n3()) {
-							const std::complex<FloatType>* p = &analyticSignalMatrix_(localTxElem, rxElem, delayIdx);
-							local.rxSignalSumList[rxElem] += (1 - k) * *p + k * *(p + 1);
+							const std::complex<FloatType>* p = &analyticSignalMatrix_(iTxElem, iRxElem, delayIdx);
+							local.rxSignalSumList[iRxElem] += (1 - k) * *p + k * *(p + 1);
 						}
 					}
 				}
@@ -216,11 +217,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZV
 				if (local.coherenceFactor.enabled()) {
 					point.factor = local.coherenceFactor.calculate(&local.rxSignalSumList[0], local.rxSignalSumList.size());
 				}
-				if (calculateEnvelope_) {
-					point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>{0}));
-				} else {
-					point.value = std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>{0}).real();
-				}
+				point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>{0}));
 			}
 		}
 	});
@@ -228,9 +225,9 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZV
 	std::for_each(gridData.begin(), gridData.end(),
 			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>{FloatType{1} / numSignals});
 
-	LOG_DEBUG << "END ========== VectorialSTAProcessor::process ==========";
+	LOG_DEBUG << "END ========== Vectorial3DSTAProcessor::process ==========";
 }
 
 } // namespace Lab
 
-#endif /* VECTORIALSTAPROCESSOR_H_ */
+#endif // VECTORIAL3DSTAPROCESSOR_H

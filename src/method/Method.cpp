@@ -25,6 +25,7 @@
 #include "ShowImageMethod.h"
 #include "SimRectangularFlatSourceMethod.h"
 #include "SingleAcquisitionMethod.h"
+#include "STA3DMethod.h"
 #include "STAMethod.h"
 #include "TestMethod.h"
 #include "VTKFileMultiImageMethod.h"
@@ -62,7 +63,6 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sim_acoustic_field_rectangular_flat_source_transient);
 	ADD_MAP_ITEM(sim_impulse_response_array_of_rectangular_flat_sources);
 	ADD_MAP_ITEM(sim_impulse_response_rectangular_flat_source);
-	ADD_MAP_ITEM(sta_3d_simulated);
 	ADD_MAP_ITEM(sta_3d_simulated_save_signals);
 	ADD_MAP_ITEM(sta_3d_simulated_seq_y_save_signals);
 	ADD_MAP_ITEM(sta_3d_vectorial_simulated);
@@ -104,15 +104,15 @@ Method::get(Project& project)
 	case MethodType::sta_vectorial_dp_network:            // falls through
 	case MethodType::sta_dp_saved:                        // falls through
 	case MethodType::sta_vectorial_dp_saved:              // falls through
-	case MethodType::sta_save_signals:                    // falls through
-	case MethodType::sta_3d_simulated:                    // falls through
-	case MethodType::sta_3d_simulated_save_signals:       // falls through
-	case MethodType::sta_3d_simulated_seq_y_save_signals: // falls through
-	case MethodType::sta_3d_vectorial_simulated:
+	case MethodType::sta_save_signals:
 		return new STAMethod<double>(project);
 	case MethodType::sta_sp_saved:           // falls through
 	case MethodType::sta_vectorial_sp_saved:
 		return new STAMethod<float>(project);
+	case MethodType::sta_3d_simulated_save_signals:       // falls through
+	case MethodType::sta_3d_simulated_seq_y_save_signals: // falls through
+	case MethodType::sta_3d_vectorial_simulated:
+		return new STA3DMethod<double>(project);
 	case MethodType::sta_network_sync:              // falls through
 	case MethodType::sta_network_sync_save_signals:
 		return new NetworkSyncSTAMethod<double>(project);

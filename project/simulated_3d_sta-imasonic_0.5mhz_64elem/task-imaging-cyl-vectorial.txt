@@ -17,6 +17,4 @@ base_element = 16
 
 peak_offset = 0.0
 
-calculate_envelope_in_processing = true
-
 upsampling_factor = 4

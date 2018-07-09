@@ -50,7 +50,6 @@ enum class MethodType {
 	sim_acoustic_field_rectangular_flat_source_transient,
 	sim_impulse_response_array_of_rectangular_flat_sources,
 	sim_impulse_response_rectangular_flat_source,
-	sta_3d_simulated,
 	sta_3d_simulated_save_signals,
 	sta_3d_simulated_seq_y_save_signals,
 	sta_3d_vectorial_simulated,

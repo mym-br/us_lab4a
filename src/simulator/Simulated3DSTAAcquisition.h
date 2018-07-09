@@ -27,8 +27,8 @@
 #include "ParameterMap.h"
 #include "Project.h"
 #include "Simulated3DAcquisitionDevice.h"
+#include "STA3DConfiguration.h"
 #include "STAAcquisition.h"
-#include "STAConfiguration.h"
 #include "Util.h"
 #include "XYZValue.h"
 
@@ -39,7 +39,7 @@ namespace Lab {
 template<typename FloatType>
 class Simulated3DSTAAcquisition : public STAAcquisition<FloatType> {
 public:
-	Simulated3DSTAAcquisition(Project& project, const STAConfiguration<FloatType>& config);
+	Simulated3DSTAAcquisition(Project& project, const STA3DConfiguration<FloatType>& config);
 	virtual ~Simulated3DSTAAcquisition();
 
 	virtual void execute(unsigned int baseElement, unsigned int txElement,
@@ -51,7 +51,7 @@ private:
 	Simulated3DSTAAcquisition& operator=(const Simulated3DSTAAcquisition&) = delete;
 
 	Project& project_;
-	const STAConfiguration<FloatType>& config_;
+	const STA3DConfiguration<FloatType>& config_;
 	FloatType maxAbsValue_; // auxiliar
 	std::unique_ptr<Simulated3DAcquisitionDevice<FloatType>> acqDevice_;
 	std::vector<XYZValue<FloatType>> reflectorList_;
@@ -62,7 +62,7 @@ private:
 
 
 template<typename FloatType>
-Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project, const STAConfiguration<FloatType>& config)
+Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project, const STA3DConfiguration<FloatType>& config)
 		: project_{project}
 		, config_{config}
 		, maxAbsValue_{}
@@ -122,19 +122,35 @@ Simulated3DSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned
 	if (signalLength == 0) {
 		THROW_EXCEPTION(InvalidValueException, "signalLength = 0.");
 	}
-	if (acqData.n1() != config_.numElements || acqData.n2() != signalLength) {
-		acqData.resize(config_.numElements, signalLength);
-		LOG_DEBUG << "RESIZE acqData(channels, signalLength): channels=" << config_.numElements
+	if (acqData.n1() != config_.activeRxElem.size() || acqData.n2() != signalLength) {
+		acqData.resize(config_.activeRxElem.size(), signalLength);
+		LOG_DEBUG << "RESIZE acqData(channels, signalLength): channels=" << config_.activeRxElem.size()
 				<< " signalLength=" << signalLength;
 	}
 
 	std::vector<bool> txMask(config_.numElementsMux);
+	bool found = false;
+	for (unsigned int localElem : config_.activeTxElem) {
+		if (txElement == localElem) {
+			found = true;
+			const unsigned int elem = baseElement + localElem;
+			if (elem >= config_.numElementsMux) {
+				THROW_EXCEPTION(InvalidValueException, "Invalid active tx element: " << elem << '.');
+			}
+			break;
+		}
+	}
+	if (!found) THROW_EXCEPTION(InvalidValueException, "Invalid tx element: " << baseElement + txElement << '.');
 	txMask[baseElement + txElement] = true;
 	acqDevice_->setActiveTxElements(txMask);
 
 	std::vector<bool> rxMask(config_.numElementsMux);
-	for (unsigned int i = baseElement, end = baseElement + config_.numElements; i < end; ++i) {
-		rxMask[i] = true;
+	for (unsigned int localElem : config_.activeRxElem) {
+		const unsigned int elem = baseElement + localElem;
+		if (elem >= config_.numElementsMux) {
+			THROW_EXCEPTION(InvalidValueException, "Invalid active rx element: " << elem << '.');
+		}
+		rxMask[elem] = true;
 	}
 	acqDevice_->setActiveRxElements(rxMask);
 

@@ -174,7 +174,7 @@ SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZValu
 						const FloatType delay = signalOffset_ + txDelay + local.delayList[rxElem];
 						const std::size_t delayIdx = static_cast<std::size_t>(delay);
 						const FloatType k = delay - delayIdx;
-						if (delayIdx < signalMatrix_.n3() - 1) {
+						if (delayIdx + 1U < signalMatrix_.n3()) {
 							const FloatType* p = &signalMatrix_(localTxElem, rxElem, delayIdx);
 							pointValue += (1 - k) * *p + k * *(p + 1);
 						}

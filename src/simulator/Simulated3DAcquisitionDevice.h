@@ -416,6 +416,7 @@ Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatTy
 	threadData.convDadtHTxFilter.setCoefficients(convDadtHTx_, convDadtHTxFilterFreqCoeff_);
 	tbb::enumerable_thread_specific<ThreadData<ImpulseResponse>> tls{threadData};
 
+	// If activeRxElem_.size() == 1, only one thread will be used.
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, activeRxElem_.size()),
 	[&, refX, refY, refZ, hTxOffset](const tbb::blocked_range<std::size_t>& r) {
 		auto& local = tls.local();
