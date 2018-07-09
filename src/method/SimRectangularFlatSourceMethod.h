@@ -240,7 +240,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 
 	std::vector<XY<FloatType>> elemPos;
 	std::vector<FloatType> focusDelay;
-	ArrayUtil::calculateTxElementPositions(*taskPM, elemPos);
+	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
 	ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
 
 	std::vector<FloatType> exc;
@@ -466,7 +467,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 
 	std::vector<XY<FloatType>> elemPos;
 	std::vector<FloatType> focusDelay;
-	ArrayUtil::calculateTxElementPositions(*taskPM, elemPos);
+	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
 	ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
 
 	std::vector<FloatType> exc;
@@ -648,7 +650,8 @@ SimRectangularFlatSourceMethod<FloatType>::execArrayImpulseResponse()
 
 	std::vector<XY<FloatType>> elemPos;
 	std::vector<FloatType> focusDelay;
-	ArrayUtil::calculateTxElementPositions(*taskPM, elemPos);
+	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
 	ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
 
 	std::vector<FloatType> exc;

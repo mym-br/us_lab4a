@@ -5,6 +5,8 @@ sta_config_file = config-sta.txt
 
 simulated_3d_sta_acquisition_config_file = config-simulated_3d_sta_acquisition.txt
 
+array_config_file = config-array.txt
+
 output_dir = output
 
 coherence_factor_config_file = config-coherence_factor.txt

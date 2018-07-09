@@ -1,0 +1,16 @@
+
+# (m)
+tx_pitch_x = 0.15e-3
+tx_pitch_y = 0.15e-3
+
+# 1..n
+tx_num_elem_x = 32
+tx_num_elem_y = 8
+
+# (m)
+tx_element_width = 0.15e-3
+tx_element_height = 0.15e-3
+
+# (m)
+tx_offset_x = 0.0
+tx_offset_y = 0.0

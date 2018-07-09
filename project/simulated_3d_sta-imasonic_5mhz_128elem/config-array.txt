@@ -1,0 +1,34 @@
+
+# (m)
+tx_pitch_x = 0.6e-3
+tx_pitch_y = 12.1e-3
+
+# 1..n
+tx_num_elem_x = 128
+tx_num_elem_y = 1
+
+# (m)
+tx_element_width = 0.5e-3
+tx_element_height = 12.0e-3
+
+# (m)
+tx_offset_x = 0.0
+tx_offset_y = 0.0
+
+#-------------------------------------------------------------------------------
+
+# (m)
+rx_pitch_x = 0.6e-3
+rx_pitch_y = 12.1e-3
+
+# 1..n
+rx_num_elem_x = 128
+rx_num_elem_y = 1
+
+# (m)
+rx_element_width = 0.5e-3
+rx_element_height = 12.0e-3
+
+# (m)
+rx_offset_x = 0.0
+rx_offset_y = 0.0

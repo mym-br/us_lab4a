@@ -29,8 +29,8 @@ namespace Lab {
 namespace ArrayUtil {
 
 template<typename FloatType> void calculateElementPositions(
-					FloatType arrayPitchX, unsigned int numArrayElemX,
-					FloatType arrayPitchY, unsigned int numArrayElemY,
+					FloatType pitchX, unsigned int numElemX, FloatType offsetX,
+					FloatType pitchY, unsigned int numElemY, FloatType offsetY,
 					std::vector<XY<FloatType>>& elemPos);
 
 template<typename FloatType> void calculateTxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos);
@@ -45,19 +45,19 @@ template<typename FloatType> void calculateTx3DFocusDelay(
 template<typename FloatType>
 void
 calculateElementPositions(
-		FloatType arrayPitchX, unsigned int numArrayElemX,
-		FloatType arrayPitchY, unsigned int numArrayElemY,
+		FloatType pitchX, unsigned int numElemX, FloatType offsetX,
+		FloatType pitchY, unsigned int numElemY, FloatType offsetY,
 		std::vector<XY<FloatType>>& elemPos)
 {
 	// Calculate the center of each element.
-	const FloatType halfW = (numArrayElemX - 1) * 0.5 * arrayPitchX;
-	const FloatType halfH = (numArrayElemY - 1) * 0.5 * arrayPitchY;
-	elemPos.resize(numArrayElemX * numArrayElemY);
-	for (unsigned int iy = 0; iy < numArrayElemY; ++iy) {
-		for (unsigned int ix = 0; ix < numArrayElemX; ++ix) {
-			XY<FloatType>& pos = elemPos[iy * numArrayElemX + ix];
-			pos.x = ix * arrayPitchX - halfW;
-			pos.y = iy * arrayPitchY - halfH;
+	const FloatType halfW = (numElemX - 1) * 0.5 * pitchX;
+	const FloatType halfH = (numElemY - 1) * 0.5 * pitchY;
+	elemPos.resize(numElemX * numElemY);
+	for (unsigned int iy = 0; iy < numElemY; ++iy) {
+		for (unsigned int ix = 0; ix < numElemX; ++ix) {
+			XY<FloatType>& pos = elemPos[iy * numElemX + ix];
+			pos.x = ix * pitchX - halfW + offsetX;
+			pos.y = iy * pitchY - halfH + offsetY;
 		}
 	}
 }
@@ -66,24 +66,28 @@ template<typename FloatType>
 void
 calculateTxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos)
 {
-	const FloatType arrayPitchX      = pm.value<FloatType>("tx_array_pitch_x", 0.0, 10.0);
-	const FloatType arrayPitchY      = pm.value<FloatType>("tx_array_pitch_y", 0.0, 10.0);
-	const unsigned int numArrayElemX = pm.value<FloatType>("tx_num_array_elem_x", 1, 1024);
-	const unsigned int numArrayElemY = pm.value<FloatType>("tx_num_array_elem_y", 1, 1024);
+	const FloatType pitchX      = pm.value<FloatType>("tx_pitch_x", 0.0, 10.0);
+	const FloatType pitchY      = pm.value<FloatType>("tx_pitch_y", 0.0, 10.0);
+	const unsigned int numElemX = pm.value<FloatType>("tx_num_elem_x", 1, 1024);
+	const unsigned int numElemY = pm.value<FloatType>("tx_num_elem_y", 1, 1024);
+	const FloatType offsetX     = pm.value<FloatType>("tx_offset_x", 0.0, 10.0);
+	const FloatType offsetY     = pm.value<FloatType>("tx_offset_y", 0.0, 10.0);
 
-	calculateElementPositions(arrayPitchX, numArrayElemX, arrayPitchY, numArrayElemY, elemPos);
+	calculateElementPositions(pitchX, numElemX, offsetX, pitchY, numElemY, offsetY, elemPos);
 }
 
 template<typename FloatType>
 void
 calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos)
 {
-	const FloatType arrayPitchX      = pm.value<FloatType>("rx_array_pitch_x", 0.0, 10.0);
-	const FloatType arrayPitchY      = pm.value<FloatType>("rx_array_pitch_y", 0.0, 10.0);
-	const unsigned int numArrayElemX = pm.value<FloatType>("rx_num_array_elem_x", 1, 1024);
-	const unsigned int numArrayElemY = pm.value<FloatType>("rx_num_array_elem_y", 1, 1024);
+	const FloatType pitchX      = pm.value<FloatType>("rx_pitch_x", 0.0, 10.0);
+	const FloatType pitchY      = pm.value<FloatType>("rx_pitch_y", 0.0, 10.0);
+	const unsigned int numElemX = pm.value<FloatType>("rx_num_elem_x", 1, 1024);
+	const unsigned int numElemY = pm.value<FloatType>("rx_num_elem_y", 1, 1024);
+	const FloatType offsetX     = pm.value<FloatType>("rx_offset_x", 0.0, 10.0);
+	const FloatType offsetY     = pm.value<FloatType>("rx_offset_y", 0.0, 10.0);
 
-	calculateElementPositions(arrayPitchX, numArrayElemX, arrayPitchY, numArrayElemY, elemPos);
+	calculateElementPositions(pitchX, numElemX, offsetX, pitchY, numElemY, offsetY, elemPos);
 }
 
 template<typename FloatType>

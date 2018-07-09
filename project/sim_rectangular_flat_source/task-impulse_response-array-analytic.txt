@@ -36,13 +36,9 @@ point_y = 0.0
 point_z = 40.0e-3
 
 # Array parameters.
+array_config_file = config-array.txt
 use_tx_focus = true
 # (m)
 tx_focus_x = 0.0
 tx_focus_y = 0.0
 tx_focus_z = 40.0e-3
-tx_array_pitch_x = 0.6e-3
-tx_array_pitch_y = 13.0e-3
-# 1..n
-tx_num_array_elem_x = 32
-tx_num_array_elem_y = 1

@@ -66,8 +66,9 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 {
 	//TODO: check numChannels/numChannelsMux and other params
 
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr pm = project_.loadChildParameterMap(taskPM, "simulated_sta_acquisition_config_file");
+	ConstParameterMapPtr taskPM  = project_.taskParameterMap();
+	ConstParameterMapPtr pm      = project_.loadChildParameterMap(taskPM, "simulated_sta_acquisition_config_file");
+	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 
 	const std::string reflectorsFileName = pm->value<std::string>("reflectors_file");
 	const FloatType reflectorsOffsetX    = pm->value<FloatType>(  "reflectors_offset_x", -10000.0, 10000.0);
@@ -90,6 +91,7 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 
 	acqDevice_ = std::make_unique<Simulated3DAcquisitionDevice<FloatType>>(
 								*pm,
+								*arrayPM,
 								config_.samplingFrequency,
 								config_.propagationSpeed,
 								config_.maxFrequency);

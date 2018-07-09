@@ -5,6 +5,8 @@ sta_config_file = config-sta-cyl.txt
 
 simulated_3d_sta_acquisition_config_file = config-simulated_3d_sta_acquisition.txt
 
+array_config_file = config-array.txt
+
 data_dir = saved_acquisition
 
 base_element = 48

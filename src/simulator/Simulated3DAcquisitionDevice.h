@@ -82,8 +82,8 @@ public:
 		Decimator<FloatType> decimator;
 	};
 
-	Simulated3DAcquisitionDevice(const ParameterMap& pm, FloatType outputSamplingFreq,
-					FloatType propagationSpeed, FloatType maxFrequency);
+	Simulated3DAcquisitionDevice(const ParameterMap& pm, const ParameterMap& arrayPM,
+					FloatType outputSamplingFreq, FloatType propagationSpeed, FloatType maxFrequency);
 	~Simulated3DAcquisitionDevice();
 
 	void setAcquisitionTime(FloatType acqTime);
@@ -160,6 +160,7 @@ private:
 template<typename FloatType>
 Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 		const ParameterMap& pm,
+		const ParameterMap& arrayPM,
 		FloatType outputSamplingFreq,
 		FloatType propagationSpeed,
 		FloatType maxFrequency)
@@ -182,10 +183,10 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 			, signalCoeff_{1.0}
 			, prng_{SIMULATED_3D_ACQUISITION_DEVICE_PSEUDORANDOM_NUMBER_GENERATOR_SEED}
 {
-	txElemWidth_  = pm.value<FloatType>("tx_element_width" , 1.0e-6, 1000.0e-3);
-	txElemHeight_ = pm.value<FloatType>("tx_element_height", 1.0e-6, 1000.0e-3);
-	rxElemWidth_  = pm.value<FloatType>("rx_element_width" , 1.0e-6, 1000.0e-3);
-	rxElemHeight_ = pm.value<FloatType>("rx_element_height", 1.0e-6, 1000.0e-3);
+	txElemWidth_  = arrayPM.value<FloatType>("tx_element_width" , 1.0e-6, 1000.0e-3);
+	txElemHeight_ = arrayPM.value<FloatType>("tx_element_height", 1.0e-6, 1000.0e-3);
+	rxElemWidth_  = arrayPM.value<FloatType>("rx_element_width" , 1.0e-6, 1000.0e-3);
+	rxElemHeight_ = arrayPM.value<FloatType>("rx_element_height", 1.0e-6, 1000.0e-3);
 
 	noiseAmplitude_ = pm.value<FloatType>(  "noise_amplitude"       , 0.0, 1.0e100);
 	excitationType_ = pm.value<std::string>("excitation_type");
@@ -220,8 +221,8 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 	outFs_ = outputSamplingFreq;
 
 	// Calculate the coordinates of the centers of the elements.
-	ArrayUtil::calculateTxElementPositions(pm, txElemPos_);
-	ArrayUtil::calculateRxElementPositions(pm, rxElemPos_);
+	ArrayUtil::calculateTxElementPositions(arrayPM, txElemPos_);
+	ArrayUtil::calculateRxElementPositions(arrayPM, rxElemPos_);
 
 	txDelays_.assign(txElemPos_.size(), 0.0);
 
