@@ -128,13 +128,13 @@ Simulated3DSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned
 				<< " signalLength=" << signalLength;
 	}
 
-	std::vector<bool> txMask(config_.numElementsMux);
+	std::vector<bool> txMask(config_.txElemPos.size());
 	bool found = false;
 	for (unsigned int localElem : config_.activeTxElem) {
 		if (txElement == localElem) {
 			found = true;
 			const unsigned int elem = baseElement + localElem;
-			if (elem >= config_.numElementsMux) {
+			if (elem >= txMask.size()) {
 				THROW_EXCEPTION(InvalidValueException, "Invalid active tx element: " << elem << '.');
 			}
 			break;
@@ -144,10 +144,10 @@ Simulated3DSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned
 	txMask[baseElement + txElement] = true;
 	acqDevice_->setActiveTxElements(txMask);
 
-	std::vector<bool> rxMask(config_.numElementsMux);
+	std::vector<bool> rxMask(config_.rxElemPos.size());
 	for (unsigned int localElem : config_.activeRxElem) {
 		const unsigned int elem = baseElement + localElem;
-		if (elem >= config_.numElementsMux) {
+		if (elem >= rxMask.size()) {
 			THROW_EXCEPTION(InvalidValueException, "Invalid active rx element: " << elem << '.');
 		}
 		rxMask[elem] = true;
