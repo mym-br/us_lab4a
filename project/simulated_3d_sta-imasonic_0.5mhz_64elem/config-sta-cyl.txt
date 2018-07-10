@@ -9,9 +9,6 @@ num_elements_mux = 64
 active_tx_elem = 15:15
 active_rx_elem = 0:31
 
-# (m)
-pitch = 1.5e-3
-
 # (Hz)
 center_frequency = 0.5e6
 max_frequency = 1.0e6
