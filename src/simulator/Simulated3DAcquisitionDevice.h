@@ -489,15 +489,16 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 		}
 	}
 
-	if (noiseAmplitude_ != 0.0) {
-		// Add noise.
-		const FloatType a = 2.0 * noiseAmplitude_;
-		for (auto& sample : signalList_) {
-			sample += (prng_.get() - 0.5) * a;
-		}
-	}
-
 	Util::multiply(signalList_, signalCoeff_ / refCoeffSum);
+
+	// Add noise.
+	if (noiseAmplitude_ == 0.0) {
+		noiseAmplitude_ = 1.0e-4; // -80 dB
+	}
+	const FloatType a = 2.0 * noiseAmplitude_;
+	for (auto& sample : signalList_) {
+		sample += (prng_.get() - 0.5) * a;
+	}
 
 	return signalList_;
 }
