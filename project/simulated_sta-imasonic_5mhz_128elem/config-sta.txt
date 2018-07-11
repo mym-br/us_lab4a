@@ -23,10 +23,10 @@ num_pulses = 1
 acquisition_time = 100.0e-6
 
 # (dB)
-min_gain = 0.0
+min_gain = 242.8
 
 # (dB)
-max_gain = 0.0
+max_gain = 242.8
 
 # (m/s)
 propagation_speed_1 = 1484.0
@@ -41,4 +41,4 @@ sampling_frequency = 40.0e6
 dead_zone_m = 10.0e-3
 
 # 0.0: normalize
-value_scale = 0.0
+value_scale = 1.0

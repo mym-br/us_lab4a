@@ -99,6 +99,7 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 	acqDevice_->setExcitationWaveform(config_.centerFrequency);
 	acqDevice_->setReflectorList(reflectorList_);
 	acqDevice_->setReflectorOffset(reflectorsOffsetX, 0.0);
+	acqDevice_->setGain(config_.minGain);
 }
 
 template<typename FloatType>
