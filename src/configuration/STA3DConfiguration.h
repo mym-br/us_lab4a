@@ -52,8 +52,6 @@ struct STA3DConfiguration {
 	FloatType deadZoneM; // m
 	FloatType valueScale;
 
-	FloatType pitchX; // m
-	FloatType pitchY; // m
 	std::vector<unsigned int> activeTxElem; // relative to the base element
 	std::vector<unsigned int> activeRxElem; // relative to the base element
 	std::vector<XY<FloatType>> txElemPos; // m
@@ -125,10 +123,8 @@ STA3DConfiguration<FloatType>::load(ConstParameterMapPtr staPM, ConstParameterMa
 	deadZoneM         = staPM->value<FloatType>(   "dead_zone_m"        ,     0.0, 50.0e-3);
 	valueScale        = staPM->value<FloatType>(   "value_scale"        ,     0.0,  1.0e30);
 
-	pitchX = arrayPM->value<FloatType>("rx_pitch_x", 1.0e-6, 1000.0);
-	pitchY = arrayPM->value<FloatType>("rx_pitch_y", 1.0e-6, 1000.0);
 	ArrayUtil::calculateTxElementPositions(*arrayPM, txElemPos);
-	ArrayUtil::calculateTxElementPositions(*arrayPM, rxElemPos);
+	ArrayUtil::calculateRxElementPositions(*arrayPM, rxElemPos);
 	if (txElemPos.size() > numElementsMux || rxElemPos.size() > numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Error: numElementsMux is less than the number of array elements.");
 	}
