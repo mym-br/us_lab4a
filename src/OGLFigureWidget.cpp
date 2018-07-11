@@ -78,7 +78,7 @@
 #define ZOOM_OUT_FACTOR 0.9f
 #define REFLECTOR_POINT_SIZE_SMALL 1.0f
 #define REFLECTOR_POINT_SIZE_BIG 3.0f
-#define REFLECTOR_SIZE_THRESHOLD 20
+//#define REFLECTOR_SIZE_THRESHOLD 20
 #define VALUE_EPS (1e-30f)
 
 
@@ -1756,7 +1756,7 @@ OGLFigureWidget::paintGL()
 
 	glDisable(GL_DEPTH_TEST);
 
-	if (showPoints_ && !rotationMode_ && !pointList_.empty()) {
+	if (showPoints_ && !pointList_.empty()) {
 //		if (pointList_.size() > REFLECTOR_SIZE_THRESHOLD) {
 //			glPointSize(REFLECTOR_POINT_SIZE_SMALL);
 //		} else {
