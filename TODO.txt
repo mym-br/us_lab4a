@@ -1,5 +1,5 @@
 
-- Sectorial grid in z-y.
+- [???] Sectorial grid in z-y.
 
 - Waveform: 2a / 2b: numPeriods should be ignored (?).
 
@@ -21,6 +21,7 @@ Notes:
 
 ================================================================================
 
+ok- Rename STA3DConfiguration -> SA3DConfiguration.
 ok- Normalization network sync.
 	ok- Save signals.
 	ok- Imaging.

@@ -1,7 +1,7 @@
 
 method = sta_3d_simulated_save_signals
 
-sta_config_file = config-sta.txt
+sa_config_file = config-sta.txt
 
 simulated_3d_sta_acquisition_config_file = config-simulated_3d_sta_acquisition.txt
 

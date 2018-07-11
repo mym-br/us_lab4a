@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef STA3DCONFIGURATION_H
-#define STA3DCONFIGURATION_H
+#ifndef SA3DCONFIGURATION_H
+#define SA3DCONFIGURATION_H
 
 #include <sstream>
 #include <string>
@@ -31,13 +31,13 @@
 
 namespace Lab {
 
-// Configuration for Synthetic Transmit Aperture - one medium.
+// Configuration for 3D Synthetic Aperture - one medium.
 template<typename FloatType>
-struct STA3DConfiguration {
-	STA3DConfiguration() { }
-	~STA3DConfiguration() { }
+struct SA3DConfiguration {
+	SA3DConfiguration() { }
+	~SA3DConfiguration() { }
 
-	STA3DConfiguration(ConstParameterMapPtr staPM, ConstParameterMapPtr arrayPM) { load(staPM, arrayPM); }
+	SA3DConfiguration(ConstParameterMapPtr saPM, ConstParameterMapPtr arrayPM) { load(saPM, arrayPM); }
 
 	unsigned int numElementsMux;
 	unsigned int numPulses;
@@ -57,7 +57,7 @@ struct STA3DConfiguration {
 	std::vector<XY<FloatType>> txElemPos; // m
 	std::vector<XY<FloatType>> rxElemPos; // m
 
-	void load(ConstParameterMapPtr staPM, ConstParameterMapPtr arrayPM);
+	void load(ConstParameterMapPtr saPM, ConstParameterMapPtr arrayPM);
 
 private:
 	void fillActiveElem(const std::string& listStr, unsigned int maxElem, std::vector<unsigned int>& activeElem);
@@ -65,7 +65,7 @@ private:
 
 template<typename FloatType>
 void
-STA3DConfiguration<FloatType>::fillActiveElem(const std::string& listStr, unsigned int maxElem,
+SA3DConfiguration<FloatType>::fillActiveElem(const std::string& listStr, unsigned int maxElem,
 						std::vector<unsigned int>& activeElem)
 {
 	std::istringstream in{listStr};
@@ -108,20 +108,20 @@ STA3DConfiguration<FloatType>::fillActiveElem(const std::string& listStr, unsign
 
 template<typename FloatType>
 void
-STA3DConfiguration<FloatType>::load(ConstParameterMapPtr staPM, ConstParameterMapPtr arrayPM)
+SA3DConfiguration<FloatType>::load(ConstParameterMapPtr saPM, ConstParameterMapPtr arrayPM)
 {
-	numElementsMux    = staPM->value<unsigned int>("num_elements_mux"   ,       1,    1024);
-	numPulses         = staPM->value<unsigned int>("num_pulses"         ,       1,     100);
-	centerFrequency   = staPM->value<FloatType>(   "center_frequency"   ,   100.0, 100.0e6);
-	maxFrequency      = staPM->value<FloatType>(   "max_frequency"      ,   100.0, 100.0e6);
-	acquisitionTime   = staPM->value<FloatType>(   "acquisition_time"   ,  1.0e-6,     1.0);
-	minGain           = staPM->value<FloatType>(   "min_gain"           , -2000.0,  2000.0);
-	maxGain           = staPM->value<FloatType>(   "max_gain"           , minGain,  2000.0);
-	propagationSpeed  = staPM->value<FloatType>(   "propagation_speed_1",   100.0, 10000.0);
-	acquisitionDelay  = staPM->value<FloatType>(   "acquisition_delay"  ,     0.0,     1.0);
-	samplingFrequency = staPM->value<FloatType>(   "sampling_frequency" ,   100.0, 200.0e6);
-	deadZoneM         = staPM->value<FloatType>(   "dead_zone_m"        ,     0.0, 50.0e-3);
-	valueScale        = staPM->value<FloatType>(   "value_scale"        ,     0.0,  1.0e30);
+	numElementsMux    = saPM->value<unsigned int>("num_elements_mux"   ,       1,    1024);
+	numPulses         = saPM->value<unsigned int>("num_pulses"         ,       1,     100);
+	centerFrequency   = saPM->value<FloatType>(   "center_frequency"   ,   100.0, 100.0e6);
+	maxFrequency      = saPM->value<FloatType>(   "max_frequency"      ,   100.0, 100.0e6);
+	acquisitionTime   = saPM->value<FloatType>(   "acquisition_time"   ,  1.0e-6,     1.0);
+	minGain           = saPM->value<FloatType>(   "min_gain"           , -2000.0,  2000.0);
+	maxGain           = saPM->value<FloatType>(   "max_gain"           , minGain,  2000.0);
+	propagationSpeed  = saPM->value<FloatType>(   "propagation_speed_1",   100.0, 10000.0);
+	acquisitionDelay  = saPM->value<FloatType>(   "acquisition_delay"  ,     0.0,     1.0);
+	samplingFrequency = saPM->value<FloatType>(   "sampling_frequency" ,   100.0, 200.0e6);
+	deadZoneM         = saPM->value<FloatType>(   "dead_zone_m"        ,     0.0, 50.0e-3);
+	valueScale        = saPM->value<FloatType>(   "value_scale"        ,     0.0,  1.0e30);
 
 	ArrayUtil::calculateTxElementPositions(*arrayPM, txElemPos);
 	ArrayUtil::calculateRxElementPositions(*arrayPM, rxElemPos);
@@ -130,11 +130,11 @@ STA3DConfiguration<FloatType>::load(ConstParameterMapPtr staPM, ConstParameterMa
 	}
 
 	LOG_DEBUG << "Active tx elements:";
-	fillActiveElem(staPM->value<std::string>("active_tx_elem"), txElemPos.size(), activeTxElem);
+	fillActiveElem(saPM->value<std::string>("active_tx_elem"), txElemPos.size(), activeTxElem);
 	LOG_DEBUG << "Active rx elements:";
-	fillActiveElem(staPM->value<std::string>("active_rx_elem"), rxElemPos.size(), activeRxElem);
+	fillActiveElem(saPM->value<std::string>("active_rx_elem"), rxElemPos.size(), activeRxElem);
 }
 
 } // namespace Lab
 
-#endif // STA3DCONFIGURATION_H
+#endif // SA3DCONFIGURATION_H

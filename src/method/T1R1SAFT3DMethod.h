@@ -34,7 +34,7 @@
 #include "Project.h"
 #include "Simulated3DT1R1SAFTAcquisition.h"
 #include "STAAcquisition.h"
-#include "STA3DConfiguration.h"
+#include "SA3DConfiguration.h"
 #include "Timer.h"
 #include "Vectorial3DT1R1SAFTProcessor.h"
 #include "Util.h"
@@ -125,9 +125,9 @@ void
 T1R1SAFT3DMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr staPM   = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	ConstParameterMapPtr saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	const STA3DConfiguration<FloatType> config(staPM, arrayPM);
+	const SA3DConfiguration<FloatType> config(saPM, arrayPM);
 	if (config.txElemPos.size() != config.rxElemPos.size()) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of receive elements is not equal to the number of transmit elements.");
 	}

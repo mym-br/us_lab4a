@@ -34,7 +34,7 @@
 #include "Project.h"
 #include "Simulated3DSTAAcquisition.h"
 #include "STAAcquisition.h"
-#include "STA3DConfiguration.h"
+#include "SA3DConfiguration.h"
 #include "Timer.h"
 #include "Vectorial3DSTAProcessor.h"
 #include "Util.h"
@@ -125,9 +125,9 @@ void
 STA3DMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr staPM   = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	ConstParameterMapPtr saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	const STA3DConfiguration<FloatType> config(staPM, arrayPM);
+	const SA3DConfiguration<FloatType> config(saPM, arrayPM);
 
 	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
 

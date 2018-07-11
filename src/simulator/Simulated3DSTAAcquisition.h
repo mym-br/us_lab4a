@@ -27,7 +27,7 @@
 #include "ParameterMap.h"
 #include "Project.h"
 #include "Simulated3DAcquisitionDevice.h"
-#include "STA3DConfiguration.h"
+#include "SA3DConfiguration.h"
 #include "STAAcquisition.h"
 #include "Util.h"
 #include "XYZValue.h"
@@ -39,7 +39,7 @@ namespace Lab {
 template<typename FloatType>
 class Simulated3DSTAAcquisition : public STAAcquisition<FloatType> {
 public:
-	Simulated3DSTAAcquisition(Project& project, const STA3DConfiguration<FloatType>& config);
+	Simulated3DSTAAcquisition(Project& project, const SA3DConfiguration<FloatType>& config);
 	virtual ~Simulated3DSTAAcquisition();
 
 	virtual void execute(unsigned int baseElement, unsigned int txElement,
@@ -51,7 +51,7 @@ private:
 	Simulated3DSTAAcquisition& operator=(const Simulated3DSTAAcquisition&) = delete;
 
 	Project& project_;
-	const STA3DConfiguration<FloatType>& config_;
+	const SA3DConfiguration<FloatType>& config_;
 	FloatType maxAbsValue_; // auxiliar
 	std::unique_ptr<Simulated3DAcquisitionDevice<FloatType>> acqDevice_;
 	std::vector<XYZValue<FloatType>> reflectorList_;
@@ -62,7 +62,7 @@ private:
 
 
 template<typename FloatType>
-Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project, const STA3DConfiguration<FloatType>& config)
+Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project, const SA3DConfiguration<FloatType>& config)
 		: project_{project}
 		, config_{config}
 		, maxAbsValue_{}

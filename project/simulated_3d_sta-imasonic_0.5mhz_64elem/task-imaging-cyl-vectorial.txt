@@ -1,7 +1,7 @@
 
 method = sta_3d_vectorial_simulated
 
-sta_config_file = config-sta-cyl.txt
+sa_config_file = config-sta-cyl.txt
 
 simulated_3d_sta_acquisition_config_file = config-simulated_3d_sta_acquisition.txt
 

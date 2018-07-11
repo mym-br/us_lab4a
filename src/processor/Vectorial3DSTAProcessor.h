@@ -36,7 +36,7 @@
 #include "Matrix2.h"
 #include "Matrix3.h"
 #include "STAAcquisition.h"
-#include "STA3DConfiguration.h"
+#include "SA3DConfiguration.h"
 #include "STAProcessor.h"
 #include "Util.h"
 #include "XYZValueFactor.h"
@@ -53,7 +53,7 @@ template<typename FloatType>
 class Vectorial3DSTAProcessor : public STAProcessor<FloatType> {
 public:
 	Vectorial3DSTAProcessor(
-			const STA3DConfiguration<FloatType>& config,
+			const SA3DConfiguration<FloatType>& config,
 			STAAcquisition<FloatType>& acquisition,
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
@@ -73,7 +73,7 @@ private:
 	Vectorial3DSTAProcessor(const Vectorial3DSTAProcessor&) = delete;
 	Vectorial3DSTAProcessor& operator=(const Vectorial3DSTAProcessor&) = delete;
 
-	const STA3DConfiguration<FloatType>& config_;
+	const SA3DConfiguration<FloatType>& config_;
 	unsigned int deadZoneSamplesUp_;
 	STAAcquisition<FloatType>& acquisition_;
 	unsigned int upsamplingFactor_;
@@ -91,7 +91,7 @@ private:
 
 template<typename FloatType>
 Vectorial3DSTAProcessor<FloatType>::Vectorial3DSTAProcessor(
-			const STA3DConfiguration<FloatType>& config,
+			const SA3DConfiguration<FloatType>& config,
 			STAAcquisition<FloatType>& acquisition,
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
