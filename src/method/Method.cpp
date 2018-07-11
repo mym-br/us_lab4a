@@ -27,6 +27,7 @@
 #include "SingleAcquisitionMethod.h"
 #include "STA3DMethod.h"
 #include "STAMethod.h"
+#include "T1R1SAFT3DMethod.h"
 #include "TestMethod.h"
 #include "VTKFileMultiImageMethod.h"
 
@@ -66,6 +67,9 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sta_3d_simulated_save_signals);
 	ADD_MAP_ITEM(sta_3d_simulated_seq_y_save_signals);
 	ADD_MAP_ITEM(sta_3d_vectorial_simulated);
+	ADD_MAP_ITEM(t1r1saft_3d_simulated_save_signals);
+	ADD_MAP_ITEM(t1r1saft_3d_simulated_seq_y_save_signals);
+	ADD_MAP_ITEM(t1r1saft_3d_vectorial_simulated);
 	ADD_MAP_ITEM(show_image);
 	ADD_MAP_ITEM(multi_layer_image);
 	ADD_MAP_ITEM(multi_image_vtk_file);
@@ -113,6 +117,10 @@ Method::get(Project& project)
 	case MethodType::sta_3d_simulated_seq_y_save_signals: // falls through
 	case MethodType::sta_3d_vectorial_simulated:
 		return new STA3DMethod<double>(project);
+	case MethodType::t1r1saft_3d_simulated_save_signals:       // falls through
+	case MethodType::t1r1saft_3d_simulated_seq_y_save_signals: // falls through
+	case MethodType::t1r1saft_3d_vectorial_simulated:
+		return new T1R1SAFT3DMethod<double>(project);
 	case MethodType::sta_network_sync:              // falls through
 	case MethodType::sta_network_sync_save_signals:
 		return new NetworkSyncSTAMethod<double>(project);

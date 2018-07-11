@@ -139,7 +139,10 @@ HEADERS  += \
     src/util/XYZValueFactor.h \
     src/method/STA3DMethod.h \
     src/configuration/STA3DConfiguration.h \
-    src/processor/Vectorial3DSTAProcessor.h
+    src/processor/Vectorial3DSTAProcessor.h \
+    src/method/T1R1SAFT3DMethod.h \
+    src/simulator/Simulated3DT1R1SAFTAcquisition.h \
+    src/processor/Vectorial3DT1R1SAFTProcessor.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
