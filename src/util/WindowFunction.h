@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef WINDOW_H_
-#define WINDOW_H_
+#ifndef WINDOWFUNCTION_H_
+#define WINDOWFUNCTION_H_
 
 #include <vector>
 
@@ -25,7 +25,7 @@
 
 
 namespace Lab {
-namespace Window {
+namespace WindowFunction {
 
 template<typename FloatType>
 void
@@ -37,7 +37,7 @@ hamming(int n, std::vector<FloatType>& w)
 	}
 }
 
-} // namespace Window
+} // namespace WindowFunction
 } // namespace Lab
 
-#endif /* WINDOW_H_ */
+#endif /* WINDOWFUNCTION_H_ */

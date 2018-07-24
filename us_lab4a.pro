@@ -64,7 +64,6 @@ HEADERS  += \
     src/simulator/SimulatedSTAAcquisition.h \
     src/util/XZValue.h \
     src/util/XY.h \
-    src/util/Window.h \
     src/util/Waveform.h \
     src/util/Timer.h \
     src/util/Statistics.h \
@@ -142,7 +141,8 @@ HEADERS  += \
     src/method/T1R1SAFT3DMethod.h \
     src/simulator/Simulated3DT1R1SAFTAcquisition.h \
     src/processor/Vectorial3DT1R1SAFTProcessor.h \
-    src/configuration/SA3DConfiguration.h
+    src/configuration/SA3DConfiguration.h \
+    src/util/WindowFunction.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
