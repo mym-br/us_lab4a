@@ -62,7 +62,9 @@ public:
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
 			FloatType peakOffset,
-			bool calculateEnvelope);
+			bool calculateEnvelope,
+			const std::vector<FloatType>& txApod,
+			const std::vector<FloatType>& rxApod);
 	virtual ~VectorialSTAProcessor() {}
 
 	virtual void process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData);
@@ -90,6 +92,8 @@ private:
 	HilbertEnvelope<FloatType> envelope_;
 	bool calculateEnvelope_;
 	bool initialized_;
+	std::vector<FloatType> txApod_;
+	std::vector<FloatType> rxApod_;
 };
 
 
@@ -101,7 +105,9 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
 			FloatType peakOffset,
-			bool calculateEnvelope)
+			bool calculateEnvelope,
+			const std::vector<FloatType>& txApod,
+			const std::vector<FloatType>& rxApod)
 		: config_(config)
 		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
 		, acquisition_(acquisition)
@@ -109,6 +115,8 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 		, coherenceFactor_(coherenceFactor)
 		, calculateEnvelope_(calculateEnvelope)
 		, initialized_(false)
+		, txApod_(txApod)
+		, rxApod_(rxApod)
 {
 	if (upsamplingFactor_ > 1) {
 		interpolator_.prepare(upsamplingFactor_, VECTORIAL_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
@@ -208,7 +216,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZV
 						const FloatType k = delay - delayIdx;
 						if (delayIdx + 1U < analyticSignalMatrix_.n3()) {
 							const std::complex<FloatType>* p = &analyticSignalMatrix_(localTxElem, rxElem, delayIdx);
-							local.rxSignalSumList[rxElem] += (1 - k) * *p + k * *(p + 1);
+							local.rxSignalSumList[rxElem] += txApod_[txElem] * rxApod_[rxElem] * ((1 - k) * *p + k * *(p + 1));
 						}
 					}
 				}

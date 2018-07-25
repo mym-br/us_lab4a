@@ -200,9 +200,11 @@ STAMethod<FloatType>::execute()
 				visual_ = Figure::VISUALIZATION_RECTIFIED_LOG;
 			}
 			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
+			std::vector<FloatType> txApod(config.numElements, 1.0);
+			std::vector<FloatType> rxApod(config.numElements, 1.0);
 			auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(
 							config, *acquisition, upsamplingFactor,
-							coherenceFactor, peakOffset, processingWithEnvelope);
+							coherenceFactor, peakOffset, processingWithEnvelope, txApod, rxApod);
 			process(config.valueScale, *processor, baseElement, outputDir);
 			if (coherenceFactor.enabled()) {
 				useCoherenceFactor(config.valueScale, !processingWithEnvelope, outputDir);

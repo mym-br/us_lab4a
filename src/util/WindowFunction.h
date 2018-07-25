@@ -18,10 +18,12 @@
 #ifndef WINDOWFUNCTION_H_
 #define WINDOWFUNCTION_H_
 
+#include <cmath> /* ceil */
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include "Exception.h"
-#include "Util.h"
 
 
 
@@ -29,6 +31,32 @@ namespace Lab {
 namespace WindowFunction {
 
 // n can be a non-integer.
+template<typename FloatType> void fadeIn(double n, FloatType* data);
+// The first zeroed element is not included in the data.
+// n can be a non-integer.
+template<typename FloatType> void fadeIn2(double n, FloatType* data);
+// n can be a non-integer.
+template<typename FloatType> void fadeOut(double n, FloatType* data);
+// The last zeroed element is not included in the data.
+// n can be a non-integer.
+template<typename FloatType> void fadeOut2(double n, FloatType* data);
+template<typename FloatType> void rectangular(unsigned int n, std::vector<FloatType>& w);
+template<typename FloatType> void trapezoidal(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<FloatType>& w);
+// The first and the last zeroed elements are not included in the array.
+template<typename FloatType> void trapezoidal2(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<FloatType>& w);
+template<typename FloatType> void triangular(unsigned int n, std::vector<FloatType>& w);
+// The first and the last zeroed elements are not included in the array.
+template<typename FloatType> void triangular2(unsigned int n, std::vector<FloatType>& w);
+template<typename FloatType> void hanning(unsigned int n, std::vector<FloatType>& w);
+// The first and the last zeroed elements are not included in the array.
+template<typename FloatType> void hanning2(unsigned int n, std::vector<FloatType>& w);
+template<typename FloatType> void hamming(unsigned int n, std::vector<FloatType>& w);
+template<typename FloatType> void blackman(unsigned int n, std::vector<FloatType>& w);
+// The first and the last zeroed elements are not included in the array.
+template<typename FloatType> void blackman2(unsigned int n, std::vector<FloatType>& w);
+
+
+
 template<typename FloatType>
 void
 fadeIn(double n, FloatType* data)
@@ -39,8 +67,6 @@ fadeIn(double n, FloatType* data)
 	}
 }
 
-// The first zeroed element is not included in the returned data.
-// n can be a non-integer.
 template<typename FloatType>
 void
 fadeIn2(double n, FloatType* data)
@@ -51,26 +77,23 @@ fadeIn2(double n, FloatType* data)
 	}
 }
 
-// n can be a non-integer.
 template<typename FloatType>
 void
 fadeOut(double n, FloatType* data)
 {
 	const double c1 = 1.0 / n;
 	for (unsigned int i = 0; i < n; ++i) {
-		data[i] = (n - i - 1.0) * c1;
+		data[static_cast<unsigned int>(std::ceil(n)) - i - 1U] = i * c1;
 	}
 }
 
-// The last zeroed element is not included in the returned data.
-// n can be a non-integer.
 template<typename FloatType>
 void
 fadeOut2(double n, FloatType* data)
 {
 	const double c1 = 1.0 / (n + 1.0);
 	for (unsigned int i = 0; i < n; ++i) {
-		data[i] = (n - i) * c1;
+		data[static_cast<unsigned int>(std::ceil(n)) - i - 1U] = (i + 1.0) * c1;
 	}
 }
 
@@ -86,8 +109,9 @@ template<typename FloatType>
 void
 trapezoidal(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<FloatType>& w)
 {
+	const unsigned int n = nFadeIn + nTop + nFadeOut;
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
-	w.resize(nFadein + nTop + nFadeout);
+	w.resize(n);
 	fadeIn(nFadeIn, &w[0]);
 	for (unsigned int i = nFadeIn; i < nFadeIn + nTop; ++i) {
 		w[i] = 1.0;
@@ -97,11 +121,11 @@ trapezoidal(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std:
 
 template<typename FloatType>
 void
-# The first and the last zeroed elements are not included in the returned array.
-trapezoidal2(unsigned int nFadein, unsigned int n_top, unsigned int nFadeout)
+trapezoidal2(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<FloatType>& w)
 {
+	const unsigned int n = nFadeIn + nTop + nFadeOut;
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
-	w.resize(nFadein + nTop + nFadeout);
+	w.resize(n);
 	fadeIn2(nFadeIn, &w[0]);
 	for (unsigned int i = nFadeIn; i < nFadeIn + nTop; ++i) {
 		w[i] = 1.0;
@@ -118,16 +142,15 @@ triangular(unsigned int n, std::vector<FloatType>& w)
 	const double halfWidth = 0.5 * (n - 1.0);
 	if (n % 2 == 0) {
 		fadeIn(halfWidth, &w[0]);
-		fadeIn(halfWidth, &w[n / 2]);
+		fadeOut(halfWidth, &w[n / 2]);
 	} else {
 		fadeIn(halfWidth, &w[0]);
 		const unsigned int n2 = (n - 1) / 2;
-		&w[n2] = 1.0;
-		fadeIn(halfWidth, &w[n2 + 1]);
+		w[n2] = 1.0;
+		fadeOut(halfWidth, &w[n2 + 1]);
 	}
 }
 
-// The first and the last zeroed elements are not included in the returned array.
 template<typename FloatType>
 void
 triangular2(unsigned int n, std::vector<FloatType>& w)
@@ -137,12 +160,12 @@ triangular2(unsigned int n, std::vector<FloatType>& w)
 	const double halfWidth = 0.5 * (n - 1.0);
 	if (n % 2 == 0) {
 		fadeIn2(halfWidth, &w[0]);
-		fadeIn2(halfWidth, &w[n / 2]);
+		fadeOut2(halfWidth, &w[n / 2]);
 	} else {
 		fadeIn2(halfWidth, &w[0]);
 		const unsigned int n2 = (n - 1) / 2;
-		&w[n2] = 1.0;
-		fadeIn2(halfWidth, &w[n2 + 1]);
+		w[n2] = 1.0;
+		fadeOut2(halfWidth, &w[n2 + 1]);
 	}
 }
 
@@ -159,7 +182,6 @@ hanning(unsigned int n, std::vector<FloatType>& w)
 	}
 }
 
-// The first and the last zeroed elements are not included in the returned array.
 template<typename FloatType>
 void
 hanning2(unsigned int n, std::vector<FloatType>& w)
@@ -199,7 +221,6 @@ blackman(unsigned int n, std::vector<FloatType>& w)
 	}
 }
 
-// The first and the last zeroed elements are not included in the returned array.
 template<typename FloatType>
 void
 blackman2(unsigned int n, std::vector<FloatType>& w)
@@ -210,6 +231,60 @@ blackman2(unsigned int n, std::vector<FloatType>& w)
 	for (unsigned int i = 0; i < n; ++i) {
 		const double c2 = (i + 1.0) * c1;
 		w[i] = 0.42 - 0.5 * std::cos(2.0 * PI * c2) + 0.08 * std::cos(4.0 * PI * c2);
+	}
+}
+
+template<typename FloatType>
+void
+get(const std::string& description, unsigned int size, std::vector<FloatType>& window)
+{
+	std::istringstream in{description};
+	std::string name;
+	in >> name;
+	if (!in) THROW_EXCEPTION(MissingValueException, "Missing window function name.");
+
+	if (name == "rectangular") {
+		rectangular(size, window);
+	} else if (name == "triangular") {
+		triangular(size, window);
+	} else if (name == "triangular2") {
+		triangular2(size, window);
+	} else if (name == "hanning") {
+		hanning(size, window);
+	} else if (name == "hanning2") {
+		hanning2(size, window);
+	} else if (name == "hamming") {
+		hamming(size, window);
+	} else if (name == "blackman") {
+		blackman(size, window);
+	} else if (name == "blackman2") {
+		blackman2(size, window);
+	} else if (name == "trapezoidal") {
+		unsigned int nFadeIn, nTop, nFadeOut;
+		in >> nFadeIn;
+		if (!in) THROW_EXCEPTION(InvalidParameterException, "Missing fade in size for the trapezoidal window function.");
+		in >> nTop;
+		if (!in) THROW_EXCEPTION(InvalidParameterException, "Missing top size for the trapezoidal window function.");
+		in >> nFadeOut;
+		if (!in) THROW_EXCEPTION(InvalidParameterException, "Missing fade out size for the trapezoidal window function.");
+		if (size != nFadeIn + nTop + nFadeOut) {
+			THROW_EXCEPTION(InvalidParameterException, "Invalid total size for the trapezoidal window function.");
+		}
+		trapezoidal(nFadeIn, nTop, nFadeOut, window);
+	} else if (name == "trapezoidal2") {
+		unsigned int nFadeIn, nTop, nFadeOut;
+		in >> nFadeIn;
+		if (!in) THROW_EXCEPTION(InvalidParameterException, "Missing fade in size for the trapezoidal window function.");
+		in >> nTop;
+		if (!in) THROW_EXCEPTION(InvalidParameterException, "Missing top size for the trapezoidal window function.");
+		in >> nFadeOut;
+		if (!in) THROW_EXCEPTION(InvalidParameterException, "Missing fade out size for the trapezoidal window function.");
+		if (size != nFadeIn + nTop + nFadeOut) {
+			THROW_EXCEPTION(InvalidParameterException, "Invalid total size for the trapezoidal window function.");
+		}
+		trapezoidal2(nFadeIn, nTop, nFadeOut, window);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid window function name: " << name << '.');
 	}
 }
 

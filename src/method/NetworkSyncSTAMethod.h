@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "CoherenceFactor.h"
 #include "FileUtil.h"
@@ -36,6 +37,7 @@
 #include "Timer.h"
 #include "VectorialSTAProcessor.h"
 #include "Util.h"
+#include "WindowFunction.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
@@ -98,6 +100,18 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	const std::string outputDir          = taskPM->value<std::string>( "output_dir");
 	const FloatType minY                 = taskPM->value<FloatType>(   "min_y"            , -10000.0, 10000.0);
 	const FloatType yStep                = taskPM->value<FloatType>(   "y_step"           ,   1.0e-6,  1000.0);
+	const std::string txApodDesc         = taskPM->value<std::string>( "tx_apodization");
+	const std::string rxApodDesc         = taskPM->value<std::string>( "rx_apodization");
+
+	std::vector<FloatType> txApod(config.numElements);
+	WindowFunction::get(txApodDesc, config.numElements, txApod);
+	std::vector<FloatType> rxApod(config.numElements);
+	WindowFunction::get(rxApodDesc, config.numElements, rxApod);
+	std::vector<FloatType> elemIndex;
+	Util::fillSequenceFromStartToEndWithSize(elemIndex,
+		FloatType{0}, static_cast<FloatType>(config.numElements - 1U), static_cast<FloatType>(config.numElements));
+	project_.showFigure2D(1, "TX Apodization", elemIndex, txApod, true, true);
+	project_.showFigure2D(2, "RX Apodization", elemIndex, rxApod, true, true);
 
 	project_.createDirectory(outputDir, true);
 
@@ -110,7 +124,9 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 	bool coherenceFactorEnabled = coherenceFactor.enabled();
 	auto acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(project_, config.numElements, "");
-	auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(config, *acquisition, upsamplingFactor, coherenceFactor, peakOffset, vectorialProcessingWithEnvelope);
+	auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(config, *acquisition,
+					upsamplingFactor, coherenceFactor, peakOffset,
+					vectorialProcessingWithEnvelope, txApod, rxApod);
 	Figure::Visualization visual;
 	if (vectorialProcessingWithEnvelope) {
 		visual = Figure::VISUALIZATION_RECTIFIED_LOG;
