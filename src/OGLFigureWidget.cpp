@@ -1296,7 +1296,7 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 }
 
 float
-OGLFigureWidget::calcValueFactor(const Matrix2<XYZValue<float>>& data)
+OGLFigureWidget::calcValueFactor(const Matrix<XYZValue<float>>& data)
 {
 	maxAbsLevel_ = Util::maxAbsoluteValueField<XYZValue<float>, float>(data);
 	maxAbsLevelDecibels_ = Util::linearToDecibels(maxAbsLevel_);
@@ -1330,7 +1330,7 @@ OGLFigureWidget::fillIndexArray(unsigned int iA, unsigned int iB, std::vector<GL
 
 template<typename ColorScale>
 void
-OGLFigureWidget::fillOGLGridDataWithAbsValues(const Matrix2<XYZValue<float>>& data, float valueFactor)
+OGLFigureWidget::fillOGLGridDataWithAbsValues(const Matrix<XYZValue<float>>& data, float valueFactor)
 {
 	auto srcIter = data.begin();
 	auto srcEnd = data.end();
@@ -1346,7 +1346,7 @@ OGLFigureWidget::fillOGLGridDataWithAbsValues(const Matrix2<XYZValue<float>>& da
 
 template<typename ColorScale>
 void
-OGLFigureWidget::fillOGLGridDataWithLogAbsValues(const Matrix2<XYZValue<float>>& data, float valueFactor)
+OGLFigureWidget::fillOGLGridDataWithLogAbsValues(const Matrix<XYZValue<float>>& data, float valueFactor)
 {
 	const float invMinusMinDecibels = -1.0f / minDecibels_;
 	auto srcIter = data.begin();
@@ -1401,7 +1401,7 @@ OGLFigureWidget::fillOGLGridData()
 		break;
 	case Figure::VISUALIZATION_ENVELOPE_LINEAR:
 		{
-			Matrix2<XYZValue<float>> envelope = gridData_;
+			Matrix<XYZValue<float>> envelope = gridData_;
 			ParallelHilbertEnvelope<float>::calculateDim2Value(envelope);
 			const float valueFactor = calcValueFactor(envelope);
 			fillOGLGridDataWithAbsValues<ColorScale>(envelope, valueFactor);
@@ -1409,7 +1409,7 @@ OGLFigureWidget::fillOGLGridData()
 		break;
 	case Figure::VISUALIZATION_ENVELOPE_LOG:
 		{
-			Matrix2<XYZValue<float>> envelope = gridData_;
+			Matrix<XYZValue<float>> envelope = gridData_;
 			ParallelHilbertEnvelope<float>::calculateDim2Value(envelope);
 			const float valueFactor = calcValueFactor(envelope);
 			fillOGLGridDataWithLogAbsValues<ColorScale>(envelope, valueFactor);
@@ -1419,7 +1419,7 @@ OGLFigureWidget::fillOGLGridData()
 }
 
 void
-OGLFigureWidget::updateGridData(float dataValueScale, const Matrix2<XYZValue<float>>& gridData)
+OGLFigureWidget::updateGridData(float dataValueScale, const Matrix<XYZValue<float>>& gridData)
 {
 	if (gridData.n1() < 2U || gridData.n2() < 2U) return;
 
@@ -1445,7 +1445,7 @@ OGLFigureWidget::updateGridData(float dataValueScale, const Matrix2<XYZValue<flo
 	dataValueScale_ = dataValueScale;
 	gridData_ = gridData;
 
-	Matrix2<XYZValue<float>>::ConstIterator iter = gridData.begin(), end = gridData.end();
+	Matrix<XYZValue<float>>::ConstIterator iter = gridData.begin(), end = gridData.end();
 	minX_ = maxX_ = iter->x;
 	minY_ = maxY_ = iter->y;
 	minZ_ = maxZ_ = iter->z;
@@ -1513,7 +1513,7 @@ OGLFigureWidget::setMinDecibels(float minDecibels)
 
 void
 OGLFigureWidget::updateData(float dataValueScale,
-				const Matrix2<XYZValue<float>>* gridData,
+				const Matrix<XYZValue<float>>* gridData,
 				const std::vector<XYZ<float>>* pointList)
 {
 	if (!gridData) return;
@@ -1706,7 +1706,7 @@ OGLFigureWidget::paintGL()
 			glNewList(oglDisplayList_, GL_COMPILE);
 
 			for (unsigned int i = 0; i < oglGridData_.n1() - 1; ++i) {
-				Matrix2<OGLPoint3D>::ConstDim2Interval intervalA, intervalB;
+				Matrix<OGLPoint3D>::ConstDim2Interval intervalA, intervalB;
 				if (i & 1U) {
 					intervalA = oglGridData_.dim2Interval(i + 1);
 					intervalB = oglGridData_.dim2Interval(i);
@@ -1716,8 +1716,8 @@ OGLFigureWidget::paintGL()
 				}
 
 				glBegin(GL_TRIANGLE_STRIP);
-				Matrix2<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first;
-				Matrix2<OGLPoint3D>::ConstDim2Iterator iterB = intervalB.first;
+				Matrix<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first;
+				Matrix<OGLPoint3D>::ConstDim2Iterator iterB = intervalB.first;
 				if (iterA != intervalA.second) {
 					const OGLPoint3D pA = *iterA;
 					createVertex(pA);

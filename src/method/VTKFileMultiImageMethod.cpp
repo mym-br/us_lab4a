@@ -26,7 +26,7 @@
 
 #include "Exception.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "Util.h"
@@ -74,9 +74,9 @@ VTKFileMultiImageMethod::execute()
 	const bool invertZ             = taskPM->value<bool>(       "invert_z");
 
 	Project::GridDataType prevGridData;
-	Matrix2<std::size_t> prevPointIndex;
+	Matrix<std::size_t> prevPointIndex;
 	Project::GridDataType gridData;
-	Matrix2<std::size_t> pointIndex;
+	Matrix<std::size_t> pointIndex;
 	std::vector<XYZValue<float>> pointArray;
 	std::vector<Cell> cellArray;
 	const float minValue = Util::decibelsToLinear(minDecibels);

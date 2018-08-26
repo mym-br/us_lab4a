@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Util.h"
 
 
@@ -57,7 +57,7 @@ private:
 	FloatType subElemHeight_;
 	unsigned int numElemX_;
 	unsigned int numElemY_;
-	Matrix2<SubElem> subElem_;
+	Matrix<SubElem> subElem_;
 };
 
 

@@ -34,7 +34,7 @@
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Matrix3.h"
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
@@ -67,7 +67,7 @@ public:
 			const std::vector<FloatType>& rxApod);
 	virtual ~VectorialSTAProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData);
+	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
 	struct ThreadData {
@@ -127,7 +127,7 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 
 template<typename FloatType>
 void
-VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData)
+VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== VectorialSTAProcessor::process ==========";
 
@@ -162,7 +162,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZV
 			if (upsamplingFactor_ > 1) {
 				interpolator_.interpolate(&acqData_(rxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
 			} else {
-				typename Matrix2<FloatType>::Dim2Interval interval = acqData_.dim2Interval(rxElem);
+				typename Matrix<FloatType>::Dim2Interval interval = acqData_.dim2Interval(rxElem);
 				std::copy(interval.first, interval.second, tempSignal_.begin());
 			}
 

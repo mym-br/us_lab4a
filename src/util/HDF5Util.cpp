@@ -45,7 +45,7 @@ hdf5MemoryType<std::vector<std::pair<float, float>>>()
 
 template<>
 PredType
-hdf5MemoryType<Matrix2<float>>()
+hdf5MemoryType<Matrix<float>>()
 {
 	return PredType::NATIVE_FLOAT;
 }
@@ -66,7 +66,7 @@ hdf5MemoryType<std::vector<std::pair<double, double>>>()
 
 template<>
 PredType
-hdf5MemoryType<Matrix2<double>>()
+hdf5MemoryType<Matrix<double>>()
 {
 	return PredType::NATIVE_DOUBLE;
 }

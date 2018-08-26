@@ -23,7 +23,7 @@
 #include <QOpenGLWidget>
 
 #include "global.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "OGL.h"
 #include "XYZ.h"
 #include "XYZValue.h"
@@ -47,7 +47,7 @@ public:
 	void setColormap(Figure::Colormap colormap);
 	Figure::Colormap colormap() const { return colormap_; }
 	void updateData(float dataValueScale,
-			const Matrix2<XYZValue<float>>* gridData,
+			const Matrix<XYZValue<float>>* gridData,
 			const std::vector<XYZ<float>>* pointList);
 	void updateDataVisualization();
 	void setRotationMode(bool enabled) {
@@ -78,16 +78,16 @@ private:
 		float z;
 	};
 
-	void updateGridData(float dataValueScale, const Matrix2<XYZValue<float>>& gridData);
+	void updateGridData(float dataValueScale, const Matrix<XYZValue<float>>& gridData);
 	void updatePointList(const std::vector<XYZ<float>>& pointList);
 
-	float calcValueFactor(const Matrix2<XYZValue<float>>& data);
+	float calcValueFactor(const Matrix<XYZValue<float>>& data);
 
 	template<typename ColorScale>
-	void fillOGLGridDataWithAbsValues(const Matrix2<XYZValue<float>>& data, float valueFactor);
+	void fillOGLGridDataWithAbsValues(const Matrix<XYZValue<float>>& data, float valueFactor);
 
 	template<typename ColorScale>
-	void fillOGLGridDataWithLogAbsValues(const Matrix2<XYZValue<float>>& data, float valueFactor);
+	void fillOGLGridDataWithLogAbsValues(const Matrix<XYZValue<float>>& data, float valueFactor);
 
 	template<typename ColorScale> void fillOGLGridData();
 
@@ -126,9 +126,9 @@ private:
 	QPoint mouseAnchor_;
 	QPoint distanceMarker1_;
 	QPoint distanceMarker2_;
-	Matrix2<XYZValue<float>> gridData_;
+	Matrix<XYZValue<float>> gridData_;
 	std::vector<XYZ<float>> pointList_;
-	Matrix2<OGLPoint3D> oglGridData_;
+	Matrix<OGLPoint3D> oglGridData_;
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 	std::vector<GLuint> evenIndexArray_;
 	std::vector<GLuint> oddIndexArray_;

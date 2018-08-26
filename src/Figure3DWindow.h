@@ -25,7 +25,7 @@
 #include "ui_Figure3DWindow.h"
 
 #include "global.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "XYZ.h"
 #include "XYZValue.h"
 
@@ -40,7 +40,7 @@ public:
 	~Figure3DWindow();
 
 	void updateData(float valueScale,
-			const Matrix2<XYZValue<float>>* gridData=nullptr,
+			const Matrix<XYZValue<float>>* gridData=nullptr,
 			const std::vector<XYZ<float>>* pointList=nullptr);
 	void setVisualization(Figure::Visualization visualization);
 	void setColormap(Figure::Colormap colormap);

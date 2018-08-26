@@ -32,7 +32,7 @@
 #include "Exception.h"
 #include "Interpolator4X.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Matrix3.h"
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
@@ -60,7 +60,7 @@ public:
 			FloatType peakOffset);
 	virtual ~DefaultSTAProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData);
+	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
 	struct ThreadData {
@@ -114,7 +114,7 @@ DefaultSTAProcessor<FloatType>::DefaultSTAProcessor(
 
 template<typename FloatType>
 void
-DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData)
+DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== DefaultSTAProcessor::process ==========";
 

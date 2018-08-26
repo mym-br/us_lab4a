@@ -22,7 +22,7 @@
 #include <string>
 
 #include "Exception.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Project.h"
 
 
@@ -32,7 +32,7 @@ namespace Lab {
 template<typename FloatType>
 class SavedGroupAcquisition {
 public:
-	typedef Matrix2<FloatType> AcquisitionDataType;
+	typedef Matrix<FloatType> AcquisitionDataType;
 
 	SavedGroupAcquisition(
 		const Project& project,

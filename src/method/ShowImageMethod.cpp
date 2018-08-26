@@ -21,7 +21,7 @@
 #include <vector>
 
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "Util.h"

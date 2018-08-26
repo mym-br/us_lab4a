@@ -20,7 +20,7 @@
 
 #include <vector>
 
-#include "Matrix2.h"
+#include "Matrix.h"
 
 
 
@@ -29,7 +29,7 @@ namespace Lab {
 template<typename FloatType>
 class MultiplexedAcquisition {
 public:
-	typedef Matrix2<FloatType> AcquisitionDataType;
+	typedef Matrix<FloatType> AcquisitionDataType;
 
 	MultiplexedAcquisition() {}
 	virtual ~MultiplexedAcquisition() {}

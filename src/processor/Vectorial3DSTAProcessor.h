@@ -33,7 +33,7 @@
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Matrix3.h"
 #include "STAAcquisition.h"
 #include "SA3DConfiguration.h"
@@ -60,7 +60,7 @@ public:
 			FloatType peakOffset);
 	virtual ~Vectorial3DSTAProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData);
+	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
 	struct ThreadData {
@@ -112,7 +112,7 @@ Vectorial3DSTAProcessor<FloatType>::Vectorial3DSTAProcessor(
 
 template<typename FloatType>
 void
-Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData)
+Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== Vectorial3DSTAProcessor::process ==========";
 
@@ -148,7 +148,7 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XY
 			if (upsamplingFactor_ > 1) {
 				interpolator_.interpolate(&acqData_(iRxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
 			} else {
-				typename Matrix2<FloatType>::Dim2Interval interval = acqData_.dim2Interval(iRxElem);
+				typename Matrix<FloatType>::Dim2Interval interval = acqData_.dim2Interval(iRxElem);
 				std::copy(interval.first, interval.second, tempSignal_.begin());
 			}
 

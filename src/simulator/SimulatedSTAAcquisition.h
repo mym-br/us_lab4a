@@ -24,7 +24,7 @@
 
 #include "Exception.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "Simulated3DAcquisitionDevice.h"
@@ -73,7 +73,7 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 	const std::string reflectorsFileName = pm->value<std::string>("reflectors_file");
 	const FloatType reflectorsOffsetX    = pm->value<FloatType>(  "reflectors_offset_x", -10000.0, 10000.0);
 
-	Matrix2<FloatType> inputReflectorList;
+	Matrix<FloatType> inputReflectorList;
 	project_.loadHDF5(reflectorsFileName, "reflectors", inputReflectorList);
 	if (inputReflectorList.n2() != 2) {
 		THROW_EXCEPTION(InvalidValueException, "Wrong number of columns (" << inputReflectorList.n2() <<

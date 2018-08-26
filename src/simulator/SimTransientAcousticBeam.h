@@ -26,7 +26,7 @@
 #include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "FFTWFilter2.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Util.h"
 #include "XYZ.h"
 #include "XYZValue.h"
@@ -92,8 +92,8 @@ public:
 			FloatType sourceHeight,
 			FloatType discretization,
 			const std::vector<FloatType>& dvdt,
-			const Matrix2<XYZ<FloatType>>& inputData,
-			Matrix2<XYZValue<FloatType>>& gridData);
+			const Matrix<XYZ<FloatType>>& inputData,
+			Matrix<XYZValue<FloatType>>& gridData);
 
 	void getArrayOfRectangularFlatSourcesAcousticBeam(
 			FloatType samplingFreq,
@@ -104,8 +104,8 @@ public:
 			const std::vector<FloatType>& dvdt,
 			const std::vector<XY<FloatType>>& elemPos,
 			const std::vector<FloatType>& focusDelay /* s */,
-			const Matrix2<XYZ<FloatType>>& inputData,
-			Matrix2<XYZValue<FloatType>>& gridData);
+			const Matrix<XYZ<FloatType>>& inputData,
+			Matrix<XYZValue<FloatType>>& gridData);
 private:
 	SimTransientAcousticBeam(const SimTransientAcousticBeam&) = delete;
 	SimTransientAcousticBeam& operator=(const SimTransientAcousticBeam&) = delete;
@@ -129,8 +129,8 @@ SimTransientAcousticBeam<FloatType, ImpulseResponse>::getRectangularFlatSourceAc
 					FloatType sourceHeight,
 					FloatType discretization,
 					const std::vector<FloatType>& dvdt,
-					const Matrix2<XYZ<FloatType>>& inputData,
-					Matrix2<XYZValue<FloatType>>& gridData)
+					const Matrix<XYZ<FloatType>>& inputData,
+					Matrix<XYZValue<FloatType>>& gridData)
 {
 #ifdef SIM_TRANSIENT_ACOUSTIC_BEAM_USE_MULTITHREADING
 	ThreadData threadData{
@@ -204,8 +204,8 @@ SimTransientAcousticBeam<FloatType, ImpulseResponse>::getArrayOfRectangularFlatS
 					const std::vector<FloatType>& dvdt,
 					const std::vector<XY<FloatType>>& elemPos,
 					const std::vector<FloatType>& focusDelay,
-					const Matrix2<XYZ<FloatType>>& inputData,
-					Matrix2<XYZValue<FloatType>>& gridData)
+					const Matrix<XYZ<FloatType>>& inputData,
+					Matrix<XYZValue<FloatType>>& gridData)
 {
 	ArrayThreadData threadData{
 		samplingFreq,

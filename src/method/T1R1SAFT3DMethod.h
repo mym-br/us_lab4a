@@ -29,7 +29,7 @@
 #include "global.h"
 #include "ImageGrid.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Method.h"
 #include "Project.h"
 #include "Simulated3DT1R1SAFTAcquisition.h"
@@ -61,7 +61,7 @@ private:
 	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
 
 	Project& project_;
-	Matrix2<XYZValueFactor<FloatType>> gridData_;
+	Matrix<XYZValueFactor<FloatType>> gridData_;
 	Project::GridDataType projGridData_;
 	std::vector<XYZ<float>> pointList_;
 	Figure::Visualization visual_;

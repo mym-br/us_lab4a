@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef MATRIX2_H_
-#define MATRIX2_H_
+#ifndef MATRIX_H_
+#define MATRIX_H_
 
 #include <algorithm> /* swap */
 #include <limits>
@@ -30,7 +30,7 @@
 namespace Lab {
 
 template<typename T, typename Alloc=std::allocator<T>>
-class Matrix2 {
+class Matrix {
 public:
 	typedef typename std::vector<T, Alloc>::iterator Iterator;
 	typedef typename std::vector<T, Alloc>::const_iterator ConstIterator;
@@ -43,7 +43,7 @@ public:
 
 	class Dim1Iterator {
 	public:
-		Dim1Iterator(typename Matrix2<T, Alloc>::Pointer baseValuePtr, typename Matrix2<T, Alloc>::SizeType increment)
+		Dim1Iterator(typename Matrix<T, Alloc>::Pointer baseValuePtr, typename Matrix<T, Alloc>::SizeType increment)
 			: valuePtr_(baseValuePtr)
 			, increment_(increment) {
 		}
@@ -62,15 +62,15 @@ public:
 		bool operator!=(const Dim1Iterator& iter) const { return valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_; }
 		Dim1Iterator& operator++() { valuePtr_ += increment_; return *this; }
 		Dim1Iterator operator++(int) { Dim1Iterator iter{*this}; valuePtr_ += increment_; return iter; }
-		typename Matrix2<T, Alloc>::Reference operator*() { return *valuePtr_; }
+		typename Matrix<T, Alloc>::Reference operator*() { return *valuePtr_; }
 	private:
-		typename Matrix2<T, Alloc>::Pointer valuePtr_;
-		const typename Matrix2<T, Alloc>::SizeType increment_;
+		typename Matrix<T, Alloc>::Pointer valuePtr_;
+		const typename Matrix<T, Alloc>::SizeType increment_;
 	};
 
 	class ConstDim1Iterator {
 	public:
-		ConstDim1Iterator(typename Matrix2<T, Alloc>::ConstPointer baseValuePtr, typename Matrix2<T, Alloc>::SizeType increment)
+		ConstDim1Iterator(typename Matrix<T, Alloc>::ConstPointer baseValuePtr, typename Matrix<T, Alloc>::SizeType increment)
 			: valuePtr_(baseValuePtr)
 			, increment_(increment) {
 		}
@@ -89,10 +89,10 @@ public:
 		bool operator!=(const ConstDim1Iterator& iter) const { return valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_; }
 		ConstDim1Iterator& operator++() { valuePtr_ += increment_; return *this; }
 		ConstDim1Iterator operator++(int) { ConstDim1Iterator iter{*this}; valuePtr_ += increment_; return iter; }
-		typename Matrix2<T, Alloc>::ConstReference operator*() { return *valuePtr_; }
+		typename Matrix<T, Alloc>::ConstReference operator*() { return *valuePtr_; }
 	private:
-		typename Matrix2<T, Alloc>::ConstPointer valuePtr_;
-		const typename Matrix2<T, Alloc>::SizeType increment_;
+		typename Matrix<T, Alloc>::ConstPointer valuePtr_;
+		const typename Matrix<T, Alloc>::SizeType increment_;
 	};
 
 	typedef std::pair<Dim1Iterator, Dim1Iterator> Dim1Interval;
@@ -103,8 +103,8 @@ public:
 	typedef std::pair<Dim2Iterator, Dim2Iterator> Dim2Interval;
 	typedef std::pair<ConstDim2Iterator, ConstDim2Iterator> ConstDim2Interval;
 
-	Matrix2();
-	Matrix2(SizeType n1, SizeType n2);
+	Matrix();
+	Matrix(SizeType n1, SizeType n2);
 
 	SizeType size() const { return data_.size(); }
 	SizeType n1() const { return n1_; }
@@ -137,7 +137,7 @@ public:
 	void reset();
 	void operator=(T value);
 	bool empty() const { return data_.size() == 0; }
-	void swap(Matrix2& other);
+	void swap(Matrix& other);
 
 	Iterator begin() { return data_.begin(); }
 	Iterator end() { return data_.end(); }
@@ -145,7 +145,7 @@ public:
 	ConstIterator end() const { return data_.end(); }
 private:
 	template<typename V>
-	friend std::ostream& operator<<(std::ostream& out, const Matrix2<V>& m);
+	friend std::ostream& operator<<(std::ostream& out, const Matrix<V>& m);
 
 	void validateSize(SizeType n1, SizeType n2);
 
@@ -155,12 +155,12 @@ private:
 };
 
 template<typename T, typename Alloc>
-Matrix2<T, Alloc>::Matrix2() : n1_(0), n2_(0)
+Matrix<T, Alloc>::Matrix() : n1_(0), n2_(0)
 {
 }
 
 template<typename T, typename Alloc>
-Matrix2<T, Alloc>::Matrix2(SizeType n1, SizeType n2) : n1_(n1), n2_(n2)
+Matrix<T, Alloc>::Matrix(SizeType n1, SizeType n2) : n1_(n1), n2_(n2)
 {
 	validateSize(n1, n2);
 
@@ -168,22 +168,22 @@ Matrix2<T, Alloc>::Matrix2(SizeType n1, SizeType n2) : n1_(n1), n2_(n2)
 }
 
 template<typename T, typename Alloc>
-typename Matrix2<T, Alloc>::Reference
-Matrix2<T, Alloc>::operator()(SizeType dim1, SizeType dim2)
+typename Matrix<T, Alloc>::Reference
+Matrix<T, Alloc>::operator()(SizeType dim1, SizeType dim2)
 {
 	return data_[dim1 * n2_ + dim2];
 }
 
 template<typename T, typename Alloc>
-typename Matrix2<T, Alloc>::ConstReference
-Matrix2<T, Alloc>::operator()(SizeType dim1, SizeType dim2) const
+typename Matrix<T, Alloc>::ConstReference
+Matrix<T, Alloc>::operator()(SizeType dim1, SizeType dim2) const
 {
 	return data_[dim1 * n2_ + dim2];
 }
 
 template<typename T, typename Alloc>
 void
-Matrix2<T, Alloc>::resize(SizeType n1, SizeType n2)
+Matrix<T, Alloc>::resize(SizeType n1, SizeType n2)
 {
 	if (n1 == n1_ && n2 == n2_) return;
 	validateSize(n1, n2);
@@ -195,7 +195,7 @@ Matrix2<T, Alloc>::resize(SizeType n1, SizeType n2)
 
 template<typename T, typename Alloc>
 void
-Matrix2<T, Alloc>::reset()
+Matrix<T, Alloc>::reset()
 {
 	n1_ = 0;
 	n2_ = 0;
@@ -205,7 +205,7 @@ Matrix2<T, Alloc>::reset()
 
 template<typename T, typename Alloc>
 void
-Matrix2<T, Alloc>::validateSize(SizeType n1, SizeType n2)
+Matrix<T, Alloc>::validateSize(SizeType n1, SizeType n2)
 {
 	if (n1 == 0) THROW_EXCEPTION(InvalidValueException, "n1 must be >= 1.");
 	if (n2 == 0) THROW_EXCEPTION(InvalidValueException, "n2 must be >= 1.");
@@ -221,14 +221,14 @@ Matrix2<T, Alloc>::validateSize(SizeType n1, SizeType n2)
 
 template<typename T, typename Alloc>
 void
-Matrix2<T, Alloc>::operator=(T value)
+Matrix<T, Alloc>::operator=(T value)
 {
 	std::fill(data_.begin(), data_.end(), value);
 }
 
 template<typename T, typename Alloc>
 void
-Matrix2<T, Alloc>::swap(Matrix2& other)
+Matrix<T, Alloc>::swap(Matrix& other)
 {
 	std::swap(n1_, other.n1_);
 	std::swap(n2_, other.n2_);
@@ -239,11 +239,11 @@ Matrix2<T, Alloc>::swap(Matrix2& other)
 
 template<typename T, typename Alloc>
 std::ostream&
-operator<<(std::ostream& out, const Matrix2<T, Alloc>& m)
+operator<<(std::ostream& out, const Matrix<T, Alloc>& m)
 {
-	for (typename Matrix2<T, Alloc>::SizeType i = 0, n1 = m.n1(); i < n1; ++i) {
-		typename Matrix2<T, Alloc>::ConstDim2Interval dim2Interval = m.dim2Interval(i);
-		for (typename Matrix2<T, Alloc>::ConstDim2Iterator iter = dim2Interval.first; iter != dim2Interval.second; ++iter) {
+	for (typename Matrix<T, Alloc>::SizeType i = 0, n1 = m.n1(); i < n1; ++i) {
+		typename Matrix<T, Alloc>::ConstDim2Interval dim2Interval = m.dim2Interval(i);
+		for (typename Matrix<T, Alloc>::ConstDim2Iterator iter = dim2Interval.first; iter != dim2Interval.second; ++iter) {
 			out << ' ' << *iter;
 		}
 		out << '\n';
@@ -254,4 +254,4 @@ operator<<(std::ostream& out, const Matrix2<T, Alloc>& m)
 
 } // namespace Lab
 
-#endif /* MATRIX2_H_ */
+#endif /* MATRIX_H_ */

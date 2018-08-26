@@ -32,7 +32,7 @@
 
 namespace Lab {
 
-Matrix2<XYZValue<float>>* Project::emptyGridData;
+Matrix<XYZValue<float>>* Project::emptyGridData;
 std::vector<XYZ<float>>*  Project::emptyPointList;
 
 Project::Project(USLab4a& mainWindow)

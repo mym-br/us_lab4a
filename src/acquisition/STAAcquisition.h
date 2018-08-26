@@ -18,7 +18,7 @@
 #ifndef STAACQUISITION_H_
 #define STAACQUISITION_H_
 
-#include "Matrix2.h"
+#include "Matrix.h"
 
 
 
@@ -27,7 +27,7 @@ namespace Lab {
 template<typename FloatType>
 class STAAcquisition {
 public:
-	typedef Matrix2<FloatType> AcquisitionDataType;
+	typedef Matrix<FloatType> AcquisitionDataType;
 
 	STAAcquisition() {}
 	virtual ~STAAcquisition() {}

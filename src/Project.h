@@ -35,7 +35,7 @@
 #include "global.h"
 #include "HDF5Util.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Method.h"
 #include "ParameterMap.h"
 #include "Util.h"
@@ -54,7 +54,7 @@ class USLab4a;
 // one thread at a time.
 class Project {
 public:
-	typedef Matrix2<XYZValue<float>> GridDataType;
+	typedef Matrix<XYZValue<float>> GridDataType;
 	typedef XYZ<float> PointType;
 
 	Project(USLab4a& mainWindow);
@@ -79,30 +79,30 @@ public:
 	ConstParameterMapPtr loadParameterMap(const char* fileName) const;
 	ConstParameterMapPtr loadChildParameterMap(ConstParameterMapPtr pm, const char* fileNameKey) const;
 
-//	template<typename F> void saveData(const Matrix2<F>& m, const char* subDir, const char* fileName) const;
+//	template<typename F> void saveData(const Matrix<F>& m, const char* subDir, const char* fileName) const;
 
 	//template<typename T> void loadHDF5(const std::string& fileName, const std::string& datasetName, T& container) const;
 	//template<typename T> void saveHDF5(const T& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<FloatType>& container) const;
 	//template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<std::pair<FloatType, FloatType>>& container) const;
-	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix2<FloatType>& container) const;
+	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const;
 	template<typename FloatType> void saveHDF5(const std::vector<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
 	//template<typename FloatType> void saveHDF5(const std::vector<std::pair<FloatType, FloatType>>& container, const std::string& fileName, const std::string& datasetName) const;
-	template<typename FloatType> void saveHDF5(const Matrix2<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
+	template<typename FloatType> void saveHDF5(const Matrix<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename T> void saveSignalToHDF5(const std::vector<T>& container, const std::string& outputDir,
 					unsigned int acqNumber, unsigned int baseElement,
 					unsigned int txElem, unsigned int rxElem);
-	template<typename T> void saveSTASignalsToHDF5(const Matrix2<T>& container, const std::string& outputDir,
+	template<typename T> void saveSTASignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
 					unsigned int acqNumber, unsigned int baseElement, unsigned int txElem);
 	template<typename T> void loadSTASignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber,
-					unsigned int baseElement, unsigned int txElem, Matrix2<T>& container);
+					unsigned int baseElement, unsigned int txElem, Matrix<T>& container);
 
 	// These functions may be called by only one thread.
-	template<typename T, typename U> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix2<T>& container, U copyOp);
+	template<typename T, typename U> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<T>& container, U copyOp);
 	template<typename T, typename U> void saveHDF5(const std::vector<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp);
-	template<typename T, typename U> void saveHDF5(const Matrix2<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp);
-	template<typename T> void saveImageToHDF5(const Matrix2<T>& container, const std::string& outputDir);
-	template<typename T> void loadImageFromHDF5(const std::string& inputDir, Matrix2<T>& container);
+	template<typename T, typename U> void saveHDF5(const Matrix<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp);
+	template<typename T> void saveImageToHDF5(const Matrix<T>& container, const std::string& outputDir);
+	template<typename T> void loadImageFromHDF5(const std::string& inputDir, Matrix<T>& container);
 
 	// Called by the producer.
 	// This function blocks if waitPending = true and there is a pending request.
@@ -154,7 +154,7 @@ public:
 	void trigger();
 	bool waitForTrigger(std::size_t* triggerCount = nullptr); // returns false if processing cancellation has been requested
 
-	static Matrix2<XYZValue<float>>* emptyGridData;
+	static Matrix<XYZValue<float>>* emptyGridData;
 	static std::vector<XYZ<float>>* emptyPointList;
 
 	void createDirectory(const std::string& path, bool mustNotExist);
@@ -245,9 +245,9 @@ private:
 
 	// These containers are here to avoid reallocations.
 	std::vector<double> auxHDF5Vector_;
-	Matrix2<double> auxHDF5Matrix_;
-	Matrix2<double> aux2HDF5Matrix_;
-	Matrix2<double> aux3HDF5Matrix_;
+	Matrix<double> auxHDF5Matrix_;
+	Matrix<double> aux2HDF5Matrix_;
+	Matrix<double> aux3HDF5Matrix_;
 };
 
 
@@ -270,7 +270,7 @@ Project::loadHDF5(const std::string& fileName, const std::string& datasetName, s
 
 template<typename FloatType>
 void
-Project::loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix2<FloatType>& container) const
+Project::loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const
 {
 	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 	HDF5Util::load2(filePath.toStdString(), datasetName, container);
@@ -294,7 +294,7 @@ Project::saveHDF5(const std::vector<FloatType>& container, const std::string& fi
 
 template<typename FloatType>
 void
-Project::saveHDF5(const Matrix2<FloatType>& container, const std::string& fileName, const std::string& datasetName) const
+Project::saveHDF5(const Matrix<FloatType>& container, const std::string& fileName, const std::string& datasetName) const
 {
 	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 	HDF5Util::save2(container, filePath.toStdString(), datasetName);
@@ -317,7 +317,7 @@ Project::saveSignalToHDF5(const std::vector<T>& container, const std::string& ou
 
 template<typename T>
 void
-Project::saveSTASignalsToHDF5(const Matrix2<T>& container, const std::string& outputDir,
+Project::saveSTASignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
 				unsigned int acqNumber, unsigned int baseElement, unsigned int txElem)
 {
 	std::string dirPath = FileUtil::path(outputDir, "/", acqNumber);
@@ -332,7 +332,7 @@ Project::saveSTASignalsToHDF5(const Matrix2<T>& container, const std::string& ou
 template<typename T>
 void
 Project::loadSTASignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber, unsigned int baseElement,
-				unsigned int txElem, Matrix2<T>& container)
+				unsigned int txElem, Matrix<T>& container)
 {
 	std::string dirPath = FileUtil::path(inputDir, "/", acqNumber);
 	createDirectory(dirPath, false);
@@ -345,7 +345,7 @@ Project::loadSTASignalsFromHDF5(const std::string& inputDir, unsigned int acqNum
 
 template<typename T, typename U>
 void
-Project::loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix2<T>& container, U copyOp)
+Project::loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<T>& container, U copyOp)
 {
 	loadHDF5(fileName, datasetName, auxHDF5Matrix_);
 	container.resize(auxHDF5Matrix_.n1(), auxHDF5Matrix_.n2());
@@ -363,7 +363,7 @@ Project::saveHDF5(const std::vector<T>& container, const std::string& fileName, 
 
 template<typename T, typename U>
 void
-Project::saveHDF5(const Matrix2<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp)
+Project::saveHDF5(const Matrix<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp)
 {
 	auxHDF5Matrix_.resize(container.n1(), container.n2());
 	Util::copyUsingOperator(container.begin(), container.end(), auxHDF5Matrix_.begin(), copyOp);
@@ -372,7 +372,7 @@ Project::saveHDF5(const Matrix2<T>& container, const std::string& fileName, cons
 
 template<typename T>
 void
-Project::saveImageToHDF5(const Matrix2<T>& container, const std::string& outputDir)
+Project::saveImageToHDF5(const Matrix<T>& container, const std::string& outputDir)
 {
 	Util::copyValueToSimpleMatrix(container, auxHDF5Matrix_);
 	LOG_DEBUG << "Saving the image...";
@@ -389,7 +389,7 @@ Project::saveImageToHDF5(const Matrix2<T>& container, const std::string& outputD
 
 template<typename T>
 void
-Project::loadImageFromHDF5(const std::string& inputDir, Matrix2<T>& container)
+Project::loadImageFromHDF5(const std::string& inputDir, Matrix<T>& container)
 {
 	LOG_DEBUG << "Loading the image...";
 	loadHDF5(inputDir + "/image_value", "value", auxHDF5Matrix_);

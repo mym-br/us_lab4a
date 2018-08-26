@@ -39,7 +39,7 @@
 #include "KaiserWindow.h"
 #include "LinearInterpolator.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Project.h"
 #include "RealToComplexFFT.h"
 #include "Statistics.h"
@@ -700,12 +700,12 @@ testInterpolator4X(Lab::Project& p)
 void
 testMultiplyBy()
 {
-	Lab::Matrix2<double> m(3, 4);
+	Lab::Matrix<double> m(3, 4);
 	m(1, 0) = 1.0;
 	m(1, 1) = 1.5;
 	m(1, 2) = 2.0;
 	m(1, 3) = 8.0;
-	Lab::Matrix2<double>::Dim2Interval interval = m.dim2Interval(1);
+	Lab::Matrix<double>::Dim2Interval interval = m.dim2Interval(1);
 	std::for_each(interval.first, interval.second, Lab::Util::MultiplyBy<double>(-0.5));
 	if (m(1, 0) != -0.5 ||
 			m(1, 1) != -0.75 ||
@@ -719,12 +719,12 @@ testMultiplyBy()
 void
 testAdd()
 {
-	Lab::Matrix2<double> m(3, 4);
+	Lab::Matrix<double> m(3, 4);
 	m(1, 0) = 1.0;
 	m(1, 1) = 1.5;
 	m(1, 2) = 2.0;
 	m(1, 3) = 18.0;
-	Lab::Matrix2<double>::Dim2Interval interval = m.dim2Interval(1);
+	Lab::Matrix<double>::Dim2Interval interval = m.dim2Interval(1);
 	std::for_each(interval.first, interval.second, Lab::Util::Add<double>(-10.0));
 	if (m(1, 0) != -9.0 ||
 			m(1, 1) != -8.5 ||

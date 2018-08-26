@@ -25,7 +25,7 @@
 #include "ArrayAcqClient.h"
 #include "Exception.h"
 #include "global.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "STAAcquisition.h"

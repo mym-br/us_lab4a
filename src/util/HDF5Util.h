@@ -26,7 +26,7 @@
 #include <H5Cpp.h>
 
 #include "Exception.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 
 #define HDF5_FILE_SUFFIX ".h5"
 #define HDF5UTIL_DEFLATE_LEVEL 3
@@ -42,7 +42,7 @@ using namespace H5;
 
 template<typename FloatType> void resize(std::vector<FloatType>& container, hsize_t n1, hsize_t n2);
 template<typename FloatType> void resize(std::vector<std::pair<FloatType, FloatType>>& container, hsize_t n1, hsize_t n2);
-template<typename FloatType> void resize(Matrix2<FloatType>& container, hsize_t n1, hsize_t n2);
+template<typename FloatType> void resize(Matrix<FloatType>& container, hsize_t n1, hsize_t n2);
 
 template<typename FloatType> FloatType* getBeginPtr(std::vector<FloatType>& container);
 template<typename FloatType> const FloatType* getBeginPtr(const std::vector<FloatType>& container);
@@ -50,12 +50,12 @@ template<typename FloatType> const FloatType* getBeginPtr(const std::vector<Floa
 template<typename FloatType> FloatType* getBeginPtr(std::vector<std::pair<FloatType, FloatType>>& container);
 template<typename FloatType> const FloatType* getBeginPtr(const std::vector<std::pair<FloatType, FloatType>>& container);
 
-template<typename FloatType> FloatType* getBeginPtr(Matrix2<FloatType>& container);
-template<typename FloatType> const FloatType* getBeginPtr(const Matrix2<FloatType>& container);
+template<typename FloatType> FloatType* getBeginPtr(Matrix<FloatType>& container);
+template<typename FloatType> const FloatType* getBeginPtr(const Matrix<FloatType>& container);
 
 template<typename FloatType> void getSize(const std::vector<FloatType>& container, hsize_t& n1, hsize_t& n2);
 template<typename FloatType> void getSize(const std::vector<std::pair<FloatType, FloatType>>& container, hsize_t& n1, hsize_t& n2);
-template<typename FloatType> void getSize(const Matrix2<FloatType>& container, hsize_t& n1, hsize_t& n2);
+template<typename FloatType> void getSize(const Matrix<FloatType>& container, hsize_t& n1, hsize_t& n2);
 
 template<typename T> void load2(const std::string& filePath, const std::string& dataSetName, T& container);
 template<typename T> void save2(const T& container, const std::string& filePath, const std::string& datasetName);
@@ -94,7 +94,7 @@ resize(std::vector<std::pair<FloatType, FloatType>>& container, hsize_t n1, hsiz
 
 template<typename FloatType>
 void
-resize(Matrix2<FloatType>& container, hsize_t n1, hsize_t n2)
+resize(Matrix<FloatType>& container, hsize_t n1, hsize_t n2)
 {
 	if (n1 == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The first dimension (" << n1 << ") is equal to 0.");
@@ -135,14 +135,14 @@ getBeginPtr(const std::vector<std::pair<FloatType, FloatType>>& v)
 
 template<typename FloatType>
 FloatType*
-getBeginPtr(Matrix2<FloatType>& m)
+getBeginPtr(Matrix<FloatType>& m)
 {
 	return &m(0, 0);
 }
 
 template<typename FloatType>
 const FloatType*
-getBeginPtr(const Matrix2<FloatType>& m)
+getBeginPtr(const Matrix<FloatType>& m)
 {
 	return &m(0, 0);
 }
@@ -165,7 +165,7 @@ getSize(const std::vector<std::pair<FloatType, FloatType>>& v, hsize_t& n1, hsiz
 
 template<typename FloatType>
 void
-getSize(const Matrix2<FloatType>& m, hsize_t& n1, hsize_t& n2)
+getSize(const Matrix<FloatType>& m, hsize_t& n1, hsize_t& n2)
 {
 	n1 = m.n1();
 	n2 = m.n2();

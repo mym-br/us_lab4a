@@ -115,7 +115,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 	project_.createDirectory(outputDir, true);
 
-	Matrix2<XYZValueFactor<FloatType>> gridData;
+	Matrix<XYZValueFactor<FloatType>> gridData;
 
 	const FloatType nyquistRate = 2.0 * config.maxFrequency;
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;

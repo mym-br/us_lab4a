@@ -28,7 +28,7 @@
 #include "FFTWFilter2.h"
 #include "ImageGrid.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Method.h"
 #include "NumericRectangularFlatSourceImpulseResponse.h"
 #include "ParameterMap.h"
@@ -133,8 +133,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	std::vector<FloatType> thetaYList;
 	Util::fillSequenceFromStartToEndWithSize(thetaYList, 0.0, beamThetaYMax, std::ceil(beamThetaYMax / beamThetaYStep) + 1);
 
-	Matrix2<XYZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
-	Matrix2<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
+	Matrix<XYZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
+	Matrix<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
 
 	for (unsigned int ix = 0, xSize = thetaXList.size(); ix < xSize; ++ix) {
 		const FloatType tX = Util::degreeToRadian(thetaXList[ix]);
@@ -270,8 +270,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	std::vector<FloatType> thetaYList;
 	Util::fillSequenceFromStartToEndWithSize(thetaYList, beamThetaYMin, beamThetaYMax, std::ceil((beamThetaYMax - beamThetaYMin) / beamThetaYStep) + 1);
 
-	Matrix2<XYZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
-	Matrix2<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
+	Matrix<XYZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
+	Matrix<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
 
 	for (unsigned int ix = 0, xSize = thetaXList.size(); ix < xSize; ++ix) {
 		const FloatType tX = Util::degreeToRadian(thetaXList[ix]);
@@ -403,7 +403,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
 	std::vector<FloatType> dvdt;
 	Util::centralDiff(exc, dt, dvdt);
 
-	Matrix2<XYZValue<FloatType>> gridData;
+	Matrix<XYZValue<FloatType>> gridData;
 
 	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
@@ -492,7 +492,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 	std::vector<FloatType> dvdt;
 	Util::centralDiff(exc, dt, dvdt);
 
-	Matrix2<XYZValue<FloatType>> gridData;
+	Matrix<XYZValue<FloatType>> gridData;
 
 	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);

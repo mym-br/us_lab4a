@@ -23,7 +23,7 @@
 
 #include "Exception.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "Simulated3DAcquisitionDevice.h"
@@ -77,7 +77,7 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::Simulated3DT1R1SAFTAcquisition(Projec
 	reflectorsOffsetX_                   = pm->value<FloatType>(  "reflectors_offset_x", -10000.0, 10000.0);
 	reflectorsOffsetY_                   = pm->value<FloatType>(  "reflectors_offset_y", -10000.0, 10000.0);
 
-	Matrix2<FloatType> inputReflectorList;
+	Matrix<FloatType> inputReflectorList;
 	project_.loadHDF5(reflectorsFileName, "reflectors", inputReflectorList);
 	if (inputReflectorList.n2() != 4) {
 		THROW_EXCEPTION(InvalidValueException, "Wrong number of columns (" << inputReflectorList.n2() <<

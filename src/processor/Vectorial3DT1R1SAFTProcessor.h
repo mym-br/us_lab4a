@@ -34,7 +34,7 @@
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "STAAcquisition.h"
 #include "SA3DConfiguration.h"
 #include "STAProcessor.h"
@@ -60,7 +60,7 @@ public:
 			FloatType peakOffset);
 	virtual ~Vectorial3DT1R1SAFTProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData);
+	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
 	struct ThreadData {
@@ -78,7 +78,7 @@ private:
 	STAAcquisition<FloatType>& acquisition_;
 	unsigned int upsamplingFactor_;
 	AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor_;
-	Matrix2<std::complex<FloatType>> analyticSignalMatrix_;
+	Matrix<std::complex<FloatType>> analyticSignalMatrix_;
 	typename STAAcquisition<FloatType>::AcquisitionDataType acqData_;
 	std::vector<FloatType> tempSignal_;
 	FloatType signalOffset_;
@@ -112,7 +112,7 @@ Vectorial3DT1R1SAFTProcessor<FloatType>::Vectorial3DT1R1SAFTProcessor(
 
 template<typename FloatType>
 void
-Vectorial3DT1R1SAFTProcessor<FloatType>::process(unsigned int baseElement, Matrix2<XYZValueFactor<FloatType>>& gridData)
+Vectorial3DT1R1SAFTProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== Vectorial3DT1R1SAFTProcessor::process ==========";
 
@@ -147,7 +147,7 @@ Vectorial3DT1R1SAFTProcessor<FloatType>::process(unsigned int baseElement, Matri
 		if (upsamplingFactor_ > 1) {
 			interpolator_.interpolate(&acqData_(0, 0), samplesPerChannelLow, &tempSignal_[0]);
 		} else {
-			typename Matrix2<FloatType>::Dim2Interval interval = acqData_.dim2Interval(0);
+			typename Matrix<FloatType>::Dim2Interval interval = acqData_.dim2Interval(0);
 			std::copy(interval.first, interval.second, tempSignal_.begin());
 		}
 

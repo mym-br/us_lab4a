@@ -18,7 +18,7 @@
 #ifndef DEVICESECTORIALSCANACQUISITION_H
 #define DEVICESECTORIALSCANACQUISITION_H
 
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "XZValue.h"
 
 
@@ -29,7 +29,7 @@ namespace Lab {
 template<typename FloatType>
 class DeviceSectorialScanAcquisition {
 public:
-	typedef Matrix2<XZValue<FloatType>> AcquisitionDataType;
+	typedef Matrix<XZValue<FloatType>> AcquisitionDataType;
 
 	DeviceSectorialScanAcquisition() {}
 	virtual ~DeviceSectorialScanAcquisition() {}

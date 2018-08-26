@@ -25,7 +25,7 @@
 
 #include "DeviceSectorialScanConfiguration.h"
 #include "Log.h"
-#include "Matrix2.h"
+#include "Matrix.h"
 #include "Method.h"
 #include "NetworkDeviceSectorialScanAcquisition.h"
 #include "ParameterMap.h"
@@ -105,10 +105,10 @@ DeviceSectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 	project_.createDirectory(outputDir, false);
 
 	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
-	Matrix2<XZValue<FloatType>> acqImageData;
+	Matrix<XZValue<FloatType>> acqImageData;
 	acquisition->execute(acqImageData);
 
-	Matrix2<XYZValue<FloatType>> imageData;
+	Matrix<XYZValue<FloatType>> imageData;
 	Util::copy(acqImageData, imageData);
 
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
@@ -125,7 +125,7 @@ DeviceSectorialScanMethod<FloatType>::showSavedImage()
 {
 	const std::string outputDir = project_.taskParameterMap()->value<std::string>("output_dir");
 
-	Matrix2<XYZValue<FloatType>> imageData;
+	Matrix<XYZValue<FloatType>> imageData;
 
 	project_.loadImageFromHDF5(outputDir, imageData);
 
@@ -140,8 +140,8 @@ void
 DeviceSectorialScanMethod<FloatType>::execContinuousNetworkImaging()
 {
 	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
-	Matrix2<XZValue<FloatType>> acqImageData;
-	Matrix2<XYZValue<FloatType>> imageData;
+	Matrix<XZValue<FloatType>> acqImageData;
+	Matrix<XYZValue<FloatType>> imageData;
 
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
@@ -172,8 +172,8 @@ DeviceSectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 	const std::string outputDirPrefix = project_.taskParameterMap()->value<std::string>("output_dir_prefix");
 
 	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
-	Matrix2<XZValue<FloatType>> acqImageData;
-	Matrix2<XYZValue<FloatType>> imageData;
+	Matrix<XZValue<FloatType>> acqImageData;
+	Matrix<XYZValue<FloatType>> imageData;
 
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
