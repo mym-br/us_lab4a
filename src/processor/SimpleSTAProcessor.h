@@ -31,10 +31,10 @@
 #include "Interpolator4X.h"
 #include "Log.h"
 #include "Matrix.h"
-#include "Matrix3.h"
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
 #include "STAProcessor.h"
+#include "Tensor3.h"
 #include "Util.h"
 #include "XYZValueFactor.h"
 
@@ -70,7 +70,7 @@ private:
 
 	const STAConfiguration<FloatType>& config_;
 	STAAcquisition<FloatType>& acquisition_;
-	Matrix3<FloatType> signalMatrix_;
+	Tensor3<FloatType> signalTensor_;
 	typename STAAcquisition<FloatType>::AcquisitionDataType acqData_;
 	std::vector<FloatType> tempSignal_;
 	FloatType signalOffset_;
@@ -92,7 +92,7 @@ SimpleSTAProcessor<FloatType>::SimpleSTAProcessor(
 	const std::size_t signalLength = acqData_.n2() * SIMPLE_STA_PROCESSOR_UPSAMPLING_FACTOR;
 
 	tempSignal_.resize(signalLength);
-	signalMatrix_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
+	signalTensor_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
 
 	signalOffset_ = (config_.samplingFrequency * SIMPLE_STA_PROCESSOR_UPSAMPLING_FACTOR) * peakOffset / config_.centerFrequency;
 	LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
@@ -122,10 +122,10 @@ SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValue
 			interpolator_.interpolate(&acqData_(rxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
 
 			// Copy the signal to the signal matrix.
-			typename Matrix3<FloatType>::Dim3Interval interval = signalMatrix_.dim3Interval(localTxElem, rxElem);
+			typename Tensor3<FloatType>::Dim3Interval interval = signalTensor_.dim3Interval(localTxElem, rxElem);
 			std::copy(tempSignal_.begin(), tempSignal_.end(), interval.first);
 
-			Util::removeDC(&signalMatrix_(localTxElem, rxElem, 0), signalMatrix_.n3());
+			Util::removeDC(&signalTensor_(localTxElem, rxElem, 0), signalTensor_.n3());
 		}
 	}
 
@@ -166,16 +166,16 @@ SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValue
 #if 0
 						// Nearest neighbor.
 						const std::size_t delayIdx = static_cast<std::size_t>(FloatType{0.5} + signalOffset_ + txDelay + local.delayList[rxElem]);
-						if (delayIdx < signalMatrix_.n3()) {
-							pointValue += signalMatrix_(localTxElem, rxElem, delayIdx);
+						if (delayIdx < signalTensor_.n3()) {
+							pointValue += signalTensor_(localTxElem, rxElem, delayIdx);
 						}
 #else
 						// Linear interpolation.
 						const FloatType delay = signalOffset_ + txDelay + local.delayList[rxElem];
 						const std::size_t delayIdx = static_cast<std::size_t>(delay);
 						const FloatType k = delay - delayIdx;
-						if (delayIdx + 1U < signalMatrix_.n3()) {
-							const FloatType* p = &signalMatrix_(localTxElem, rxElem, delayIdx);
+						if (delayIdx + 1U < signalTensor_.n3()) {
+							const FloatType* p = &signalTensor_(localTxElem, rxElem, delayIdx);
 							pointValue += (1 - k) * *p + k * *(p + 1);
 						}
 #endif

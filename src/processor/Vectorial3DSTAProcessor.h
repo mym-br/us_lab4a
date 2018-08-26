@@ -34,10 +34,10 @@
 #include "Interpolator.h"
 #include "Log.h"
 #include "Matrix.h"
-#include "Matrix3.h"
 #include "STAAcquisition.h"
 #include "SA3DConfiguration.h"
 #include "STAProcessor.h"
+#include "Tensor3.h"
 #include "Util.h"
 #include "XYZValueFactor.h"
 
@@ -78,7 +78,7 @@ private:
 	STAAcquisition<FloatType>& acquisition_;
 	unsigned int upsamplingFactor_;
 	AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor_;
-	Matrix3<std::complex<FloatType>> analyticSignalMatrix_;
+	Tensor3<std::complex<FloatType>> analyticSignalTensor_;
 	typename STAAcquisition<FloatType>::AcquisitionDataType acqData_;
 	std::vector<FloatType> tempSignal_;
 	FloatType signalOffset_;
@@ -129,7 +129,7 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 		if (!initialized_) {
 			const std::size_t signalLength = acqData_.n2() * upsamplingFactor_;
 			tempSignal_.resize(signalLength);
-			analyticSignalMatrix_.resize(
+			analyticSignalTensor_.resize(
 						config_.activeTxElem.size(),
 						config_.activeRxElem.size(),
 						signalLength);
@@ -155,7 +155,7 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 			Util::removeDC(&tempSignal_[0], tempSignal_.size(), deadZoneSamplesUp_);
 
 			envelope_.getAnalyticSignal(&tempSignal_[0], tempSignal_.size(),
-							&analyticSignalMatrix_(iTxElem, iRxElem, 0));
+							&analyticSignalTensor_(iTxElem, iRxElem, 0));
 		}
 	}
 
@@ -207,8 +207,8 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 						const FloatType delay = signalOffset_ + txDelay + local.rxDelayList[iRxElem];
 						const std::size_t delayIdx = static_cast<std::size_t>(delay);
 						const FloatType k = delay - delayIdx;
-						if (delayIdx + 1U < analyticSignalMatrix_.n3()) {
-							const std::complex<FloatType>* p = &analyticSignalMatrix_(iTxElem, iRxElem, delayIdx);
+						if (delayIdx + 1U < analyticSignalTensor_.n3()) {
+							const std::complex<FloatType>* p = &analyticSignalTensor_(iTxElem, iRxElem, delayIdx);
 							local.rxSignalSumList[iRxElem] += (1 - k) * *p + k * *(p + 1);
 						}
 					}

@@ -35,10 +35,10 @@
 #include "Interpolator.h"
 #include "Log.h"
 #include "Matrix.h"
-#include "Matrix3.h"
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
 #include "STAProcessor.h"
+#include "Tensor3.h"
 #include "Util.h"
 #include "XYZValueFactor.h"
 
@@ -84,7 +84,7 @@ private:
 	STAAcquisition<FloatType>& acquisition_;
 	unsigned int upsamplingFactor_;
 	AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor_;
-	Matrix3<std::complex<FloatType>> analyticSignalMatrix_;
+	Tensor3<std::complex<FloatType>> analyticSignalTensor_;
 	typename STAAcquisition<FloatType>::AcquisitionDataType acqData_;
 	std::vector<FloatType> tempSignal_;
 	FloatType signalOffset_;
@@ -143,7 +143,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZVa
 		if (!initialized_) {
 			const std::size_t signalLength = acqData_.n2() * upsamplingFactor_;
 			tempSignal_.resize(signalLength);
-			analyticSignalMatrix_.resize(
+			analyticSignalTensor_.resize(
 						config_.lastTxElem - config_.firstTxElem + 1,
 						config_.numElements, signalLength);
 			LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
@@ -168,7 +168,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZVa
 
 			Util::removeDC(&tempSignal_[0], tempSignal_.size(), deadZoneSamplesUp_);
 
-			envelope_.getAnalyticSignal(&tempSignal_[0], tempSignal_.size(), &analyticSignalMatrix_(localTxElem, rxElem, 0));
+			envelope_.getAnalyticSignal(&tempSignal_[0], tempSignal_.size(), &analyticSignalTensor_(localTxElem, rxElem, 0));
 		}
 	}
 
@@ -214,8 +214,8 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZVa
 						const FloatType delay = signalOffset_ + txDelay + local.delayList[rxElem];
 						const std::size_t delayIdx = static_cast<std::size_t>(delay);
 						const FloatType k = delay - delayIdx;
-						if (delayIdx + 1U < analyticSignalMatrix_.n3()) {
-							const std::complex<FloatType>* p = &analyticSignalMatrix_(localTxElem, rxElem, delayIdx);
+						if (delayIdx + 1U < analyticSignalTensor_.n3()) {
+							const std::complex<FloatType>* p = &analyticSignalTensor_(localTxElem, rxElem, delayIdx);
 							local.rxSignalSumList[rxElem] += txApod_[txElem] * rxApod_[rxElem] * ((1 - k) * *p + k * *(p + 1));
 						}
 					}

@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef MATRIX3_H_
-#define MATRIX3_H_
+#ifndef TENSOR3_H_
+#define TENSOR3_H_
 
 #include <limits>
 #include <ostream>
@@ -29,7 +29,7 @@
 namespace Lab {
 
 template<typename T, typename Alloc=std::allocator<T>>
-class Matrix3 {
+class Tensor3 {
 public:
 	typedef typename std::vector<T, Alloc>::iterator Iterator;
 	typedef typename std::vector<T, Alloc>::const_iterator ConstIterator;
@@ -42,7 +42,7 @@ public:
 
 	class Dim1Iterator {
 	public:
-		Dim1Iterator(typename Matrix3<T, Alloc>::Pointer baseValuePtr, typename Matrix3<T, Alloc>::SizeType increment)
+		Dim1Iterator(typename Tensor3<T, Alloc>::Pointer baseValuePtr, typename Tensor3<T, Alloc>::SizeType increment)
 			: valuePtr_(baseValuePtr)
 			, increment_(increment) {
 		}
@@ -61,15 +61,15 @@ public:
 		bool operator!=(const Dim1Iterator& iter) const { return valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_; }
 		Dim1Iterator& operator++() { valuePtr_ += increment_; return *this; }
 		Dim1Iterator operator++(int) { Dim1Iterator iter{*this}; valuePtr_ += increment_; return iter; }
-		typename Matrix3<T, Alloc>::Reference operator*() { return *valuePtr_; }
+		typename Tensor3<T, Alloc>::Reference operator*() { return *valuePtr_; }
 	private:
-		typename Matrix3<T, Alloc>::Pointer valuePtr_;
-		const typename Matrix3<T, Alloc>::SizeType increment_;
+		typename Tensor3<T, Alloc>::Pointer valuePtr_;
+		const typename Tensor3<T, Alloc>::SizeType increment_;
 	};
 
 	class ConstDim1Iterator {
 	public:
-		ConstDim1Iterator(typename Matrix3<T, Alloc>::ConstPointer baseValuePtr, typename Matrix3<T, Alloc>::SizeType increment)
+		ConstDim1Iterator(typename Tensor3<T, Alloc>::ConstPointer baseValuePtr, typename Tensor3<T, Alloc>::SizeType increment)
 			: valuePtr_(baseValuePtr)
 			, increment_(increment) {
 		}
@@ -88,10 +88,10 @@ public:
 		bool operator!=(const ConstDim1Iterator& iter) const { return valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_; }
 		ConstDim1Iterator& operator++() { valuePtr_ += increment_; return *this; }
 		ConstDim1Iterator operator++(int) { ConstDim1Iterator iter{*this}; valuePtr_ += increment_; return iter; }
-		typename Matrix3<T, Alloc>::ConstReference operator*() { return *valuePtr_; }
+		typename Tensor3<T, Alloc>::ConstReference operator*() { return *valuePtr_; }
 	private:
-		typename Matrix3<T, Alloc>::ConstPointer valuePtr_;
-		const typename Matrix3<T, Alloc>::SizeType increment_;
+		typename Tensor3<T, Alloc>::ConstPointer valuePtr_;
+		const typename Tensor3<T, Alloc>::SizeType increment_;
 	};
 
 	typedef std::pair<Dim1Iterator, Dim1Iterator> Dim1Interval;
@@ -107,8 +107,8 @@ public:
 	typedef std::pair<Dim3Iterator, Dim3Iterator> Dim3Interval;
 	typedef std::pair<ConstDim3Iterator, ConstDim3Iterator> ConstDim3Interval;
 
-	Matrix3();
-	Matrix3(SizeType n1, SizeType n2, SizeType n3);
+	Tensor3();
+	Tensor3(SizeType n1, SizeType n2, SizeType n3);
 
 	SizeType size() const { return data_.size(); }
 	SizeType n1() const { return n1_; }
@@ -163,7 +163,7 @@ public:
 	ConstIterator end() const { return data_.end(); }
 private:
 	template<typename V>
-	friend std::ostream& operator<<(std::ostream& out, const Matrix3<V>& m);
+	friend std::ostream& operator<<(std::ostream& out, const Tensor3<V>& m);
 
 	void validateSize(SizeType n1, SizeType n2, SizeType n3);
 
@@ -174,12 +174,12 @@ private:
 };
 
 template<typename T, typename Alloc>
-Matrix3<T, Alloc>::Matrix3() : n1_(0), n2_(0), n3_(0)
+Tensor3<T, Alloc>::Tensor3() : n1_(0), n2_(0), n3_(0)
 {
 }
 
 template<typename T, typename Alloc>
-Matrix3<T, Alloc>::Matrix3(SizeType n1, SizeType n2, SizeType n3) : n1_(n1), n2_(n2), n3_(n3)
+Tensor3<T, Alloc>::Tensor3(SizeType n1, SizeType n2, SizeType n3) : n1_(n1), n2_(n2), n3_(n3)
 {
 	validateSize(n1, n2, n3);
 
@@ -187,22 +187,22 @@ Matrix3<T, Alloc>::Matrix3(SizeType n1, SizeType n2, SizeType n3) : n1_(n1), n2_
 }
 
 template<typename T, typename Alloc>
-typename Matrix3<T, Alloc>::Reference
-Matrix3<T, Alloc>::operator()(SizeType dim1, SizeType dim2, SizeType dim3)
+typename Tensor3<T, Alloc>::Reference
+Tensor3<T, Alloc>::operator()(SizeType dim1, SizeType dim2, SizeType dim3)
 {
 	return data_[(dim1 * n2_ + dim2) * n3_ + dim3];
 }
 
 template<typename T, typename Alloc>
-typename Matrix3<T, Alloc>::ConstReference
-Matrix3<T, Alloc>::operator()(SizeType dim1, SizeType dim2, SizeType dim3) const
+typename Tensor3<T, Alloc>::ConstReference
+Tensor3<T, Alloc>::operator()(SizeType dim1, SizeType dim2, SizeType dim3) const
 {
 	return data_[(dim1 * n2_ + dim2) * n3_ + dim3];
 }
 
 template<typename T, typename Alloc>
 void
-Matrix3<T, Alloc>::resize(SizeType n1, SizeType n2, SizeType n3)
+Tensor3<T, Alloc>::resize(SizeType n1, SizeType n2, SizeType n3)
 {
 	if (n1 == n1_ && n2 == n2_ && n3 == n3_) return;
 	validateSize(n1, n2, n3);
@@ -215,7 +215,7 @@ Matrix3<T, Alloc>::resize(SizeType n1, SizeType n2, SizeType n3)
 
 template<typename T, typename Alloc>
 void
-Matrix3<T, Alloc>::reset()
+Tensor3<T, Alloc>::reset()
 {
 	n1_ = 0;
 	n2_ = 0;
@@ -226,7 +226,7 @@ Matrix3<T, Alloc>::reset()
 
 template<typename T, typename Alloc>
 void
-Matrix3<T, Alloc>::validateSize(SizeType n1, SizeType n2, SizeType n3)
+Tensor3<T, Alloc>::validateSize(SizeType n1, SizeType n2, SizeType n3)
 {
 	if (n1 == 0) THROW_EXCEPTION(InvalidValueException, "n1 must be >= 1.");
 	if (n2 == 0) THROW_EXCEPTION(InvalidValueException, "n2 must be >= 1.");
@@ -246,7 +246,7 @@ Matrix3<T, Alloc>::validateSize(SizeType n1, SizeType n2, SizeType n3)
 
 template<typename T, typename Alloc>
 void
-Matrix3<T, Alloc>::operator=(T value)
+Tensor3<T, Alloc>::operator=(T value)
 {
 	std::fill(data_.begin(), data_.end(), value);
 }
@@ -255,12 +255,12 @@ Matrix3<T, Alloc>::operator=(T value)
 
 template<typename T, typename Alloc>
 std::ostream&
-operator<<(std::ostream& out, const Matrix3<T, Alloc>& m)
+operator<<(std::ostream& out, const Tensor3<T, Alloc>& m)
 {
-	for (typename Matrix3<T, Alloc>::SizeType i = 0, n1 = m.n1(); i < n1; ++i) {
-		for (typename Matrix3<T, Alloc>::SizeType j = 0, n2 = m.n2(); j < n2; ++j) {
-			typename Matrix3<T, Alloc>::ConstDim3Interval dim3Interval = m.dim3Interval(i, j);
-			for (typename Matrix3<T, Alloc>::ConstDim3Iterator iter = dim3Interval.first; iter != dim3Interval.second; ++iter) {
+	for (typename Tensor3<T, Alloc>::SizeType i = 0, n1 = m.n1(); i < n1; ++i) {
+		for (typename Tensor3<T, Alloc>::SizeType j = 0, n2 = m.n2(); j < n2; ++j) {
+			typename Tensor3<T, Alloc>::ConstDim3Interval dim3Interval = m.dim3Interval(i, j);
+			for (typename Tensor3<T, Alloc>::ConstDim3Iterator iter = dim3Interval.first; iter != dim3Interval.second; ++iter) {
 				out << ' ' << *iter;
 			}
 			out << '\n';
@@ -273,4 +273,4 @@ operator<<(std::ostream& out, const Matrix3<T, Alloc>& m)
 
 } // namespace Lab
 
-#endif /* MATRIX3_H_ */
+#endif /* TENSOR3_H_ */

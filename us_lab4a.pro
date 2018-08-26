@@ -68,7 +68,6 @@ HEADERS  += \
     src/util/Timer.h \
     src/util/Statistics.h \
     src/util/MinstdPseudorandomNumberGenerator.h \
-    src/util/Matrix3.h \
     src/util/LogSyntaxHighlighter.h \
     src/util/Log.h \
     src/util/LinearInterpolator.h \
@@ -142,7 +141,8 @@ HEADERS  += \
     src/processor/Vectorial3DT1R1SAFTProcessor.h \
     src/configuration/SA3DConfiguration.h \
     src/util/WindowFunction.h \
-    src/util/Matrix.h
+    src/util/Matrix.h \
+    src/util/Tensor3.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
