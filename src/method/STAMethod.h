@@ -75,9 +75,9 @@ private:
 
 template<typename FloatType>
 STAMethod<FloatType>::STAMethod(Project& project)
-		: project_{project}
+		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
-		, visual_{Figure::VISUALIZATION_ENVELOPE_LOG}
+		, visual_(Figure::VISUALIZATION_ENVELOPE_LOG)
 {
 }
 

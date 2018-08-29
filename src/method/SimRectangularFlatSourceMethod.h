@@ -73,7 +73,7 @@ private:
 
 template<typename FloatType>
 SimRectangularFlatSourceMethod<FloatType>::SimRectangularFlatSourceMethod(Project& project)
-		: project_{project}
+		: project_(project)
 {
 }
 

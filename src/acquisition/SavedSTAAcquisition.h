@@ -58,9 +58,9 @@ SavedSTAAcquisition<FloatType>::SavedSTAAcquisition(
 			const Project& project,
 			unsigned int numRxElements,
 			const std::string& dataDir)
-		: project_{project}
-		, numRxElements_{numRxElements}
-		, dataDir_{dataDir}
+		: project_(project)
+		, numRxElements_(numRxElements)
+		, dataDir_(dataDir)
 {
 }
 

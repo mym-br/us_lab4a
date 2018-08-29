@@ -62,9 +62,9 @@ private:
 
 template<typename FloatType>
 NetworkSTAAcquisition<FloatType>::NetworkSTAAcquisition(const Project& project, const STAConfiguration<FloatType>& config)
-		: project_{project}
-		, config_{config}
-		, acq_{}
+		: project_(project)
+		, config_(config)
+		, acq_()
 {
 	ConstParameterMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
 	const std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");

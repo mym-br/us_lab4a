@@ -164,24 +164,24 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 		FloatType outputSamplingFreq,
 		FloatType propagationSpeed,
 		FloatType maxFrequency)
-			: c_{propagationSpeed}
-			, invC_{1 / c_}
-			, simFs_{}
-			, outFs_{}
-			, txElemWidth_{}
-			, txElemHeight_{}
-			, rxElemWidth_{}
-			, rxElemHeight_{}
-			, useNumericMethod_{}
-			, txDiscretization_{}
-			, rxDiscretization_{}
-			, noiseAmplitude_{}
-			, excNumPeriods_{}
-			, signalLength_{}
-			, reflectorsOffsetX_{}
-			, reflectorsOffsetY_{}
-			, signalCoeff_{1.0}
-			, prng_{SIMULATED_3D_ACQUISITION_DEVICE_PSEUDORANDOM_NUMBER_GENERATOR_SEED}
+			: c_(propagationSpeed)
+			, invC_(1 / c_)
+			, simFs_()
+			, outFs_()
+			, txElemWidth_()
+			, txElemHeight_()
+			, rxElemWidth_()
+			, rxElemHeight_()
+			, useNumericMethod_()
+			, txDiscretization_()
+			, rxDiscretization_()
+			, noiseAmplitude_()
+			, excNumPeriods_()
+			, signalLength_()
+			, reflectorsOffsetX_()
+			, reflectorsOffsetY_()
+			, signalCoeff_(1.0)
+			, prng_(SIMULATED_3D_ACQUISITION_DEVICE_PSEUDORANDOM_NUMBER_GENERATOR_SEED)
 {
 	txElemWidth_  = arrayPM.value<FloatType>("tx_element_width" , 1.0e-6, 1000.0e-3);
 	txElemHeight_ = arrayPM.value<FloatType>("tx_element_height", 1.0e-6, 1000.0e-3);

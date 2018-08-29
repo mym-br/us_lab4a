@@ -31,7 +31,7 @@
 namespace Lab {
 
 MultiLayerImageMethod::MultiLayerImageMethod(Project& project)
-		: project_{project}
+		: project_(project)
 {
 }
 

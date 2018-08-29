@@ -48,7 +48,7 @@ struct Cell {
 namespace Lab {
 
 VTKFileMultiImageMethod::VTKFileMultiImageMethod(Project& project)
-		: project_{project}
+		: project_(project)
 {
 }
 

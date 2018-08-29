@@ -60,9 +60,9 @@ private:
 
 template<typename FloatType>
 SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, const STAConfiguration<FloatType>& config)
-		: project_{project}
-		, config_{config}
-		, maxAbsValue_{}
+		: project_(project)
+		, config_(config)
+		, maxAbsValue_()
 {
 	//TODO: check numChannels/numChannelsMux and other params
 

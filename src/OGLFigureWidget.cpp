@@ -1261,34 +1261,34 @@ namespace Lab {
 
 OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 		: QOpenGLWidget{parent}
-		, valuesInDecibel_{}
-		, editingDistanceMarkers_{}
-		, rotationMode_{}
-		, showPoints_{true}
-		, showInfo_{true}
-		, dataChanged_{}
-		, colormap_{Figure::COLORMAP_GRAY}
-		, visualization_{Figure::VISUALIZATION_RAW_LINEAR}
-		, minDecibels_{DEFAULT_MIN_DECIBELS}
-		, minValue_{Util::decibelsToLinear(minDecibels_)}
-		, scale_{1.0}
-		, rotX_{}
-		, rotZ_{}
-		, minX_{}
-		, maxX_{}
-		, minY_{}
-		, maxY_{}
-		, minZ_{}
-		, maxZ_{}
-		, dataValueScale_{0.0}
-		, valueScale_{1.0}
-		, maxAbsLevel_{}
-		, maxAbsLevelDecibels_{}
-		, offsetX_{}
-		, offsetY_{}
+		, valuesInDecibel_()
+		, editingDistanceMarkers_()
+		, rotationMode_()
+		, showPoints_(true)
+		, showInfo_(true)
+		, dataChanged_()
+		, colormap_(Figure::COLORMAP_GRAY)
+		, visualization_(Figure::VISUALIZATION_RAW_LINEAR)
+		, minDecibels_(DEFAULT_MIN_DECIBELS)
+		, minValue_(Util::decibelsToLinear(minDecibels_))
+		, scale_(1.0)
+		, rotX_()
+		, rotZ_()
+		, minX_()
+		, maxX_()
+		, minY_()
+		, maxY_()
+		, minZ_()
+		, maxZ_()
+		, dataValueScale_()
+		, valueScale_(1.0)
+		, maxAbsLevel_()
+		, maxAbsLevelDecibels_()
+		, offsetX_()
+		, offsetY_()
 		, normal_{0.0, 0.0, 0.0}
 #ifndef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
-		, oglDisplayList_{}
+		, oglDisplayList_()
 #endif
 {
 	setMinimumWidth(MININUM_WIDTH);

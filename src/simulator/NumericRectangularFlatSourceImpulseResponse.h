@@ -69,12 +69,12 @@ NumericRectangularFlatSourceImpulseResponse<FloatType>::NumericRectangularFlatSo
 		FloatType sourceWidth,
 		FloatType sourceHeight,
 		FloatType subElemSize)
-			: samplingFreq_{samplingFreq}
-			, propagationSpeed_{propagationSpeed}
-			, subElemWidth_{}
-			, subElemHeight_{}
-			, numElemX_{}
-			, numElemY_{}
+			: samplingFreq_(samplingFreq)
+			, propagationSpeed_(propagationSpeed)
+			, subElemWidth_()
+			, subElemHeight_()
+			, numElemX_()
+			, numElemY_()
 {
 	if (subElemSize > sourceWidth) {
 		numElemX_ = 1;

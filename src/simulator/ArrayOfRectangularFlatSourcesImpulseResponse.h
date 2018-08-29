@@ -65,13 +65,13 @@ ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::ArrayO
 				FloatType discretization,
 				const std::vector<XY<FloatType>>& elemPos,
 				const std::vector<FloatType>& focusDelay /* s */)
-		: samplingFreq_{samplingFreq}
-		, ir_{samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization}
-		, elemPos_{elemPos}
-		, focusDelay_{focusDelay}
+		: samplingFreq_(samplingFreq)
+		, ir_(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization)
+		, elemPos_(elemPos)
+		, focusDelay_(focusDelay)
 		, offsetList_(elemPos_.size())
 		, hList_(elemPos_.size())
-		, valueFactor_{FloatType{1} / elemPos_.size()}
+		, valueFactor_(static_cast<FloatType>(1) / elemPos_.size())
 {
 	if (elemPos_.empty()) {
 		THROW_EXCEPTION(InvalidParameterException, "Empty element position list.");

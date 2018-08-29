@@ -44,15 +44,15 @@ namespace Lab {
 
 OGLMultiLayerWidget::OGLMultiLayerWidget(QWidget* parent)
 		: QOpenGLWidget{parent}
-		, scale_{1.0}
-		, rotX_{}
-		, rotY_{}
-		, minX_{}
-		, maxX_{}
-		, minY_{}
-		, maxY_{}
-		, minZ_{}
-		, maxZ_{}
+		, scale_(1.0)
+		, rotX_()
+		, rotY_()
+		, minX_()
+		, maxX_()
+		, minY_()
+		, maxY_()
+		, minZ_()
+		, maxZ_()
 {
 	setMinimumWidth(MININUM_WIDTH);
 	setMinimumHeight(MININUM_HEIGHT);

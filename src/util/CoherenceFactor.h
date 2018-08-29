@@ -75,7 +75,7 @@ CoherenceFactor<FloatType>::get(ConstParameterMapPtr pm)
 template<typename FloatType>
 class CoherenceFactorProcessor {
 public:
-	CoherenceFactorProcessor() : cf_{} { }
+	CoherenceFactorProcessor() : cf_() { }
 	CoherenceFactorProcessor(ConstParameterMapPtr pm)
 			: cf_(CoherenceFactor<FloatType>::get(pm)) {
 	}
@@ -147,7 +147,7 @@ AnalyticSignalCoherenceFactor<FloatType>::get(ConstParameterMapPtr pm)
 template<typename FloatType>
 class AnalyticSignalCoherenceFactorProcessor {
 public:
-	AnalyticSignalCoherenceFactorProcessor() : cf_{} { }
+	AnalyticSignalCoherenceFactorProcessor() : cf_() { }
 	AnalyticSignalCoherenceFactorProcessor(ConstParameterMapPtr pm)
 			: cf_(AnalyticSignalCoherenceFactor<FloatType>::get(pm)) {
 	}

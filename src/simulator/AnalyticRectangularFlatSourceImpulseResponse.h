@@ -76,12 +76,12 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::AnalyticRectangularFlat
 		FloatType sourceWidth,
 		FloatType sourceHeight,
 		FloatType minEdgeDivisor)
-			: samplingFreq_{samplingFreq}
-			, propagationSpeed_{propagationSpeed}
-			, a_{sourceWidth / 2}
-			, b_{sourceHeight / 2}
-			, minADivisor_{minEdgeDivisor / 2}
-			, swapXY_{}
+			: samplingFreq_(samplingFreq)
+			, propagationSpeed_(propagationSpeed)
+			, a_(sourceWidth / 2)
+			, b_(sourceHeight / 2)
+			, minADivisor_(minEdgeDivisor / 2)
+			, swapXY_()
 {
 	if (a_ > b_) {
 		std::swap(a_, b_);

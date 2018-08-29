@@ -63,9 +63,9 @@ private:
 
 template<typename FloatType>
 Simulated3DT1R1SAFTAcquisition<FloatType>::Simulated3DT1R1SAFTAcquisition(Project& project, const SA3DConfiguration<FloatType>& config)
-		: project_{project}
-		, config_{config}
-		, maxAbsValue_{}
+		: project_(project)
+		, config_(config)
+		, maxAbsValue_()
 {
 	//TODO: check numChannels/numChannelsMux and other params
 

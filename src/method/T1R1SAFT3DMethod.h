@@ -71,9 +71,9 @@ private:
 
 template<typename FloatType>
 T1R1SAFT3DMethod<FloatType>::T1R1SAFT3DMethod(Project& project)
-		: project_{project}
+		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
-		, visual_{Figure::VISUALIZATION_RECTIFIED_LOG}
+		, visual_(Figure::VISUALIZATION_RECTIFIED_LOG)
 {
 }
 

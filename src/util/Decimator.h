@@ -63,7 +63,7 @@ private:
 
 template<typename FloatType>
 Decimator<FloatType>::Decimator()
-		: downsamplingFactor_{}
+		: downsamplingFactor_()
 {
 }
 
