@@ -1260,7 +1260,7 @@ struct RedWhiteBlueColormap {
 namespace Lab {
 
 OGLFigureWidget::OGLFigureWidget(QWidget* parent)
-		: QOpenGLWidget{parent}
+		: QOpenGLWidget(parent)
 		, valuesInDecibel_()
 		, editingDistanceMarkers_()
 		, rotationMode_()

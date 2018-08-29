@@ -22,7 +22,7 @@
 namespace Lab {
 
 MultiLayer3DWindow::MultiLayer3DWindow(QWidget* parent)
-		: QWidget{parent}
+		: QWidget(parent)
 {
 	ui_.setupUi(this);
 }

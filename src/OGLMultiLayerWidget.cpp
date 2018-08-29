@@ -43,7 +43,7 @@
 namespace Lab {
 
 OGLMultiLayerWidget::OGLMultiLayerWidget(QWidget* parent)
-		: QOpenGLWidget{parent}
+		: QOpenGLWidget(parent)
 		, scale_(1.0)
 		, rotX_()
 		, rotY_()
