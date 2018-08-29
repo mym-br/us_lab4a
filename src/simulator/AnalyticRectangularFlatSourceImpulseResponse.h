@@ -93,14 +93,14 @@ template<typename FloatType>
 FloatType
 AnalyticRectangularFlatSourceImpulseResponse<FloatType>::alphaP(FloatType v)
 {
-	return std::asin(std::min(v, FloatType{1}));
+	return std::asin(std::min(v, FloatType(1)));
 }
 
 template<typename FloatType>
 FloatType
 AnalyticRectangularFlatSourceImpulseResponse<FloatType>::alphaN(FloatType v)
 {
-	return -std::asin(std::min(-v, FloatType{1}));
+	return -std::asin(std::min(-v, FloatType(1)));
 }
 
 template<typename FloatType>
@@ -173,7 +173,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 	const FloatType dt = 1 / samplingFreq_;
 	if (minADivisor_ > 0.0) {
 		const FloatType deltaA = a_ / minADivisor_;
-		const FloatType sigma1 = std::sqrt(std::max(c2 * tMin * tMin - z2, FloatType{0}));
+		const FloatType sigma1 = std::sqrt(std::max(c2 * tMin * tMin - z2, FloatType(0)));
 		const FloatType sigma2 = sigma1 + deltaA;
 		const FloatType maxDt = std::sqrt(sigma2 * sigma2 + z2) * invC - tMin;
 		if (dt > maxDt) {
@@ -203,7 +203,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 
 		for (std::size_t i = i1; i < i2; ++i) {
 			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType{0}));
+			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
 			if (sigma <= sigmaEps) continue;
 			const FloatType invSigma = 1 / sigma;
 			const FloatType alpha1 = alphaP(d1 * invSigma);
@@ -246,14 +246,14 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 
 		for (std::size_t i = i0; i < i1; ++i) {
 			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType{0}));
+			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
 			if (sigma <= sigmaEps) continue;
 			const FloatType alpha2 = alphaP(d2 / sigma);
 			h[i] = pi - 2 * alpha2;
 		}
 		for (std::size_t i = i1; i < i2; ++i) {
 			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType{0}));
+			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
 			if (sigma <= sigmaEps) continue;
 			const FloatType invSigma = 1 / sigma;
 			const FloatType alpha1 = alphaN(d1 * invSigma);
@@ -287,7 +287,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 
 		for (std::size_t i = i0; i < i1; ++i) {
 			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType{0}));
+			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
 			if (sigma <= sigmaEps) continue;
 			const FloatType invSigma = 1 / sigma;
 			const FloatType alpha1 = alphaP(d1 * invSigma);
@@ -296,7 +296,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 		}
 		for (std::size_t i = i1; i < i2; ++i) {
 			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType{0}));
+			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
 			if (sigma <= sigmaEps) continue;
 			const FloatType invSigma = 1 / sigma;
 			const FloatType alpha1 = alphaP(d1 * invSigma);
@@ -341,7 +341,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 
 		for (std::size_t i = i0; i < i1; ++i) {
 			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType{0}));
+			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
 			if (sigma <= sigmaEps) continue;
 			const FloatType invSigma = 1 / sigma;
 			const FloatType alpha1 = alphaN(d1 * invSigma);
@@ -352,7 +352,7 @@ AnalyticRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 		}
 		for (std::size_t i = i1; i < i2; ++i) {
 			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType{0}));
+			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
 			if (sigma <= sigmaEps) continue;
 			const FloatType invSigma = 1 / sigma;
 			const FloatType alpha1 = alphaN(d1 * invSigma);

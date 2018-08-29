@@ -161,7 +161,7 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 
 	ThreadData threadData;
 	threadData.coherenceFactor = coherenceFactor_;
-	tbb::enumerable_thread_specific<ThreadData> tls{threadData};
+	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
 	const FloatType invCT = (config_.samplingFrequency * upsamplingFactor_) / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
@@ -181,7 +181,7 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 			// For each row:
 			for (std::size_t j = 0; j < numRows; ++j) {
 
-				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>{0});
+				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>(0));
 				XYZValueFactor<FloatType>& point = gridData(i, j);
 
 				// Calculate the delays.
@@ -217,13 +217,13 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 				if (local.coherenceFactor.enabled()) {
 					point.factor = local.coherenceFactor.calculate(&local.rxSignalSumList[0], local.rxSignalSumList.size());
 				}
-				point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>{0}));
+				point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>(0)));
 			}
 		}
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
-			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>{FloatType{1} / numSignals});
+			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(FloatType(1) / numSignals));
 
 	LOG_DEBUG << "END ========== Vectorial3DSTAProcessor::process ==========";
 }

@@ -69,8 +69,8 @@ public:
 			FloatType rxElemHeight,
 			FloatType rxDiscretization,
 			const Decimator<FloatType>& dec)
-				: rxImpResp{samplingFreq, propagationSpeed, rxElemWidth, rxElemHeight, rxDiscretization}
-				, decimator{dec}
+				: rxImpResp(samplingFreq, propagationSpeed, rxElemWidth, rxElemHeight, rxDiscretization)
+				, decimator(dec)
 		{
 		}
 		ImpulseResponse rxImpResp;
@@ -414,7 +414,7 @@ Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatTy
 		*decimator_
 	};
 	threadData.convDadtHTxFilter.setCoefficients(convDadtHTx_, convDadtHTxFilterFreqCoeff_);
-	tbb::enumerable_thread_specific<ThreadData<ImpulseResponse>> tls{threadData};
+	tbb::enumerable_thread_specific<ThreadData<ImpulseResponse>> tls(threadData);
 
 	// If activeRxElem_.size() == 1, only one thread will be used.
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, activeRxElem_.size()),
@@ -470,7 +470,7 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 		THROW_EXCEPTION(InvalidStateException, "The list of reflectors is empty.");
 	}
 
-	std::fill(signalList_.begin(), signalList_.end(), FloatType{0});
+	std::fill(signalList_.begin(), signalList_.end(), FloatType(0));
 	FFTWFilter2<FloatType> dadtFilter;
 	dadtFilter.setCoefficients(dadt_, dadtFilterFreqCoeff_);
 

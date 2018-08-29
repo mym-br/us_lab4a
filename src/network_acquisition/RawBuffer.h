@@ -44,7 +44,7 @@ public:
 		INITIAL_RESERVED_SIZE = 8192
 	};
 
-	RawBuffer() : readIndex_(0) {
+	RawBuffer() : readIndex_() {
 		buffer_.reserve(INITIAL_RESERVED_SIZE);
 	}
 	~RawBuffer() {}

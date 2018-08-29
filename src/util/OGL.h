@@ -24,14 +24,14 @@ struct OGLPos3D {
 	float x;
 	float y;
 	float z;
-	OGLPos3D(float ix, float iy, float iz) : x{ix}, y{iy}, z{iz} {}
+	OGLPos3D(float ix, float iy, float iz) : x(ix), y(iy), z(iz) {}
 };
 
 struct OGLColor {
 	float red;
 	float green;
 	float blue;
-	OGLColor(float r, float g, float b) : red{r}, green{g}, blue{b} {}
+	OGLColor(float r, float g, float b) : red(r), green(g), blue(b) {}
 };
 
 struct OGLColorA {
@@ -39,7 +39,7 @@ struct OGLColorA {
 	float green;
 	float blue;
 	float alpha;
-	OGLColorA(float r, float g, float b, float a) : red{r}, green{g}, blue{b}, alpha{a} {}
+	OGLColorA(float r, float g, float b, float a) : red(r), green(g), blue(b), alpha(a) {}
 };
 
 struct OGLPoint3D {

@@ -133,7 +133,7 @@ SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValue
 	ArrayGeometry::getElementXCentered2D(config_.numElements, config_.pitch, xArray);
 
 	ThreadData threadData;
-	tbb::enumerable_thread_specific<ThreadData> tls{threadData};
+	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
 	const FloatType invCT = (config_.samplingFrequency * SIMPLE_STA_PROCESSOR_UPSAMPLING_FACTOR) / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
@@ -165,7 +165,7 @@ SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValue
 					for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 #if 0
 						// Nearest neighbor.
-						const std::size_t delayIdx = static_cast<std::size_t>(FloatType{0.5} + signalOffset_ + txDelay + local.delayList[rxElem]);
+						const std::size_t delayIdx = static_cast<std::size_t>(FloatType(0.5) + signalOffset_ + txDelay + local.delayList[rxElem]);
 						if (delayIdx < signalTensor_.n3()) {
 							pointValue += signalTensor_(localTxElem, rxElem, delayIdx);
 						}
@@ -187,7 +187,7 @@ SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValue
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
-			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>{FloatType{1} / numSignals});
+			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(FloatType(1) / numSignals));
 
 	LOG_DEBUG << "END ========== SimpleSTAProcessor::process ==========";
 }

@@ -133,7 +133,7 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularFlatSourceA
 		discretization,
 		dvdt
 	};
-	tbb::enumerable_thread_specific<ThreadData> tls{threadData};
+	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
 		LOG_INFO << "i: " << i << " < " << iEnd;
@@ -181,7 +181,7 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getArrayOfRectangularFlat
 		focusDelay,
 		dvdt
 	};
-	tbb::enumerable_thread_specific<ArrayThreadData> tls{threadData};
+	tbb::enumerable_thread_specific<ArrayThreadData> tls(threadData);
 
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
 		LOG_INFO << "i: " << i << " < " << iEnd;

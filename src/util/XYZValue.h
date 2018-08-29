@@ -24,7 +24,7 @@ struct XYZValue {
 	typedef FloatType ValueType;
 
 	XYZValue() {}
-	XYZValue(FloatType x, FloatType y, FloatType z, FloatType value) : x{x}, y{y}, z{z}, value{value} {}
+	XYZValue(FloatType x, FloatType y, FloatType z, FloatType value) : x(x), y(y), z(z), value(value) {}
 
 	FloatType x;
 	FloatType y;

@@ -54,7 +54,7 @@ void getType1(FloatType centerFreq, FloatType samplingFreq, std::vector<FloatTyp
 	v.resize(numSamples);
 	for (unsigned int i = 0; i < numSamples; ++i) {
 		const FloatType t = dt * i;
-		v[i] = std::sin(w * t) * (FloatType{0.5} - FloatType{0.5} * std::cos(w * k * t));
+		v[i] = std::sin(w * t) * (FloatType(0.5) - FloatType(0.5) * std::cos(w * k * t));
 	}
 }
 

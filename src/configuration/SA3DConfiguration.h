@@ -68,7 +68,7 @@ void
 SA3DConfiguration<FloatType>::fillActiveElem(const std::string& listStr, unsigned int maxElem,
 						std::vector<unsigned int>& activeElem)
 {
-	std::istringstream in{listStr};
+	std::istringstream in(listStr);
 	std::string item;
 	while (in >> item) {
 		auto pos = item.find(':');

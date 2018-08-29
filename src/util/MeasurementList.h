@@ -31,7 +31,7 @@ namespace Lab {
 template<typename FloatType>
 class MeasurementList {
 public:
-	MeasurementList() : position_(0), list_(0) { }
+	MeasurementList() : position_(), list_() { }
 
 	void reset(std::size_t n) {
 		position_ = 0;

@@ -238,7 +238,7 @@ template<typename FloatType>
 void
 get(const std::string& description, unsigned int size, std::vector<FloatType>& window)
 {
-	std::istringstream in{description};
+	std::istringstream in(description);
 	std::string name;
 	in >> name;
 	if (!in) THROW_EXCEPTION(MissingValueException, "Missing window function name.");

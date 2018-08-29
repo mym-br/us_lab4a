@@ -148,7 +148,7 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValu
 
 	ThreadData threadData;
 	threadData.coherenceFactor = coherenceFactor_;
-	tbb::enumerable_thread_specific<ThreadData> tls{threadData};
+	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
 	const FloatType invCT = (config_.samplingFrequency * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR) / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
@@ -167,7 +167,7 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValu
 			// For each row:
 			for (std::size_t j = 0; j < numRows; ++j) {
 
-				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), FloatType{0});
+				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), FloatType(0));
 				XYZValueFactor<FloatType>& point = gridData(i, j);
 
 				// Calculate the delays.
@@ -183,7 +183,7 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValu
 					for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 #if 0
 						// Nearest neighbor.
-						const std::size_t delayIdx = static_cast<std::size_t>(FloatType{0.5} + signalOffset_ + txDelay + local.delayList[rxElem]);
+						const std::size_t delayIdx = static_cast<std::size_t>(FloatType(0.5) + signalOffset_ + txDelay + local.delayList[rxElem]);
 						if (delayIdx < signalTensor_.n3()) {
 							local.rxSignalSumList[rxElem] += signalTensor_(localTxElem, rxElem, delayIdx);
 						}
@@ -203,13 +203,13 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValu
 				if (local.coherenceFactor.enabled()) {
 					point.factor = local.coherenceFactor.calculate(&local.rxSignalSumList[0], local.rxSignalSumList.size());
 				}
-				point.value = std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), FloatType{0});
+				point.value = std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), FloatType(0));
 			}
 		}
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
-			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>{FloatType{1} / numSignals});
+			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(FloatType(1) / numSignals));
 
 	LOG_DEBUG << "END ========== DefaultSTAProcessor::process ==========";
 }

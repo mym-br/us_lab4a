@@ -320,7 +320,7 @@ testDecimator(Lab::Project& p)
 			THROW_EXCEPTION(Lab::TestException, "Error: yOffset != offsetRef.");
 		}
 
-		Lab::Decimator<double> decimator2{decimator};
+		Lab::Decimator<double> decimator2(decimator);
 		std::size_t yOffset2;
 		decimator2.decimate(DECIMATOR_OFFSET, x, yOffset2, y2);
 		if (y2.size() != y.size()) {

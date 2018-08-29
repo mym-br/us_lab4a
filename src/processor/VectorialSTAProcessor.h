@@ -177,7 +177,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZVa
 
 	ThreadData threadData;
 	threadData.coherenceFactor = coherenceFactor_;
-	tbb::enumerable_thread_specific<ThreadData> tls{threadData};
+	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
 	const FloatType invCT = (config_.samplingFrequency * upsamplingFactor_) / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
@@ -196,7 +196,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZVa
 			// For each row:
 			for (std::size_t j = 0; j < numRows; ++j) {
 
-				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>{0});
+				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>(0));
 				XYZValueFactor<FloatType>& point = gridData(i, j);
 
 				// Calculate the delays.
@@ -225,16 +225,16 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZVa
 					point.factor = local.coherenceFactor.calculate(&local.rxSignalSumList[0], local.rxSignalSumList.size());
 				}
 				if (calculateEnvelope_) {
-					point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>{0}));
+					point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>(0)));
 				} else {
-					point.value = std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>{0}).real();
+					point.value = std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>(0)).real();
 				}
 			}
 		}
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
-			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>{FloatType{1} / numSignals});
+			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(FloatType(1) / numSignals));
 
 	LOG_DEBUG << "END ========== VectorialSTAProcessor::process ==========";
 }
