@@ -28,6 +28,7 @@ rx_min_edge_divisor = 0.0
 #reflectors_file = reflectors1
 reflectors_file = reflectors-random_column
 #reflectors_file = reflectors-ground
+#reflectors_file = reflectors-point_pairs_and_ground
 
 # (m)
 reflectors_offset_x = 0.0
