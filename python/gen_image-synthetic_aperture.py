@@ -85,6 +85,8 @@ for itx in range(MIN_TX_ELEM, MAX_TX_ELEM + 1):
         signals = hilbert(signals)
     tx_delays = delays[itx, :, :]
     signal_len = signals.shape[1]
+    if NUM_ELEMENTS != signals.shape[0]:
+        raise ValueError("Wrong number of receive elements: {} (should be {}).".format(signals.shape[0], NUM_ELEMENTS))
     print("Signal length: {}".format(signal_len))
     for irx in range(NUM_ELEMENTS):
         print("RX elem: {}".format(irx))
