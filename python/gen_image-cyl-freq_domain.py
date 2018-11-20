@@ -40,14 +40,14 @@ NX =   1024 # grid x size - must be power of two (?)
 NZ = 2*1024 # grid z size - must be power of two (?)
 
 # (m)
-#X_MIN = -0.4
-#X_MAX = 0.4
-#Z_MIN = 0.0
-#Z_MAX = 1.0
-X_MIN = -0.2
-X_MAX = 0.2
-Z_MIN = 0.05
-Z_MAX = 0.2
+X_MIN = -0.5
+X_MAX = 0.5
+Z_MIN = 0.6
+Z_MAX = 0.9
+#X_MIN = -0.2
+#X_MAX = 0.2
+#Z_MIN = 0.05
+#Z_MAX = 0.2
 
 # End of configurable parameters.
 #------------------------------------------------------------------------------
