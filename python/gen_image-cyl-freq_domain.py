@@ -84,6 +84,7 @@ plt.title("signals_os")
 
 # kv (receiver), angular velocity w
 s_kvw = fft2(signals_os)
+
 #plt.figure()
 #plt.pcolormesh(s_kvw.real)
 #plt.title("s_kvw.real")
