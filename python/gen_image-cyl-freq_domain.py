@@ -33,7 +33,7 @@ MIN_DB_LEVEL = -60.0
 INVERT_X = False
 INVERT_Z = True
 
-W_OVERSAMP_FACTOR = 1
+W_OVERSAMP_FACTOR = 4
 KV_OVERSAMP_FACTOR = 4
 
 NX =   1024 # grid x size - must be power of two (?)
