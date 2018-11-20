@@ -278,10 +278,6 @@ plt.figure()
 plt.pcolormesh(gx, gz, image_abs)
 plt.title("image")
 
-plt.figure()
-plt.pcolormesh(gx, gz, abs(image))
-plt.title("image")
-
 print("w_period: {}".format(w_period))
 print("kv_period: {}".format(kv_period))
 print("x_step: {}".format(x_step))
