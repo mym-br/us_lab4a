@@ -84,13 +84,13 @@ plt.title("signals_os")
 
 # kv (receiver), angular velocity w
 s_kvw = fft2(signals_os)
-plt.figure()
-plt.pcolormesh(s_kvw.real)
-plt.title("s_kvw.real")
-
-plt.figure()
-plt.pcolormesh(s_kvw.imag)
-plt.title("s_kvw.imag")
+#plt.figure()
+#plt.pcolormesh(s_kvw.real)
+#plt.title("s_kvw.real")
+#
+#plt.figure()
+#plt.pcolormesh(s_kvw.imag)
+#plt.title("s_kvw.imag")
 
 plt.figure()
 plt.pcolormesh(abs(s_kvw))
@@ -232,13 +232,13 @@ if INVERT_X: x_list = -x_list
 if INVERT_Z: z_list = -z_list
 gx, gz = np.meshgrid(x_list, z_list, indexing='ij')
 
-plt.figure()
-plt.pcolormesh(s_kxkz.real)
-plt.title("s_kxkz.real")
-
-plt.figure()
-plt.pcolormesh(s_kxkz.imag)
-plt.title("s_kxkz.imag")
+#plt.figure()
+#plt.pcolormesh(s_kxkz.real)
+#plt.title("s_kxkz.real")
+#
+#plt.figure()
+#plt.pcolormesh(s_kxkz.imag)
+#plt.title("s_kxkz.imag")
 
 plt.figure()
 plt.pcolormesh(np.abs(s_kxkz))
@@ -262,13 +262,13 @@ s_kxkz2[:, ikz_top_right+1:] = 0.0
 s_kxkz2 *= s_kxkz_transl
 image = ifft2(s_kxkz2)
 
-plt.figure()
-plt.pcolormesh(gx, gz, image.real)
-plt.title("image.real")
-
-plt.figure()
-plt.pcolormesh(gx, gz, image.imag)
-plt.title("image.imag")
+#plt.figure()
+#plt.pcolormesh(gx, gz, image.real)
+#plt.title("image.real")
+#
+#plt.figure()
+#plt.pcolormesh(gx, gz, image.imag)
+#plt.title("image.imag")
 
 image_abs = abs(image)
 # Normalize.
