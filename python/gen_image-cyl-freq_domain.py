@@ -163,9 +163,10 @@ for ikx in range(NX):
             print("CONTINUE 3 ikx={}".format(ikx))
             continue
         else:
-            #k = math.sqrt((kz2 + 2.0 * (ku2 + kv2)) * kz2 + ku2 * ku2 + kv2 * kv2 - 2.0 * ku2 * kv2) / (2.0 * kz)
-            # Considering ku = 0.
-            k = (kx2 + kz2) / (2.0 * kz)
+            if ku == 0.0:
+                k = (kx2 + kz2) / (2.0 * kz)
+            else:
+                k = math.sqrt((kz2 + 2.0 * (ku2 + kv2)) * kz2 + ku2 * ku2 + kv2 * kv2 - 2.0 * ku2 * kv2) / (2.0 * kz)
 
 #            abs_dk = abs(k - k2)
 #            if abs_dk > max_abs_dk:
