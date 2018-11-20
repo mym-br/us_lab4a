@@ -34,7 +34,7 @@ INVERT_X = False
 INVERT_Z = True
 
 W_OVERSAMP_FACTOR = 4
-KV_OVERSAMP_FACTOR = 8
+KV_OVERSAMP_FACTOR = 4
 
 NX =   1024 # grid x size - must be power of two (?)
 NZ = 2*1024 # grid z size - must be power of two (?)
