@@ -27,7 +27,6 @@ NUM_ELEMENTS = 32
 # (m)
 PITCH = 1.5e-3
 
-USE_ENVELOPE = True
 USE_DB_LEVELS = True
 MIN_DB_LEVEL = -60.0
 INVERT_X = False
@@ -36,7 +35,7 @@ INVERT_Z = True
 W_OVERSAMP_FACTOR = 1
 KV_OVERSAMP_FACTOR = 4
 
-NX = 1*1024 # grid x size - must be power of two (?)
+NX =   1024 # grid x size - must be power of two (?)
 NZ = 2*1024 # grid z size - must be power of two (?)
 
 # (m)
