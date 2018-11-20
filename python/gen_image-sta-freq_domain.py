@@ -68,7 +68,7 @@ for tx_elem in range(NUM_ELEMENTS):
         raise ValueError("Wrong number of receive elements: {} (should be {}).".format(tx_elem_signals.shape[0], NUM_ELEMENTS))
 
     if signals_os is None:
-        signals_os = np.zeros((NUM_ELEMENTS * KV_OVERSAMP_FACTOR,
+        signals_os = np.zeros((NUM_ELEMENTS,
                                NUM_ELEMENTS * KV_OVERSAMP_FACTOR,
                                signal_len * W_OVERSAMP_FACTOR))
     for rx_elem in range(NUM_ELEMENTS):
@@ -110,7 +110,7 @@ s_kxkz_mask = np.zeros(s_kxkz.shape)
 s_kxkz_transl = np.zeros(s_kxkz.shape, dtype=complex)
 
 w_period = two_pi * SAMPLING_FREQ
-kv_period = two_pi / PITCH
+ku_period = kv_period = two_pi / PITCH
 
 half_nx = NX // 2
 half_nz = NZ // 2
@@ -128,8 +128,11 @@ ikz_top_right = 0
 min_ikv = NUM_ELEMENTS * KV_OVERSAMP_FACTOR + 1
 max_ikv = -1
 
-for iku in range(NUM_ELEMENTS): #TODO: Expand range?
-    ku = (two_pi / PITCH) * (iku / (NUM_ELEMENTS * KV_OVERSAMP_FACTOR))
+for iku in range(NUM_ELEMENTS):
+    if iku > NUM_ELEMENTS // 2:
+        ku = (ku_period / NUM_ELEMENTS) * (iku - NUM_ELEMENTS)
+    else:
+        ku = (ku_period / NUM_ELEMENTS) * iku
     ku2 = ku * ku
 
     for ikx in range(NX):
