@@ -1,4 +1,6 @@
 
+- config-sta-cyl -> config-cyl
+
 - [???] Sectorial grid in z-y.
 
 - Waveform: 2a / 2b: numPeriods should be ignored (?).
