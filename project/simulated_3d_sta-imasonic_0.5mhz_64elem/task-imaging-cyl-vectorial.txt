@@ -18,3 +18,7 @@ base_element = 16
 peak_offset = 0.0
 
 upsampling_factor = 4
+
+tx_apodization_file = apod_1d_rectangular-1
+rx_apodization_file = apod_1d_rectangular-32
+#rx_apodization_file = apod_1d_blackman-32

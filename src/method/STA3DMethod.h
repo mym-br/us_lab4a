@@ -38,6 +38,7 @@
 #include "Timer.h"
 #include "Vectorial3DSTAProcessor.h"
 #include "Util.h"
+#include "WindowFunction.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
@@ -176,6 +177,13 @@ STA3DMethod<FloatType>::execute()
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
+	const std::string txApodFile = taskPM->value<std::string>("tx_apodization_file");
+	const std::string rxApodFile = taskPM->value<std::string>("rx_apodization_file");
+	std::vector<FloatType> txApod;
+	project_.loadHDF5(txApodFile, "apod", txApod);
+	std::vector<FloatType> rxApod;
+	project_.loadHDF5(rxApodFile, "apod", rxApod);
+
 	const FloatType nyquistRate = 2.0 * config.maxFrequency;
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
@@ -185,7 +193,8 @@ STA3DMethod<FloatType>::execute()
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 		auto processor = std::make_unique<Vectorial3DSTAProcessor<FloatType>>(
 							config, *acquisition, upsamplingFactor,
-							coherenceFactor, peakOffset);
+							coherenceFactor, peakOffset,
+							txApod, rxApod);
 		process(config.valueScale, *processor, baseElement, outputDir);
 		if (coherenceFactor.enabled()) {
 			useCoherenceFactor(config.valueScale, outputDir);

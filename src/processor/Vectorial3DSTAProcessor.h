@@ -57,7 +57,9 @@ public:
 			STAAcquisition<FloatType>& acquisition,
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
-			FloatType peakOffset);
+			FloatType peakOffset,
+			const std::vector<FloatType>& txApod,
+			const std::vector<FloatType>& rxApod);
 	virtual ~Vectorial3DSTAProcessor() {}
 
 	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData);
@@ -85,6 +87,8 @@ private:
 	Interpolator<FloatType> interpolator_;
 	HilbertEnvelope<FloatType> envelope_;
 	bool initialized_;
+	std::vector<FloatType> txApod_;
+	std::vector<FloatType> rxApod_;
 };
 
 
@@ -95,19 +99,32 @@ Vectorial3DSTAProcessor<FloatType>::Vectorial3DSTAProcessor(
 			STAAcquisition<FloatType>& acquisition,
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
-			FloatType peakOffset)
+			FloatType peakOffset,
+			const std::vector<FloatType>& txApod,
+			const std::vector<FloatType>& rxApod)
 		: config_(config)
 		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
 		, acquisition_(acquisition)
 		, upsamplingFactor_(upsamplingFactor)
 		, coherenceFactor_(coherenceFactor)
 		, initialized_(false)
+		, txApod_(txApod)
+		, rxApod_(rxApod)
 {
 	if (upsamplingFactor_ > 1) {
 		interpolator_.prepare(upsamplingFactor_, VECTORIAL_3D_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
 	}
 
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * peakOffset / config_.centerFrequency;
+
+	if (txApod_.size() != config_.activeTxElem.size()) {
+		THROW_EXCEPTION(InvalidValueException, "Wrong tx apodization size: " << txApod_.size()
+				<< " (should be " << config_.activeTxElem.size() << ").");
+	}
+	if (rxApod_.size() != config_.activeRxElem.size()) {
+		THROW_EXCEPTION(InvalidValueException, "Wrong rx apodization size: " << rxApod_.size()
+				<< " (should be " << config_.activeRxElem.size() << ").");
+	}
 }
 
 template<typename FloatType>
@@ -209,7 +226,9 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 						const FloatType k = delay - delayIdx;
 						if (delayIdx + 1U < analyticSignalTensor_.n3()) {
 							const std::complex<FloatType>* p = &analyticSignalTensor_(iTxElem, iRxElem, delayIdx);
-							local.rxSignalSumList[iRxElem] += (1 - k) * *p + k * *(p + 1);
+							local.rxSignalSumList[iRxElem] +=
+									txApod_[iTxElem] * rxApod_[iRxElem]
+									* ((1 - k) * *p + k * *(p + 1));
 						}
 					}
 				}

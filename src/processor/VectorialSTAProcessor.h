@@ -216,7 +216,9 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZVa
 						const FloatType k = delay - delayIdx;
 						if (delayIdx + 1U < analyticSignalTensor_.n3()) {
 							const std::complex<FloatType>* p = &analyticSignalTensor_(localTxElem, rxElem, delayIdx);
-							local.rxSignalSumList[rxElem] += txApod_[txElem] * rxApod_[rxElem] * ((1 - k) * *p + k * *(p + 1));
+							local.rxSignalSumList[rxElem] +=
+									txApod_[txElem] * rxApod_[rxElem]
+									* ((1 - k) * *p + k * *(p + 1));
 						}
 					}
 				}
