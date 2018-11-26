@@ -5,12 +5,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 from scipy.signal import hilbert
+#import matplotlib as mpl
+#mpl.rc('image', cmap='inferno')
 
 #------------------------------------------------------------------------------
 # Configurable parameters.
 
-#DATA_DIR = "../project/simulated_3d_sta-imasonic_0.5mhz_64elem/output/"
-DATA_DIR = "../project/sta_network_sync-imasonic_0.5mhz_64elem/output/0114/"
+DATA_DIR = "../project/simulated_3d_sta-imasonic_0.5mhz_64elem/output/"
+#DATA_DIR = "../project/sta_network_sync-imasonic_0.5mhz_64elem/output/0114/"
 
 X_FILE = "image_x.h5"
 X_FILE_DATASET = "x"
@@ -67,7 +69,7 @@ if USE_DB_LEVELS:
 plt.figure(figsize=(10, 7))
 plt.pcolormesh(-x, z, image)
 plt.axis("equal")
-plt.grid(True)
+#plt.grid(True)
 plt.xlabel("x (m)")
 plt.ylabel("z (m)")
 cbar = plt.colorbar()
