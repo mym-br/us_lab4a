@@ -15,6 +15,8 @@ from numpy.fft import fftn, ifft2
 
 DATA_DIR = "../project/simulated_3d_sta-imasonic_0.5mhz_64elem/saved_acquisition/0000/"
 SIGNAL_DATASET = "signal"
+REFLECTORS_FILE = "../project/simulated_3d_sta-imasonic_0.5mhz_64elem/reflectors0.h5"
+REFLECTORS_DATASET = "reflectors"
 
 # (m/s)
 PROPAGATION_SPEED = 1500.0
@@ -55,6 +57,10 @@ x_step = (X_MAX - X_MIN) / (NX - 1)
 z_step = (Z_MAX - Z_MIN) / (NZ - 1)
 two_pi = 2.0 * math.pi
 halfWidth = 0.5 * (NUM_ELEMENTS - 1) * PITCH
+
+reflectors = hdf5util.read_to_ndarray(REFLECTORS_FILE, REFLECTORS_DATASET)
+if INVERT_X: reflectors[:, 0] = -reflectors[:, 0]
+if INVERT_Z: reflectors[:, 2] = -reflectors[:, 2]
 
 signals_os = None
 
@@ -279,6 +285,7 @@ if USE_DB_LEVELS:
 
 plt.figure()
 plt.pcolormesh(gx, gz, image_abs)
+plt.plot(reflectors[:, 0], reflectors[:, 2], 'wx')
 plt.title("image")
 
 print("w_period: {}".format(w_period))
