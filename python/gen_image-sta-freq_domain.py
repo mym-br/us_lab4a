@@ -15,7 +15,7 @@ from numpy.fft import fftn, ifft2
 
 DATA_DIR = "../project/simulated_3d_sta-imasonic_0.5mhz_64elem/saved_acquisition/0000/"
 SIGNAL_DATASET = "signal"
-REFLECTORS_FILE = "../project/simulated_3d_sta-imasonic_0.5mhz_64elem/reflectors0.h5"
+REFLECTORS_FILE = "../project/simulated_3d_sta-imasonic_0.5mhz_64elem/reflectors-fan.h5"
 REFLECTORS_DATASET = "reflectors"
 
 # (m/s)
@@ -41,10 +41,10 @@ NX =   1024 # grid x size - must be power of two (?)
 NZ = 2*1024 # grid z size - must be power of two (?)
 
 # (m)
-X_MIN = -0.5
-X_MAX = 0.5
-Z_MIN = 0.6
-Z_MAX = 0.9
+X_MIN = -0.4
+X_MAX = 0.7
+Z_MIN = -0.1
+Z_MAX = 1.1
 #X_MIN = -0.2
 #X_MAX = 0.2
 #Z_MIN = 0.05
@@ -287,6 +287,7 @@ plt.figure()
 plt.pcolormesh(gx, gz, image_abs)
 plt.plot(reflectors[:, 0], reflectors[:, 2], 'wx')
 plt.title("image")
+plt.axis('scaled')
 
 print("w_period: {}".format(w_period))
 print("kv_period: {}".format(kv_period))
