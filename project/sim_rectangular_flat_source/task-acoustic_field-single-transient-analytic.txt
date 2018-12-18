@@ -11,9 +11,6 @@ impulse_response_method = analytic
 min_edge_divisor = 0.0
 
 # (m)
-beam_distance = 1.0
-
-# (m)
 source_width = 10.0e-3
 source_height = 16.0e-3
 

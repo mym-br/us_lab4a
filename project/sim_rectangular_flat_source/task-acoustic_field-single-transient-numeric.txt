@@ -11,9 +11,6 @@ impulse_response_method = numeric
 sub_elem_size_factor = 2.0
 
 # (m)
-beam_distance = 1.0
-
-# (m)
 source_width = 10.0e-3
 source_height = 16.0e-3
 
