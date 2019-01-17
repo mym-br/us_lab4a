@@ -17,6 +17,7 @@
 #ifndef ARRAYUTIL_H
 #define ARRAYUTIL_H
 
+#include <limits>
 #include <vector>
 
 #include "Geometry.h"
@@ -107,15 +108,28 @@ calculateTx3DFocusDelay(
 		const FloatType focusZ = pm.value<FloatType>("tx_focus_z", -10000.0, 10000.0);
 
 		const FloatType invC = 1 / propagationSpeed;
-		FloatType maxDt = 0.0;
-		for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
-			const XY<FloatType>& pos = elemPos[i];
-			const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
-			if (dt > maxDt) maxDt = dt;
-			focusDelay[i] = dt;
-		}
-		for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
-			focusDelay[i] = maxDt - focusDelay[i];
+		if (focusZ >= 0.0) {
+			FloatType maxDt = 0.0;
+			for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
+				const XY<FloatType>& pos = elemPos[i];
+				const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
+				if (dt > maxDt) maxDt = dt;
+				focusDelay[i] = dt;
+			}
+			for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
+				focusDelay[i] = maxDt - focusDelay[i];
+			}
+		} else {
+			FloatType minDt = std::numeric_limits<FloatType>::max();
+			for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
+				const XY<FloatType>& pos = elemPos[i];
+				const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
+				if (dt < minDt) minDt = dt;
+				focusDelay[i] = dt;
+			}
+			for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
+				focusDelay[i] -= minDt;
+			}
 		}
 	}
 }
