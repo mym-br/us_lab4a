@@ -1,0 +1,33 @@
+
+method = sim_propagation_snapshot_rectangular_flat_source_transient
+
+grid_config_file = config-grid.txt
+
+output_dir = output
+
+impulse_response_method = analytic
+
+# 0.0: disable
+min_edge_divisor = 0.0
+
+# (m)
+source_width = 10.0e-3
+source_height = 16.0e-3
+
+# (m/s)
+propagation_speed = 1500.0
+
+# (Hz)
+center_frequency = 5.0e6
+max_frequency = 10.0e6
+
+# "1" / "2a" / "2b"
+excitation_type = 2a
+# 0.0: Use default.
+excitation_num_periods = 0.0
+
+# sampling_frequency = nyquist_rate * sampling_frequency_factor
+sampling_frequency_factor = 32.0
+
+# (m)
+propagation_distance = 20.0e-3

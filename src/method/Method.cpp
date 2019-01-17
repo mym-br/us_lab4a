@@ -58,12 +58,14 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sta_save_signals);
 	ADD_MAP_ITEM(sta_network_sync);
 	ADD_MAP_ITEM(sta_network_sync_save_signals);
-	ADD_MAP_ITEM(sim_radiation_pattern_array_of_rectangular_flat_sources_transient);
-	ADD_MAP_ITEM(sim_radiation_pattern_rectangular_flat_source_transient);
 	ADD_MAP_ITEM(sim_acoustic_field_array_of_rectangular_flat_sources_transient);
 	ADD_MAP_ITEM(sim_acoustic_field_rectangular_flat_source_transient);
 	ADD_MAP_ITEM(sim_impulse_response_array_of_rectangular_flat_sources);
 	ADD_MAP_ITEM(sim_impulse_response_rectangular_flat_source);
+	ADD_MAP_ITEM(sim_propagation_snapshot_array_of_rectangular_flat_sources_transient);
+	ADD_MAP_ITEM(sim_propagation_snapshot_rectangular_flat_source_transient);
+	ADD_MAP_ITEM(sim_radiation_pattern_array_of_rectangular_flat_sources_transient);
+	ADD_MAP_ITEM(sim_radiation_pattern_rectangular_flat_source_transient);
 	ADD_MAP_ITEM(sta_3d_simulated_save_signals);
 	ADD_MAP_ITEM(sta_3d_simulated_seq_y_save_signals);
 	ADD_MAP_ITEM(sta_3d_vectorial_simulated);
@@ -124,12 +126,14 @@ Method::get(Project& project)
 	case MethodType::sta_network_sync:              // falls through
 	case MethodType::sta_network_sync_save_signals:
 		return new NetworkSyncSTAMethod<double>(project);
-	case MethodType::sim_radiation_pattern_array_of_rectangular_flat_sources_transient: // falls through
-	case MethodType::sim_radiation_pattern_rectangular_flat_source_transient:           // falls through
-	case MethodType::sim_acoustic_field_array_of_rectangular_flat_sources_transient:    // falls through
-	case MethodType::sim_acoustic_field_rectangular_flat_source_transient:              // falls through
-	case MethodType::sim_impulse_response_array_of_rectangular_flat_sources:            // falls through
-	case MethodType::sim_impulse_response_rectangular_flat_source:
+	case MethodType::sim_acoustic_field_array_of_rectangular_flat_sources_transient:       // falls through
+	case MethodType::sim_acoustic_field_rectangular_flat_source_transient:                 // falls through
+	case MethodType::sim_impulse_response_array_of_rectangular_flat_sources:               // falls through
+	case MethodType::sim_impulse_response_rectangular_flat_source:                         // falls through
+	case MethodType::sim_propagation_snapshot_array_of_rectangular_flat_sources_transient: // falls through
+	case MethodType::sim_propagation_snapshot_rectangular_flat_source_transient:           // falls through
+	case MethodType::sim_radiation_pattern_array_of_rectangular_flat_sources_transient:    // falls through
+	case MethodType::sim_radiation_pattern_rectangular_flat_source_transient:
 		return new SimRectangularFlatSourceMethod<double>(project);
 	case MethodType::show_image:
 		return new ShowImageMethod(project);
