@@ -33,8 +33,8 @@
 #include "NumericRectangularFlatSourceImpulseResponse.h"
 #include "ParameterMap.h"
 #include "Project.h"
-#include "SimTransientAcousticBeam.h"
 #include "SimTransientAcousticField.h"
+#include "SimTransientRadiationPattern.h"
 #include "Timer.h"
 #include "Util.h"
 #include "Waveform.h"
@@ -57,8 +57,8 @@ private:
 	SimRectangularFlatSourceMethod(const SimRectangularFlatSourceMethod&) = delete;
 	SimRectangularFlatSourceMethod& operator=(const SimRectangularFlatSourceMethod&) = delete;
 
-	void execTransientAcousticBeam();
-	void execTransientArrayAcousticBeam();
+	void execTransientRadiationPattern();
+	void execTransientArrayRadiationPattern();
 	void execTransientAcousticField();
 	void execTransientArrayAcousticField();
 	// Return p/(c*density).
@@ -84,7 +84,7 @@ SimRectangularFlatSourceMethod<FloatType>::~SimRectangularFlatSourceMethod()
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
+SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
@@ -92,11 +92,11 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	project_.createDirectory(outputDir, false);
 
 	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
-	const FloatType beamDistance     = taskPM->value<FloatType>("beam_distance", 0.0, 100.0);
-	const FloatType beamThetaYStep   = taskPM->value<FloatType>("beam_theta_y_step", 0.0, 10.0);
-	const FloatType beamThetaYMax    = taskPM->value<FloatType>("beam_theta_y_max" , 0.0, 90.0);
-	const FloatType beamThetaXStep   = taskPM->value<FloatType>("beam_theta_x_step", 0.0, 10.0);
-	const FloatType beamThetaXMax    = taskPM->value<FloatType>("beam_theta_x_max" , 0.0, 90.0);
+	const FloatType distance         = taskPM->value<FloatType>("distance", 0.0, 100.0);
+	const FloatType thetaYStep       = taskPM->value<FloatType>("theta_y_step", 0.0, 10.0);
+	const FloatType thetaYMax        = taskPM->value<FloatType>("theta_y_max" , 0.0, 90.0);
+	const FloatType thetaXStep       = taskPM->value<FloatType>("theta_x_step", 0.0, 10.0);
+	const FloatType thetaXMax        = taskPM->value<FloatType>("theta_x_max" , 0.0, 90.0);
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
 	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
@@ -129,9 +129,9 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	Util::centralDiff(exc, dt, dvdt);
 
 	std::vector<FloatType> thetaXList;
-	Util::fillSequenceFromStartToEndWithSize(thetaXList, 0.0, beamThetaXMax, std::ceil(beamThetaXMax / beamThetaXStep) + 1);
+	Util::fillSequenceFromStartToEndWithSize(thetaXList, 0.0, thetaXMax, std::ceil(thetaXMax / thetaXStep) + 1);
 	std::vector<FloatType> thetaYList;
-	Util::fillSequenceFromStartToEndWithSize(thetaYList, 0.0, beamThetaYMax, std::ceil(beamThetaYMax / beamThetaYStep) + 1);
+	Util::fillSequenceFromStartToEndWithSize(thetaYList, 0.0, thetaYMax, std::ceil(thetaYMax / thetaYStep) + 1);
 
 	Matrix<XYZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
 	Matrix<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
@@ -142,8 +142,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 		const FloatType cosTX = std::cos(tX);
 		for (unsigned int iy = 0, ySize = thetaYList.size(); iy < ySize; ++iy) {
 			const FloatType tY = Util::degreeToRadian(thetaYList[iy]);
-			const FloatType x = beamDistance * std::sin(tY);
-			const FloatType rx = beamDistance * std::cos(tY);
+			const FloatType x = distance * std::sin(tY);
+			const FloatType rx = distance * std::cos(tY);
 			const FloatType y = rx * sinTX;
 			const FloatType z = rx * cosTX;
 			XYZValue<FloatType>& gd = gridData(ix, iy);
@@ -161,15 +161,15 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 	if (irMethod == "numeric") {
 		const FloatType subElemSize = propagationSpeed /
 				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
-		auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
-		acBeam->getRectangularFlatSourceAcousticBeam(
+		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
+		radPat->getRectangularFlatSourceRadiationPattern(
 					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
 					subElemSize,
 					dvdt, inputData, gridData);
 	} else if (irMethod == "analytic") {
 		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
-		auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
-		acBeam->getRectangularFlatSourceAcousticBeam(
+		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
+		radPat->getRectangularFlatSourceRadiationPattern(
 					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
 					minEdgeDivisor,
 					dvdt, inputData, gridData);
@@ -187,33 +187,33 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticBeam()
 
 	Project::GridDataType projGridData;
 	Util::copyXYZValue(gridData, projGridData);
-	project_.showFigure3D(1, "Beam", &projGridData, &pointList,
+	project_.showFigure3D(1, "Pattern", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 
-	std::vector<FloatType> beamTY(gridData.n2());
+	std::vector<FloatType> patternTY(gridData.n2());
 	auto tyInterval = gridData.dim2Interval(0);
-	Util::copyUsingOperator(tyInterval.first, tyInterval.second, beamTY.begin(), Util::CopyValueOp{});
-	Util::linearToDecibels(beamTY, -100.0);
-	project_.showFigure2D(1, "Beam theta-y", thetaYList, beamTY);
+	Util::copyUsingOperator(tyInterval.first, tyInterval.second, patternTY.begin(), Util::CopyValueOp{});
+	Util::linearToDecibels(patternTY, -100.0);
+	project_.showFigure2D(1, "Pattern theta-y", thetaYList, patternTY);
 
-	std::vector<FloatType> beamTX(gridData.n1());
+	std::vector<FloatType> patternTX(gridData.n1());
 	auto txInterval = gridData.dim1Interval(0);
-	Util::copyUsingOperator(txInterval.first, txInterval.second, beamTX.begin(), Util::CopyValueOp{});
-	Util::linearToDecibels(beamTX, -100.0);
-	project_.showFigure2D(2, "Beam theta-x", thetaXList, beamTX);
+	Util::copyUsingOperator(txInterval.first, txInterval.second, patternTX.begin(), Util::CopyValueOp{});
+	Util::linearToDecibels(patternTX, -100.0);
+	project_.showFigure2D(2, "Pattern theta-x", thetaXList, patternTX);
 
 	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
 	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
 	project_.saveImageToHDF5(gridData, outputDir);
-	project_.saveHDF5(thetaYList, outputDir + "/theta_y"     , "value");
-	project_.saveHDF5(beamTY    , outputDir + "/beam_theta_y", "value");
-	project_.saveHDF5(thetaXList, outputDir + "/theta_x"     , "value");
-	project_.saveHDF5(beamTX    , outputDir + "/beam_theta_x", "value");
+	project_.saveHDF5(thetaYList, outputDir + "/theta_y"        , "value");
+	project_.saveHDF5(patternTY , outputDir + "/pattern_theta_y", "value");
+	project_.saveHDF5(thetaXList, outputDir + "/theta_x"        , "value");
+	project_.saveHDF5(patternTX , outputDir + "/pattern_theta_x", "value");
 }
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
+SimRectangularFlatSourceMethod<FloatType>::execTransientArrayRadiationPattern()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
@@ -221,13 +221,13 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	project_.createDirectory(outputDir, false);
 
 	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
-	const FloatType beamDistance     = taskPM->value<FloatType>("beam_distance", 0.0, 100.0);
-	const FloatType beamThetaYStep   = taskPM->value<FloatType>("beam_theta_y_step", 0.0, 10.0);
-	const FloatType beamThetaYMin    = taskPM->value<FloatType>("beam_theta_y_min" , -90.0, 90.0);
-	const FloatType beamThetaYMax    = taskPM->value<FloatType>("beam_theta_y_max" , beamThetaYMin + 0.1, 90.0);
-	const FloatType beamThetaXStep   = taskPM->value<FloatType>("beam_theta_x_step", 0.0, 10.0);
-	const FloatType beamThetaXMin    = taskPM->value<FloatType>("beam_theta_x_min" , -90.0, 90.0);
-	const FloatType beamThetaXMax    = taskPM->value<FloatType>("beam_theta_x_max" , beamThetaXMin + 0.1, 90.0);
+	const FloatType distance         = taskPM->value<FloatType>("distance", 0.0, 100.0);
+	const FloatType thetaYStep       = taskPM->value<FloatType>("theta_y_step", 0.0, 10.0);
+	const FloatType thetaYMin        = taskPM->value<FloatType>("theta_y_min" , -90.0, 90.0);
+	const FloatType thetaYMax        = taskPM->value<FloatType>("theta_y_max" , thetaYMin + 0.1, 90.0);
+	const FloatType thetaXStep       = taskPM->value<FloatType>("theta_x_step", 0.0, 10.0);
+	const FloatType thetaXMin        = taskPM->value<FloatType>("theta_x_min" , -90.0, 90.0);
+	const FloatType thetaXMax        = taskPM->value<FloatType>("theta_x_max" , thetaXMin + 0.1, 90.0);
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
 	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
@@ -266,9 +266,9 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	Util::centralDiff(exc, dt, dvdt);
 
 	std::vector<FloatType> thetaXList;
-	Util::fillSequenceFromStartToEndWithSize(thetaXList, beamThetaXMin, beamThetaXMax, std::ceil((beamThetaXMax - beamThetaXMin) / beamThetaXStep) + 1);
+	Util::fillSequenceFromStartToEndWithSize(thetaXList, thetaXMin, thetaXMax, std::ceil((thetaXMax - thetaXMin) / thetaXStep) + 1);
 	std::vector<FloatType> thetaYList;
-	Util::fillSequenceFromStartToEndWithSize(thetaYList, beamThetaYMin, beamThetaYMax, std::ceil((beamThetaYMax - beamThetaYMin) / beamThetaYStep) + 1);
+	Util::fillSequenceFromStartToEndWithSize(thetaYList, thetaYMin, thetaYMax, std::ceil((thetaYMax - thetaYMin) / thetaYStep) + 1);
 
 	Matrix<XYZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
 	Matrix<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
@@ -279,8 +279,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 		const FloatType cosTX = std::cos(tX);
 		for (unsigned int iy = 0, ySize = thetaYList.size(); iy < ySize; ++iy) {
 			const FloatType tY = Util::degreeToRadian(thetaYList[iy]);
-			const FloatType x = beamDistance * std::sin(tY);
-			const FloatType rx = beamDistance * std::cos(tY);
+			const FloatType x = distance * std::sin(tY);
+			const FloatType rx = distance * std::cos(tY);
 			const FloatType y = rx * sinTX;
 			const FloatType z = rx * cosTX;
 			XYZValue<FloatType>& gd = gridData(ix, iy);
@@ -298,15 +298,15 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 	if (irMethod == "numeric") {
 		const FloatType subElemSize = propagationSpeed /
 				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
-		auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
-		acBeam->getArrayOfRectangularFlatSourcesAcousticBeam(
+		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
+		radPat->getArrayOfRectangularFlatSourcesRadiationPattern(
 					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
 					subElemSize,
 					dvdt, elemPos, focusDelay, inputData, gridData);
 	} else if (irMethod == "analytic") {
 		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
-		auto acBeam = std::make_unique<SimTransientAcousticBeam<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
-		acBeam->getArrayOfRectangularFlatSourcesAcousticBeam(
+		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
+		radPat->getArrayOfRectangularFlatSourcesRadiationPattern(
 					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
 					minEdgeDivisor,
 					dvdt, elemPos, focusDelay, inputData, gridData);
@@ -324,7 +324,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 
 	Project::GridDataType projGridData;
 	Util::copyXYZValue(gridData, projGridData);
-	project_.showFigure3D(1, "Beam", &projGridData, &pointList,
+	project_.showFigure3D(1, "Pattern", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 
 	FloatType sectionTY = 0.0;
@@ -337,29 +337,29 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticBeam()
 		sectionTY = Util::radianToDegree(std::atan2(focusX, focusZ));
 		sectionTX = Util::radianToDegree(std::atan2(focusY, focusZ));
 	}
-	std::size_t sectionTYIndex = std::rint(((sectionTY - beamThetaYMin) / (beamThetaYMax - beamThetaYMin)) * (thetaYList.size() - 1));
-	std::size_t sectionTXIndex = std::rint(((sectionTX - beamThetaXMin) / (beamThetaXMax - beamThetaXMin)) * (thetaXList.size() - 1));
+	std::size_t sectionTYIndex = std::rint(((sectionTY - thetaYMin) / (thetaYMax - thetaYMin)) * (thetaYList.size() - 1));
+	std::size_t sectionTXIndex = std::rint(((sectionTX - thetaXMin) / (thetaXMax - thetaXMin)) * (thetaXList.size() - 1));
 	LOG_DEBUG << "Section theta-x: " << thetaXList[sectionTXIndex] << " theta-y: " << thetaYList[sectionTYIndex];
 
-	std::vector<FloatType> beamTY(gridData.n2());
+	std::vector<FloatType> patternTY(gridData.n2());
 	auto tyInterval = gridData.dim2Interval(sectionTXIndex);
-	Util::copyUsingOperator(tyInterval.first, tyInterval.second, beamTY.begin(), Util::CopyValueOp{});
-	Util::linearToDecibels(beamTY, -100.0);
-	project_.showFigure2D(1, "Beam theta-y", thetaYList, beamTY);
+	Util::copyUsingOperator(tyInterval.first, tyInterval.second, patternTY.begin(), Util::CopyValueOp{});
+	Util::linearToDecibels(patternTY, -100.0);
+	project_.showFigure2D(1, "Pattern theta-y", thetaYList, patternTY);
 
-	std::vector<FloatType> beamTX(gridData.n1());
+	std::vector<FloatType> patternTX(gridData.n1());
 	auto txInterval = gridData.dim1Interval(sectionTYIndex);
-	Util::copyUsingOperator(txInterval.first, txInterval.second, beamTX.begin(), Util::CopyValueOp{});
-	Util::linearToDecibels(beamTX, -100.0);
-	project_.showFigure2D(2, "Beam theta-x", thetaXList, beamTX);
+	Util::copyUsingOperator(txInterval.first, txInterval.second, patternTX.begin(), Util::CopyValueOp{});
+	Util::linearToDecibels(patternTX, -100.0);
+	project_.showFigure2D(2, "Pattern theta-x", thetaXList, patternTX);
 
 	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
 	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
 	project_.saveImageToHDF5(gridData, outputDir);
-	project_.saveHDF5(thetaYList, outputDir + "/theta_y"     , "value");
-	project_.saveHDF5(beamTY    , outputDir + "/beam_theta_y", "value");
-	project_.saveHDF5(thetaXList, outputDir + "/theta_x"     , "value");
-	project_.saveHDF5(beamTX    , outputDir + "/beam_theta_x", "value");
+	project_.saveHDF5(thetaYList, outputDir + "/theta_y"        , "value");
+	project_.saveHDF5(patternTY , outputDir + "/pattern_theta_y", "value");
+	project_.saveHDF5(thetaXList, outputDir + "/theta_x"        , "value");
+	project_.saveHDF5(patternTX , outputDir + "/pattern_theta_x", "value");
 }
 
 template<typename FloatType>
@@ -729,11 +729,11 @@ SimRectangularFlatSourceMethod<FloatType>::execute()
 	Timer tProc;
 
 	switch (project_.method()) {
-	case MethodType::sim_acoustic_beam_rectangular_flat_source_transient:
-		execTransientAcousticBeam();
+	case MethodType::sim_radiation_pattern_rectangular_flat_source_transient:
+		execTransientRadiationPattern();
 		break;
-	case MethodType::sim_acoustic_beam_array_of_rectangular_flat_sources_transient:
-		execTransientArrayAcousticBeam();
+	case MethodType::sim_radiation_pattern_array_of_rectangular_flat_sources_transient:
+		execTransientArrayRadiationPattern();
 		break;
 	case MethodType::sim_acoustic_field_rectangular_flat_source_transient:
 		execTransientAcousticField();

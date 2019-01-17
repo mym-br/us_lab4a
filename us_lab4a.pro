@@ -111,7 +111,7 @@ HEADERS  += \
     src/network_acquisition/PhasedArrayAcqProtocol.h \
     src/method/SimRectangularFlatSourceMethod.h \
     src/simulator/NumericRectangularFlatSourceImpulseResponse.h \
-    src/simulator/SimTransientAcousticBeam.h \
+    src/simulator/SimTransientRadiationPattern.h \
     src/util/XYZ.h \
     src/simulator/SimTransientAcousticField.h \
     src/util/ArrayUtil.h \

@@ -14,8 +14,8 @@
  *  You should have received a copy of the GNU General Public License      *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef SIMTRANSIENTACOUSTICBEAM_H
-#define SIMTRANSIENTACOUSTICBEAM_H
+#ifndef SIMTRANSIENTRADIATIONPATTERN_H
+#define SIMTRANSIENTRADIATIONPATTERN_H
 
 #include <complex>
 #include <memory>
@@ -31,19 +31,19 @@
 #include "XYZ.h"
 #include "XYZValue.h"
 
-#define SIM_TRANSIENT_ACOUSTIC_BEAM_USE_MULTITHREADING 1
+#define SIM_TRANSIENT_RADIATION_PATTERN_USE_MULTITHREADING 1
 
 
 
 namespace Lab {
 
 template<typename FloatType, typename ImpulseResponse>
-class SimTransientAcousticBeam {
+class SimTransientRadiationPattern {
 public:
-	SimTransientAcousticBeam();
-	~SimTransientAcousticBeam() {}
+	SimTransientRadiationPattern();
+	~SimTransientRadiationPattern() {}
 
-#ifdef SIM_TRANSIENT_ACOUSTIC_BEAM_USE_MULTITHREADING
+#ifdef SIM_TRANSIENT_RADIATION_PATTERN_USE_MULTITHREADING
 	struct ThreadData {
 		ThreadData(
 			FloatType samplingFreq,
@@ -85,7 +85,7 @@ public:
 		FFTWFilter2<FloatType> filter;
 	};
 
-	void getRectangularFlatSourceAcousticBeam(
+	void getRectangularFlatSourceRadiationPattern(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -95,7 +95,7 @@ public:
 			const Matrix<XYZ<FloatType>>& inputData,
 			Matrix<XYZValue<FloatType>>& gridData);
 
-	void getArrayOfRectangularFlatSourcesAcousticBeam(
+	void getArrayOfRectangularFlatSourcesRadiationPattern(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -107,8 +107,8 @@ public:
 			const Matrix<XYZ<FloatType>>& inputData,
 			Matrix<XYZValue<FloatType>>& gridData);
 private:
-	SimTransientAcousticBeam(const SimTransientAcousticBeam&) = delete;
-	SimTransientAcousticBeam& operator=(const SimTransientAcousticBeam&) = delete;
+	SimTransientRadiationPattern(const SimTransientRadiationPattern&) = delete;
+	SimTransientRadiationPattern& operator=(const SimTransientRadiationPattern&) = delete;
 
 	FFTWFilter2<FloatType> filter_;
 };
@@ -116,13 +116,13 @@ private:
 
 
 template<typename FloatType, typename ImpulseResponse>
-SimTransientAcousticBeam<FloatType, ImpulseResponse>::SimTransientAcousticBeam()
+SimTransientRadiationPattern<FloatType, ImpulseResponse>::SimTransientRadiationPattern()
 {
 }
 
 template<typename FloatType, typename ImpulseResponse>
 void
-SimTransientAcousticBeam<FloatType, ImpulseResponse>::getRectangularFlatSourceAcousticBeam(
+SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSourceRadiationPattern(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,
@@ -132,7 +132,7 @@ SimTransientAcousticBeam<FloatType, ImpulseResponse>::getRectangularFlatSourceAc
 					const Matrix<XYZ<FloatType>>& inputData,
 					Matrix<XYZValue<FloatType>>& gridData)
 {
-#ifdef SIM_TRANSIENT_ACOUSTIC_BEAM_USE_MULTITHREADING
+#ifdef SIM_TRANSIENT_RADIATION_PATTERN_USE_MULTITHREADING
 	ThreadData threadData{
 		samplingFreq,
 		propagationSpeed,
@@ -195,7 +195,7 @@ SimTransientAcousticBeam<FloatType, ImpulseResponse>::getRectangularFlatSourceAc
 
 template<typename FloatType, typename ImpulseResponse>
 void
-SimTransientAcousticBeam<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSourcesAcousticBeam(
+SimTransientRadiationPattern<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSourcesRadiationPattern(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,
@@ -244,4 +244,4 @@ SimTransientAcousticBeam<FloatType, ImpulseResponse>::getArrayOfRectangularFlatS
 
 } // namespace Lab
 
-#endif // SIMTRANSIENTACOUSTICBEAM_H
+#endif // SIMTRANSIENTRADIATIONPATTERN_H
