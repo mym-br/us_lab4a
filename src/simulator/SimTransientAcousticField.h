@@ -18,7 +18,7 @@
 #define SIMTRANSIENTACOUSTICFIELD_H
 
 #include <complex>
-#include <memory>
+#include <vector>
 
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>

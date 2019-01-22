@@ -37,6 +37,7 @@
 #include "Exception.h"
 #include "Matrix.h"
 #include "XYZValue.h"
+#include "XYZValueArray.h"
 #include "XZValue.h"
 
 #define PI 3.14159265358979323846
@@ -74,6 +75,7 @@ template<typename T> T maxAbsolute(const std::vector<std::complex<T>>& list);
 template<typename T> T maxAbsolute(const Matrix<T>& data);
 template<typename T, typename U> U maxValueField(const Matrix<T>& data);
 template<typename T, typename U> U maxAbsoluteValueField(const Matrix<T>& data);
+template<typename T> T maxAbsoluteValueField(const Matrix<XYZValueArray<T>>& data);
 template<typename T> void minMax(const std::vector<T>& list, T& min, T& max);
 template<typename T, typename U> void minMaxValueField(const Matrix<T>& data, U& min, U& max);
 template<typename T> void multiply(std::vector<T>& list, T coefficient);
@@ -113,6 +115,7 @@ template<typename T, typename U> void copyXYZFromSimpleVectors(const std::vector
 								const std::vector<T>& vZ,
 								std::vector<U>& v);
 
+template<typename T, typename U> void copyXYZ(const Matrix<T>& orig, Matrix<U>& dest);
 template<typename T, typename U> void copyXYZValue(const Matrix<T>& orig, Matrix<U>& dest);
 template<typename T, typename U> void copyXYZFactor(const Matrix<T>& orig, Matrix<U>& dest);
 template<typename T, typename U> void copyXZ(const Matrix<T>& orig, Matrix<U>& dest);
@@ -466,6 +469,20 @@ maxAbsoluteValueField(const Matrix<T>& data)
 }
 
 template<typename T>
+T
+maxAbsoluteValueField(const Matrix<XYZValueArray<T>>& data)
+{
+	T max = 0;
+	for (typename Matrix<XYZValueArray<T>>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) {
+		for (auto v : iter->values) {
+			const T a = std::abs(v);
+			if (a > max) max = a;
+		}
+	}
+	return max;
+}
+
+template<typename T>
 void
 minMax(const std::vector<T>& list, T& min, T& max)
 {
@@ -726,6 +743,22 @@ copyXYZFromSimpleVectors(const std::vector<T>& vX,
 		dest->x = *origX;
 		dest->y = *origY;
 		dest->z = *origZ;
+	}
+}
+
+template<typename T, typename U>
+void
+copyXYZ(const Matrix<T>& orig, Matrix<U>& dest)
+{
+	dest.resize(orig.n1(), orig.n2());
+	typename Matrix<T>::ConstIterator origIter = orig.begin();
+	typename Matrix<U>::Iterator destIter = dest.begin();
+	while (origIter != orig.end()) {
+		destIter->x     = origIter->x;
+		destIter->y     = origIter->y;
+		destIter->z     = origIter->z;
+		++origIter;
+		++destIter;
 	}
 }
 

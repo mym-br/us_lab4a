@@ -142,7 +142,9 @@ HEADERS  += \
     src/configuration/SA3DConfiguration.h \
     src/util/WindowFunction.h \
     src/util/Matrix.h \
-    src/util/Tensor3.h
+    src/util/Tensor3.h \
+    src/simulator/SimTransientPropagation.h \
+    src/util/XYZValueArray.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
