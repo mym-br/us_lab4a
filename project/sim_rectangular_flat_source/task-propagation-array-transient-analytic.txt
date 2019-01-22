@@ -1,7 +1,7 @@
 
 method = sim_propagation_array_of_rectangular_flat_sources_transient
 
-grid_config_file = config-grid.txt
+grid_config_file = config-grid-propagation.txt
 
 output_dir = output
 
