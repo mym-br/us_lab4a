@@ -560,6 +560,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation()
 	const FloatType propagDistanceStep = taskPM->value<FloatType>("propagation_distance_step", 1.0e-6, 100.0);
 	const FloatType propagMinDistance  = taskPM->value<FloatType>("propagation_min_distance", 0.0, 100.0);
 	const FloatType propagMaxDistance  = taskPM->value<FloatType>("propagation_max_distance", propagMinDistance + propagDistanceStep, 100.0);
+	const unsigned int propagRepet     = taskPM->value<unsigned int>("propagation_repetitions", 1, 100);
+	const unsigned int propagPause     = taskPM->value<unsigned int>("propagation_pause", 0, 10000);
 
 	std::vector<FloatType> propagDist;
 	Util::fillSequenceFromStartWithStep(propagDist, propagMinDistance, propagMaxDistance, propagDistanceStep);
@@ -614,6 +616,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation()
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
 	}
 
+	// Normalize.
 	const FloatType maxAbsValue = Util::maxAbsoluteValueField(gridData);
 	const FloatType k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
@@ -623,22 +626,24 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation()
 	}
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
-
 	Project::GridDataType projGridData;
 
+	// Show the propagation.
 	Util::copyXYZ(gridData, projGridData);
-	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
-		auto origIter = gridData.begin();
-		auto destIter = projGridData.begin();
-		while (origIter != gridData.end()) {
-			destIter->value = origIter->values[i]; // copy just one value
-			++origIter; ++destIter;
+	for (unsigned int n = 0; n < propagRepet; ++n) {
+		for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
+			auto origIter = gridData.begin();
+			auto destIter = projGridData.begin();
+			while (origIter != gridData.end()) {
+				destIter->value = origIter->values[i]; // copy just one value
+				++origIter; ++destIter;
+			}
+
+			project_.showFigure3D(1, "Propagation", &projGridData, &pointList,
+						true, Figure::VISUALIZATION_RAW_LINEAR, Figure::COLORMAP_GRAY);
+
+			Util::sleepMs(propagPause);
 		}
-
-		project_.showFigure3D(1, "Propagation", &projGridData, &pointList,
-					true, Figure::VISUALIZATION_RAW_LINEAR, Figure::COLORMAP_GRAY);
-
-		Util::sleepMs(1000);
 	}
 
 	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
@@ -669,6 +674,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayPropagation()
 	const FloatType propagDistanceStep = taskPM->value<FloatType>("propagation_distance_step", 1.0e-6, 100.0);
 	const FloatType propagMinDistance  = taskPM->value<FloatType>("propagation_min_distance", 0.0, 100.0);
 	const FloatType propagMaxDistance  = taskPM->value<FloatType>("propagation_max_distance", propagMinDistance + propagDistanceStep, 100.0);
+	const unsigned int propagRepet     = taskPM->value<unsigned int>("propagation_repetitions", 1, 100);
+	const unsigned int propagPause     = taskPM->value<unsigned int>("propagation_pause", 0, 10000);
 
 	std::vector<FloatType> propagDist;
 	Util::fillSequenceFromStartWithStep(propagDist, propagMinDistance, propagMaxDistance, propagDistanceStep);
@@ -729,6 +736,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayPropagation()
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
 	}
 
+	// Normalize.
 	const FloatType maxAbsValue = Util::maxAbsoluteValueField(gridData);
 	const FloatType k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
@@ -738,24 +746,25 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayPropagation()
 	}
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
-
 	Project::GridDataType projGridData;
 
-	//Util::copyXYZValue(gridData, projGridData);
-	projGridData.resize(gridData.n1(), gridData.n2());
-	typename Matrix<XYZValueArray<FloatType>>::ConstIterator origIter = gridData.begin();
-	typename Matrix<XYZValue<float>>::Iterator destIter = projGridData.begin();
-	while (origIter != gridData.end()) {
-		destIter->x     = origIter->x;
-		destIter->y     = origIter->y;
-		destIter->z     = origIter->z;
-		destIter->value = origIter->values[0];
-		++origIter;
-		++destIter;
-	}
+	// Show the propagation.
+	Util::copyXYZ(gridData, projGridData);
+	for (unsigned int n = 0; n < propagRepet; ++n) {
+		for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
+			auto origIter = gridData.begin();
+			auto destIter = projGridData.begin();
+			while (origIter != gridData.end()) {
+				destIter->value = origIter->values[i]; // copy just one value
+				++origIter; ++destIter;
+			}
 
-	project_.showFigure3D(1, "Propagation", &projGridData, &pointList,
-					true, Figure::VISUALIZATION_RAW_LINEAR, Figure::COLORMAP_GRAY);
+			project_.showFigure3D(1, "Propagation", &projGridData, &pointList,
+						true, Figure::VISUALIZATION_RAW_LINEAR, Figure::COLORMAP_GRAY);
+
+			Util::sleepMs(propagPause);
+		}
+	}
 
 	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
 	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
