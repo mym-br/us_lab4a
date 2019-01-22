@@ -20,6 +20,7 @@
 
 #include <cmath>
 #include <memory>
+#include <string>
 
 #include "AnalyticRectangularFlatSourceImpulseResponse.h"
 #include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
@@ -648,8 +649,22 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation()
 
 	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
 	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
-	//TODO: Save each image.
-	//project_.saveImageToHDF5(gridData, outputDir);
+
+	// Save images.
+	LOG_DEBUG << "Saving the X coordinates...";
+	project_.saveHDF5(gridData, outputDir + "/image_x", "x", Util::CopyXOp());
+	LOG_DEBUG << "Saving the Y coordinates...";
+	project_.saveHDF5(gridData, outputDir + "/image_y", "y", Util::CopyYOp());
+	LOG_DEBUG << "Saving the Z coordinates...";
+	project_.saveHDF5(gridData, outputDir + "/image_z", "z", Util::CopyZOp());
+	std::string imagePrefix = outputDir + "/image_value-";
+	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
+		LOG_DEBUG << "Saving image " << i << "...";
+		project_.saveHDF5(gridData, imagePrefix + std::to_string(i), "value",
+					[&i](const XYZValueArray<FloatType>& orig, double& dest) {
+						dest = orig.values[i];
+					});
+	}
 }
 
 template<typename FloatType>
@@ -768,8 +783,22 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayPropagation()
 
 	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
 	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
-	//TODO: Save each image.
-	//project_.saveImageToHDF5(gridData, outputDir);
+
+	// Save images.
+	LOG_DEBUG << "Saving the X coordinates...";
+	project_.saveHDF5(gridData, outputDir + "/image_x", "x", Util::CopyXOp());
+	LOG_DEBUG << "Saving the Y coordinates...";
+	project_.saveHDF5(gridData, outputDir + "/image_y", "y", Util::CopyYOp());
+	LOG_DEBUG << "Saving the Z coordinates...";
+	project_.saveHDF5(gridData, outputDir + "/image_z", "z", Util::CopyZOp());
+	std::string imagePrefix = outputDir + "/image_value-";
+	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
+		LOG_DEBUG << "Saving image " << i << "...";
+		project_.saveHDF5(gridData, imagePrefix + std::to_string(i), "value",
+					[&i](const XYZValueArray<FloatType>& orig, double& dest) {
+						dest = orig.values[i];
+					});
+	}
 }
 
 template<typename FloatType>
