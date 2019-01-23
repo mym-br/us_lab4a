@@ -19,7 +19,9 @@
 #define SIMRECTANGULARFLATSOURCEMETHOD_H
 
 #include <cmath>
+#include <iomanip>
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include "AnalyticRectangularFlatSourceImpulseResponse.h"
@@ -500,10 +502,14 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation(bool sourceI
 	project_.saveHDF5(gridData, outputDir + "/image_y", "y", Util::CopyYOp());
 	LOG_DEBUG << "Saving the Z coordinates...";
 	project_.saveHDF5(gridData, outputDir + "/image_z", "z", Util::CopyZOp());
-	std::string imagePrefix = outputDir + "/image_value-";
+	std::string imagePrefix = outputDir + "/image_value-propag-";
+	const unsigned int numDigits = Util::numberOfDigits(propagIndexList.size() - 1U);
 	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
 		LOG_DEBUG << "Saving image " << i << "...";
-		project_.saveHDF5(gridData, imagePrefix + std::to_string(i), "value",
+		std::ostringstream imageFileName;
+		imageFileName << imagePrefix << std::setw(numDigits) << std::setfill('0') << i;
+		project_.saveHDF5(gridData, imageFileName.str(),
+					"value",
 					[&i](const XYZValueArray<FloatType>& orig, double& dest) {
 						dest = orig.values[i];
 					});

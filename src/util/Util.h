@@ -141,6 +141,8 @@ template<typename T> T sign(T value);
 template<typename T> void normalize(T& data);
 template<typename T> void normalizeBySumOfAbs(std::vector<T>& data);
 
+unsigned int numberOfDigits(unsigned int value);
+
 //#############################################################################
 
 template<typename T>

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -41,6 +41,16 @@ long double
 minValue()
 {
 	return -std::numeric_limits<long double>::max();
+}
+
+unsigned int
+numberOfDigits(unsigned int value)
+{
+	if (value == 0) {
+		THROW_EXCEPTION(InvalidParameterException, "Value must not be zero.");
+	}
+
+	return static_cast<unsigned int>(std::floor(std::log10(static_cast<double>(value))) + 1.0);
 }
 
 } // namespace Util
