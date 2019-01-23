@@ -64,8 +64,7 @@ private:
 	void execTransientArrayRadiationPattern();
 	void execTransientAcousticField();
 	void execTransientArrayAcousticField();
-	void execTransientPropagation();
-	void execTransientArrayPropagation();
+	void execTransientPropagation(bool sourceIsArray);
 	// Return p/(c*density).
 	void execImpulseResponse();
 	// Return p/(c*density).
@@ -541,135 +540,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation()
-{
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
-	project_.createDirectory(outputDir, false);
-
-	const std::string irMethod         = taskPM->value<std::string>("impulse_response_method");
-	const FloatType sourceWidth        = taskPM->value<FloatType>("source_width", 0.0, 10.0);
-	const FloatType sourceHeight       = taskPM->value<FloatType>("source_height", 0.0, 10.0);
-	const FloatType propagationSpeed   = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
-	const FloatType centerFreq         = taskPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
-	const FloatType maxFreq            = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
-	const FloatType nyquistRate = 2.0 * maxFreq;
-	const FloatType samplingFreq       = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const std::string excitationType   = taskPM->value<std::string>("excitation_type");
-	const FloatType excNumPeriods      = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
-	const FloatType propagDistanceStep = taskPM->value<FloatType>("propagation_distance_step", 1.0e-6, 100.0);
-	const FloatType propagMinDistance  = taskPM->value<FloatType>("propagation_min_distance", 0.0, 100.0);
-	const FloatType propagMaxDistance  = taskPM->value<FloatType>("propagation_max_distance", propagMinDistance + propagDistanceStep, 100.0);
-	const unsigned int propagRepet     = taskPM->value<unsigned int>("propagation_repetitions", 1, 100);
-	const unsigned int propagPause     = taskPM->value<unsigned int>("propagation_pause", 0, 10000);
-
-	std::vector<FloatType> propagDist;
-	Util::fillSequenceFromStartWithStep(propagDist, propagMinDistance, propagMaxDistance, propagDistanceStep);
-	std::vector<unsigned int> propagIndexList(propagDist.size());
-	const FloatType coef = samplingFreq / propagationSpeed;
-	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
-		propagIndexList[i] = std::rint(propagDist[i] * coef);
-	}
-
-	std::vector<FloatType> exc;
-	if (excitationType == "1") {
-		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2a") {
-		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2b") {
-		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
-	}
-
-	const FloatType dt = 1.0 / samplingFreq;
-	std::vector<FloatType> tExc(exc.size());
-	for (unsigned int i = 0; i < tExc.size(); ++i) {
-		tExc[i] = dt * i;
-	}
-	project_.showFigure2D(1, "Excitation", tExc, exc);
-
-	std::vector<FloatType> dvdt;
-	Util::centralDiff(exc, dt, dvdt);
-
-	Matrix<XYZValueArray<FloatType>> gridData;
-
-	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
-
-	if (irMethod == "numeric") {
-		const FloatType subElemSize = propagationSpeed /
-				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
-		auto propag = std::make_unique<SimTransientPropagation<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
-		propag->getRectangularFlatSourcePropagation(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					subElemSize,
-					dvdt, propagIndexList, gridData);
-	} else if (irMethod == "analytic") {
-		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
-		auto propag = std::make_unique<SimTransientPropagation<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
-		propag->getRectangularFlatSourcePropagation(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					minEdgeDivisor,
-					dvdt, propagIndexList, gridData);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
-	}
-
-	// Normalize.
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField(gridData);
-	const FloatType k = 1.0 / maxAbsValue;
-	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
-		for (auto& v : it->values) {
-			v *= k;
-		}
-	}
-
-	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
-	Project::GridDataType projGridData;
-
-	// Show the propagation.
-	Util::copyXYZ(gridData, projGridData);
-	for (unsigned int n = 0; n < propagRepet; ++n) {
-		for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
-			auto origIter = gridData.begin();
-			auto destIter = projGridData.begin();
-			while (origIter != gridData.end()) {
-				destIter->value = origIter->values[i]; // copy just one value
-				++origIter; ++destIter;
-			}
-
-			project_.showFigure3D(1, "Propagation", &projGridData, &pointList,
-						true, Figure::VISUALIZATION_RAW_LINEAR, Figure::COLORMAP_GRAY);
-
-			Util::sleepMs(propagPause);
-		}
-	}
-
-	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
-	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
-
-	// Save images.
-	LOG_DEBUG << "Saving the X coordinates...";
-	project_.saveHDF5(gridData, outputDir + "/image_x", "x", Util::CopyXOp());
-	LOG_DEBUG << "Saving the Y coordinates...";
-	project_.saveHDF5(gridData, outputDir + "/image_y", "y", Util::CopyYOp());
-	LOG_DEBUG << "Saving the Z coordinates...";
-	project_.saveHDF5(gridData, outputDir + "/image_z", "z", Util::CopyZOp());
-	std::string imagePrefix = outputDir + "/image_value-";
-	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
-		LOG_DEBUG << "Saving image " << i << "...";
-		project_.saveHDF5(gridData, imagePrefix + std::to_string(i), "value",
-					[&i](const XYZValueArray<FloatType>& orig, double& dest) {
-						dest = orig.values[i];
-					});
-	}
-}
-
-template<typename FloatType>
-void
-SimRectangularFlatSourceMethod<FloatType>::execTransientArrayPropagation()
+SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArray)
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
@@ -702,9 +573,11 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayPropagation()
 
 	std::vector<XY<FloatType>> elemPos;
 	std::vector<FloatType> focusDelay;
-	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
-	ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
+	if (sourceIsArray) {
+		ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+		ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
+		ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
+	}
 
 	std::vector<FloatType> exc;
 	if (excitationType == "1") {
@@ -736,17 +609,31 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayPropagation()
 		const FloatType subElemSize = propagationSpeed /
 				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
 		auto propag = std::make_unique<SimTransientPropagation<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
-		propag->getArrayOfRectangularFlatSourcesPropagation(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					subElemSize,
-					dvdt, elemPos, focusDelay, propagIndexList, gridData);
+		if (sourceIsArray) {
+			propag->getArrayOfRectangularFlatSourcesPropagation(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						subElemSize,
+						dvdt, elemPos, focusDelay, propagIndexList, gridData);
+		} else {
+			propag->getRectangularFlatSourcePropagation(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						subElemSize,
+						dvdt, propagIndexList, gridData);
+		}
 	} else if (irMethod == "analytic") {
 		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
 		auto propag = std::make_unique<SimTransientPropagation<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
-		propag->getArrayOfRectangularFlatSourcesPropagation(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					minEdgeDivisor,
-					dvdt, elemPos, focusDelay, propagIndexList, gridData);
+		if (sourceIsArray) {
+			propag->getArrayOfRectangularFlatSourcesPropagation(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						minEdgeDivisor,
+						dvdt, elemPos, focusDelay, propagIndexList, gridData);
+		} else {
+			propag->getRectangularFlatSourcePropagation(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						minEdgeDivisor,
+						dvdt, propagIndexList, gridData);
+		}
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
 	}
@@ -1009,10 +896,10 @@ SimRectangularFlatSourceMethod<FloatType>::execute()
 		execArrayImpulseResponse();
 		break;
 	case MethodType::sim_propagation_rectangular_flat_source_transient:
-		execTransientPropagation();
+		execTransientPropagation(false);
 		break;
 	case MethodType::sim_propagation_array_of_rectangular_flat_sources_transient:
-		execTransientArrayPropagation();
+		execTransientPropagation(true);
 		break;
 	case MethodType::sim_radiation_pattern_rectangular_flat_source_transient:
 		execTransientRadiationPattern();
