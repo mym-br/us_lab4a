@@ -61,8 +61,7 @@ private:
 	SimRectangularFlatSourceMethod& operator=(const SimRectangularFlatSourceMethod&) = delete;
 
 	void execTransientRadiationPattern(bool sourceIsArray);
-	void execTransientAcousticField();
-	void execTransientArrayAcousticField();
+	void execTransientAcousticField(bool sourceIsArray);
 	void execTransientPropagation(bool sourceIsArray);
 	// Returns p/(c*density).
 	void execImpulseResponse(bool sourceIsArray);
@@ -258,90 +257,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool so
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField()
-{
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
-	project_.createDirectory(outputDir, false);
-
-	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
-	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
-	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
-	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
-	const FloatType centerFreq       = taskPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
-	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
-	const FloatType nyquistRate = 2.0 * maxFreq;
-	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const std::string excitationType = taskPM->value<std::string>("excitation_type");
-	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
-
-	std::vector<FloatType> exc;
-	if (excitationType == "1") {
-		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2a") {
-		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2b") {
-		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
-	}
-
-	const FloatType dt = 1.0 / samplingFreq;
-	std::vector<FloatType> tExc(exc.size());
-	for (unsigned int i = 0; i < tExc.size(); ++i) {
-		tExc[i] = dt * i;
-	}
-	project_.showFigure2D(1, "Excitation", tExc, exc);
-
-	std::vector<FloatType> dvdt;
-	Util::centralDiff(exc, dt, dvdt);
-
-	Matrix<XYZValue<FloatType>> gridData;
-
-	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
-
-	if (irMethod == "numeric") {
-		const FloatType subElemSize = propagationSpeed /
-				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
-		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
-		acField->getRectangularFlatSourceAcousticField(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					subElemSize,
-					dvdt, gridData);
-	} else if (irMethod == "analytic") {
-		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
-		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
-		acField->getRectangularFlatSourceAcousticField(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					minEdgeDivisor,
-					dvdt, gridData);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
-	}
-
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
-	const FloatType k = 1.0 / maxAbsValue;
-	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
-		it->value *= k;
-	}
-
-	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
-
-	Project::GridDataType projGridData;
-	Util::copyXYZValue(gridData, projGridData);
-	project_.showFigure3D(1, "Acoustic field", &projGridData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Figure::COLORMAP_VIRIDIS);
-
-	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
-	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
-	project_.saveImageToHDF5(gridData, outputDir);
-}
-
-template<typename FloatType>
-void
-SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
+SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsArray)
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
@@ -361,9 +277,11 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 
 	std::vector<XY<FloatType>> elemPos;
 	std::vector<FloatType> focusDelay;
-	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
-	ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
+	if (sourceIsArray) {
+		ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+		ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
+		ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
+	}
 
 	std::vector<FloatType> exc;
 	if (excitationType == "1") {
@@ -395,17 +313,31 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayAcousticField()
 		const FloatType subElemSize = propagationSpeed /
 				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
 		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
-		acField->getArrayOfRectangularFlatSourcesAcousticField(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					subElemSize,
-					dvdt, elemPos, focusDelay, gridData);
+		if (sourceIsArray) {
+			acField->getArrayOfRectangularFlatSourcesAcousticField(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						subElemSize,
+						dvdt, elemPos, focusDelay, gridData);
+		} else {
+			acField->getRectangularFlatSourceAcousticField(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						subElemSize,
+						dvdt, gridData);
+		}
 	} else if (irMethod == "analytic") {
 		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
 		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
-		acField->getArrayOfRectangularFlatSourcesAcousticField(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					minEdgeDivisor,
-					dvdt, elemPos, focusDelay, gridData);
+		if (sourceIsArray) {
+			acField->getArrayOfRectangularFlatSourcesAcousticField(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						minEdgeDivisor,
+						dvdt, elemPos, focusDelay, gridData);
+		} else {
+			acField->getRectangularFlatSourceAcousticField(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						minEdgeDivisor,
+						dvdt, gridData);
+		}
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
 	}
@@ -700,10 +632,10 @@ SimRectangularFlatSourceMethod<FloatType>::execute()
 
 	switch (project_.method()) {
 	case MethodType::sim_acoustic_field_rectangular_flat_source_transient:
-		execTransientAcousticField();
+		execTransientAcousticField(false);
 		break;
 	case MethodType::sim_acoustic_field_array_of_rectangular_flat_sources_transient:
-		execTransientArrayAcousticField();
+		execTransientAcousticField(true);
 		break;
 	case MethodType::sim_impulse_response_rectangular_flat_source:
 		execImpulseResponse(false);
