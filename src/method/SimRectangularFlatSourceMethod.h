@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2018 Marcelo Y. Matuda                                       *
+ *  Copyright 2018, 2019 Marcelo Y. Matuda                                 *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
