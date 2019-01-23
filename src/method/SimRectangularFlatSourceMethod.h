@@ -60,8 +60,7 @@ private:
 	SimRectangularFlatSourceMethod(const SimRectangularFlatSourceMethod&) = delete;
 	SimRectangularFlatSourceMethod& operator=(const SimRectangularFlatSourceMethod&) = delete;
 
-	void execTransientRadiationPattern();
-	void execTransientArrayRadiationPattern();
+	void execTransientRadiationPattern(bool sourceIsArray);
 	void execTransientAcousticField();
 	void execTransientArrayAcousticField();
 	void execTransientPropagation(bool sourceIsArray);
@@ -86,9 +85,11 @@ SimRectangularFlatSourceMethod<FloatType>::~SimRectangularFlatSourceMethod()
 {
 }
 
+
+
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern()
+SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool sourceIsArray)
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 
@@ -98,139 +99,10 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern()
 	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
 	const FloatType distance         = taskPM->value<FloatType>("distance", 0.0, 100.0);
 	const FloatType thetaYStep       = taskPM->value<FloatType>("theta_y_step", 0.0, 10.0);
-	const FloatType thetaYMax        = taskPM->value<FloatType>("theta_y_max" , 0.0, 90.0);
-	const FloatType thetaXStep       = taskPM->value<FloatType>("theta_x_step", 0.0, 10.0);
-	const FloatType thetaXMax        = taskPM->value<FloatType>("theta_x_max" , 0.0, 90.0);
-	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
-	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
-	const FloatType propagationSpeed = taskPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
-	const FloatType centerFreq       = taskPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
-	const FloatType maxFreq          = taskPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
-	const FloatType nyquistRate = 2.0 * maxFreq;
-	const FloatType samplingFreq     = taskPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const std::string excitationType = taskPM->value<std::string>("excitation_type");
-	const FloatType excNumPeriods    = taskPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
-
-	std::vector<FloatType> exc;
-	if (excitationType == "1") {
-		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2a") {
-		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2b") {
-		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
-	}
-
-	const FloatType dt = 1.0 / samplingFreq;
-	std::vector<FloatType> tExc(exc.size());
-	for (unsigned int i = 0; i < tExc.size(); ++i) {
-		tExc[i] = dt * i;
-	}
-	project_.showFigure2D(1, "Excitation", tExc, exc);
-
-	std::vector<FloatType> dvdt;
-	Util::centralDiff(exc, dt, dvdt);
-
-	std::vector<FloatType> thetaXList;
-	Util::fillSequenceFromStartToEndWithSize(thetaXList, 0.0, thetaXMax, std::ceil(thetaXMax / thetaXStep) + 1);
-	std::vector<FloatType> thetaYList;
-	Util::fillSequenceFromStartToEndWithSize(thetaYList, 0.0, thetaYMax, std::ceil(thetaYMax / thetaYStep) + 1);
-
-	Matrix<XYZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
-	Matrix<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
-
-	for (unsigned int ix = 0, xSize = thetaXList.size(); ix < xSize; ++ix) {
-		const FloatType tX = Util::degreeToRadian(thetaXList[ix]);
-		const FloatType sinTX = std::sin(tX);
-		const FloatType cosTX = std::cos(tX);
-		for (unsigned int iy = 0, ySize = thetaYList.size(); iy < ySize; ++iy) {
-			const FloatType tY = Util::degreeToRadian(thetaYList[iy]);
-			const FloatType x = distance * std::sin(tY);
-			const FloatType rx = distance * std::cos(tY);
-			const FloatType y = rx * sinTX;
-			const FloatType z = rx * cosTX;
-			XYZValue<FloatType>& gd = gridData(ix, iy);
-			gd.x = thetaYList[iy];
-			gd.y = 0.0;
-			gd.z = thetaXList[ix];
-			gd.value = 0.0;
-			XYZ<FloatType>& id = inputData(ix, iy);
-			id.x = x;
-			id.y = y;
-			id.z = z;
-		}
-	}
-
-	if (irMethod == "numeric") {
-		const FloatType subElemSize = propagationSpeed /
-				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
-		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
-		radPat->getRectangularFlatSourceRadiationPattern(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					subElemSize,
-					dvdt, inputData, gridData);
-	} else if (irMethod == "analytic") {
-		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
-		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
-		radPat->getRectangularFlatSourceRadiationPattern(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					minEdgeDivisor,
-					dvdt, inputData, gridData);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
-	}
-
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
-	const FloatType k = 1.0 / maxAbsValue;
-	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
-		it->value *= k;
-	}
-
-	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
-
-	Project::GridDataType projGridData;
-	Util::copyXYZValue(gridData, projGridData);
-	project_.showFigure3D(1, "Pattern", &projGridData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
-
-	std::vector<FloatType> patternTY(gridData.n2());
-	auto tyInterval = gridData.dim2Interval(0);
-	Util::copyUsingOperator(tyInterval.first, tyInterval.second, patternTY.begin(), Util::CopyValueOp{});
-	Util::linearToDecibels(patternTY, -100.0);
-	project_.showFigure2D(1, "Pattern theta-y", thetaYList, patternTY);
-
-	std::vector<FloatType> patternTX(gridData.n1());
-	auto txInterval = gridData.dim1Interval(0);
-	Util::copyUsingOperator(txInterval.first, txInterval.second, patternTX.begin(), Util::CopyValueOp{});
-	Util::linearToDecibels(patternTX, -100.0);
-	project_.showFigure2D(2, "Pattern theta-x", thetaXList, patternTX);
-
-	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
-	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
-	project_.saveImageToHDF5(gridData, outputDir);
-	project_.saveHDF5(thetaYList, outputDir + "/theta_y"        , "value");
-	project_.saveHDF5(patternTY , outputDir + "/pattern_theta_y", "value");
-	project_.saveHDF5(thetaXList, outputDir + "/theta_x"        , "value");
-	project_.saveHDF5(patternTX , outputDir + "/pattern_theta_x", "value");
-}
-
-template<typename FloatType>
-void
-SimRectangularFlatSourceMethod<FloatType>::execTransientArrayRadiationPattern()
-{
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
-	project_.createDirectory(outputDir, false);
-
-	const std::string irMethod       = taskPM->value<std::string>("impulse_response_method");
-	const FloatType distance         = taskPM->value<FloatType>("distance", 0.0, 100.0);
-	const FloatType thetaYStep       = taskPM->value<FloatType>("theta_y_step", 0.0, 10.0);
-	const FloatType thetaYMin        = taskPM->value<FloatType>("theta_y_min" , -90.0, 90.0);
+	const FloatType thetaYMin        = sourceIsArray ? taskPM->value<FloatType>("theta_y_min" , -90.0, 90.0) : FloatType(0);
 	const FloatType thetaYMax        = taskPM->value<FloatType>("theta_y_max" , thetaYMin + 0.1, 90.0);
 	const FloatType thetaXStep       = taskPM->value<FloatType>("theta_x_step", 0.0, 10.0);
-	const FloatType thetaXMin        = taskPM->value<FloatType>("theta_x_min" , -90.0, 90.0);
+	const FloatType thetaXMin        = sourceIsArray ? taskPM->value<FloatType>("theta_x_min" , -90.0, 90.0) : FloatType(0);
 	const FloatType thetaXMax        = taskPM->value<FloatType>("theta_x_max" , thetaXMin + 0.1, 90.0);
 	const FloatType sourceWidth      = taskPM->value<FloatType>("source_width", 0.0, 10.0);
 	const FloatType sourceHeight     = taskPM->value<FloatType>("source_height", 0.0, 10.0);
@@ -244,9 +116,11 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayRadiationPattern()
 
 	std::vector<XY<FloatType>> elemPos;
 	std::vector<FloatType> focusDelay;
-	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
-	ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
+	if (sourceIsArray) {
+		ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+		ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
+		ArrayUtil::calculateTx3DFocusDelay(*taskPM, propagationSpeed, elemPos, focusDelay);
+	}
 
 	std::vector<FloatType> exc;
 	if (excitationType == "1") {
@@ -303,17 +177,31 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayRadiationPattern()
 		const FloatType subElemSize = propagationSpeed /
 				(nyquistRate * taskPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
 		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
-		radPat->getArrayOfRectangularFlatSourcesRadiationPattern(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					subElemSize,
-					dvdt, elemPos, focusDelay, inputData, gridData);
+		if (sourceIsArray) {
+			radPat->getArrayOfRectangularFlatSourcesRadiationPattern(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						subElemSize,
+						dvdt, elemPos, focusDelay, inputData, gridData);
+		} else {
+			radPat->getRectangularFlatSourceRadiationPattern(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						subElemSize,
+						dvdt, inputData, gridData);
+		}
 	} else if (irMethod == "analytic") {
 		const FloatType minEdgeDivisor = taskPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
 		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
-		radPat->getArrayOfRectangularFlatSourcesRadiationPattern(
-					samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
-					minEdgeDivisor,
-					dvdt, elemPos, focusDelay, inputData, gridData);
+		if (sourceIsArray) {
+			radPat->getArrayOfRectangularFlatSourcesRadiationPattern(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						minEdgeDivisor,
+						dvdt, elemPos, focusDelay, inputData, gridData);
+		} else {
+			radPat->getRectangularFlatSourceRadiationPattern(
+						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						minEdgeDivisor,
+						dvdt, inputData, gridData);
+		}
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
 	}
@@ -331,19 +219,23 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientArrayRadiationPattern()
 	project_.showFigure3D(1, "Pattern", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 
-	FloatType sectionTY = 0.0;
-	FloatType sectionTX = 0.0;
-	const bool useFocus = taskPM->value<bool>("use_tx_focus");
-	if (useFocus) {
-		const FloatType focusX = taskPM->value<FloatType>("tx_focus_x", -10000.0, 10000.0);
-		const FloatType focusY = taskPM->value<FloatType>("tx_focus_y", -10000.0, 10000.0);
-		const FloatType focusZ = taskPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
-		sectionTY = Util::radianToDegree(std::atan2(focusX, focusZ));
-		sectionTX = Util::radianToDegree(std::atan2(focusY, focusZ));
+	std::size_t sectionTYIndex = 0;
+	std::size_t sectionTXIndex = 0;
+	if (sourceIsArray) {
+		FloatType sectionTY = 0.0;
+		FloatType sectionTX = 0.0;
+		const bool useFocus = taskPM->value<bool>("use_tx_focus");
+		if (useFocus) {
+			const FloatType focusX = taskPM->value<FloatType>("tx_focus_x", -10000.0, 10000.0);
+			const FloatType focusY = taskPM->value<FloatType>("tx_focus_y", -10000.0, 10000.0);
+			const FloatType focusZ = taskPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
+			sectionTY = Util::radianToDegree(std::atan2(focusX, focusZ));
+			sectionTX = Util::radianToDegree(std::atan2(focusY, focusZ));
+		}
+		sectionTYIndex = std::rint(((sectionTY - thetaYMin) / (thetaYMax - thetaYMin)) * (thetaYList.size() - 1));
+		sectionTXIndex = std::rint(((sectionTX - thetaXMin) / (thetaXMax - thetaXMin)) * (thetaXList.size() - 1));
+		LOG_DEBUG << "Section theta-x: " << thetaXList[sectionTXIndex] << " theta-y: " << thetaYList[sectionTYIndex];
 	}
-	std::size_t sectionTYIndex = std::rint(((sectionTY - thetaYMin) / (thetaYMax - thetaYMin)) * (thetaYList.size() - 1));
-	std::size_t sectionTXIndex = std::rint(((sectionTX - thetaXMin) / (thetaXMax - thetaXMin)) * (thetaXList.size() - 1));
-	LOG_DEBUG << "Section theta-x: " << thetaXList[sectionTXIndex] << " theta-y: " << thetaYList[sectionTYIndex];
 
 	std::vector<FloatType> patternTY(gridData.n2());
 	auto tyInterval = gridData.dim2Interval(sectionTXIndex);
@@ -902,10 +794,10 @@ SimRectangularFlatSourceMethod<FloatType>::execute()
 		execTransientPropagation(true);
 		break;
 	case MethodType::sim_radiation_pattern_rectangular_flat_source_transient:
-		execTransientRadiationPattern();
+		execTransientRadiationPattern(false);
 		break;
 	case MethodType::sim_radiation_pattern_array_of_rectangular_flat_sources_transient:
-		execTransientArrayRadiationPattern();
+		execTransientRadiationPattern(true);
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
