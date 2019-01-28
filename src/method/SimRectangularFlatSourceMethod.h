@@ -470,6 +470,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation(bool sourceI
 			v *= k;
 		}
 	}
+	LOG_INFO << "gridData: maxAbsValue = " << maxAbsValue;
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	Project::GridDataType projGridData;
