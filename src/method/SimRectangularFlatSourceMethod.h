@@ -623,6 +623,9 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArra
 	//Util::multiply(signal, density);
 	project_.showFigure2D(4, "Pressure", tSignal, signal);
 
+	const FloatType maxAbsValue = Util::maxAbsolute(signal);
+	LOG_INFO << "signal: maxAbsValue = " << maxAbsValue;
+
 	project_.saveHDF5(exc    , outputDir + "/excitation"           , "value");
 	project_.saveHDF5(tExc   , outputDir + "/excitation_time"      , "value");
 	project_.saveHDF5(h      , outputDir + "/impulse_response"     , "value");
