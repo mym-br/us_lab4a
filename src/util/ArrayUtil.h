@@ -108,7 +108,7 @@ calculateTx3DFocusDelay(
 		const FloatType focusZ = pm.value<FloatType>("tx_focus_z", -10000.0, 10000.0);
 
 		const FloatType invC = 1 / propagationSpeed;
-		if (focusZ >= 0.0) {
+		if (focusZ > 0.0) {
 			FloatType maxDt = 0.0;
 			for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
 				const XY<FloatType>& pos = elemPos[i];
