@@ -438,10 +438,10 @@ template<typename T>
 T
 maxAbsolute(const Matrix<T>& data)
 {
-	T max = minValue<T>();
+	T max = 0;
 	for (typename Matrix<T>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) {
-		const T v = std::abs(*iter);
-		if (v > max) max = v;
+		const T a = std::abs(*iter);
+		if (max < a) max = a;
 	}
 	return max;
 }
@@ -464,8 +464,8 @@ maxAbsoluteValueField(const Matrix<T>& data)
 {
 	U max = 0;
 	for (typename Matrix<T>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) {
-		const U v = std::abs(iter->value);
-		if (v > max) max = v;
+		const U a = std::abs(iter->value);
+		if (max < a) max = a;
 	}
 	return max;
 }
@@ -478,7 +478,7 @@ maxAbsoluteValueField(const Matrix<XYZValueArray<T>>& data)
 	for (typename Matrix<XYZValueArray<T>>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) {
 		for (auto v : iter->values) {
 			const T a = std::abs(v);
-			if (a > max) max = a;
+			if (max < a) max = a;
 		}
 	}
 	return max;
