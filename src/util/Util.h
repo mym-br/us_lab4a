@@ -844,12 +844,11 @@ copy(const Matrix<XZValue<T>>& orig, Matrix<XYZValue<U>>& dest)
 	}
 }
 
-// This template has specializations for float types.
 template<typename T>
 T
 minValue()
 {
-	return std::numeric_limits<T>::min();
+	return std::numeric_limits<T>::lowest();
 }
 
 template<typename T>
