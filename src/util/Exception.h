@@ -76,10 +76,10 @@ private:
  *
  */
 struct Exception : public virtual std::exception {
-	Exception() throw() {}
-	~Exception() throw() {}
+	Exception() noexcept {}
+	~Exception() noexcept {}
 
-	virtual const char* what() const throw()
+	virtual const char* what() const noexcept
 	{
 		const char* cs = "";
 		try {
