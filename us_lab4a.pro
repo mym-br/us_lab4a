@@ -99,7 +99,6 @@ HEADERS  += \
     src/parallel/ParallelHilbertEnvelope.h \
     src/util/ImageGrid.h \
     src/util/CoherenceFactor.h \
-    src/util/String.h \
     src/util/ArrayGeometry.h \
     src/util/DirectFFTWFilter.h \
     src/fft/FFTUtil.h \
