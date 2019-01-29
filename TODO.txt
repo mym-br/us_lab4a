@@ -1,5 +1,8 @@
 
+- Fix Timer for WIN32.
+
 - config-sta-cyl -> config-cyl
+                    config-cyl_saft???
 
 - [???] Sectorial grid in z-y.
 
