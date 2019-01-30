@@ -18,7 +18,6 @@
 #ifndef STA3DMETHOD_H
 #define STA3DMETHOD_H
 
-#include <algorithm> /* max */
 #include <cstddef> /* std::size_t */
 #include <memory>
 #include <string>
@@ -36,9 +35,8 @@
 #include "STAAcquisition.h"
 #include "SA3DConfiguration.h"
 #include "Timer.h"
-#include "Vectorial3DSTAProcessor.h"
 #include "Util.h"
-#include "WindowFunction.h"
+#include "Vectorial3DSTAProcessor.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
@@ -65,7 +63,6 @@ private:
 	Matrix<XYZValueFactor<FloatType>> gridData_;
 	Project::GridDataType projGridData_;
 	std::vector<XYZ<float>> pointList_;
-	Figure::Visualization visual_;
 };
 
 
@@ -74,7 +71,6 @@ template<typename FloatType>
 STA3DMethod<FloatType>::STA3DMethod(Project& project)
 		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
-		, visual_(Figure::VISUALIZATION_RECTIFIED_LOG)
 {
 }
 
@@ -116,7 +112,7 @@ STA3DMethod<FloatType>::process(FloatType valueScale, STAProcessor<FloatType>& p
 
 	Util::copyXYZValue(gridData_, projGridData_);
 	project_.showFigure3D(1, "Raw image", &projGridData_, &pointList_,
-				true, visual_, Figure::COLORMAP_VIRIDIS, valueScale);
+				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
 
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 }
