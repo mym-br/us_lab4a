@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "ArrayUtil.h"
+#include "Exception.h"
 #include "Log.h"
 #include "ParameterMap.h"
 #include "XY.h"
