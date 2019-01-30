@@ -391,8 +391,14 @@ USLab4a::on_selectProjectDirButton_clicked()
 void
 USLab4a::on_triggerButton_clicked()
 {
-	project_.trigger();
-	LOG_INFO << "##### TRIGGER #####";
+	try {
+		project_.trigger();
+		LOG_INFO << "##### TRIGGER #####";
+	} catch (std::exception& e) {
+		LOG_ERROR << "[USLab4a::on_triggerButton_clicked] Caught exception: " << e.what() << '.';
+	} catch (...) {
+		LOG_ERROR << "[USLab4a::on_triggerButton_clicked] Caught an unknown exception.";
+	}
 }
 
 void
