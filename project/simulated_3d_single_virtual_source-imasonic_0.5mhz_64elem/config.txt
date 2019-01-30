@@ -1,0 +1,37 @@
+
+# Do not change.
+num_elements = 32
+
+# Do not change.
+num_elements_mux = 64
+
+# (Hz)
+center_frequency = 0.5e6
+max_frequency = 1.0e6
+
+#
+num_pulses = 1
+
+# (s)
+acquisition_time = 1.333e-3
+
+# (dB)
+min_gain = 245.0
+
+# (dB)
+max_gain = 245.0
+
+# (m/s)
+propagation_speed_1 = 1500.0
+
+# (s)
+acquisition_delay = 0.0
+
+# (Hz)
+sampling_frequency = 4.0e6
+
+# (m)
+dead_zone_m = 5.0e-3
+
+# 0.0: normalize
+value_scale = 0.0

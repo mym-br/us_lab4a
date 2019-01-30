@@ -143,7 +143,12 @@ HEADERS  += \
     src/util/Matrix.h \
     src/util/Tensor3.h \
     src/simulator/SimTransientPropagation.h \
-    src/util/XYZValueArray.h
+    src/util/XYZValueArray.h \
+    src/method/SingleVirtualSourceMethod.h \
+    src/acquisition/TnRnAcquisition.h \
+    src/simulator/Simulated3DTnRnAcquisition.h \
+    src/configuration/TnRnConfiguration.h \
+    src/processor/Vectorial3DTnRnProcessor.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

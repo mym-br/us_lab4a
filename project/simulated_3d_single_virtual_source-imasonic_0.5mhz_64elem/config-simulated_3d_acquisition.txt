@@ -1,0 +1,48 @@
+
+impulse_response_method = numeric
+#impulse_response_method = analytic
+
+#-------------------------------------------------------------------------------
+
+# [numeric impulse response]
+# tx_sub_elem_size = propagation_speed / (nyquist_rate * tx_sub_elem_size_factor)
+tx_sub_elem_size_factor = 2.0
+
+# [analytic impulse response]
+# 0.0: disable
+tx_min_edge_divisor = 0.0
+
+#-------------------------------------------------------------------------------
+
+# [numeric impulse response]
+# rx_sub_elem_size = propagation_speed / (nyquist_rate * rx_sub_elem_size_factor)
+rx_sub_elem_size_factor = 2.0
+
+# [analytic impulse response]
+# 0.0: disable
+rx_min_edge_divisor = 0.0
+
+#-------------------------------------------------------------------------------
+
+#
+reflectors_file = reflectors1
+#reflectors_file = reflectors-random_column
+#reflectors_file = reflectors-ground
+#reflectors_file = reflectors-point_pairs_and_ground
+#reflectors_file = reflectors-random_column_and_ground
+#reflectors_file = reflectors-fan
+
+# (m)
+reflectors_offset_x = 0.0
+reflectors_offset_y = 0.0
+
+#
+noise_amplitude = 0.0
+
+# "1" / "2a" / "2b"
+excitation_type = 2a
+# 0.0: Use default.
+excitation_num_periods = 0.0
+
+# sim_sampling_frequency = output_rate * sim_sampling_frequency_factor
+sim_sampling_frequency_factor = 4

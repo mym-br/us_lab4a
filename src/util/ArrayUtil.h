@@ -40,6 +40,10 @@ template<typename FloatType> void calculateRxElementPositions(const ParameterMap
 template<typename FloatType> void calculateTx3DFocusDelay(
 					const ParameterMap& pm, FloatType propagationSpeed,
 					const std::vector<XY<FloatType>>& elemPos, std::vector<FloatType>& focusDelay /* s */);
+template<typename FloatType> void calculateTx3DFocusDelay(
+					FloatType focusX, FloatType focusY, FloatType focusZ,
+					FloatType propagationSpeed,
+					const std::vector<XY<FloatType>>& elemPos, std::vector<FloatType>& focusDelay /* s */);
 
 //==============================================================================
 
@@ -93,43 +97,52 @@ calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& 
 
 template<typename FloatType>
 void
-calculateTx3DFocusDelay(
-		const ParameterMap& pm,
-		FloatType propagationSpeed,
-		const std::vector<XY<FloatType>>& elemPos,
-		std::vector<FloatType>& focusDelay)
+calculateTx3DFocusDelay(const ParameterMap& pm,
+			FloatType propagationSpeed,
+			const std::vector<XY<FloatType>>& elemPos,
+			std::vector<FloatType>& focusDelay)
 {
-	focusDelay.assign(elemPos.size(), 0.0);
-
 	const bool useFocus = pm.value<bool>("use_tx_focus");
 	if (useFocus) {
 		const FloatType focusX = pm.value<FloatType>("tx_focus_x", -10000.0, 10000.0);
 		const FloatType focusY = pm.value<FloatType>("tx_focus_y", -10000.0, 10000.0);
 		const FloatType focusZ = pm.value<FloatType>("tx_focus_z", -10000.0, 10000.0);
+		calculateTx3DFocusDelay(focusX, focusY, focusZ, propagationSpeed, elemPos, focusDelay);
+	} else {
+		focusDelay.assign(elemPos.size(), 0.0);
+	}
+}
 
-		const FloatType invC = 1 / propagationSpeed;
-		if (focusZ > 0.0) {
-			FloatType maxDt = 0.0;
-			for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
-				const XY<FloatType>& pos = elemPos[i];
-				const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
-				if (dt > maxDt) maxDt = dt;
-				focusDelay[i] = dt;
-			}
-			for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
-				focusDelay[i] = maxDt - focusDelay[i];
-			}
-		} else {
-			FloatType minDt = std::numeric_limits<FloatType>::max();
-			for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
-				const XY<FloatType>& pos = elemPos[i];
-				const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
-				if (dt < minDt) minDt = dt;
-				focusDelay[i] = dt;
-			}
-			for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
-				focusDelay[i] -= minDt;
-			}
+template<typename FloatType>
+void
+calculateTx3DFocusDelay(FloatType focusX, FloatType focusY, FloatType focusZ,
+			FloatType propagationSpeed,
+			const std::vector<XY<FloatType>>& elemPos, std::vector<FloatType>& focusDelay /* s */)
+{
+	focusDelay.assign(elemPos.size(), 0.0);
+
+	const FloatType invC = 1 / propagationSpeed;
+	if (focusZ > 0.0) {
+		FloatType maxDt = 0.0;
+		for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
+			const XY<FloatType>& pos = elemPos[i];
+			const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
+			if (dt > maxDt) maxDt = dt;
+			focusDelay[i] = dt;
+		}
+		for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
+			focusDelay[i] = maxDt - focusDelay[i];
+		}
+	} else {
+		FloatType minDt = std::numeric_limits<FloatType>::max();
+		for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
+			const XY<FloatType>& pos = elemPos[i];
+			const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
+			if (dt < minDt) minDt = dt;
+			focusDelay[i] = dt;
+		}
+		for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
+			focusDelay[i] -= minDt;
 		}
 	}
 }
