@@ -1,9 +1,6 @@
 
 - Fix Timer for WIN32.
 
-- config-sta-cyl -> config-cyl
-                    config-cyl_saft???
-
 - [???] Sectorial grid in z-y.
 
 - Waveform: 2a / 2b: numPeriods should be ignored (?).
@@ -28,6 +25,9 @@ Notes:
 
 ================================================================================
 
+x- config-sta-cyl -> config-cyl
+	Cylindrical wave imaging does not use synthetic aperture, but the
+	processing uses the code for STA.
 ok- Rename STA3DConfiguration -> SA3DConfiguration.
 ok- Normalization network sync.
 	ok- Save signals.
