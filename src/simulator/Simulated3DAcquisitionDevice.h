@@ -367,6 +367,9 @@ Simulated3DAcquisitionDevice<FloatType>::setTxFocalPoint(FloatType xf, FloatType
 	if (c_ == 0.0) {
 		THROW_EXCEPTION(InvalidStateException, "The propagation speed has not been set.");
 	}
+	if (zf <= 0.0) {
+		THROW_EXCEPTION(InvalidStateException, "Focus z must be > 0.");
+	}
 
 	FloatType maxDt = 0.0;
 
