@@ -1,4 +1,9 @@
 
+- STAProcessor -> ???Processor
+
+- simulated_3d_sta_acquisition_config_file -> simulated_3d_acquisition_config_file
+  config-simulated_3d_sta_acquisition.txt -> config-simulated_3d_acquisition.txt
+
 - Fix Timer for WIN32.
 
 - [???] Sectorial grid in z-y.
