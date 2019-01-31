@@ -28,7 +28,7 @@ rx_min_edge_divisor = 0.0
 reflectors_file = reflectors
 
 # (m)
-reflectors_offset_x = -38.1e-3
+reflectors_offset_x = 0.0
 #reflectors_offset_y = 0.0
 
 #
