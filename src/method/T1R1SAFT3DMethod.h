@@ -154,7 +154,7 @@ T1R1SAFT3DMethod<FloatType>::execute()
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		for (unsigned int txElem : config.activeTxElem) {
 			acquisition->execute(baseElement, txElem, acqData);
-			project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
+			project_.saveTxElemSignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
 		}
 		return;
 	} else if (project_.method() == MethodType::t1r1saft_3d_simulated_seq_y_save_signals) {
@@ -172,7 +172,7 @@ T1R1SAFT3DMethod<FloatType>::execute()
 			simAcq.modifyReflectorsOffset(0.0, -y);
 			for (unsigned int txElem : config.activeTxElem) {
 				acquisition->execute(baseElement, txElem, acqData);
-				project_.saveSTASignalsToHDF5(acqData, dataDir, i, baseElement, txElem);
+				project_.saveTxElemSignalsToHDF5(acqData, dataDir, i, baseElement, txElem);
 			}
 		}
 		return;

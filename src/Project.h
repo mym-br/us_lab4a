@@ -92,9 +92,11 @@ public:
 	template<typename T> void saveSignalToHDF5(const std::vector<T>& container, const std::string& outputDir,
 					unsigned int acqNumber, unsigned int baseElement,
 					unsigned int txElem, unsigned int rxElem);
-	template<typename T> void saveSTASignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
+	template<typename T> void saveSignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
+					unsigned int acqNumber, unsigned int baseElement);
+	template<typename T> void saveTxElemSignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
 					unsigned int acqNumber, unsigned int baseElement, unsigned int txElem);
-	template<typename T> void loadSTASignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber,
+	template<typename T> void loadTxElemSignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber,
 					unsigned int baseElement, unsigned int txElem, Matrix<T>& container);
 
 	// These functions may be called by only one thread.
@@ -317,13 +319,13 @@ Project::saveSignalToHDF5(const std::vector<T>& container, const std::string& ou
 
 template<typename T>
 void
-Project::saveSTASignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
-				unsigned int acqNumber, unsigned int baseElement, unsigned int txElem)
+Project::saveSignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
+				unsigned int acqNumber, unsigned int baseElement)
 {
 	std::string dirPath = FileUtil::path(outputDir, "/", acqNumber);
 	createDirectory(dirPath, false);
 
-	std::string filePath = FileUtil::staSignalPath(dirPath, baseElement, txElem);
+	std::string filePath = FileUtil::signalsPath(dirPath, baseElement);
 
 	LOG_DEBUG << "Saving " << filePath << "...";
 	saveHDF5(container, filePath, "signal");
@@ -331,13 +333,27 @@ Project::saveSTASignalsToHDF5(const Matrix<T>& container, const std::string& out
 
 template<typename T>
 void
-Project::loadSTASignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber, unsigned int baseElement,
+Project::saveTxElemSignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
+					unsigned int acqNumber, unsigned int baseElement, unsigned int txElem)
+{
+	std::string dirPath = FileUtil::path(outputDir, "/", acqNumber);
+	createDirectory(dirPath, false);
+
+	std::string filePath = FileUtil::txElemSignalsPath(dirPath, baseElement, txElem);
+
+	LOG_DEBUG << "Saving " << filePath << "...";
+	saveHDF5(container, filePath, "signal");
+}
+
+template<typename T>
+void
+Project::loadTxElemSignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber, unsigned int baseElement,
 				unsigned int txElem, Matrix<T>& container)
 {
 	std::string dirPath = FileUtil::path(inputDir, "/", acqNumber);
 	createDirectory(dirPath, false);
 
-	std::string filePath = FileUtil::staSignalPath(dirPath, baseElement, txElem);
+	std::string filePath = FileUtil::txElemSignalsPath(dirPath, baseElement, txElem);
 
 	LOG_DEBUG << "Loading " << filePath << "...";
 	loadHDF5(filePath, "signal", container);

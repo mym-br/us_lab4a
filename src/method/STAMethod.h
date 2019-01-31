@@ -167,7 +167,7 @@ STAMethod<FloatType>::execute()
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
 			acquisition->execute(baseElement, txElem, acqData);
-			project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
+			project_.saveTxElemSignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
 		}
 		return;
 	}

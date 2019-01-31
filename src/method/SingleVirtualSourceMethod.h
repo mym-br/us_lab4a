@@ -159,7 +159,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename TnRnAcquisition<FloatType>::AcquisitionDataType acqData;
 		acquisition->execute(baseElement, txDelays, acqData);
-		project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, 0);
+		project_.saveSignalsToHDF5(acqData, dataDir, 0, baseElement);
 		return;
 	}
 

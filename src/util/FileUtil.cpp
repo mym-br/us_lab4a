@@ -46,12 +46,21 @@ path(const std::string& baseDir,
 }
 
 std::string
-staSignalPath(const std::string& baseDir, unsigned int baseElement, unsigned int txElem)
+signalsPath(const std::string& baseDir, unsigned int baseElement)
 {
 	std::ostringstream out;
 	out << baseDir << std::setfill('0')
-		<< "/signal-base" << std::setw(4) << baseElement
-		<< "-tx"          << std::setw(4) << txElem;
+		<< "/signals-base" << std::setw(4) << baseElement;
+	return out.str();
+}
+
+std::string
+txElemSignalsPath(const std::string& baseDir, unsigned int baseElement, unsigned int txElem)
+{
+	std::ostringstream out;
+	out << baseDir << std::setfill('0')
+		<< "/signals-base" << std::setw(4) << baseElement
+		<< "-tx"           << std::setw(4) << txElem;
 	return out.str();
 }
 

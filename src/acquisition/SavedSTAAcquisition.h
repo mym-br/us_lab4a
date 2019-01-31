@@ -74,7 +74,7 @@ void
 SavedSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int txElement,
 						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
 {
-	std::string filePath = FileUtil::staSignalPath(dataDir_, baseElement, txElement);
+	std::string filePath = FileUtil::txElemSignalsPath(dataDir_, baseElement, txElement);
 	project_.loadHDF5(filePath, "signal", acqData);
 
 	if (numRxElements_ != acqData.n1()) {

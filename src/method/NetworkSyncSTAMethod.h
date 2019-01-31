@@ -207,7 +207,7 @@ NetworkSyncSTAMethod<FloatType>::saveSignals(const STAConfiguration<FloatType>& 
 
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
 			acq.execute(baseElement, txElem, acqData);
-			project_.saveSTASignalsToHDF5(acqData, dataDir, acqNumber, baseElement, txElem);
+			project_.saveTxElemSignalsToHDF5(acqData, dataDir, acqNumber, baseElement, txElem);
 		}
 
 		server.freeTrigger();
