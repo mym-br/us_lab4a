@@ -29,6 +29,7 @@
 #include <tbb/tbb.h>
 
 #include "ArrayGeometry.h"
+#include "ArrayProcessor.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
 #include "HilbertEnvelope.h"
@@ -37,7 +38,6 @@
 #include "Matrix.h"
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
-#include "STAProcessor.h"
 #include "Tensor3.h"
 #include "Util.h"
 #include "XYZValueFactor.h"
@@ -54,7 +54,7 @@ namespace Lab {
 // y = 0
 // z = 0 is at the surface of the array.
 template<typename FloatType>
-class VectorialSTAProcessor : public STAProcessor<FloatType> {
+class VectorialSTAProcessor : public ArrayProcessor<FloatType> {
 public:
 	VectorialSTAProcessor(
 			const STAConfiguration<FloatType>& config,

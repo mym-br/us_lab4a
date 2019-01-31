@@ -61,7 +61,7 @@ private:
 	STAMethod(const STAMethod&) = delete;
 	STAMethod& operator=(const STAMethod&) = delete;
 
-	void process(FloatType valueScale, STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
+	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
 	void useCoherenceFactor(FloatType valueScale, bool calculateEnvelope, const std::string& outputDir);
 
 	Project& project_;
@@ -113,7 +113,7 @@ STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnv
 
 template<typename FloatType>
 void
-STAMethod<FloatType>::process(FloatType valueScale, STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
+STAMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
 {
 	Timer tProc;
 

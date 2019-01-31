@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef STAPROCESSOR_H_
-#define STAPROCESSOR_H_
+#ifndef ARRAYPROCESSOR_H_
+#define ARRAYPROCESSOR_H_
 
 #include "Matrix.h"
 #include "XYZValueFactor.h"
@@ -26,14 +26,14 @@
 namespace Lab {
 
 template<typename FloatType>
-class STAProcessor {
+class ArrayProcessor {
 public:
-	STAProcessor() {}
-	virtual ~STAProcessor() {}
+	ArrayProcessor() {}
+	virtual ~ArrayProcessor() {}
 
 	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData) = 0;
 };
 
 } // namespace Lab
 
-#endif /* STAPROCESSOR_H_ */
+#endif /* ARRAYPROCESSOR_H_ */

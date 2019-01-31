@@ -28,6 +28,7 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
+#include "ArrayProcessor.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
 #include "HilbertEnvelope.h"
@@ -36,7 +37,6 @@
 #include "Matrix.h"
 #include "STAAcquisition.h"
 #include "SA3DConfiguration.h"
-#include "STAProcessor.h"
 #include "Tensor3.h"
 #include "Util.h"
 #include "XYZValueFactor.h"
@@ -50,7 +50,7 @@
 namespace Lab {
 
 template<typename FloatType>
-class Vectorial3DSTAProcessor : public STAProcessor<FloatType> {
+class Vectorial3DSTAProcessor : public ArrayProcessor<FloatType> {
 public:
 	Vectorial3DSTAProcessor(
 			const SA3DConfiguration<FloatType>& config,

@@ -28,13 +28,13 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
+#include "ArrayProcessor.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Log.h"
 #include "Matrix.h"
-#include "STAProcessor.h"
 #include "TnRnAcquisition.h"
 #include "TnRnConfiguration.h"
 #include "Util.h"
@@ -50,7 +50,7 @@
 namespace Lab {
 
 template<typename FloatType>
-class Vectorial3DTnRnProcessor : public STAProcessor<FloatType> {
+class Vectorial3DTnRnProcessor : public ArrayProcessor<FloatType> {
 public:
 	Vectorial3DTnRnProcessor(
 			const TnRnConfiguration<FloatType>& config,

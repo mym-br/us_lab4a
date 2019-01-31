@@ -58,7 +58,6 @@ HEADERS  += \
     src/network_acquisition/ArrayAcqProtocol.h \
     src/network_acquisition/ArrayAcqClient.h \
     src/processor/VectorialSTAProcessor.h \
-    src/processor/STAProcessor.h \
     src/processor/SimpleSTAProcessor.h \
     src/processor/DefaultSTAProcessor.h \
     src/simulator/SimulatedSTAAcquisition.h \
@@ -148,7 +147,8 @@ HEADERS  += \
     src/acquisition/TnRnAcquisition.h \
     src/simulator/Simulated3DTnRnAcquisition.h \
     src/configuration/TnRnConfiguration.h \
-    src/processor/Vectorial3DTnRnProcessor.h
+    src/processor/Vectorial3DTnRnProcessor.h \
+    src/processor/ArrayProcessor.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

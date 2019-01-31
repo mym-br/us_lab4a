@@ -27,13 +27,13 @@
 #include <tbb/tbb.h>
 
 #include "ArrayGeometry.h"
+#include "ArrayProcessor.h"
 #include "Exception.h"
 #include "Interpolator4X.h"
 #include "Log.h"
 #include "Matrix.h"
 #include "STAAcquisition.h"
 #include "STAConfiguration.h"
-#include "STAProcessor.h"
 #include "Tensor3.h"
 #include "Util.h"
 #include "XYZValueFactor.h"
@@ -50,7 +50,7 @@ namespace Lab {
 // y = 0
 // z = 0 is at the surface of the array.
 template<typename FloatType>
-class SimpleSTAProcessor : public STAProcessor<FloatType> {
+class SimpleSTAProcessor : public ArrayProcessor<FloatType> {
 public:
 	SimpleSTAProcessor(
 			const STAConfiguration<FloatType>& config,

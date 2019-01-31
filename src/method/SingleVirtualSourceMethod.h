@@ -57,7 +57,7 @@ private:
 	SingleVirtualSourceMethod(const SingleVirtualSourceMethod&) = delete;
 	SingleVirtualSourceMethod& operator=(const SingleVirtualSourceMethod&) = delete;
 
-	void process(FloatType valueScale, STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
+	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
 	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
 
 	Project& project_;
@@ -103,7 +103,7 @@ SingleVirtualSourceMethod<FloatType>::useCoherenceFactor(FloatType valueScale, c
 
 template<typename FloatType>
 void
-SingleVirtualSourceMethod<FloatType>::process(FloatType valueScale, STAProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
+SingleVirtualSourceMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
 {
 	Timer tProc;
 

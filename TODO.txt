@@ -1,6 +1,4 @@
 
-- STAProcessor -> ???Processor
-
 - Fix Timer for WIN32.
 
 - [???] Sectorial grid in z-y.
@@ -27,6 +25,7 @@ Notes:
 
 ================================================================================
 
+ok- STAProcessor -> ArrayProcessor
 ok- simulated_3d_sta_acquisition_config_file -> simulated_3d_acquisition_config_file
 	config-simulated_3d_sta_acquisition.txt -> config-simulated_3d_acquisition.txt
 x- config-sta-cyl -> config-cyl
