@@ -52,6 +52,7 @@ enum class MethodType {
 	sim_propagation_rectangular_flat_source_transient,
 	sim_radiation_pattern_array_of_rectangular_flat_sources_transient,
 	sim_radiation_pattern_rectangular_flat_source_transient,
+	single_virtual_source_3d_simulated_save_signals,
 	single_virtual_source_3d_vectorial_simulated,
 	sta_3d_simulated_save_signals,
 	sta_3d_simulated_seq_y_save_signals,

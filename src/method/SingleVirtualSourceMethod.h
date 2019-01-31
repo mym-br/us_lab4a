@@ -37,6 +37,7 @@
 #include "TnRnConfiguration.h"
 #include "Util.h"
 #include "Vectorial3DTnRnProcessor.h"
+#include "XY.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
@@ -128,9 +129,25 @@ SingleVirtualSourceMethod<FloatType>::execute()
 	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
 	const FloatType focusZ         = taskPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
 
+	FloatType focusX = 0, focusY = 0;
+	// Set the focus at the mean x, y.
+	for (unsigned int i = baseElement, end = baseElement + config.numElements; i < end; ++i) {
+		if (i >= config.txElemPos.size()) {
+			THROW_EXCEPTION(InvalidValueException, "Invalid tx element number: " << i << '.');
+		}
+		const XY<FloatType>& pos = config.txElemPos[i];
+		focusX += pos.x;
+		focusY += pos.y;
+	}
+	focusX /= config.numElements;
+	focusY /= config.numElements;
+	std::vector<FloatType> txDelays;
+	ArrayUtil::calculateTx3DFocusDelay(focusX, focusY, focusZ, config.propagationSpeed, config.txElemPos, txDelays);
+
 	std::unique_ptr<TnRnAcquisition<FloatType>> acquisition;
 
 	switch (project_.method()) {
+	case MethodType::single_virtual_source_3d_simulated_save_signals: // falls through
 	case MethodType::single_virtual_source_3d_vectorial_simulated:
 		acquisition = std::make_unique<Simulated3DTnRnAcquisition<FloatType>>(project_, config);
 		break;
@@ -138,15 +155,13 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
 
-//	if (project_.method() == MethodType::sta_3d_simulated_save_signals) {
-//		const std::string dataDir = taskPM->value<std::string>("data_dir");
-//		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
-//		for (unsigned int txElem : config.activeTxElem) {
-//			acquisition->execute(baseElement, txElem, acqData);
-//			project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
-//		}
-//		return;
-//	}
+	if (project_.method() == MethodType::single_virtual_source_3d_simulated_save_signals) {
+		const std::string dataDir = taskPM->value<std::string>("data_dir");
+		typename TnRnAcquisition<FloatType>::AcquisitionDataType acqData;
+		acquisition->execute(baseElement, txDelays, acqData);
+		project_.saveSTASignalsToHDF5(acqData, dataDir, 0, baseElement, 0);
+		return;
+	}
 
 	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset" , 0.0, 50.0);
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
@@ -166,7 +181,8 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		auto processor = std::make_unique<Vectorial3DTnRnProcessor<FloatType>>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset,
-							rxApod, focusZ);
+							rxApod);
+		processor->setTxDelays(focusX, focusY, focusZ, txDelays);
 		process(config.valueScale, *processor, baseElement, outputDir);
 		if (coherenceFactor.enabled()) {
 			useCoherenceFactor(config.valueScale, outputDir);

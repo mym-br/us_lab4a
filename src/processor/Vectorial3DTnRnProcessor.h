@@ -28,7 +28,6 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
-#include "ArrayUtil.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
 #include "HilbertEnvelope.h"
@@ -59,10 +58,11 @@ public:
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
 			FloatType peakOffset,
-			const std::vector<FloatType>& rxApod,
-			FloatType focusZ);
+			const std::vector<FloatType>& rxApod);
 	virtual ~Vectorial3DTnRnProcessor() {}
 
+	void setTxDelays(FloatType focusX, FloatType focusY, FloatType focusZ /* can be negative */,
+				const std::vector<FloatType>& txDelays);
 	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
@@ -89,8 +89,10 @@ private:
 	HilbertEnvelope<FloatType> envelope_;
 	bool initialized_;
 	std::vector<FloatType> rxApod_;
+	FloatType focusX_;
+	FloatType focusY_;
 	FloatType focusZ_;
-	std::vector<FloatType> txDelays_;
+	std::vector<FloatType> txDelays_; // focalization / divergence delays
 };
 
 
@@ -102,8 +104,7 @@ Vectorial3DTnRnProcessor<FloatType>::Vectorial3DTnRnProcessor(
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
 			FloatType peakOffset,
-			const std::vector<FloatType>& rxApod,
-			FloatType focusZ)
+			const std::vector<FloatType>& rxApod)
 		: config_(config)
 		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
 		, acquisition_(acquisition)
@@ -111,7 +112,9 @@ Vectorial3DTnRnProcessor<FloatType>::Vectorial3DTnRnProcessor(
 		, coherenceFactor_(coherenceFactor)
 		, initialized_(false)
 		, rxApod_(rxApod)
-		, focusZ_(focusZ)
+		, focusX_()
+		, focusY_()
+		, focusZ_()
 {
 	if (upsamplingFactor_ > 1) {
 		interpolator_.prepare(upsamplingFactor_, VECTORIAL_3D_TN_RN_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
@@ -127,6 +130,17 @@ Vectorial3DTnRnProcessor<FloatType>::Vectorial3DTnRnProcessor(
 
 template<typename FloatType>
 void
+Vectorial3DTnRnProcessor<FloatType>::setTxDelays(FloatType focusX, FloatType focusY, FloatType focusZ,
+							const std::vector<FloatType>& txDelays)
+{
+	focusX_ = focusX;
+	focusY_ = focusY;
+	focusZ_ = focusZ;
+	txDelays_ = txDelays;
+}
+
+template<typename FloatType>
+void
 Vectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== Vectorial3DTnRnProcessor::process ==========";
@@ -134,25 +148,13 @@ Vectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement, Matrix<XY
 	if (baseElement + config_.numElements > config_.numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid base element: " << baseElement << '.');
 	}
+	if (txDelays_.empty()) {
+		THROW_EXCEPTION(InvalidStateException, "Empty tx delay list.");
+	}
 
 	Util::resetValueFactor(gridData.begin(), gridData.end());
 
 	const std::size_t numSignals = config_.numElements;
-
-	FloatType focusX = 0;
-	FloatType focusY = 0;
-	// Calculate the mean x, y.
-	for (unsigned int i = baseElement, end = baseElement + config_.numElements; i < end; ++i) {
-		if (i >= config_.txElemPos.size()) {
-			THROW_EXCEPTION(InvalidValueException, "Invalid tx element number: " << i << '.');
-		}
-		const XY<FloatType>& pos = config_.txElemPos[i];
-		focusX += pos.x;
-		focusY += pos.y;
-	}
-	focusX /= config_.numElements;
-	focusY /= config_.numElements;
-	ArrayUtil::calculateTx3DFocusDelay(focusX, focusY, focusZ_, config_.propagationSpeed, config_.txElemPos, txDelays_);
 
 	// Prepare the signal matrix.
 	{
@@ -223,14 +225,14 @@ Vectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement, Matrix<XY
 					const FloatType d0 = txDelays_[baseElement] * fsUp;
 
 					const XY<FloatType>& firstElem = config_.txElemPos[baseElement];
-					const FloatType dx1 = focusX - firstElem.x;
-					const FloatType dy1 = focusY - firstElem.y;
+					const FloatType dx1 = focusX_ - firstElem.x;
+					const FloatType dy1 = focusY_ - firstElem.y;
 					const FloatType dz1 = focusZ_;
 					// Travel time between the first active element and the focus.
 					const FloatType t0 = std::sqrt(dx1 * dx1 + dy1 * dy1 + dz1 * dz1) * invCT;
 
-					const FloatType dx2 = point.x - focusX;
-					const FloatType dy2 = point.y - focusY;
+					const FloatType dx2 = point.x - focusX_;
+					const FloatType dy2 = point.y - focusY_;
 					const FloatType dz2 = point.z - focusZ_;
 					// Travel time between the focus and the point.
 					const FloatType t1 = std::sqrt(dx2 * dx2 + dy2 * dy2 + dz2 * dz2) * invCT;

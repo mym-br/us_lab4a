@@ -67,6 +67,7 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sim_propagation_rectangular_flat_source_transient);
 	ADD_MAP_ITEM(sim_radiation_pattern_array_of_rectangular_flat_sources_transient);
 	ADD_MAP_ITEM(sim_radiation_pattern_rectangular_flat_source_transient);
+	ADD_MAP_ITEM(single_virtual_source_3d_simulated_save_signals);
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_simulated);
 	ADD_MAP_ITEM(sta_3d_simulated_save_signals);
 	ADD_MAP_ITEM(sta_3d_simulated_seq_y_save_signals);
@@ -137,6 +138,7 @@ Method::get(Project& project)
 	case MethodType::sim_radiation_pattern_array_of_rectangular_flat_sources_transient:    // falls through
 	case MethodType::sim_radiation_pattern_rectangular_flat_source_transient:
 		return new SimRectangularFlatSourceMethod<double>(project);
+	case MethodType::single_virtual_source_3d_simulated_save_signals: // falls through
 	case MethodType::single_virtual_source_3d_vectorial_simulated:
 		return new SingleVirtualSourceMethod<double>(project);
 	case MethodType::show_image:
