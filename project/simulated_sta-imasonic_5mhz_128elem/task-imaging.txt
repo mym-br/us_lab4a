@@ -3,7 +3,7 @@ method = sta_simulated
 
 sta_config_file = config-sta.txt
 
-simulated_sta_acquisition_config_file = config-simulated_sta_acquisition.txt
+simulated_3d_acquisition_config_file = config-simulated_3d_acquisition.txt
 
 array_config_file = config-array.txt
 

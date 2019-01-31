@@ -3,7 +3,7 @@ method = sta_3d_simulated_seq_y_save_signals
 
 sa_config_file = config-sta-cyl.txt
 
-simulated_3d_sta_acquisition_config_file = config-simulated_3d_sta_acquisition.txt
+simulated_3d_acquisition_config_file = config-simulated_3d_acquisition.txt
 
 array_config_file = config-array.txt
 

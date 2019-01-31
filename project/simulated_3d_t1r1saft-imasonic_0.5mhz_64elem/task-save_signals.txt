@@ -3,7 +3,7 @@ method = t1r1saft_3d_simulated_save_signals
 
 sa_config_file = config-t1r1saft.txt
 
-simulated_3d_t1r1saft_acquisition_config_file = config-simulated_3d_t1r1saft_acquisition.txt
+simulated_3d_acquisition_config_file = config-simulated_3d_acquisition.txt
 
 array_config_file = config-array.txt
 

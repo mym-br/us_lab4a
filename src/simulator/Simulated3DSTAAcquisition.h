@@ -70,7 +70,7 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 	//TODO: check numChannels/numChannelsMux and other params
 
 	ConstParameterMapPtr taskPM  = project_.taskParameterMap();
-	ConstParameterMapPtr pm      = project_.loadChildParameterMap(taskPM, "simulated_3d_sta_acquisition_config_file");
+	ConstParameterMapPtr pm      = project_.loadChildParameterMap(taskPM, "simulated_3d_acquisition_config_file");
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 
 	const std::string reflectorsFileName = pm->value<std::string>("reflectors_file");
