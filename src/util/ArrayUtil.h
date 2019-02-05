@@ -38,9 +38,6 @@ template<typename FloatType> void calculateTxElementPositions(const ParameterMap
 template<typename FloatType> void calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos);
 
 template<typename FloatType> void calculateTx3DFocusDelay(
-					const ParameterMap& pm, FloatType propagationSpeed,
-					const std::vector<XY<FloatType>>& elemPos, std::vector<FloatType>& focusDelay /* s */);
-template<typename FloatType> void calculateTx3DFocusDelay(
 					FloatType focusX, FloatType focusY, FloatType focusZ,
 					FloatType propagationSpeed,
 					const std::vector<XY<FloatType>>& elemPos, std::vector<FloatType>& focusDelay /* s */);
@@ -93,24 +90,6 @@ calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& 
 	const FloatType offsetY     = pm.value<FloatType>("rx_offset_y"  ,    0.0, 1000.0);
 
 	calculateElementPositions(pitchX, numElemX, offsetX, pitchY, numElemY, offsetY, elemPos);
-}
-
-template<typename FloatType>
-void
-calculateTx3DFocusDelay(const ParameterMap& pm,
-			FloatType propagationSpeed,
-			const std::vector<XY<FloatType>>& elemPos,
-			std::vector<FloatType>& focusDelay)
-{
-	const bool useFocus = pm.value<bool>("use_tx_focus");
-	if (useFocus) {
-		const FloatType focusX = pm.value<FloatType>("tx_focus_x", -10000.0, 10000.0);
-		const FloatType focusY = pm.value<FloatType>("tx_focus_y", -10000.0, 10000.0);
-		const FloatType focusZ = pm.value<FloatType>("tx_focus_z", -10000.0, 10000.0);
-		calculateTx3DFocusDelay(focusX, focusY, focusZ, propagationSpeed, elemPos, focusDelay);
-	} else {
-		focusDelay.assign(elemPos.size(), 0.0);
-	}
 }
 
 template<typename FloatType>

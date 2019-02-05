@@ -23,6 +23,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "AnalyticRectangularFlatSourceImpulseResponse.h"
 #include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
@@ -59,8 +60,40 @@ public:
 
 	virtual void execute();
 private:
+	struct MainData {
+		FloatType propagationSpeed;
+		FloatType centerFreq;
+		FloatType maxFreq;
+		FloatType nyquistRate;
+		std::string outputDir;
+	};
+	struct SimulationData {
+		FloatType samplingFreq;
+		FloatType excNumPeriods;
+		FloatType discretFactor;
+		std::string irMethod;
+		std::string excitationType;
+		std::vector<FloatType> exc;
+	};
+	struct SourceData {
+		FloatType sourceWidth;
+		FloatType sourceHeight;
+
+		// For arrays.
+		FloatType focusX;
+		FloatType focusY;
+		FloatType focusZ;
+		std::vector<XY<FloatType>> elemPos;
+		std::vector<FloatType> focusDelay;
+		bool useFocus;
+	};
+
 	SimRectangularFlatSourceMethod(const SimRectangularFlatSourceMethod&) = delete;
 	SimRectangularFlatSourceMethod& operator=(const SimRectangularFlatSourceMethod&) = delete;
+
+	void loadData(ConstParameterMapPtr taskPM, MainData& data, SimulationData& simData);
+	void loadSourceData(ConstParameterMapPtr taskPM, MainData& data, bool sourceIsArray, SourceData& srcData);
+	void loadSimulationData(ConstParameterMapPtr mainPM, const MainData& data, SimulationData& simData);
 
 	void execTransientRadiationPattern(bool sourceIsArray);
 	void execTransientAcousticField(bool sourceIsArray);
@@ -70,8 +103,6 @@ private:
 
 	Project& project_;
 };
-
-
 
 template<typename FloatType>
 SimRectangularFlatSourceMethod<FloatType>::SimRectangularFlatSourceMethod(Project& project)
@@ -84,71 +115,111 @@ SimRectangularFlatSourceMethod<FloatType>::~SimRectangularFlatSourceMethod()
 {
 }
 
+template<typename FloatType>
+void
+SimRectangularFlatSourceMethod<FloatType>::loadData(ConstParameterMapPtr taskPM, MainData& data, SimulationData& simData)
+{
+	ConstParameterMapPtr mainPM = project_.loadChildParameterMap(taskPM, "main_config_file");
+	//data.density        = mainPM->value<FloatType>("density", 0.0, 100000.0);
+	data.propagationSpeed = mainPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
+	data.centerFreq       = mainPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
+	data.maxFreq          = mainPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
+	data.nyquistRate = 2.0 * data.maxFreq;
+	data.outputDir        = mainPM->value<std::string>("output_dir");
 
+	loadSimulationData(mainPM, data, simData);
+}
+
+template<typename FloatType>
+void
+SimRectangularFlatSourceMethod<FloatType>::loadSourceData(ConstParameterMapPtr taskPM, MainData& data, bool sourceIsArray, SourceData& srcData)
+{
+	if (sourceIsArray) {
+		ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+		ArrayUtil::calculateTxElementPositions(*arrayPM, srcData.elemPos);
+		srcData.sourceWidth  = arrayPM->value<FloatType>("element_width", 0.0, 10.0);
+		srcData.sourceHeight = arrayPM->value<FloatType>("element_height", 0.0, 10.0);
+
+		srcData.useFocus = arrayPM->value<bool>("use_tx_focus");
+		if (srcData.useFocus) {
+			srcData.focusX = arrayPM->value<FloatType>("tx_focus_x", -10000.0, 10000.0);
+			srcData.focusY = arrayPM->value<FloatType>("tx_focus_y", -10000.0, 10000.0);
+			srcData.focusZ = arrayPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
+			ArrayUtil::calculateTx3DFocusDelay(srcData.focusX, srcData.focusY, srcData.focusZ,
+								data.propagationSpeed, srcData.elemPos, srcData.focusDelay);
+		} else {
+			srcData.focusX = srcData.focusY = srcData.focusZ = 0;
+			srcData.focusDelay.assign(srcData.elemPos.size(), 0.0);
+		}
+	} else {
+		ConstParameterMapPtr singlePM = project_.loadChildParameterMap(taskPM, "single_source_config_file");
+		srcData.sourceWidth  = singlePM->value<FloatType>("source_width", 0.0, 10.0);
+		srcData.sourceHeight = singlePM->value<FloatType>("source_height", 0.0, 10.0);
+
+		srcData.useFocus = false;
+		srcData.focusX = srcData.focusY = srcData.focusZ = 0;
+	}
+}
+
+template<typename FloatType>
+void
+SimRectangularFlatSourceMethod<FloatType>::loadSimulationData(ConstParameterMapPtr mainPM, const MainData& data, SimulationData& simData)
+{
+	ConstParameterMapPtr  simPM = project_.loadChildParameterMap(mainPM, "simulation_config_file");
+	simData.samplingFreq   = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
+	simData.irMethod       = simPM->value<std::string>("impulse_response_method");
+	simData.excitationType = simPM->value<std::string>("excitation_type");
+	simData.excNumPeriods  = simPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
+
+	if (simData.excitationType == "1") {
+		Waveform::getType1(data.centerFreq, simData.samplingFreq, simData.exc, simData.excNumPeriods);
+	} else if (simData.excitationType == "2a") {
+		Waveform::getType2a(data.centerFreq, simData.samplingFreq, simData.exc, simData.excNumPeriods);
+	} else if (simData.excitationType == "2b") {
+		Waveform::getType2b(data.centerFreq, simData.samplingFreq, simData.exc, simData.excNumPeriods);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << simData.excitationType << '.');
+	}
+
+	if (simData.irMethod == "numeric") {
+		simData.discretFactor = simPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3);
+	} else if (simData.irMethod == "analytic") {
+		simData.discretFactor = simPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
+	}
+}
 
 template<typename FloatType>
 void
 SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool sourceIsArray)
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr mainPM = project_.loadChildParameterMap(taskPM, "main_config_file");
-	ConstParameterMapPtr  simPM = project_.loadChildParameterMap(mainPM, "simulation_config_file");
+	MainData mainData;
+	SimulationData simData;
+	loadData(taskPM, mainData, simData);
+	SourceData srcData;
+	loadSourceData(taskPM, mainData, sourceIsArray, srcData);
 
-	const std::string outputDir = mainPM->value<std::string>("output_dir");
-	project_.createDirectory(outputDir, false);
+	project_.createDirectory(mainData.outputDir, false);
 
-	const FloatType distance         = taskPM->value<FloatType>("distance", 0.0, 100.0);
-	const FloatType thetaYStep       = taskPM->value<FloatType>("theta_y_step", 0.0, 10.0);
-	const FloatType thetaYMin        = sourceIsArray ? taskPM->value<FloatType>("theta_y_min" , -90.0, 90.0) : FloatType(0);
-	const FloatType thetaYMax        = taskPM->value<FloatType>("theta_y_max" , thetaYMin + 0.1, 90.0);
-	const FloatType thetaXStep       = taskPM->value<FloatType>("theta_x_step", 0.0, 10.0);
-	const FloatType thetaXMin        = sourceIsArray ? taskPM->value<FloatType>("theta_x_min" , -90.0, 90.0) : FloatType(0);
-	const FloatType thetaXMax        = taskPM->value<FloatType>("theta_x_max" , thetaXMin + 0.1, 90.0);
-	const FloatType propagationSpeed = mainPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
-	const FloatType centerFreq       = mainPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
-	const FloatType maxFreq          = mainPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
-	const FloatType nyquistRate = 2.0 * maxFreq;
-	const FloatType samplingFreq     = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const std::string irMethod       = simPM->value<std::string>("impulse_response_method");
-	const std::string excitationType = simPM->value<std::string>("excitation_type");
-	const FloatType excNumPeriods    = simPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
+	const FloatType distance   = taskPM->value<FloatType>("distance", 0.0, 100.0);
+	const FloatType thetaYStep = taskPM->value<FloatType>("theta_y_step", 0.0, 10.0);
+	const FloatType thetaYMin  = sourceIsArray ? taskPM->value<FloatType>("theta_y_min" , -90.0, 90.0) : FloatType(0);
+	const FloatType thetaYMax  = taskPM->value<FloatType>("theta_y_max" , thetaYMin + 0.1, 90.0);
+	const FloatType thetaXStep = taskPM->value<FloatType>("theta_x_step", 0.0, 10.0);
+	const FloatType thetaXMin  = sourceIsArray ? taskPM->value<FloatType>("theta_x_min" , -90.0, 90.0) : FloatType(0);
+	const FloatType thetaXMax  = taskPM->value<FloatType>("theta_x_max" , thetaXMin + 0.1, 90.0);
 
-	std::vector<XY<FloatType>> elemPos;
-	std::vector<FloatType> focusDelay;
-	FloatType sourceWidth, sourceHeight;
-	ConstParameterMapPtr arrayPM;
-	if (sourceIsArray) {
-		arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-		ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
-		ArrayUtil::calculateTx3DFocusDelay(*arrayPM, propagationSpeed, elemPos, focusDelay);
-		sourceWidth  = arrayPM->value<FloatType>("element_width", 0.0, 10.0);
-		sourceHeight = arrayPM->value<FloatType>("element_height", 0.0, 10.0);
-	} else {
-		ConstParameterMapPtr singlePM = project_.loadChildParameterMap(taskPM, "single_source_config_file");
-		sourceWidth  = singlePM->value<FloatType>("source_width", 0.0, 10.0);
-		sourceHeight = singlePM->value<FloatType>("source_height", 0.0, 10.0);
-	}
-
-	std::vector<FloatType> exc;
-	if (excitationType == "1") {
-		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2a") {
-		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2b") {
-		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
-	}
-
-	const FloatType dt = 1.0 / samplingFreq;
-	std::vector<FloatType> tExc(exc.size());
+	const FloatType dt = 1.0 / simData.samplingFreq;
+	std::vector<FloatType> tExc(simData.exc.size());
 	for (unsigned int i = 0; i < tExc.size(); ++i) {
 		tExc[i] = dt * i;
 	}
-	project_.showFigure2D(1, "Excitation", tExc, exc);
+	project_.showFigure2D(1, "Excitation", tExc, simData.exc);
 
 	std::vector<FloatType> dvdt;
-	Util::centralDiff(exc, dt, dvdt);
+	Util::centralDiff(simData.exc, dt, dvdt);
 
 	std::vector<FloatType> thetaXList;
 	Util::fillSequenceFromStartToEndWithSize(thetaXList, thetaXMin, thetaXMax, std::ceil((thetaXMax - thetaXMin) / thetaXStep) + 1);
@@ -180,37 +251,36 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool so
 		}
 	}
 
-	if (irMethod == "numeric") {
-		const FloatType subElemSize = propagationSpeed /
-				(nyquistRate * simPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
+	if (simData.irMethod == "numeric") {
+		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
 			radPat->getArrayOfRectangularFlatSourcesRadiationPattern(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
-						dvdt, elemPos, focusDelay, inputData, gridData);
+						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
 		} else {
 			radPat->getRectangularFlatSourceRadiationPattern(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, inputData, gridData);
 		}
-	} else if (irMethod == "analytic") {
-		const FloatType minEdgeDivisor = simPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+	} else if (simData.irMethod == "analytic") {
+		const FloatType minEdgeDivisor = simData.discretFactor;
 		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
 			radPat->getArrayOfRectangularFlatSourcesRadiationPattern(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
-						dvdt, elemPos, focusDelay, inputData, gridData);
+						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
 		} else {
 			radPat->getRectangularFlatSourceRadiationPattern(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, inputData, gridData);
 		}
 	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 
 	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
@@ -231,13 +301,9 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool so
 	if (sourceIsArray) {
 		FloatType sectionTY = 0.0;
 		FloatType sectionTX = 0.0;
-		const bool useFocus = arrayPM->value<bool>("use_tx_focus");
-		if (useFocus) {
-			const FloatType focusX = arrayPM->value<FloatType>("tx_focus_x", -10000.0, 10000.0);
-			const FloatType focusY = arrayPM->value<FloatType>("tx_focus_y", -10000.0, 10000.0);
-			const FloatType focusZ = arrayPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
-			sectionTY = Util::radianToDegree(std::atan2(focusX, focusZ));
-			sectionTX = Util::radianToDegree(std::atan2(focusY, focusZ));
+		if (srcData.useFocus) {
+			sectionTY = Util::radianToDegree(std::atan2(srcData.focusX, srcData.focusZ));
+			sectionTX = Util::radianToDegree(std::atan2(srcData.focusY, srcData.focusZ));
 		}
 		sectionTYIndex = std::rint(((sectionTY - thetaYMin) / (thetaYMax - thetaYMin)) * (thetaYList.size() - 1));
 		sectionTXIndex = std::rint(((sectionTX - thetaXMin) / (thetaXMax - thetaXMin)) * (thetaXList.size() - 1));
@@ -256,13 +322,13 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool so
 	Util::linearToDecibels(patternTX, -100.0);
 	project_.showFigure2D(2, "Pattern theta-x", thetaXList, patternTX);
 
-	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
-	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
-	project_.saveImageToHDF5(gridData, outputDir);
-	project_.saveHDF5(thetaYList, outputDir + "/theta_y"        , "value");
-	project_.saveHDF5(patternTY , outputDir + "/pattern_theta_y", "value");
-	project_.saveHDF5(thetaXList, outputDir + "/theta_x"        , "value");
-	project_.saveHDF5(patternTX , outputDir + "/pattern_theta_x", "value");
+	project_.saveHDF5(simData.exc, mainData.outputDir + "/excitation"     , "value");
+	project_.saveHDF5(tExc       , mainData.outputDir + "/excitation_time", "value");
+	project_.saveImageToHDF5(gridData, mainData.outputDir);
+	project_.saveHDF5(thetaYList , mainData.outputDir + "/theta_y"        , "value");
+	project_.saveHDF5(patternTY  , mainData.outputDir + "/pattern_theta_y", "value");
+	project_.saveHDF5(thetaXList , mainData.outputDir + "/theta_x"        , "value");
+	project_.saveHDF5(patternTX  , mainData.outputDir + "/pattern_theta_x", "value");
 }
 
 template<typename FloatType>
@@ -270,93 +336,59 @@ void
 SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsArray)
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr mainPM = project_.loadChildParameterMap(taskPM, "main_config_file");
-	ConstParameterMapPtr  simPM = project_.loadChildParameterMap(mainPM, "simulation_config_file");
+	MainData mainData;
+	SimulationData simData;
+	loadData(taskPM, mainData, simData);
+	SourceData srcData;
+	loadSourceData(taskPM, mainData, sourceIsArray, srcData);
 
-	const std::string outputDir = mainPM->value<std::string>("output_dir");
-	project_.createDirectory(outputDir, false);
+	project_.createDirectory(mainData.outputDir, false);
 
-	const FloatType propagationSpeed = mainPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
-	const FloatType centerFreq       = mainPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
-	const FloatType maxFreq          = mainPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
-	const FloatType nyquistRate = 2.0 * maxFreq;
-	const FloatType samplingFreq     = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const std::string irMethod       = simPM->value<std::string>("impulse_response_method");
-	const std::string excitationType = simPM->value<std::string>("excitation_type");
-	const FloatType excNumPeriods    = simPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
-
-	std::vector<XY<FloatType>> elemPos;
-	std::vector<FloatType> focusDelay;
-	FloatType sourceWidth, sourceHeight;
-	if (sourceIsArray) {
-		ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-		ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
-		ArrayUtil::calculateTx3DFocusDelay(*arrayPM, propagationSpeed, elemPos, focusDelay);
-		sourceWidth  = arrayPM->value<FloatType>("element_width", 0.0, 10.0);
-		sourceHeight = arrayPM->value<FloatType>("element_height", 0.0, 10.0);
-	} else {
-		ConstParameterMapPtr singlePM = project_.loadChildParameterMap(taskPM, "single_source_config_file");
-		sourceWidth  = singlePM->value<FloatType>("source_width", 0.0, 10.0);
-		sourceHeight = singlePM->value<FloatType>("source_height", 0.0, 10.0);
-	}
-
-	std::vector<FloatType> exc;
-	if (excitationType == "1") {
-		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2a") {
-		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2b") {
-		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
-	}
-
-	const FloatType dt = 1.0 / samplingFreq;
-	std::vector<FloatType> tExc(exc.size());
+	const FloatType dt = 1.0 / simData.samplingFreq;
+	std::vector<FloatType> tExc(simData.exc.size());
 	for (unsigned int i = 0; i < tExc.size(); ++i) {
 		tExc[i] = dt * i;
 	}
-	project_.showFigure2D(1, "Excitation", tExc, exc);
+	project_.showFigure2D(1, "Excitation", tExc, simData.exc);
 
 	std::vector<FloatType> dvdt;
-	Util::centralDiff(exc, dt, dvdt);
+	Util::centralDiff(simData.exc, dt, dvdt);
 
 	Matrix<XYZValue<FloatType>> gridData;
 
-	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
+	const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
-	if (irMethod == "numeric") {
-		const FloatType subElemSize = propagationSpeed /
-				(nyquistRate * simPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
+	if (simData.irMethod == "numeric") {
+		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
 			acField->getArrayOfRectangularFlatSourcesAcousticField(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
-						dvdt, elemPos, focusDelay, gridData);
+						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
 			acField->getRectangularFlatSourceAcousticField(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, gridData);
 		}
-	} else if (irMethod == "analytic") {
-		const FloatType minEdgeDivisor = simPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+	} else if (simData.irMethod == "analytic") {
+		const FloatType minEdgeDivisor = simData.discretFactor;
 		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
 			acField->getArrayOfRectangularFlatSourcesAcousticField(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
-						dvdt, elemPos, focusDelay, gridData);
+						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
 			acField->getRectangularFlatSourceAcousticField(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, gridData);
 		}
 	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 
 	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
@@ -372,9 +404,9 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField(bool sourc
 	project_.showFigure3D(1, "Acoustic field", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Figure::COLORMAP_VIRIDIS);
 
-	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
-	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
-	project_.saveImageToHDF5(gridData, outputDir);
+	project_.saveHDF5(simData.exc , mainData.outputDir + "/excitation"     , "value");
+	project_.saveHDF5(tExc        , mainData.outputDir + "/excitation_time", "value");
+	project_.saveImageToHDF5(gridData, mainData.outputDir);
 }
 
 template<typename FloatType>
@@ -382,106 +414,73 @@ void
 SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArray)
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr mainPM = project_.loadChildParameterMap(taskPM, "main_config_file");
-	ConstParameterMapPtr  simPM = project_.loadChildParameterMap(mainPM, "simulation_config_file");
+	MainData mainData;
+	SimulationData simData;
+	loadData(taskPM, mainData, simData);
+	SourceData srcData;
+	loadSourceData(taskPM, mainData, sourceIsArray, srcData);
 
-	const std::string outputDir = mainPM->value<std::string>("output_dir");
-	project_.createDirectory(outputDir, false);
+	project_.createDirectory(mainData.outputDir, false);
 
 	const FloatType propagDistanceStep = taskPM->value<FloatType>("propagation_distance_step", 1.0e-6, 100.0);
 	const FloatType propagMinDistance  = taskPM->value<FloatType>("propagation_min_distance", 0.0, 100.0);
 	const FloatType propagMaxDistance  = taskPM->value<FloatType>("propagation_max_distance", propagMinDistance + propagDistanceStep, 100.0);
 	const unsigned int propagRepet     = taskPM->value<unsigned int>("propagation_repetitions", 1, 100);
 	const unsigned int propagPause     = taskPM->value<unsigned int>("propagation_pause", 0, 10000);
-	const FloatType propagationSpeed   = mainPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
-	const FloatType centerFreq         = mainPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
-	const FloatType maxFreq            = mainPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
-	const FloatType nyquistRate = 2.0 * maxFreq;
-	const FloatType samplingFreq       = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const std::string irMethod         = simPM->value<std::string>("impulse_response_method");
-	const std::string excitationType   = simPM->value<std::string>("excitation_type");
-	const FloatType excNumPeriods      = simPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
 
 	std::vector<FloatType> propagDist;
 	Util::fillSequenceFromStartWithStep(propagDist, propagMinDistance, propagMaxDistance, propagDistanceStep);
 	std::vector<unsigned int> propagIndexList(propagDist.size());
-	const FloatType coef = samplingFreq / propagationSpeed;
+	const FloatType coef = simData.samplingFreq / mainData.propagationSpeed;
 	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
 		propagIndexList[i] = std::rint(propagDist[i] * coef);
 	}
 
-	std::vector<XY<FloatType>> elemPos;
-	std::vector<FloatType> focusDelay;
-	FloatType sourceWidth, sourceHeight;
-	if (sourceIsArray) {
-		ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-		ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
-		ArrayUtil::calculateTx3DFocusDelay(*arrayPM, propagationSpeed, elemPos, focusDelay);
-		sourceWidth  = arrayPM->value<FloatType>("element_width", 0.0, 10.0);
-		sourceHeight = arrayPM->value<FloatType>("element_height", 0.0, 10.0);
-	} else {
-		ConstParameterMapPtr singlePM = project_.loadChildParameterMap(taskPM, "single_source_config_file");
-		sourceWidth  = singlePM->value<FloatType>("source_width", 0.0, 10.0);
-		sourceHeight = singlePM->value<FloatType>("source_height", 0.0, 10.0);
-	}
-
-	std::vector<FloatType> exc;
-	if (excitationType == "1") {
-		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2a") {
-		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2b") {
-		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
-	}
-
-	const FloatType dt = 1.0 / samplingFreq;
-	std::vector<FloatType> tExc(exc.size());
+	const FloatType dt = 1.0 / simData.samplingFreq;
+	std::vector<FloatType> tExc(simData.exc.size());
 	for (unsigned int i = 0; i < tExc.size(); ++i) {
 		tExc[i] = dt * i;
 	}
-	project_.showFigure2D(1, "Excitation", tExc, exc);
+	project_.showFigure2D(1, "Excitation", tExc, simData.exc);
 
 	std::vector<FloatType> dvdt;
-	Util::centralDiff(exc, dt, dvdt);
+	Util::centralDiff(simData.exc, dt, dvdt);
 
 	Matrix<XYZValueArray<FloatType>> gridData;
 
-	const FloatType nyquistLambda = propagationSpeed / nyquistRate;
+	const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
-	if (irMethod == "numeric") {
-		const FloatType subElemSize = propagationSpeed /
-				(nyquistRate * simPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
+	if (simData.irMethod == "numeric") {
+		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		auto propag = std::make_unique<SimTransientPropagation<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
 			propag->getArrayOfRectangularFlatSourcesPropagation(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
-						dvdt, elemPos, focusDelay, propagIndexList, gridData);
+						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
 		} else {
 			propag->getRectangularFlatSourcePropagation(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, propagIndexList, gridData);
 		}
-	} else if (irMethod == "analytic") {
-		const FloatType minEdgeDivisor = simPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+	} else if (simData.irMethod == "analytic") {
+		const FloatType minEdgeDivisor = simData.discretFactor;
 		auto propag = std::make_unique<SimTransientPropagation<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
 			propag->getArrayOfRectangularFlatSourcesPropagation(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
-						dvdt, elemPos, focusDelay, propagIndexList, gridData);
+						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
 		} else {
 			propag->getRectangularFlatSourcePropagation(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, propagIndexList, gridData);
 		}
 	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 
 	// Normalize.
@@ -515,17 +514,17 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation(bool sourceI
 		}
 	}
 
-	project_.saveHDF5(exc , outputDir + "/excitation"     , "value");
-	project_.saveHDF5(tExc, outputDir + "/excitation_time", "value");
+	project_.saveHDF5(simData.exc, mainData.outputDir + "/excitation"     , "value");
+	project_.saveHDF5(tExc       , mainData.outputDir + "/excitation_time", "value");
 
 	// Save images.
 	LOG_DEBUG << "Saving the X coordinates...";
-	project_.saveHDF5(gridData, outputDir + "/image_x", "x", Util::CopyXOp());
+	project_.saveHDF5(gridData, mainData.outputDir + "/image_x", "x", Util::CopyXOp());
 	LOG_DEBUG << "Saving the Y coordinates...";
-	project_.saveHDF5(gridData, outputDir + "/image_y", "y", Util::CopyYOp());
+	project_.saveHDF5(gridData, mainData.outputDir + "/image_y", "y", Util::CopyYOp());
 	LOG_DEBUG << "Saving the Z coordinates...";
-	project_.saveHDF5(gridData, outputDir + "/image_z", "z", Util::CopyZOp());
-	std::string imagePrefix = outputDir + "/image_value-propag-";
+	project_.saveHDF5(gridData, mainData.outputDir + "/image_z", "z", Util::CopyZOp());
+	std::string imagePrefix = mainData.outputDir + "/image_value-propag-";
 	const unsigned int numDigits = Util::numberOfDigits(propagIndexList.size() - 1U);
 	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
 		LOG_DEBUG << "Saving image " << i << "...";
@@ -544,58 +543,25 @@ void
 SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArray)
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr mainPM = project_.loadChildParameterMap(taskPM, "main_config_file");
-	ConstParameterMapPtr  simPM = project_.loadChildParameterMap(mainPM, "simulation_config_file");
+	MainData mainData;
+	SimulationData simData;
+	loadData(taskPM, mainData, simData);
+	SourceData srcData;
+	loadSourceData(taskPM, mainData, sourceIsArray, srcData);
 
-	const std::string outputDir = mainPM->value<std::string>("output_dir");
-	project_.createDirectory(outputDir, false);
+	project_.createDirectory(mainData.outputDir, false);
 
-	const FloatType pointX           = taskPM->value<FloatType>("point_x", sourceIsArray ? -10000.0 : 0.0, 10000.0);
-	const FloatType pointY           = taskPM->value<FloatType>("point_y", sourceIsArray ? -10000.0 : 0.0, 10000.0);
-	const FloatType pointZ           = taskPM->value<FloatType>("point_z", 0.0, 10000.0);
-	//const FloatType density          = mainPM->value<FloatType>("density", 0.0, 100000.0);
-	const FloatType propagationSpeed = mainPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
-	const FloatType centerFreq       = mainPM->value<FloatType>("center_frequency", 0.0, 100.0e6);
-	const FloatType maxFreq          = mainPM->value<FloatType>("max_frequency", 0.0, 200.0e6);
-	const FloatType nyquistRate = 2.0 * maxFreq;
-	const FloatType samplingFreq     = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * nyquistRate;
-	const std::string irMethod       = simPM->value<std::string>("impulse_response_method");
-	const std::string excitationType = simPM->value<std::string>("excitation_type");
-	const FloatType excNumPeriods    = simPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
+	const FloatType pointX = taskPM->value<FloatType>("point_x", sourceIsArray ? -10000.0 : 0.0, 10000.0);
+	const FloatType pointY = taskPM->value<FloatType>("point_y", sourceIsArray ? -10000.0 : 0.0, 10000.0);
+	const FloatType pointZ = taskPM->value<FloatType>("point_z", 0.0, 10000.0);
 
-	std::vector<XY<FloatType>> elemPos;
-	std::vector<FloatType> focusDelay;
-	FloatType sourceWidth, sourceHeight;
-	if (sourceIsArray) {
-		ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-		ArrayUtil::calculateTxElementPositions(*arrayPM, elemPos);
-		ArrayUtil::calculateTx3DFocusDelay(*arrayPM, propagationSpeed, elemPos, focusDelay);
-		sourceWidth  = arrayPM->value<FloatType>("element_width", 0.0, 10.0);
-		sourceHeight = arrayPM->value<FloatType>("element_height", 0.0, 10.0);
-	} else {
-		ConstParameterMapPtr singlePM = project_.loadChildParameterMap(taskPM, "single_source_config_file");
-		sourceWidth  = singlePM->value<FloatType>("source_width", 0.0, 10.0);
-		sourceHeight = singlePM->value<FloatType>("source_height", 0.0, 10.0);
-	}
-
-	std::vector<FloatType> exc;
-	if (excitationType == "1") {
-		Waveform::getType1(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2a") {
-		Waveform::getType2a(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else if (excitationType == "2b") {
-		Waveform::getType2b(centerFreq, samplingFreq, exc, excNumPeriods);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType << '.');
-	}
-
-	const FloatType dt = 1.0 / samplingFreq;
+	const FloatType dt = 1.0 / simData.samplingFreq;
 	std::vector<FloatType> tExc;
-	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, exc.size());
-	project_.showFigure2D(1, "v", tExc, exc);
+	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, simData.exc.size());
+	project_.showFigure2D(1, "v", tExc, simData.exc);
 
 	std::vector<FloatType> dvdt;
-	Util::centralDiff(exc, dt, dvdt);
+	Util::centralDiff(simData.exc, dt, dvdt);
 	Util::normalizeBySumOfAbs(dvdt);
 	std::vector<FloatType> tDvdt;
 	Util::fillSequenceFromStartWithStepAndSize(tDvdt, 0.0, dt, dvdt.size());
@@ -603,41 +569,40 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArra
 
 	std::size_t hOffset;
 	std::vector<FloatType> h;
-	if (irMethod == "numeric") {
-		const FloatType subElemSize = propagationSpeed /
-				(nyquistRate * simPM->value<FloatType>("sub_elem_size_factor", 0.0, 1.0e3));
+	if (simData.irMethod == "numeric") {
+		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
 			auto impResp = std::make_unique<ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
-						elemPos, focusDelay);
+						srcData.elemPos, srcData.focusDelay);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		} else {
 			auto impResp = std::make_unique<NumericRectangularFlatSourceImpulseResponse<FloatType>>(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		}
-	} else if (irMethod == "analytic") {
-		const FloatType minEdgeDivisor = simPM->value<FloatType>("min_edge_divisor", 0.0, 1.0e6);
+	} else if (simData.irMethod == "analytic") {
+		const FloatType minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
 			auto impResp = std::make_unique<ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
-						elemPos, focusDelay);
+						srcData.elemPos, srcData.focusDelay);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		} else {
 			auto impResp = std::make_unique<AnalyticRectangularFlatSourceImpulseResponse<FloatType>>(
-						samplingFreq, propagationSpeed, sourceWidth, sourceHeight,
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		}
 	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << irMethod << '.');
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 
 	std::vector<FloatType> tH;
-	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset / samplingFreq, dt, h.size());
+	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset / simData.samplingFreq, dt, h.size());
 	project_.showFigure2D(3, "Impulse response", tH, h);
 
 	std::vector<std::complex<FloatType>> filterFreqCoeff;
@@ -648,19 +613,19 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArra
 	filter->filter(filterFreqCoeff, h, signal);
 
 	std::vector<FloatType> tSignal;
-	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset / samplingFreq, dt, signal.size());
+	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset / simData.samplingFreq, dt, signal.size());
 	//Util::multiply(signal, density);
 	project_.showFigure2D(4, "Pressure", tSignal, signal);
 
 	const FloatType maxAbsValue = Util::maxAbsolute(signal);
 	LOG_INFO << "signal: maxAbsValue = " << maxAbsValue;
 
-	project_.saveHDF5(exc    , outputDir + "/excitation"           , "value");
-	project_.saveHDF5(tExc   , outputDir + "/excitation_time"      , "value");
-	project_.saveHDF5(h      , outputDir + "/impulse_response"     , "value");
-	project_.saveHDF5(tH     , outputDir + "/impulse_response_time", "value");
-	project_.saveHDF5(signal , outputDir + "/pressure"             , "value");
-	project_.saveHDF5(tSignal, outputDir + "/pressure_time"        , "value");
+	project_.saveHDF5(simData.exc, mainData.outputDir + "/excitation"           , "value");
+	project_.saveHDF5(tExc       , mainData.outputDir + "/excitation_time"      , "value");
+	project_.saveHDF5(h          , mainData.outputDir + "/impulse_response"     , "value");
+	project_.saveHDF5(tH         , mainData.outputDir + "/impulse_response_time", "value");
+	project_.saveHDF5(signal     , mainData.outputDir + "/pressure"             , "value");
+	project_.saveHDF5(tSignal    , mainData.outputDir + "/pressure_time"        , "value");
 }
 
 template<typename FloatType>
