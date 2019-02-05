@@ -550,8 +550,8 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArra
 	const std::string outputDir = mainPM->value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
-	const FloatType pointX           = taskPM->value<FloatType>("point_x", 0.0, 10000.0);
-	const FloatType pointY           = taskPM->value<FloatType>("point_y", 0.0, 10000.0);
+	const FloatType pointX           = taskPM->value<FloatType>("point_x", sourceIsArray ? -10000.0 : 0.0, 10000.0);
+	const FloatType pointY           = taskPM->value<FloatType>("point_y", sourceIsArray ? -10000.0 : 0.0, 10000.0);
 	const FloatType pointZ           = taskPM->value<FloatType>("point_z", 0.0, 10000.0);
 	//const FloatType density          = mainPM->value<FloatType>("density", 0.0, 100000.0);
 	const FloatType propagationSpeed = mainPM->value<FloatType>("propagation_speed", 0.0, 100000.0);
