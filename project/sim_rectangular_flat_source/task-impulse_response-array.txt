@@ -1,0 +1,10 @@
+
+method = sim_impulse_response_array_of_rectangular_flat_sources
+
+main_config_file = config.txt
+array_config_file = config-array.txt
+
+# (m)
+point_x = 0.0
+point_y = 0.0
+point_z = 40.0e-3

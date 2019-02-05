@@ -1,0 +1,4 @@
+
+# (m)
+source_width = 0.5e-3
+source_height = 12.0e-3

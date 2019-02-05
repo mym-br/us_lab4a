@@ -1,5 +1,9 @@
 
 # (m)
+element_width = 0.5e-3
+element_height = 12.0e-3
+
+# (m)
 tx_pitch_x = 0.6e-3
 tx_pitch_y = 13.0e-3
 
@@ -10,3 +14,9 @@ tx_num_elem_y = 1
 # (m)
 tx_offset_x = 0.0
 tx_offset_y = 0.0
+
+use_tx_focus = true
+# (m)
+tx_focus_x = 0.0
+tx_focus_y = 0.0
+tx_focus_z = 40.0e-3
