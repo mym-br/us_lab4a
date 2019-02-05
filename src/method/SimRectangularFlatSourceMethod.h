@@ -172,11 +172,11 @@ SimRectangularFlatSourceMethod<FloatType>::loadSimulationData(ConstParameterMapP
 	simData.excNumPeriods  = simPM->value<FloatType>("excitation_num_periods", 0.0, 100.0);
 
 	if (simData.excitationType == "1") {
-		Waveform::getType1(data.centerFreq, simData.samplingFreq, simData.exc, simData.excNumPeriods);
+		Waveform::getType1(data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 	} else if (simData.excitationType == "2a") {
-		Waveform::getType2a(data.centerFreq, simData.samplingFreq, simData.exc, simData.excNumPeriods);
+		Waveform::getType2a(data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 	} else if (simData.excitationType == "2b") {
-		Waveform::getType2b(data.centerFreq, simData.samplingFreq, simData.exc, simData.excNumPeriods);
+		Waveform::getType2b(data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << simData.excitationType << '.');
 	}

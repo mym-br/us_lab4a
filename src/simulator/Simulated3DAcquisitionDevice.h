@@ -275,11 +275,11 @@ Simulated3DAcquisitionDevice<FloatType>::setExcitationWaveform(FloatType centerF
 {
 	std::vector<FloatType> vExc;
 	if (excitationType_ == "1") {
-		Waveform::getType1(centerFrequency, simFs_, vExc, excNumPeriods_);
+		Waveform::getType1(centerFrequency, simFs_, excNumPeriods_, vExc);
 	} else if (excitationType_ == "2a") {
-		Waveform::getType2a(centerFrequency, simFs_, vExc, excNumPeriods_);
+		Waveform::getType2a(centerFrequency, simFs_, excNumPeriods_, vExc);
 	} else if (excitationType_ == "2b") {
-		Waveform::getType2b(centerFrequency, simFs_, vExc, excNumPeriods_);
+		Waveform::getType2b(centerFrequency, simFs_, excNumPeriods_, vExc);
 	} else if (excitationType_ == "2c") {
 
 	} else {
