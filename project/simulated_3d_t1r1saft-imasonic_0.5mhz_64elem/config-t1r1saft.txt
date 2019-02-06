@@ -1,5 +1,5 @@
 
-# Do not change.
+#
 num_elements_mux = 64
 
 #
