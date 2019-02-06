@@ -31,6 +31,7 @@
 #include "ArrayProcessor.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
+#include "Geometry.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Log.h"
@@ -163,9 +164,7 @@ Vectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement, Matrix<XY
 		if (!initialized_) {
 			const std::size_t signalLength = acqData_.n2() * upsamplingFactor_;
 			tempSignal_.resize(signalLength);
-			analyticSignalMatrix_.resize(
-						config_.numElements,
-						signalLength);
+			analyticSignalMatrix_.resize(config_.numElements, signalLength);
 			LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
 			if (deadZoneSamplesUp_ >= signalLength) {
 				THROW_EXCEPTION(InvalidValueException,
@@ -225,18 +224,12 @@ Vectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement, Matrix<XY
 					const FloatType d0 = txDelays_[baseElement] * fsUp;
 
 					const XY<FloatType>& firstElem = config_.txElemPos[baseElement];
-					const FloatType dx1 = focusX_ - firstElem.x;
-					const FloatType dy1 = focusY_ - firstElem.y;
-					const FloatType dz1 = focusZ_;
 					// Travel time between the first active element and the focus.
-					const FloatType t0 = std::sqrt(dx1 * dx1 + dy1 * dy1 + dz1 * dz1) * invCT;
-
-					const FloatType dx2 = point.x - focusX_;
-					const FloatType dy2 = point.y - focusY_;
-					const FloatType dz2 = point.z - focusZ_;
+					const FloatType t0 = Geometry::distance3DZ0(firstElem.x, firstElem.y,
+											focusX_, focusY_, focusZ_) * invCT;
 					// Travel time between the focus and the point.
-					const FloatType t1 = std::sqrt(dx2 * dx2 + dy2 * dy2 + dz2 * dz2) * invCT;
-
+					const FloatType t1 = Geometry::distance3D(focusX_, focusY_, focusZ_,
+											point.x, point.y, point.z) * invCT;
 					if (focusZ_ > 0) {
 						txDelay = t1 + t0 + d0;
 					} else {
@@ -245,10 +238,8 @@ Vectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement, Matrix<XY
 				}
 				for (unsigned int iRxElem = 0, end = config_.numElements; iRxElem < end; ++iRxElem) {
 					const XY<FloatType>& elemPos = config_.rxElemPos[baseElement + iRxElem];
-					const FloatType dx = point.x - elemPos.x;
-					const FloatType dy = point.y - elemPos.y;
-					const FloatType dz = point.z; // z array = 0
-					local.rxDelayList[iRxElem] = std::sqrt(dx * dx + dy * dy + dz * dz) * invCT;
+					local.rxDelayList[iRxElem] = Geometry::distance3DZ0(elemPos.x, elemPos.y,
+											point.x, point.y, point.z) * invCT;
 				}
 
 				for (unsigned int iRxElem = 0, rxEnd = config_.numElements; iRxElem < rxEnd; ++iRxElem) {

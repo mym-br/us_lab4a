@@ -19,7 +19,6 @@
 #define SIMPLESTAPROCESSOR_H_
 
 #include <algorithm> /* for_each */
-#include <cmath>
 #include <cstddef> /* std::size_t */
 #include <vector>
 
@@ -29,6 +28,7 @@
 #include "ArrayGeometry.h"
 #include "ArrayProcessor.h"
 #include "Exception.h"
+#include "Geometry.h"
 #include "Interpolator4X.h"
 #include "Log.h"
 #include "Matrix.h"
@@ -154,9 +154,7 @@ SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValue
 
 				// Calculate the delays.
 				for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
-					const FloatType dx = point.x - xArray[elem];
-					const FloatType dz = point.z /* - zArray*/; // zArray = 0
-					local.delayList[elem] = std::sqrt(dx * dx + dz * dz) * invCT;
+					local.delayList[elem] = Geometry::distance2DY0(xArray[elem], point.x, point.z) * invCT;
 				}
 
 				for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {

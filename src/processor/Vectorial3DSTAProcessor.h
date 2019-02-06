@@ -31,6 +31,7 @@
 #include "ArrayProcessor.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
+#include "Geometry.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Log.h"
@@ -204,17 +205,11 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 				// Calculate the delays.
 				for (unsigned int iTxElem = 0, end = config_.activeTxElem.size(); iTxElem < end; ++iTxElem) {
 					const XY<FloatType>& elemPos = config_.txElemPos[baseElement + config_.activeTxElem[iTxElem]];
-					const FloatType dx = point.x - elemPos.x;
-					const FloatType dy = point.y - elemPos.y;
-					const FloatType dz = point.z; // z array = 0
-					local.txDelayList[iTxElem] = std::sqrt(dx * dx + dy * dy + dz * dz) * invCT;
+					local.txDelayList[iTxElem] = Geometry::distance3DZ0(elemPos.x, elemPos.y, point.x, point.y, point.z) * invCT;
 				}
 				for (unsigned int iRxElem = 0, end = config_.activeRxElem.size(); iRxElem < end; ++iRxElem) {
 					const XY<FloatType>& elemPos = config_.rxElemPos[baseElement + config_.activeRxElem[iRxElem]];
-					const FloatType dx = point.x - elemPos.x;
-					const FloatType dy = point.y - elemPos.y;
-					const FloatType dz = point.z; // z array = 0
-					local.rxDelayList[iRxElem] = std::sqrt(dx * dx + dy * dy + dz * dz) * invCT;
+					local.rxDelayList[iRxElem] = Geometry::distance3DZ0(elemPos.x, elemPos.y, point.x, point.y, point.z) * invCT;
 				}
 
 				for (unsigned int iTxElem = 0, txEnd = config_.activeTxElem.size(); iTxElem < txEnd; ++iTxElem) {

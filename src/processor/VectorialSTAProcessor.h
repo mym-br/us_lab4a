@@ -32,6 +32,7 @@
 #include "ArrayProcessor.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
+#include "Geometry.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Log.h"
@@ -201,9 +202,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZVa
 
 				// Calculate the delays.
 				for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
-					const FloatType dx = point.x - xArray[elem];
-					const FloatType dz = point.z /* - zArray*/; // zArray = 0
-					local.delayList[elem] = std::sqrt(dx * dx + dz * dz) * invCT;
+					local.delayList[elem] = Geometry::distance2DY0(xArray[elem], point.x, point.z) * invCT;
 				}
 
 				for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {

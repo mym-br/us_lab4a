@@ -19,7 +19,6 @@
 #define DEFAULTSTAPROCESSOR_H_
 
 #include <algorithm> /* for_each */
-#include <cmath>
 #include <cstddef> /* std::size_t */
 #include <numeric> /* accumulate */
 #include <vector>
@@ -31,6 +30,7 @@
 #include "ArrayProcessor.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
+#include "Geometry.h"
 #include "Interpolator4X.h"
 #include "Log.h"
 #include "Matrix.h"
@@ -172,9 +172,7 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValu
 
 				// Calculate the delays.
 				for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
-					const FloatType dx = point.x - xArray[elem];
-					const FloatType dz = point.z /* - zArray*/; // zArray = 0
-					local.delayList[elem] = std::sqrt(dx * dx + dz * dz) * invCT;
+					local.delayList[elem] = Geometry::distance2DY0(xArray[elem], point.x, point.z) * invCT;
 				}
 
 				for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {

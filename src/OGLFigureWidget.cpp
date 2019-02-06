@@ -61,6 +61,7 @@
 #include <QPainter>
 #include <QWheelEvent>
 
+#include "Geometry.h"
 #include "Log.h"
 #include "ParallelHilbertEnvelope.h"
 #include "Util.h"
@@ -1787,9 +1788,7 @@ OGLFigureWidget::paintGL()
 				modelViewMatrix, projectionMatrix, viewport, &p1X, &p1Y, &p1Z);
 		gluUnProject(static_cast<GLfloat>(distanceMarker2_.x()), static_cast<GLfloat>(maxGlY - distanceMarker2_.y()), 0.0,
 				modelViewMatrix, projectionMatrix, viewport, &p2X, &p2Y, &p2Z);
-		const GLdouble dX = p2X - p1X;
-		const GLdouble dZ = p2Z - p1Z;
-		distance = std::sqrt(dX * dX + dZ * dZ);
+		distance = Geometry::distance2D(p1X, p1Z, p2X, p2Z);
 	}
 
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
