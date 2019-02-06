@@ -76,10 +76,10 @@ ShowImageMethod::execute()
 		projPointList.resize(pointsX.size());
 		Util::copyXYZFromSimpleVectors(pointsX, pointsY, pointsZ, projPointList);
 		project_.showFigure3D(1, "Image", &projGridData, &projPointList,
-					true, Figure::VISUALIZATION_ENVELOPE_LOG, Figure::COLORMAP_VIRIDIS);
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 	} else {
 		project_.showFigure3D(1, "Image", &projGridData, Project::emptyPointList,
-					true, Figure::VISUALIZATION_ENVELOPE_LOG, Figure::COLORMAP_VIRIDIS);
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 	}
 }
 
