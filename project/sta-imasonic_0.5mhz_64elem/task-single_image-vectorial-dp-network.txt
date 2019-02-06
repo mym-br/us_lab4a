@@ -9,10 +9,8 @@ coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
 
 grid_config_file = config-grid.txt
 
-base_element = 0
-
 peak_offset = 0.0
 
-calculate_envelope_in_processing = true
-
 upsampling_factor = 4
+
+calculate_envelope_in_processing = true
