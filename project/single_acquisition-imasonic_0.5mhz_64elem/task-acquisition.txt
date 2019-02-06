@@ -21,11 +21,11 @@ min_gain = 20.0
 # (dB)
 #max_gain = 20.0
 
-# Do not change.
-num_elements_mux = 128
-
-# Do not change.
+#
 num_elements = 32
+
+#
+num_elements_mux = 128
 
 # 0 .. (num_elements_mux - 1)
 base_element = 0
