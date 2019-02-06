@@ -3,14 +3,12 @@ method = sta_sp_saved
 
 sta_config_file = config-sta.txt
 
-data_dir = saved_acquisition
-
 output_dir = output
 
 coherence_factor_config_file = config-coherence_factor.txt
 
 grid_config_file = config-grid.txt
 
-base_element = 0
-
 peak_offset = 0.0
+
+data_dir = saved_acquisition
