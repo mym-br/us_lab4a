@@ -13,6 +13,4 @@ coherence_factor_config_file = config-coherence_factor.txt
 
 grid_config_file = config-grid.txt
 
-base_element = 48
-
 peak_offset = 0.0

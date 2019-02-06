@@ -2,6 +2,9 @@
 # Do not change.
 num_elements_mux = 64
 
+#
+base_element = 16
+
 # 0 .. num_elements - 1
 # list of element indexes separated by spaces
 # indexes relative to the base element

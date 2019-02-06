@@ -126,7 +126,7 @@ STA3DMethod<FloatType>::execute()
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const SA3DConfiguration<FloatType> config(saPM, arrayPM);
 
-	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
+	const unsigned int baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
 
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 

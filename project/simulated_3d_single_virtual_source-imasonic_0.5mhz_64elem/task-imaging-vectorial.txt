@@ -7,16 +7,11 @@ simulated_3d_acquisition_config_file = config-simulated_3d_acquisition.txt
 
 array_config_file = config-array.txt
 
-# (m)
-tx_focus_z = -20.0e-3
-
 output_dir = output
 
 coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
 
 grid_config_file = config-grid.txt
-
-base_element = 16
 
 peak_offset = 0.0
 

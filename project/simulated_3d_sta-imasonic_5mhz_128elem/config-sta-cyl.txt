@@ -1,6 +1,9 @@
 
-# Do not change.
+#
 num_elements_mux = 128
+
+#
+base_element = 48
 
 # 0 .. num_elements - 1
 # list of element indexes separated by spaces

@@ -9,8 +9,6 @@ array_config_file = config-array.txt
 
 data_dir = saved_acquisition
 
-base_element = 16
-
 # (m)
 min_y = -100.0e-3
 max_y = 100.0e-3

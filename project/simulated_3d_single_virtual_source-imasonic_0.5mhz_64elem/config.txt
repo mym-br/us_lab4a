@@ -1,9 +1,12 @@
 
-# Do not change.
+#
 num_elements = 32
 
-# Do not change.
+#
 num_elements_mux = 64
+
+#
+base_element = 16
 
 # (Hz)
 center_frequency = 0.5e6
@@ -35,3 +38,6 @@ dead_zone_m = 5.0e-3
 
 # 0.0: normalize
 value_scale = 0.0
+
+# (m)
+tx_focus_z = -20.0e-3

@@ -133,9 +133,9 @@ void
 STAMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-
-	const STAConfiguration<FloatType> config(project_.loadChildParameterMap(taskPM, "sta_config_file"));
-	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
+	ConstParameterMapPtr staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	const STAConfiguration<FloatType> config(staPM);
+	const unsigned int baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 

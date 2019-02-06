@@ -8,5 +8,3 @@ simulated_3d_acquisition_config_file = config-simulated_3d_acquisition.txt
 array_config_file = config-array.txt
 
 data_dir = saved_acquisition
-
-base_element = 48

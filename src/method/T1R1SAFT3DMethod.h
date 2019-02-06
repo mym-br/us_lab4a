@@ -135,7 +135,7 @@ T1R1SAFT3DMethod<FloatType>::execute()
 		THROW_EXCEPTION(InvalidParameterException, "The number of active receive elements is not equal to the number of active transmit elements.");
 	}
 
-	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
+	const unsigned int baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
 
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 

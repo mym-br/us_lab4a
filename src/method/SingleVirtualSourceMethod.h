@@ -126,8 +126,8 @@ SingleVirtualSourceMethod<FloatType>::execute()
 	ConstParameterMapPtr imgPM   = project_.loadChildParameterMap(taskPM, "img_config_file");
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const TnRnConfiguration<FloatType> config(imgPM, arrayPM);
-	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
-	const FloatType focusZ         = taskPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
+	const unsigned int baseElement = imgPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
+	const FloatType focusZ         = imgPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
 
 	FloatType focusX = 0, focusY = 0;
 	// Set the focus at the mean x, y.
