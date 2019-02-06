@@ -50,11 +50,13 @@ MultiLayerImageMethod::execute()
 	const std::string zDataset     = taskPM->value<std::string>("z_dataset");
 	const std::string imageFile    = taskPM->value<std::string>("image_file");
 	const std::string imageDataset = taskPM->value<std::string>("image_dataset");
-	const float minY               = taskPM->value<float>(      "min_y"       , -10000.0, 10000.0);
-	const float yStep              = taskPM->value<float>(      "y_step"      ,      0.0,   100.0);
 	const float minDecibels        = taskPM->value<float>(      "min_decibels",   -100.0,    -1.0);
 	const bool logScale            = taskPM->value<bool>(       "log_scale");
 	const bool invertZ             = taskPM->value<bool>(       "invert_z");
+
+	ConstParameterMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
+	const float minY  = scanPM->value<float>("min_y" , -10000.0, 10000.0);
+	const float yStep = scanPM->value<float>("y_step",      0.0,   100.0);
 
 	Project::GridDataType projGridData;
 	std::vector<XYZValue<float>> pointArray;

@@ -3,6 +3,8 @@ method = sta_network_sync
 
 sta_config_file = config-sta-cyl.txt
 
+scan_config_file = config-scan.txt
+
 data_dir = saved_acquisition
 #data_dir = t1-saved_acquisition
 #data_dir = t2-saved_acquisition
@@ -13,17 +15,11 @@ coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
 
 grid_config_file = config-grid.txt
 
-base_element = 0
-
 peak_offset = 0.0
 
 calculate_envelope_in_processing = true
 
 upsampling_factor = 4
-
-# (m)
-min_y = -150.0e-3
-y_step = 2.0e-3
 
 tx_apodization = rectangular
 rx_apodization = rectangular

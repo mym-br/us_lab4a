@@ -3,6 +3,8 @@ method = multi_layer_image
 
 image_dir = output
 
+scan_config_file = config-scan.txt
+
 x_file = image_x
 x_dataset = x
 
@@ -13,10 +15,6 @@ z_dataset = z
 #image_dataset = value
 image_file = image_cf
 image_dataset = cf
-
-# (m)
-min_y = -150.0e-3
-y_step = 2.0e-3
 
 # (dB)
 min_decibels = -30.0

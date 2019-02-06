@@ -81,9 +81,9 @@ void
 NetworkSyncSTAMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-
-	const STAConfiguration<FloatType> config(project_.loadChildParameterMap(taskPM, "sta_config_file"));
-	const unsigned int baseElement = taskPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
+	ConstParameterMapPtr staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	const STAConfiguration<FloatType> config(staPM);
+	const unsigned int baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 	const std::string dataDir      = taskPM->value<std::string>( "data_dir");
 
 	if (project_.method() == MethodType::sta_network_sync_save_signals) {
@@ -98,10 +98,12 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	bool vectorialProcessingWithEnvelope = taskPM->value<bool>(        "calculate_envelope_in_processing");
 	const unsigned int upsamplingFactor  = taskPM->value<unsigned int>("upsampling_factor",        1,     128);
 	const std::string outputDir          = taskPM->value<std::string>( "output_dir");
-	const FloatType minY                 = taskPM->value<FloatType>(   "min_y"            , -10000.0, 10000.0);
-	const FloatType yStep                = taskPM->value<FloatType>(   "y_step"           ,   1.0e-6,  1000.0);
 	const std::string txApodDesc         = taskPM->value<std::string>( "tx_apodization");
 	const std::string rxApodDesc         = taskPM->value<std::string>( "rx_apodization");
+
+	ConstParameterMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
+	const FloatType minY  = scanPM->value<FloatType>("min_y" , -10000.0, 10000.0);
+	const FloatType yStep = scanPM->value<FloatType>("y_step",   1.0e-6,  1000.0);
 
 	std::vector<FloatType> txApod(config.numElements);
 	WindowFunction::get(txApodDesc, config.numElements, txApod);
