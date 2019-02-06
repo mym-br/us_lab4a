@@ -112,8 +112,8 @@ public:
 	// This function is thread-safe.
 	template<typename FloatType> void showFigure2D(int id,
 						const char* figureName,
-						std::vector<FloatType>& xList,
-						std::vector<FloatType>& yList,
+						const std::vector<FloatType>& xList,
+						const std::vector<FloatType>& yList,
 						bool waitPending = true,
 						bool markPoints = false);
 
@@ -423,11 +423,10 @@ Project::loadImageFromHDF5(const std::string& inputDir, Matrix<T>& container)
 
 template<typename FloatType>
 void
-Project::showFigure2D(
-		int id,
+Project::showFigure2D(int id,
 		const char* figureName,
-		std::vector<FloatType>& xList,
-		std::vector<FloatType>& yList,
+		const std::vector<FloatType>& xList,
+		const std::vector<FloatType>& yList,
 		bool waitPending,
 		bool markPoints)
 {

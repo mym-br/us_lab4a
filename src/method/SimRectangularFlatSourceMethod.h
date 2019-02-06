@@ -94,6 +94,8 @@ private:
 	void loadData(ConstParameterMapPtr taskPM, MainData& data, SimulationData& simData);
 	void loadSourceData(ConstParameterMapPtr taskPM, MainData& data, bool sourceIsArray, SourceData& srcData);
 	void loadSimulationData(ConstParameterMapPtr mainPM, const MainData& data, SimulationData& simData);
+	void prepareExcitation(FloatType dt, const SimulationData& simData, std::vector<FloatType>& tExc,
+				std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt);
 
 	void execTransientRadiationPattern(bool sourceIsArray);
 	void execTransientAcousticField(bool sourceIsArray);
@@ -192,6 +194,21 @@ SimRectangularFlatSourceMethod<FloatType>::loadSimulationData(ConstParameterMapP
 
 template<typename FloatType>
 void
+SimRectangularFlatSourceMethod<FloatType>::prepareExcitation(FloatType dt,
+						const SimulationData& simData, std::vector<FloatType>& tExc,
+						std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt)
+{
+	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, simData.exc.size());
+	project_.showFigure2D(1, "v", tExc, simData.exc);
+
+	Util::centralDiff(simData.exc, dt, dvdt);
+	Util::normalizeBySumOfAbs(dvdt);
+	Util::fillSequenceFromStartWithStepAndSize(tDvdt, 0.0, dt, dvdt.size());
+	project_.showFigure2D(2, "dv/dt", tDvdt, dvdt);
+}
+
+template<typename FloatType>
+void
 SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool sourceIsArray)
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
@@ -212,14 +229,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool so
 	const FloatType thetaXMax  = taskPM->value<FloatType>("theta_x_max" , thetaXMin + 0.1, 90.0);
 
 	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc(simData.exc.size());
-	for (unsigned int i = 0; i < tExc.size(); ++i) {
-		tExc[i] = dt * i;
-	}
-	project_.showFigure2D(1, "Excitation", tExc, simData.exc);
-
-	std::vector<FloatType> dvdt;
-	Util::centralDiff(simData.exc, dt, dvdt);
+	std::vector<FloatType> tExc, dvdt, tDvdt;
+	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
 	std::vector<FloatType> thetaXList;
 	Util::fillSequenceFromStartToEndWithSize(thetaXList, thetaXMin, thetaXMax, std::ceil((thetaXMax - thetaXMin) / thetaXStep) + 1);
@@ -314,16 +325,18 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool so
 	auto tyInterval = gridData.dim2Interval(sectionTXIndex);
 	Util::copyUsingOperator(tyInterval.first, tyInterval.second, patternTY.begin(), Util::CopyValueOp{});
 	Util::linearToDecibels(patternTY, -100.0);
-	project_.showFigure2D(1, "Pattern theta-y", thetaYList, patternTY);
+	project_.showFigure2D(3, "Pattern theta-y", thetaYList, patternTY);
 
 	std::vector<FloatType> patternTX(gridData.n1());
 	auto txInterval = gridData.dim1Interval(sectionTYIndex);
 	Util::copyUsingOperator(txInterval.first, txInterval.second, patternTX.begin(), Util::CopyValueOp{});
 	Util::linearToDecibels(patternTX, -100.0);
-	project_.showFigure2D(2, "Pattern theta-x", thetaXList, patternTX);
+	project_.showFigure2D(4, "Pattern theta-x", thetaXList, patternTX);
 
-	project_.saveHDF5(simData.exc, mainData.outputDir + "/excitation"     , "value");
-	project_.saveHDF5(tExc       , mainData.outputDir + "/excitation_time", "value");
+	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"              , "value");
+	project_.saveHDF5(tExc       , mainData.outputDir + "/v_time"         , "value");
+	project_.saveHDF5(dvdt       , mainData.outputDir + "/dvdt"           , "value");
+	project_.saveHDF5(tDvdt      , mainData.outputDir + "/dvdt_time"      , "value");
 	project_.saveImageToHDF5(gridData, mainData.outputDir);
 	project_.saveHDF5(thetaYList , mainData.outputDir + "/theta_y"        , "value");
 	project_.saveHDF5(patternTY  , mainData.outputDir + "/pattern_theta_y", "value");
@@ -345,14 +358,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField(bool sourc
 	project_.createDirectory(mainData.outputDir, false);
 
 	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc(simData.exc.size());
-	for (unsigned int i = 0; i < tExc.size(); ++i) {
-		tExc[i] = dt * i;
-	}
-	project_.showFigure2D(1, "Excitation", tExc, simData.exc);
-
-	std::vector<FloatType> dvdt;
-	Util::centralDiff(simData.exc, dt, dvdt);
+	std::vector<FloatType> tExc, dvdt, tDvdt;
+	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
 	Matrix<XYZValue<FloatType>> gridData;
 
@@ -404,8 +411,10 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField(bool sourc
 	project_.showFigure3D(1, "Acoustic field", &projGridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Figure::COLORMAP_VIRIDIS);
 
-	project_.saveHDF5(simData.exc , mainData.outputDir + "/excitation"     , "value");
-	project_.saveHDF5(tExc        , mainData.outputDir + "/excitation_time", "value");
+	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"        , "value");
+	project_.saveHDF5(tExc       , mainData.outputDir + "/v_time"   , "value");
+	project_.saveHDF5(dvdt       , mainData.outputDir + "/dvdt"     , "value");
+	project_.saveHDF5(tDvdt      , mainData.outputDir + "/dvdt_time", "value");
 	project_.saveImageToHDF5(gridData, mainData.outputDir);
 }
 
@@ -437,14 +446,8 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation(bool sourceI
 	}
 
 	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc(simData.exc.size());
-	for (unsigned int i = 0; i < tExc.size(); ++i) {
-		tExc[i] = dt * i;
-	}
-	project_.showFigure2D(1, "Excitation", tExc, simData.exc);
-
-	std::vector<FloatType> dvdt;
-	Util::centralDiff(simData.exc, dt, dvdt);
+	std::vector<FloatType> tExc, dvdt, tDvdt;
+	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
 	Matrix<XYZValueArray<FloatType>> gridData;
 
@@ -514,8 +517,10 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation(bool sourceI
 		}
 	}
 
-	project_.saveHDF5(simData.exc, mainData.outputDir + "/excitation"     , "value");
-	project_.saveHDF5(tExc       , mainData.outputDir + "/excitation_time", "value");
+	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"        , "value");
+	project_.saveHDF5(tExc       , mainData.outputDir + "/v_time"   , "value");
+	project_.saveHDF5(dvdt       , mainData.outputDir + "/dvdt"     , "value");
+	project_.saveHDF5(tDvdt      , mainData.outputDir + "/dvdt_time", "value");
 
 	// Save images.
 	LOG_DEBUG << "Saving the X coordinates...";
@@ -556,16 +561,8 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArra
 	const FloatType pointZ = taskPM->value<FloatType>("point_z", 0.0, 10000.0);
 
 	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc;
-	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, simData.exc.size());
-	project_.showFigure2D(1, "v", tExc, simData.exc);
-
-	std::vector<FloatType> dvdt;
-	Util::centralDiff(simData.exc, dt, dvdt);
-	Util::normalizeBySumOfAbs(dvdt);
-	std::vector<FloatType> tDvdt;
-	Util::fillSequenceFromStartWithStepAndSize(tDvdt, 0.0, dt, dvdt.size());
-	project_.showFigure2D(2, "dv/dt", tDvdt, dvdt);
+	std::vector<FloatType> tExc, dvdt, tDvdt;
+	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
 	std::size_t hOffset;
 	std::vector<FloatType> h;
@@ -620,8 +617,10 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArra
 	const FloatType maxAbsValue = Util::maxAbsolute(signal);
 	LOG_INFO << "signal: maxAbsValue = " << maxAbsValue;
 
-	project_.saveHDF5(simData.exc, mainData.outputDir + "/excitation"           , "value");
-	project_.saveHDF5(tExc       , mainData.outputDir + "/excitation_time"      , "value");
+	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"                    , "value");
+	project_.saveHDF5(tExc       , mainData.outputDir + "/v_time"               , "value");
+	project_.saveHDF5(dvdt       , mainData.outputDir + "/dvdt"                 , "value");
+	project_.saveHDF5(tDvdt      , mainData.outputDir + "/dvdt_time"            , "value");
 	project_.saveHDF5(h          , mainData.outputDir + "/impulse_response"     , "value");
 	project_.saveHDF5(tH         , mainData.outputDir + "/impulse_response_time", "value");
 	project_.saveHDF5(signal     , mainData.outputDir + "/pressure"             , "value");
