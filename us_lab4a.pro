@@ -148,7 +148,9 @@ HEADERS  += \
     src/simulator/Simulated3DTnRnAcquisition.h \
     src/configuration/TnRnConfiguration.h \
     src/processor/Vectorial3DTnRnProcessor.h \
-    src/processor/ArrayProcessor.h
+    src/processor/ArrayProcessor.h \
+    src/network_acquisition/NetworkTnRnAcquisition.h \
+    src/acquisition/SavedTnRnAcquisition.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

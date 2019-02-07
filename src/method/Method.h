@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -52,7 +52,10 @@ enum class MethodType {
 	sim_propagation_rectangular_flat_source_transient,
 	sim_radiation_pattern_array_of_rectangular_flat_sources_transient,
 	sim_radiation_pattern_rectangular_flat_source_transient,
+	single_virtual_source_3d_network_save_signals,
 	single_virtual_source_3d_simulated_save_signals,
+	single_virtual_source_3d_vectorial_dp_network,
+	single_virtual_source_3d_vectorial_dp_saved,
 	single_virtual_source_3d_vectorial_simulated,
 	sta_3d_simulated_save_signals,
 	sta_3d_simulated_seq_y_save_signals,
