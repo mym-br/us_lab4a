@@ -18,8 +18,6 @@
 #ifndef SAVEDSTAACQUISITION_H_
 #define SAVEDSTAACQUISITION_H_
 
-#include <iomanip>
-#include <sstream>
 #include <string>
 
 #include "Exception.h"
