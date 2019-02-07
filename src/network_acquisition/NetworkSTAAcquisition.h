@@ -18,14 +18,15 @@
 #ifndef NETWORKSTAACQUISITION_H_
 #define NETWORKSTAACQUISITION_H_
 
+#include <algorithm> /* copy */
 #include <cstddef> /* std::size_t */
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ArrayAcqClient.h"
 #include "Exception.h"
 #include "global.h"
-#include "Matrix.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "STAAcquisition.h"
@@ -47,8 +48,8 @@ public:
 	virtual void execute(unsigned int baseElement, unsigned int txElement,
 				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
-	NetworkSTAAcquisition(const NetworkSTAAcquisition&);
-	NetworkSTAAcquisition& operator=(const NetworkSTAAcquisition&);
+	NetworkSTAAcquisition(const NetworkSTAAcquisition&) = delete;
+	NetworkSTAAcquisition& operator=(const NetworkSTAAcquisition&) = delete;
 
 	const Project& project_;
 	const STAConfiguration<FloatType>& config_;
@@ -99,6 +100,9 @@ NetworkSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int
 						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
 {
 	LOG_DEBUG << "ACQ baseElement=" << baseElement << " txElement=" << txElement;
+	if (baseElement + config_.numElements > config_.numElementsMux) {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid base element:" << baseElement << '.');
+	}
 
 	const std::size_t signalLength = acq_->getSignalLength();
 	if (signalLength == 0) {
