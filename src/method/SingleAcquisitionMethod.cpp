@@ -147,12 +147,10 @@ SingleAcquisitionMethod::execute()
 	}
 #endif
 
-	{
-		LOG_DEBUG << "Saving the signal...";
-		project_.saveSignalToHDF5(signal, config_.savedAcqDir,
-						0, config_.baseElement,
-						config_.txGroupElement, config_.rxGroupElement);
-	}
+	LOG_DEBUG << "Saving the signal...";
+	project_.saveSignalToHDF5(signal, config_.savedAcqDir,
+					0, config_.baseElement,
+					config_.txGroupElement, config_.rxGroupElement);
 
 	project_.showFigure2D(0, "A-scan", t, signal);
 
