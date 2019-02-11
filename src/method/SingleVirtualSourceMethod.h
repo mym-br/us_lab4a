@@ -60,7 +60,10 @@ private:
 	SingleVirtualSourceMethod& operator=(const SingleVirtualSourceMethod&) = delete;
 
 	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
+	void applyCoherenceFactor();
 	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
+	void execContinuousNetworkImaging(FloatType valueScale, ArrayProcessor<FloatType>& processor,
+						unsigned int baseElement, bool coherenceFactorEnabled);
 
 	Project& project_;
 	Matrix<XYZValueFactor<FloatType>> gridData_;
@@ -84,16 +87,22 @@ SingleVirtualSourceMethod<FloatType>::~SingleVirtualSourceMethod()
 
 template<typename FloatType>
 void
+SingleVirtualSourceMethod<FloatType>::applyCoherenceFactor()
+{
+	for (auto iter = gridData_.begin(); iter != gridData_.end(); ++iter) {
+		iter->value *= iter->factor;
+		//iter->factor = 1.0;
+	}
+}
+
+template<typename FloatType>
+void
 SingleVirtualSourceMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std::string& outputDir)
 {
 	LOG_DEBUG << "Saving the image factors...";
 	project_.saveHDF5(gridData_, outputDir + "/image_factor", "factor", Util::CopyFactorOp());
 
-	// Applies the coherence factor method.
-	for (auto iter = gridData_.begin(); iter != gridData_.end(); ++iter) {
-		iter->value *= iter->factor;
-		iter->factor = 1.0;
-	}
+	applyCoherenceFactor();
 
 	LOG_DEBUG << "Saving the CF image...";
 	project_.saveHDF5(gridData_, outputDir + "/image_cf", "cf", Util::CopyValueOp());
@@ -105,7 +114,8 @@ SingleVirtualSourceMethod<FloatType>::useCoherenceFactor(FloatType valueScale, c
 
 template<typename FloatType>
 void
-SingleVirtualSourceMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
+SingleVirtualSourceMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& processor,
+						unsigned int baseElement, const std::string& outputDir)
 {
 	Timer tProc;
 
@@ -118,6 +128,31 @@ SingleVirtualSourceMethod<FloatType>::process(FloatType valueScale, ArrayProcess
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
 
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
+}
+
+template<typename FloatType>
+void
+SingleVirtualSourceMethod<FloatType>::execContinuousNetworkImaging(FloatType valueScale, ArrayProcessor<FloatType>& processor,
+									unsigned int baseElement, bool coherenceFactorEnabled)
+{
+	int n = 0;
+	Timer t;
+	do {
+		processor.process(baseElement, gridData_);
+
+		if (coherenceFactorEnabled) {
+			applyCoherenceFactor();
+		}
+
+		project_.showFigure3D(1, "Image", &gridData_, &pointList_,
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
+
+		if (++n == 10) {
+			LOG_INFO << 10.0 / t.getTime() << " image/s";
+			n = 0;
+			t.reset();
+		}
+	} while (!project_.processingCancellationRequested());
 }
 
 template<typename FloatType>
@@ -153,8 +188,9 @@ SingleVirtualSourceMethod<FloatType>::execute()
 	case MethodType::single_virtual_source_3d_vectorial_simulated:
 		acquisition = std::make_unique<Simulated3DTnRnAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodType::single_virtual_source_3d_network_save_signals: // falls through
-	case MethodType::single_virtual_source_3d_vectorial_dp_network:
+	case MethodType::single_virtual_source_3d_network_save_signals:            // falls through
+	case MethodType::single_virtual_source_3d_vectorial_dp_network:            // falls through
+	case MethodType::single_virtual_source_3d_vectorial_sp_network_continuous:
 		acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
 		break;
 	case MethodType::single_virtual_source_3d_vectorial_dp_saved:
@@ -174,9 +210,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		return;
 	}
 
-	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset" , 0.0, 50.0);
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
-	project_.createDirectory(outputDir, false);
+	const FloatType peakOffset  = taskPM->value<FloatType>("peak_offset", 0.0, 50.0);
 
 	const std::string rxApodFile = taskPM->value<std::string>("rx_apodization_file");
 	std::vector<FloatType> rxApod;
@@ -188,7 +222,8 @@ SingleVirtualSourceMethod<FloatType>::execute()
 
 	if (project_.method() == MethodType::single_virtual_source_3d_vectorial_simulated ||
 			project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_network ||
-			project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_saved) {
+			project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_saved ||
+			project_.method() == MethodType::single_virtual_source_3d_vectorial_sp_network_continuous) {
 		const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 		auto processor = std::make_unique<Vectorial3DTnRnProcessor<FloatType>>(
@@ -196,9 +231,15 @@ SingleVirtualSourceMethod<FloatType>::execute()
 							coherenceFactor, peakOffset,
 							rxApod);
 		processor->setTxDelays(focusX, focusY, focusZ, txDelays);
-		process(config.valueScale, *processor, baseElement, outputDir);
-		if (coherenceFactor.enabled()) {
-			useCoherenceFactor(config.valueScale, outputDir);
+		if (project_.method() == MethodType::single_virtual_source_3d_vectorial_sp_network_continuous) {
+			execContinuousNetworkImaging(config.valueScale, *processor, baseElement, coherenceFactor.enabled());
+		} else {
+			const std::string outputDir = taskPM->value<std::string>("output_dir");
+			project_.createDirectory(outputDir, false);
+			process(config.valueScale, *processor, baseElement, outputDir);
+			if (coherenceFactor.enabled()) {
+				useCoherenceFactor(config.valueScale, outputDir);
+			}
 		}
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
