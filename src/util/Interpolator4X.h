@@ -59,7 +59,7 @@ private:
 
 template<typename FloatType>
 Interpolator4X<FloatType>::Interpolator4X()
-		: initialized_(false)
+		: initialized_()
 		, lowPassFIRFilter_()
 {
 	// Calculated in Octave using:

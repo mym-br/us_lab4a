@@ -174,7 +174,7 @@ private:
 };
 
 template<typename T, typename Alloc>
-Tensor3<T, Alloc>::Tensor3() : n1_(0), n2_(0), n3_(0)
+Tensor3<T, Alloc>::Tensor3() : n1_(), n2_(), n3_()
 {
 }
 

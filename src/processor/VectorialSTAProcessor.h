@@ -115,7 +115,7 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 		, upsamplingFactor_(upsamplingFactor)
 		, coherenceFactor_(coherenceFactor)
 		, calculateEnvelope_(calculateEnvelope)
-		, initialized_(false)
+		, initialized_()
 		, txApod_(txApod)
 		, rxApod_(rxApod)
 {

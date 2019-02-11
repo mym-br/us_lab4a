@@ -66,12 +66,12 @@ private:
 
 template<typename FloatType>
 ComplexToRealIFFT<FloatType>::ComplexToRealIFFT()
-		: initialized_(false)
-		, fftSize_(0)
-		, freqDataSize_(0)
+		: initialized_()
+		, fftSize_()
+		, freqDataSize_()
 		, ifftPlan_()
-		, frequencyData_(nullptr)
-		, timeData_(nullptr)
+		, frequencyData_()
+		, timeData_()
 {
 }
 

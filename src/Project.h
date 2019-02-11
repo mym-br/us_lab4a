@@ -164,10 +164,10 @@ public:
 private:
 	struct Figure2DData {
 		Figure2DData()
-			: showFigureRequested(false)
-			, figureId(0)
+			: showFigureRequested()
+			, figureId()
 			, figureName("Figure")
-			, markPoints(false)
+			, markPoints()
 		{ }
 		QMutex mutex;
 		QWaitCondition requestHandledCondition;
@@ -181,14 +181,14 @@ private:
 
 	struct Figure3DData {
 		Figure3DData()
-			: showFigureRequested(false)
-			, newGridData(false)
-			, newPointList(false)
-			, figureId(0)
+			: showFigureRequested()
+			, newGridData()
+			, newPointList()
+			, figureId()
 			, visualization(Figure::VISUALIZATION_DEFAULT)
 			, colormap(Figure::COLORMAP_DEFAULT)
 			, figureName("Figure")
-			, valueScale(0.0)
+			, valueScale()
 		{ }
 		QMutex mutex;
 		QWaitCondition requestHandledCondition;
@@ -221,9 +221,9 @@ private:
 
 	struct Control {
 		Control()
-			: triggerCount(0)
-			, processingCancellationRequested(false)
-			, trigger(false)
+			: triggerCount()
+			, processingCancellationRequested()
+			, trigger()
 		{ }
 		QMutex mutex;
 		QWaitCondition triggerCondition;

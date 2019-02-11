@@ -111,7 +111,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	WindowFunction::get(rxApodDesc, config.numElements, rxApod);
 	std::vector<FloatType> elemIndex;
 	Util::fillSequenceFromStartToEndWithSize(elemIndex,
-		FloatType{0}, static_cast<FloatType>(config.numElements - 1U), static_cast<FloatType>(config.numElements));
+		FloatType(0), static_cast<FloatType>(config.numElements - 1U), static_cast<FloatType>(config.numElements));
 	project_.showFigure2D(1, "TX Apodization", elemIndex, txApod, true, true);
 	project_.showFigure2D(2, "RX Apodization", elemIndex, rxApod, true, true);
 

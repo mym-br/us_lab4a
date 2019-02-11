@@ -102,7 +102,7 @@ Vectorial3DT1R1SAFTProcessor<FloatType>::Vectorial3DT1R1SAFTProcessor(
 		, acquisition_(acquisition)
 		, upsamplingFactor_(upsamplingFactor)
 		, coherenceFactor_(coherenceFactor)
-		, initialized_(false)
+		, initialized_()
 {
 	if (upsamplingFactor_ > 1) {
 		interpolator_.prepare(upsamplingFactor_, VECTORIAL_3D_T1R1SAFT_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);

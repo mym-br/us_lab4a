@@ -108,7 +108,7 @@ Vectorial3DSTAProcessor<FloatType>::Vectorial3DSTAProcessor(
 		, acquisition_(acquisition)
 		, upsamplingFactor_(upsamplingFactor)
 		, coherenceFactor_(coherenceFactor)
-		, initialized_(false)
+		, initialized_()
 		, txApod_(txApod)
 		, rxApod_(rxApod)
 {

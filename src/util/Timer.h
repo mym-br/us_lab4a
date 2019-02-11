@@ -69,7 +69,7 @@ struct Timer {
 
 class Timer {
 public:
-	Timer() : valid_(false) {
+	Timer() : valid_() {
 		reset();
 	}
 	void reset() {
@@ -100,7 +100,7 @@ private:
 
 class Timer {
 public:
-	Timer() : valid_(false) {
+	Timer() : valid_() {
 		reset();
 	}
 	void reset() {

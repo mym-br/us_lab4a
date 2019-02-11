@@ -57,7 +57,7 @@ private:
 
 template<typename FloatType>
 Interpolator<FloatType>::Interpolator()
-		: upsamplingFactor_(0)
+		: upsamplingFactor_()
 {
 }
 

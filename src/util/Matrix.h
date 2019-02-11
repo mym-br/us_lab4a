@@ -155,7 +155,7 @@ private:
 };
 
 template<typename T, typename Alloc>
-Matrix<T, Alloc>::Matrix() : n1_(0), n2_(0)
+Matrix<T, Alloc>::Matrix() : n1_(), n2_()
 {
 }
 

@@ -37,7 +37,7 @@ namespace Lab {
 class OGLFigureWidget : public QOpenGLWidget {
 	Q_OBJECT
 public:
-	OGLFigureWidget(QWidget* parent = 0);
+	OGLFigureWidget(QWidget* parent=nullptr);
 	virtual ~OGLFigureWidget() {}
 
 	void setVisualization(Figure::Visualization visualization);

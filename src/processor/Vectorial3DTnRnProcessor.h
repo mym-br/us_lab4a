@@ -111,7 +111,7 @@ Vectorial3DTnRnProcessor<FloatType>::Vectorial3DTnRnProcessor(
 		, acquisition_(acquisition)
 		, upsamplingFactor_(upsamplingFactor)
 		, coherenceFactor_(coherenceFactor)
-		, initialized_(false)
+		, initialized_()
 		, rxApod_(rxApod)
 		, focusX_()
 		, focusY_()

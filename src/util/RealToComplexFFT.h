@@ -67,12 +67,12 @@ private:
 
 template<typename FloatType>
 RealToComplexFFT<FloatType>::RealToComplexFFT()
-		: initialized_(false)
-		, fftSize_(0)
-		, freqDataSize_(0)
+		: initialized_()
+		, fftSize_()
+		, freqDataSize_()
 		, fftPlan_()
-		, timeData_(nullptr)
-		, frequencyData_(nullptr)
+		, timeData_()
+		, frequencyData_()
 {
 }
 

@@ -53,7 +53,7 @@ struct ScriptEntry {
 class USLab4a : public QMainWindow {
 	Q_OBJECT
 public:
-	USLab4a(QWidget* parent = 0);
+	USLab4a(QWidget* parent=nullptr);
 	virtual ~USLab4a();
 
 	void closeAllFigures();
@@ -66,8 +66,8 @@ public:
 	void showFigure3D(
 		int id,
 		const std::string& figureName,
-		const Project::GridDataType* gridData=0,
-		const std::vector<Project::PointType>* pointList=0,
+		const Project::GridDataType* gridData=nullptr,
+		const std::vector<Project::PointType>* pointList=nullptr,
 		Figure::Visualization visualization=Figure::VISUALIZATION_DEFAULT,
 		Figure::Colormap colormap=Figure::COLORMAP_DEFAULT,
 		double valueScale=0.0);

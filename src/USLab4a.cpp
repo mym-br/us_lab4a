@@ -62,7 +62,7 @@ USLab4a::USLab4a(QWidget* parent)
 		, figureWindowsTimer_(this)
 		, logWidgetTimer_(this)
 		, logFile_(LOG_FILE_NAME)
-		, nextScriptEntry_(0)
+		, nextScriptEntry_()
 {
 	ui_.setupUi(this);
 

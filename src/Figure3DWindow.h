@@ -36,7 +36,7 @@ namespace Lab {
 class Figure3DWindow : public QWidget {
 	Q_OBJECT
 public:
-	Figure3DWindow(QWidget *parent = 0);
+	Figure3DWindow(QWidget* parent=nullptr);
 	~Figure3DWindow();
 
 	void updateData(float valueScale,
