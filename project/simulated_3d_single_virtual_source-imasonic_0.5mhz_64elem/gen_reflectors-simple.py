@@ -13,12 +13,12 @@ PROJECT_DIR = "./"
 DATASET_NAME = "reflectors"
 
 X = 40.0e-3
-X_MIN = -30.0e-3
-X_MAX = 30.0e-3
+X_MIN = -200.0e-3
+X_MAX = 200.0e-3
 Y = 0.0
-Y_MIN = -5.0e-3
-Y_MAX = 5.0e-3
-Z = 70.0e-3
+Y_MIN = -20.0e-3
+Y_MAX = 20.0e-3
+Z = 300.0e-3
 NUM_POINTS = 7
 COEFF_MIN = 0.5
 COEFF_MAX = 5.0
