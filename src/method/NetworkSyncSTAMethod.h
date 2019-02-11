@@ -136,7 +136,6 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		visual = Figure::VISUALIZATION_ENVELOPE_LOG;
 	}
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
-	Project::GridDataType projGridData;
 	FloatType valueLevel = 0.0;
 
 	Timer timer;
@@ -163,8 +162,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
-		Util::copyXYZValue(gridData, projGridData);
-		project_.showFigure3D(1, "Raw image", &projGridData, &pointList,
+		project_.showFigure3D(1, "Raw image", &gridData, &pointList,
 					true, visual, Figure::COLORMAP_VIRIDIS, config.valueScale);
 
 		if (coherenceFactorEnabled) {
@@ -184,8 +182,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 			LOG_DEBUG << "Saving the CF image...";
 			project_.saveHDF5(gridData, acqOutputDir + "/image_cf", "cf", Util::CopyValueOp());
 
-			Util::copyXYZValue(gridData, projGridData);
-			project_.showFigure3D(2, "Coherence factor image", &projGridData, &pointList,
+			project_.showFigure3D(2, "Coherence factor image", &gridData, &pointList,
 						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config.valueScale);
 		}
 	}
