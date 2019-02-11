@@ -302,9 +302,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool so
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
-	Project::GridDataType projGridData;
-	Util::copyXYZValue(gridData, projGridData);
-	project_.showFigure3D(1, "Pattern", &projGridData, &pointList,
+	project_.showFigure3D(1, "Pattern", &gridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
 
 	std::size_t sectionTYIndex = 0;
@@ -406,9 +404,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField(bool sourc
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
-	Project::GridDataType projGridData;
-	Util::copyXYZValue(gridData, projGridData);
-	project_.showFigure3D(1, "Acoustic field", &projGridData, &pointList,
+	project_.showFigure3D(1, "Acoustic field", &gridData, &pointList,
 					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Figure::COLORMAP_VIRIDIS);
 
 	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"        , "value");
