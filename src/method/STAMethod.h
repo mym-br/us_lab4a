@@ -66,7 +66,6 @@ private:
 
 	Project& project_;
 	Matrix<XYZValueFactor<FloatType>> gridData_;
-	Project::GridDataType projGridData_;
 	std::vector<XYZ<float>> pointList_;
 	Figure::Visualization visual_;
 };
@@ -106,8 +105,7 @@ STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnv
 	LOG_DEBUG << "Saving the CF image...";
 	project_.saveHDF5(gridData_, outputDir + "/image_cf", "cf", Util::CopyValueOp());
 
-	Util::copyXYZValue(gridData_, projGridData_);
-	project_.showFigure3D(2, "Coherence factor image", &projGridData_, &pointList_,
+	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
 }
 
@@ -121,8 +119,7 @@ STAMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& p
 
 	project_.saveImageToHDF5(gridData_, outputDir);
 
-	Util::copyXYZValue(gridData_, projGridData_);
-	project_.showFigure3D(1, "Raw image", &projGridData_, &pointList_,
+	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
 				true, visual_, Figure::COLORMAP_VIRIDIS, valueScale);
 
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
