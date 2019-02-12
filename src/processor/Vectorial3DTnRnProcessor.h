@@ -221,7 +221,7 @@ Vectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement, Matrix<XY
 				// Calculate the delays.
 				{
 					// Delay of the first active element.
-					const FloatType d0 = txDelays_[baseElement] * fsUp;
+					const FloatType d0 = txDelays_[0] * fsUp;
 
 					const XY<FloatType>& firstElem = config_.txElemPos[baseElement];
 					// Travel time between the first active element and the focus.

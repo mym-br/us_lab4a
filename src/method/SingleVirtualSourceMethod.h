@@ -176,7 +176,8 @@ SingleVirtualSourceMethod<FloatType>::execute()
 	focusX /= config.numElements;
 	focusY /= config.numElements;
 	std::vector<FloatType> txDelays;
-	ArrayUtil::calculateTx3DFocusDelay(focusX, focusY, focusZ, config.propagationSpeed, config.txElemPos, txDelays);
+	ArrayUtil::calculateTx3DFocusDelay(focusX, focusY, focusZ, config.propagationSpeed,
+						config.txElemPos, baseElement, config.numElements, txDelays);
 
 	std::unique_ptr<TnRnAcquisition<FloatType>> acquisition;
 

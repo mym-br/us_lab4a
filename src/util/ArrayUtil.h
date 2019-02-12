@@ -20,6 +20,7 @@
 #include <limits>
 #include <vector>
 
+#include "Exception.h"
 #include "Geometry.h"
 #include "ParameterMap.h"
 #include "XY.h"
@@ -38,9 +39,12 @@ template<typename FloatType> void calculateTxElementPositions(const ParameterMap
 template<typename FloatType> void calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos);
 
 template<typename FloatType> void calculateTx3DFocusDelay(
-					FloatType focusX, FloatType focusY, FloatType focusZ,
-					FloatType propagationSpeed,
+					FloatType focusX, FloatType focusY, FloatType focusZ, FloatType propagationSpeed,
 					const std::vector<XY<FloatType>>& elemPos, std::vector<FloatType>& focusDelay /* s */);
+template<typename FloatType> void calculateTx3DFocusDelay(
+					FloatType focusX, FloatType focusY, FloatType focusZ, FloatType propagationSpeed,
+					const std::vector<XY<FloatType>>& elemPos, unsigned int baseElement,
+					unsigned int numGroupElements, std::vector<FloatType>& focusDelay /* s */);
 
 //==============================================================================
 
@@ -94,17 +98,31 @@ calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& 
 
 template<typename FloatType>
 void
-calculateTx3DFocusDelay(FloatType focusX, FloatType focusY, FloatType focusZ,
-			FloatType propagationSpeed,
+calculateTx3DFocusDelay(FloatType focusX, FloatType focusY, FloatType focusZ, FloatType propagationSpeed,
 			const std::vector<XY<FloatType>>& elemPos, std::vector<FloatType>& focusDelay /* s */)
 {
-	focusDelay.assign(elemPos.size(), 0.0);
+	calculateTx3DFocusDelay(focusX, focusY, focusZ, propagationSpeed,
+				elemPos, 0, elemPos.size(), focusDelay);
+}
+
+template<typename FloatType>
+void
+calculateTx3DFocusDelay(FloatType focusX, FloatType focusY, FloatType focusZ, FloatType propagationSpeed,
+			const std::vector<XY<FloatType>>& elemPos, unsigned int baseElement,
+			unsigned int numGroupElements, std::vector<FloatType>& focusDelay /* s */)
+{
+	if (baseElement + numGroupElements > elemPos.size()) {
+		THROW_EXCEPTION(InvalidParameterException, "Error: baseElement + numGroupElements > elemPos.size() ("
+				<< " baseElement=" << baseElement << " numGroupElements=" << numGroupElements
+				<< " elemPos.size()=" << elemPos.size() << ").");
+	}
+	focusDelay.assign(numGroupElements, 0.0);
 
 	const FloatType invC = 1 / propagationSpeed;
 	if (focusZ > 0.0) {
 		FloatType maxDt = 0.0;
 		for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
-			const XY<FloatType>& pos = elemPos[i];
+			const XY<FloatType>& pos = elemPos[baseElement + i];
 			const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
 			if (dt > maxDt) maxDt = dt;
 			focusDelay[i] = dt;
@@ -115,7 +133,7 @@ calculateTx3DFocusDelay(FloatType focusX, FloatType focusY, FloatType focusZ,
 	} else {
 		FloatType minDt = std::numeric_limits<FloatType>::max();
 		for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
-			const XY<FloatType>& pos = elemPos[i];
+			const XY<FloatType>& pos = elemPos[baseElement + i];
 			const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
 			if (dt < minDt) minDt = dt;
 			focusDelay[i] = dt;
