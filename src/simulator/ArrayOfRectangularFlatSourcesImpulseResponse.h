@@ -84,9 +84,25 @@ ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::getImp
 		FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
 		std::vector<unsigned int>* activeElemList)
 {
-	if (activeElemList && activeElemList->empty()) {
-		THROW_EXCEPTION(InvalidParameterException, "Empty active element list.");
+	if (activeElemList) {
+		if (activeElemList->empty()) {
+			THROW_EXCEPTION(InvalidParameterException, "Empty active element list.");
+		} else {
+			if (activeElemList->size() > elemPos_.size()) {
+				THROW_EXCEPTION(InvalidParameterException, "Active element list size > number of elements.");
+			}
+			offsetList_.resize(activeElemList->size());
+			hList_.resize(activeElemList->size());
+		}
+	} else {
+		offsetList_.resize(elemPos_.size());
+		hList_.resize(elemPos_.size());
 	}
+	if (focusDelay_.size() != offsetList_.size()) {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid focus delay list size: " << focusDelay_.size()
+				<< " (should be " << offsetList_.size() << ").");
+	}
+
 	std::size_t iMin = std::numeric_limits<std::size_t>::max();
 	std::size_t iMax = 0; // the index after the last
 
@@ -96,19 +112,18 @@ ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::getImp
 			if (j >= activeElemList->size()) break;
 			if ((*activeElemList)[j] != i) {
 				continue;
-			} else {
-				++j;
 			}
 		}
 		const XY<FloatType>& pos = elemPos_[i];
 
-		ir_.getImpulseResponse(x - pos.x, y - pos.y, z, offsetList_[i], hList_[i]);
+		ir_.getImpulseResponse(x - pos.x, y - pos.y, z, offsetList_[j], hList_[j]);
 
-		offsetList_[i] += static_cast<std::size_t>(std::nearbyint(focusDelay_[i] * samplingFreq_));
-		const std::size_t start = offsetList_[i];
+		offsetList_[j] += static_cast<std::size_t>(std::nearbyint(focusDelay_[j] * samplingFreq_));
+		const std::size_t start = offsetList_[j];
 		if (start < iMin) iMin = start;
-		const std::size_t end = offsetList_[i] + hList_[i].size();
+		const std::size_t end = offsetList_[j] + hList_[j].size();
 		if (end > iMax) iMax = end;
+		++j;
 	}
 
 	// Accumulate the impulse responses.
@@ -118,13 +133,12 @@ ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::getImp
 			if (j >= activeElemList->size()) break;
 			if ((*activeElemList)[j] != i) {
 				continue;
-			} else {
-				++j;
 			}
 		}
-		const std::size_t hBegin = offsetList_[i];
-		const std::size_t hEnd = hBegin + hList_[i].size();
-		Util::addElements(hList_[i].begin(), h.begin() + hBegin - iMin, h.begin() + hEnd - iMin);
+		const std::size_t hBegin = offsetList_[j];
+		const std::size_t hEnd = hBegin + hList_[j].size();
+		Util::addElements(hList_[j].begin(), h.begin() + hBegin - iMin, h.begin() + hEnd - iMin);
+		++j;
 	}
 	hOffset = iMin;
 }

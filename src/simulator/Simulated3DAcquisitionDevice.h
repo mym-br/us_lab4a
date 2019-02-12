@@ -224,8 +224,6 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 	ArrayUtil::calculateTxElementPositions(arrayPM, txElemPos_);
 	ArrayUtil::calculateRxElementPositions(arrayPM, rxElemPos_);
 
-	txDelays_.assign(txElemPos_.size(), 0.0);
-
 	decimator_ = std::make_unique<Decimator<FloatType>>();
 	decimator_->prepare(simFs_ / outFs_, SIMULATED_3D_ACQUISITION_DEVICE_DECIMATOR_LP_FILTER_TRANSITION_WIDTH);
 }
@@ -322,6 +320,8 @@ Simulated3DAcquisitionDevice<FloatType>::setActiveTxElements(const std::vector<b
 	if (activeTxElem_.empty()) {
 		THROW_EXCEPTION(InvalidParameterException, "There is no active transmit element.");
 	}
+
+	txDelays_.assign(activeTxElem_.size(), 0.0);
 }
 
 template<typename FloatType>
@@ -372,18 +372,20 @@ Simulated3DAcquisitionDevice<FloatType>::setTxFocalPoint(FloatType xf, FloatType
 	}
 
 	FloatType maxDt = 0.0;
+	txDelays_.resize(activeTxElem_.size());
 
 	// For each active transmit element:
-	for (auto iter = activeTxElem_.begin(); iter != activeTxElem_.end(); ++iter) {
-		const FloatType dt = Geometry::distance3DZ0(txElemPos_[*iter].x, txElemPos_[*iter].y,
+	for (unsigned int i = 0, iEnd = activeTxElem_.size(); i < iEnd; ++i) {
+		const unsigned int txElem = activeTxElem_[i];
+		const FloatType dt = Geometry::distance3DZ0(txElemPos_[txElem].x, txElemPos_[txElem].y,
 								xf, yf, zf) * invC_;
 		if (dt > maxDt) maxDt = dt;
-		txDelays_[*iter] = dt;
+		txDelays_[i] = dt;
 	}
 
 	// For each active transmit element:
-	for (auto iter = activeTxElem_.begin(); iter != activeTxElem_.end(); ++iter) {
-		txDelays_[*iter] = maxDt - txDelays_[*iter];
+	for (unsigned int i = 0, iEnd = activeTxElem_.size(); i < iEnd; ++i) {
+		txDelays_[i] = maxDt - txDelays_[i];
 	}
 }
 
