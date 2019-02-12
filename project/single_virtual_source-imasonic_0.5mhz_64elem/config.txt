@@ -40,5 +40,5 @@ dead_zone_m = 10.0e-3
 value_scale = 0.0
 
 # (m)
-#tx_focus_z = -50.0e-3
-tx_focus_z = 50.0e-3
+tx_focus_z = -50.0e-3
+#tx_focus_z = 50.0e-3
