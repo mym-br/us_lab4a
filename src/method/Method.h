@@ -53,6 +53,7 @@ enum class MethodType {
 	sim_radiation_pattern_array_of_rectangular_flat_sources_transient,
 	sim_radiation_pattern_rectangular_flat_source_transient,
 	single_virtual_source_3d_network_save_signals,
+	single_virtual_source_3d_network_save_signal_sequence,
 	single_virtual_source_3d_simulated_save_signals,
 	single_virtual_source_3d_vectorial_dp_network,
 	single_virtual_source_3d_vectorial_dp_saved,

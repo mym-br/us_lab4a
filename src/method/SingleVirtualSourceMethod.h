@@ -43,6 +43,9 @@
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
+#define SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE "/time"
+#define SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET "time"
+
 
 
 namespace Lab {
@@ -64,6 +67,9 @@ private:
 	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
 	void execContinuousNetworkImaging(FloatType valueScale, ArrayProcessor<FloatType>& processor,
 						unsigned int baseElement, bool coherenceFactorEnabled);
+	void saveSignalSequence(ConstParameterMapPtr taskPM, unsigned int baseElement,
+				const std::vector<FloatType>& txDelays,
+				TnRnAcquisition<FloatType>& acquisition);
 
 	Project& project_;
 	Matrix<XYZValueFactor<FloatType>> gridData_;
@@ -154,6 +160,43 @@ SingleVirtualSourceMethod<FloatType>::execContinuousNetworkImaging(FloatType val
 
 template<typename FloatType>
 void
+SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr taskPM, unsigned int baseElement,
+								const std::vector<FloatType>& txDelays,
+								TnRnAcquisition<FloatType>& acquisition)
+{
+	const std::string dataDir = taskPM->value<std::string>("data_dir");
+	const double acqTime      = taskPM->value<double>("acquisition_time", 1.0, 60.0);
+
+	std::vector<typename TnRnAcquisition<FloatType>::AcquisitionDataType> acqDataList;
+	std::vector<double> timeList;
+
+	// Capture signals.
+	Timer timer;
+	const double t0 = timer.getTime();
+	double t = 0.0;
+	unsigned int acqNumber = 0;
+	do {
+		LOG_DEBUG << "ACQ " << acqNumber;
+
+		timeList.push_back(t);
+		acqDataList.emplace_back();
+		acquisition.execute(baseElement, txDelays, acqDataList.back());
+
+		t = timer.getTime() - t0;
+		++acqNumber;
+	} while (t <= acqTime);
+
+	// Save signals.
+	for (unsigned int i = 0, iEnd = acqDataList.size(); i < iEnd; ++i) {
+		project_.saveSignalsToHDF5(acqDataList[i], dataDir, i, baseElement);
+	}
+	// Save times.
+	const std::string fileName = dataDir + SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE;
+	project_.saveHDF5(timeList, fileName, SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET);
+}
+
+template<typename FloatType>
+void
 SingleVirtualSourceMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
@@ -187,6 +230,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		acquisition = std::make_unique<Simulated3DTnRnAcquisition<FloatType>>(project_, config);
 		break;
 	case MethodType::single_virtual_source_3d_network_save_signals:            // falls through
+	case MethodType::single_virtual_source_3d_network_save_signal_sequence:    // falls through
 	case MethodType::single_virtual_source_3d_vectorial_dp_network:            // falls through
 	case MethodType::single_virtual_source_3d_vectorial_sp_network_continuous:
 		acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
@@ -205,6 +249,9 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		typename TnRnAcquisition<FloatType>::AcquisitionDataType acqData;
 		acquisition->execute(baseElement, txDelays, acqData);
 		project_.saveSignalsToHDF5(acqData, dataDir, 0, baseElement);
+		return;
+	} else if (project_.method() == MethodType::single_virtual_source_3d_network_save_signal_sequence) {
+		saveSignalSequence(taskPM, baseElement, txDelays, *acquisition);
 		return;
 	}
 

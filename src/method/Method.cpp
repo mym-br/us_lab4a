@@ -68,6 +68,7 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(sim_radiation_pattern_array_of_rectangular_flat_sources_transient);
 	ADD_MAP_ITEM(sim_radiation_pattern_rectangular_flat_source_transient);
 	ADD_MAP_ITEM(single_virtual_source_3d_network_save_signals);
+	ADD_MAP_ITEM(single_virtual_source_3d_network_save_signal_sequence);
 	ADD_MAP_ITEM(single_virtual_source_3d_simulated_save_signals);
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_dp_network);
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_dp_saved);
@@ -142,10 +143,11 @@ Method::get(Project& project)
 	case MethodType::sim_radiation_pattern_array_of_rectangular_flat_sources_transient:    // falls through
 	case MethodType::sim_radiation_pattern_rectangular_flat_source_transient:
 		return new SimRectangularFlatSourceMethod<double>(project);
-	case MethodType::single_virtual_source_3d_network_save_signals:   // falls through
-	case MethodType::single_virtual_source_3d_simulated_save_signals: // falls through
-	case MethodType::single_virtual_source_3d_vectorial_dp_network:   // falls through
-	case MethodType::single_virtual_source_3d_vectorial_dp_saved:     // falls through
+	case MethodType::single_virtual_source_3d_network_save_signals:         // falls through
+	case MethodType::single_virtual_source_3d_network_save_signal_sequence: // falls through
+	case MethodType::single_virtual_source_3d_simulated_save_signals:       // falls through
+	case MethodType::single_virtual_source_3d_vectorial_dp_network:         // falls through
+	case MethodType::single_virtual_source_3d_vectorial_dp_saved:           // falls through
 	case MethodType::single_virtual_source_3d_vectorial_simulated:
 		return new SingleVirtualSourceMethod<double>(project);
 	case MethodType::single_virtual_source_3d_vectorial_sp_network_continuous:
