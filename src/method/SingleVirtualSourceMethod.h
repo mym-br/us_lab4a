@@ -229,6 +229,10 @@ SingleVirtualSourceMethod<FloatType>::createImagesFromSavedSignalSequence(ConstP
 			useCoherenceFactor(valueScale, imgDir);
 		}
 	}
+
+	// Save times.
+	project_.saveHDF5(timeList, outputDir + SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE,
+				SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET);
 }
 
 template<typename FloatType>
