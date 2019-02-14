@@ -25,6 +25,7 @@
 #include "ArrayUtil.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
+#include "FileUtil.h"
 #include "global.h"
 #include "ImageGrid.h"
 #include "Log.h"
@@ -70,6 +71,9 @@ private:
 	void saveSignalSequence(ConstParameterMapPtr taskPM, unsigned int baseElement,
 				const std::vector<FloatType>& txDelays,
 				TnRnAcquisition<FloatType>& acquisition);
+	void createImagesFromSavedSignalSequence(ConstParameterMapPtr taskPM,
+							unsigned int baseElement, std::string& savedDataDir, FloatType valueScale,
+							bool coherenceFactorEnabled, ArrayProcessor<FloatType>& processor);
 
 	Project& project_;
 	Matrix<XYZValueFactor<FloatType>> gridData_;
@@ -176,7 +180,7 @@ SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr ta
 	double t = 0.0;
 	unsigned int acqNumber = 0;
 	do {
-		LOG_DEBUG << "ACQ " << acqNumber;
+		LOG_INFO << "ACQ " << acqNumber;
 
 		timeList.push_back(t);
 		acqDataList.emplace_back();
@@ -193,6 +197,37 @@ SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr ta
 	// Save times.
 	const std::string fileName = dataDir + SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE;
 	project_.saveHDF5(timeList, fileName, SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET);
+}
+
+template<typename FloatType>
+void
+SingleVirtualSourceMethod<FloatType>::createImagesFromSavedSignalSequence(ConstParameterMapPtr taskPM,
+							unsigned int baseElement, std::string& savedDataDir, FloatType valueScale,
+							bool coherenceFactorEnabled, ArrayProcessor<FloatType>& processor)
+{
+	const std::string dataDir   = taskPM->value<std::string>("data_dir");
+	const std::string outputDir = taskPM->value<std::string>("output_dir");
+
+	// Load times.
+	std::vector<double> timeList;
+	project_.loadHDF5(dataDir + SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE,
+				SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET, timeList);
+
+	for (unsigned int acqNumber = 0, end = timeList.size(); acqNumber < end; ++acqNumber) {
+		LOG_INFO << "ACQ " << acqNumber;
+
+		const std::string imgDir = FileUtil::path(outputDir, "/", acqNumber);
+		project_.createDirectory(imgDir, false);
+
+		// The SavedTnRnAcquisition instance uses savedDataDir.
+		savedDataDir = FileUtil::path(dataDir, "/", acqNumber);
+
+		// Process and save images.
+		process(valueScale, processor, baseElement, imgDir);
+		if (coherenceFactorEnabled) {
+			useCoherenceFactor(valueScale, imgDir);
+		}
+	}
 }
 
 template<typename FloatType>
@@ -223,6 +258,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 						config.txElemPos, baseElement, config.numElements, txDelays);
 
 	std::unique_ptr<TnRnAcquisition<FloatType>> acquisition;
+	std::string savedDataDir;
 
 	switch (project_.method()) {
 	case MethodType::single_virtual_source_3d_simulated_save_signals: // falls through
@@ -236,8 +272,9 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
 		break;
 	case MethodType::single_virtual_source_3d_vectorial_dp_saved:
-		acquisition = std::make_unique<SavedTnRnAcquisition<FloatType>>(project_, config.numElements,
-										taskPM->value<std::string>("data_dir"));
+		savedDataDir = taskPM->value<std::string>("data_dir");         // falls through
+	case MethodType::single_virtual_source_3d_vectorial_dp_saved_sequence:
+		acquisition = std::make_unique<SavedTnRnAcquisition<FloatType>>(project_, config.numElements, savedDataDir);
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
@@ -268,6 +305,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 	if (project_.method() == MethodType::single_virtual_source_3d_vectorial_simulated ||
 			project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_network ||
 			project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_saved ||
+			project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_saved_sequence ||
 			project_.method() == MethodType::single_virtual_source_3d_vectorial_sp_network_continuous) {
 		const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
@@ -278,6 +316,9 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		processor->setTxDelays(focusX, focusY, focusZ, txDelays);
 		if (project_.method() == MethodType::single_virtual_source_3d_vectorial_sp_network_continuous) {
 			execContinuousNetworkImaging(config.valueScale, *processor, baseElement, coherenceFactor.enabled());
+		} else if (project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_saved_sequence) {
+			createImagesFromSavedSignalSequence(taskPM, baseElement, savedDataDir, config.valueScale,
+								coherenceFactor.enabled(), *processor);
 		} else {
 			const std::string outputDir = taskPM->value<std::string>("output_dir");
 			project_.createDirectory(outputDir, false);

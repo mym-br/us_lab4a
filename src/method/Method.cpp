@@ -72,6 +72,7 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(single_virtual_source_3d_simulated_save_signals);
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_dp_network);
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_dp_saved);
+	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_dp_saved_sequence);
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_simulated);
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_sp_network_continuous);
 	ADD_MAP_ITEM(sta_3d_simulated_save_signals);
@@ -148,6 +149,7 @@ Method::get(Project& project)
 	case MethodType::single_virtual_source_3d_simulated_save_signals:       // falls through
 	case MethodType::single_virtual_source_3d_vectorial_dp_network:         // falls through
 	case MethodType::single_virtual_source_3d_vectorial_dp_saved:           // falls through
+	case MethodType::single_virtual_source_3d_vectorial_dp_saved_sequence:  // falls through
 	case MethodType::single_virtual_source_3d_vectorial_simulated:
 		return new SingleVirtualSourceMethod<double>(project);
 	case MethodType::single_virtual_source_3d_vectorial_sp_network_continuous:

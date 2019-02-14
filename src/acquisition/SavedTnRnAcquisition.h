@@ -35,7 +35,7 @@ class SavedTnRnAcquisition : public TnRnAcquisition<FloatType> {
 public:
 	SavedTnRnAcquisition(const Project& project,
 				unsigned int numRxElements,
-				const std::string& dataDir);
+				std::string& dataDir);
 	virtual ~SavedTnRnAcquisition();
 
 	void setDataDir(const std::string& dataDir) { dataDir_ = dataDir; }
@@ -47,7 +47,7 @@ private:
 
 	const Project& project_;
 	const unsigned int numRxElements_;
-	std::string dataDir_;
+	std::string& dataDir_;
 };
 
 
@@ -56,7 +56,7 @@ template<typename FloatType>
 SavedTnRnAcquisition<FloatType>::SavedTnRnAcquisition(
 			const Project& project,
 			unsigned int numRxElements,
-			const std::string& dataDir)
+			std::string& dataDir)
 		: project_(project)
 		, numRxElements_(numRxElements)
 		, dataDir_(dataDir)
