@@ -103,7 +103,7 @@ public:
 	template<typename T, typename U> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<T>& container, U copyOp);
 	template<typename T, typename U> void saveHDF5(const std::vector<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp);
 	template<typename T, typename U> void saveHDF5(const Matrix<T>& container, const std::string& fileName, const std::string& datasetName, U copyOp);
-	template<typename T> void saveImageToHDF5(const Matrix<T>& container, const std::string& outputDir);
+	template<typename T> void saveImageToHDF5(const Matrix<T>& container, const std::string& outputDir, bool saveCoordinates=true);
 	template<typename T> void loadImageFromHDF5(const std::string& inputDir, Matrix<T>& container);
 
 	// Called by the producer.
@@ -388,19 +388,21 @@ Project::saveHDF5(const Matrix<T>& container, const std::string& fileName, const
 
 template<typename T>
 void
-Project::saveImageToHDF5(const Matrix<T>& container, const std::string& outputDir)
+Project::saveImageToHDF5(const Matrix<T>& container, const std::string& outputDir, bool saveCoordinates)
 {
 	Util::copyValueToSimpleMatrix(container, auxHDF5Matrix_);
 	LOG_DEBUG << "Saving the image...";
 	saveHDF5(auxHDF5Matrix_, outputDir + "/image_value", "value");
 
-	Util::copyXYZToSimpleMatrices(container, auxHDF5Matrix_, aux2HDF5Matrix_, aux3HDF5Matrix_);
-	LOG_DEBUG << "Saving the X coordinates...";
-	saveHDF5(auxHDF5Matrix_, outputDir + "/image_x", "x");
-	LOG_DEBUG << "Saving the Y coordinates...";
-	saveHDF5(aux2HDF5Matrix_, outputDir + "/image_y", "y");
-	LOG_DEBUG << "Saving the Z coordinates...";
-	saveHDF5(aux3HDF5Matrix_, outputDir + "/image_z", "z");
+	if (saveCoordinates) {
+		Util::copyXYZToSimpleMatrices(container, auxHDF5Matrix_, aux2HDF5Matrix_, aux3HDF5Matrix_);
+		LOG_DEBUG << "Saving the X coordinates...";
+		saveHDF5(auxHDF5Matrix_, outputDir + "/image_x", "x");
+		LOG_DEBUG << "Saving the Y coordinates...";
+		saveHDF5(aux2HDF5Matrix_, outputDir + "/image_y", "y");
+		LOG_DEBUG << "Saving the Z coordinates...";
+		saveHDF5(aux3HDF5Matrix_, outputDir + "/image_z", "z");
+	}
 }
 
 template<typename T>

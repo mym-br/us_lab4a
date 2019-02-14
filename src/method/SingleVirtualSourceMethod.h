@@ -63,7 +63,8 @@ private:
 	SingleVirtualSourceMethod(const SingleVirtualSourceMethod&) = delete;
 	SingleVirtualSourceMethod& operator=(const SingleVirtualSourceMethod&) = delete;
 
-	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
+	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement,
+			bool saveCoordinates, const std::string& outputDir);
 	void applyCoherenceFactor();
 	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
 	void execContinuousNetworkImaging(FloatType valueScale, ArrayProcessor<FloatType>& processor,
@@ -123,13 +124,13 @@ SingleVirtualSourceMethod<FloatType>::useCoherenceFactor(FloatType valueScale, c
 template<typename FloatType>
 void
 SingleVirtualSourceMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& processor,
-						unsigned int baseElement, const std::string& outputDir)
+						unsigned int baseElement, bool saveCoordinates, const std::string& outputDir)
 {
 	Timer tProc;
 
 	processor.process(baseElement, gridData_);
 
-	project_.saveImageToHDF5(gridData_, outputDir);
+	project_.saveImageToHDF5(gridData_, outputDir, saveCoordinates);
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
@@ -223,7 +224,7 @@ SingleVirtualSourceMethod<FloatType>::createImagesFromSavedSignalSequence(ConstP
 		savedDataDir = FileUtil::path(dataDir, "/", acqNumber);
 
 		// Process and save images.
-		process(valueScale, processor, baseElement, imgDir);
+		process(valueScale, processor, baseElement, acqNumber == 0, imgDir);
 		if (coherenceFactorEnabled) {
 			useCoherenceFactor(valueScale, imgDir);
 		}
@@ -322,7 +323,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		} else {
 			const std::string outputDir = taskPM->value<std::string>("output_dir");
 			project_.createDirectory(outputDir, false);
-			process(config.valueScale, *processor, baseElement, outputDir);
+			process(config.valueScale, *processor, baseElement, true, outputDir);
 			if (coherenceFactor.enabled()) {
 				useCoherenceFactor(config.valueScale, outputDir);
 			}
