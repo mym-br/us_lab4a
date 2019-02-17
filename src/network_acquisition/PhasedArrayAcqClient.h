@@ -42,7 +42,7 @@ public:
 	boost::uint32_t getImageNumRows();
 	boost::uint32_t getImageNumCols();
 	void setGain(float value /* dB */);
-	void setAcquisitionDelay(float value /* 0 - 1600 µs, 25 ns step */);
+	void setAcquisitionDelay(float value /* 0 - 1600 us, 25 ns step */);
 	// 0: Raw / 1: Envelope
 	void setSignalMode(int mode);
 	void setSamplingFrequency(float fs /* Hz */);
