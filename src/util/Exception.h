@@ -22,18 +22,21 @@
 #include <sstream>
 #include <string>
 
-
-
-namespace Lab {
-
 // __func__ is defined in C99/C++11.
 // __PRETTY_FUNCTION__ is a gcc extension.
+#ifdef __PRETTY_FUNCTION__
+# define EXCEPTION_FUNCTION_NAME __PRETTY_FUNCTION__
+#else
+# define EXCEPTION_FUNCTION_NAME __func__
+#endif
+
+namespace Lab {
 
 #define THROW_EXCEPTION(E,M) \
 	do {\
 		Lab::ErrorMessage em;\
 		E exc;\
-	try { em << M << "\n[file: " << __FILE__ << "]\n[function: " << __PRETTY_FUNCTION__ << "]\n[line: " << __LINE__ << "]"; } catch (...) {}\
+		try { em << M << "\n[file: " << __FILE__ << "]\n[function: " << EXCEPTION_FUNCTION_NAME << "]\n[line: " << __LINE__ << "]"; } catch (...) {}\
 		exc.setMessage(em);\
 		throw exc;\
 	} while (false)

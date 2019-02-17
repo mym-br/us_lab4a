@@ -22,8 +22,7 @@
 #include <cstddef> /* std::size_t */
 #include <vector>
 #ifdef _WIN32
-# define WIN32_LEAN_AND_MEAN
-# include <windows.h> /* Sleep */
+# include <Windows.h> /* Sleep */
 #else
 # include <ctime> /* nanosleep */
 #endif

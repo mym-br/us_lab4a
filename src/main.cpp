@@ -26,18 +26,15 @@
 #include <QApplication>
 #include <QCoreApplication>
 
-#ifdef _WIN32
-# define WIN32_LEAN_AND_MEAN
-# include <windows.h> /* timeBeginPeriod, timeEndPeriod */
-#endif
-
 #include "Log.h"
 #include "Method.h"
 
 #define FFTW_WISDOM_FILE_NAME_SP "fftw_wisdom_sp-us_lab4a.txt"
 #define FFTW_WISDOM_FILE_NAME_DP "fftw_wisdom_dp-us_lab4a.txt"
 
-
+#ifdef _WIN32
+# include <Windows.h> /* timeBeginPeriod, timeEndPeriod */
+#endif
 
 int
 main(int argc, char* argv[])

@@ -22,9 +22,8 @@
 #define TIMER_POSIX_USE_MONOTONIC_CLOCK 1
 
 #ifdef _WIN32
-# define WIN32_LEAN_AND_MEAN
-# include <windows.h>
-# include <winbase.h>
+# include <Windows.h>
+# include <WinBase.h>
 # include "Exception.h"
 #else
 # ifdef TIMER_POSIX_USE_CLOCK_GETTIME
@@ -49,16 +48,21 @@ struct Timer {
 	LARGE_INTEGER ticksPerSecond;
 	LARGE_INTEGER start;
 	Timer() {
+		reset();
+	}
+	void reset() {
 		if (!QueryPerformanceFrequency(&ticksPerSecond)) {
-			throw Exception("Error in QueryPerformanceFrequency.");
+			THROW_EXCEPTION(Exception, "Error in QueryPerformanceFrequency.");
 		}
 		if (!QueryPerformanceCounter(&start)) {
-			throw Exception("Error in QueryPerformanceCounter.");
+			THROW_EXCEPTION(Exception, "Error in QueryPerformanceCounter.");
 		}
 	}
 	double getTime() {
 		LARGE_INTEGER cputime, end;
-		QueryPerformanceCounter(&end);
+		if (!QueryPerformanceCounter(&end)) {
+			THROW_EXCEPTION(Exception, "Error in QueryPerformanceCounter.");
+		}
 		cputime.QuadPart = end.QuadPart - start.QuadPart;
 		return static_cast<double>(cputime.QuadPart) / ticksPerSecond.QuadPart;
 	}

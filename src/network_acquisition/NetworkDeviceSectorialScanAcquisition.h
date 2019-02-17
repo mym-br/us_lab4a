@@ -117,7 +117,7 @@ NetworkDeviceSectorialScanAcquisition<FloatType>::execute(typename DeviceSectori
 		const FloatType sa = std::sin(angle);
 		const FloatType ca = std::cos(angle);
 		for (unsigned int i = 0; i < numRows; ++i) {
-			const FloatType coef = i / (numRows - FloatType{1.0});
+			const FloatType coef = i / (numRows - FloatType(1.0));
 			const FloatType r = (config_.rangeEnd - config_.rangeStart) * coef + config_.rangeStart;
 			XZValue<FloatType>& point = acqData(j, i);
 			point.x = lineStartX_[j] * 1.0e-3f + sa * r;

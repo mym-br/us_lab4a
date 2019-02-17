@@ -20,6 +20,7 @@
 
 #include <vector>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/cstdint.hpp>
 

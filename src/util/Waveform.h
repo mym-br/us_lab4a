@@ -87,14 +87,14 @@ void getType2a(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriod
 {
 	if (numPeriods <= 0.0) numPeriods = 3.25;
 
-	getType2(centerFreq, samplingFreq, numPeriods, FloatType{3.833}, v);
+	getType2(centerFreq, samplingFreq, numPeriods, FloatType(3.833), v);
 }
 template<typename FloatType>
 void getType2b(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
 {
 	if (numPeriods <= 0.0) numPeriods = 8.25;
 
-	getType2(centerFreq, samplingFreq, numPeriods, FloatType{1.437}, v);
+	getType2(centerFreq, samplingFreq, numPeriods, FloatType(1.437), v);
 }
 
 template<typename FloatType>
@@ -102,7 +102,7 @@ void getType2c(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriod
 {
 	if (numPeriods <= 0.0) numPeriods = 4.25;
 
-	getType2(centerFreq, samplingFreq, numPeriods, FloatType{3.5}, v);
+	getType2(centerFreq, samplingFreq, numPeriods, FloatType(3.5), v);
 }
 
 } // namespace Waveform
