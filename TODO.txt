@@ -1,8 +1,6 @@
 
 - Move Python scripts?
 
-- Fix Timer for WIN32.
-
 - [???] Sectorial grid in z-y.
 
 - Waveform: 2a / 2b: numPeriods should be ignored (?).
