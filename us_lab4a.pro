@@ -49,7 +49,6 @@ HEADERS  += \
     src/Controller.h \
     src/acquisition/STAAcquisition.h \
     src/acquisition/SavedSTAAcquisition.h \
-    src/acquisition/MultiplexedAcquisition.h \
     src/configuration/STAConfiguration.h \
     src/fft/FFTW.h \
     src/method/TestMethod.h \
@@ -57,7 +56,6 @@ HEADERS  += \
     src/method/Method.h \
     src/network_acquisition/RawBuffer.h \
     src/network_acquisition/NetworkSTAAcquisition.h \
-    src/network_acquisition/NetworkMultiplexedAcquisition.h \
     src/network_acquisition/ArrayAcqProtocol.h \
     src/network_acquisition/ArrayAcqClient.h \
     src/processor/VectorialSTAProcessor.h \
@@ -85,7 +83,6 @@ HEADERS  += \
     src/util/Array.h \
     src/util/ParameterMap.h \
     src/global.h \
-    src/acquisition/SavedGroupAcquisition.h \
     src/method/ShowImageMethod.h \
     src/method/SingleAcquisitionMethod.h \
     src/Figure3DWindow.h \

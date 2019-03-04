@@ -5,11 +5,6 @@
 
 - Waveform: 2a / 2b: numPeriods should be ignored (?).
 
-- Remove NetworkMultiplexedAcquisition?
-                MultiplexedAcquisition?
-                SavedGroupAcquisition?
-- NetworkMultiplexedAcquisition: value_scale
-
 - project_.loadImageFromHDF5(): Add file name as parameter?
 
 - Drawing of array elements.
