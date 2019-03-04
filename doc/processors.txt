@@ -1,9 +1,4 @@
 
-
-
-================================================================================
-Processors
-
 DefaultSTAProcessor
 	Synthetic Transmit Aperture.
 	4x interpolation.
@@ -16,9 +11,3 @@ VectorialSTAProcessor
 	Interpolation.
 	Coherence factor.
 	Envelope.
-
-================================================================================
-Notes
-
-- The element/channel numbers start with 0 (zero).
-- The HDF5 files must use double precision.
