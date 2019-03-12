@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: iso-8859-1 -*-
+# This file is in the public domain.
 
 import h5py
 from matplotlib import rc

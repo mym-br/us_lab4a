@@ -1,3 +1,5 @@
+# This file is in the public domain.
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import fftconvolve, freqz

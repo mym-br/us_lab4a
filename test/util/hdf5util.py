@@ -1,3 +1,5 @@
+# This file is in the public domain.
+
 import h5py
 from h5py import h5z
 import numpy as np

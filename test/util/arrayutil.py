@@ -1,3 +1,5 @@
+# This file is in the public domain.
+
 import numpy as np
 
 def normalize(a):

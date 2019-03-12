@@ -1,6 +1,6 @@
-#!/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 # This file is in the public domain.
+
 """
 Demo of TeX rendering.
 
@@ -12,8 +12,8 @@ properly installed on your system.  The first time you run a script
 you will see a lot of output from tex and associated tools.  The next
 time, the run may be silent, as a lot of the information is cached in
 ~/.tex.cache
-
 """
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import rc

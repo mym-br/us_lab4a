@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# This file is in the public domain.
 
 import matplotlib.pyplot as plt
 import numpy as np

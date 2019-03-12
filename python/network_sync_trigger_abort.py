@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# This file is in the public domain.
 
 # Network trigger abort.
 
