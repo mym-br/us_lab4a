@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # This file is in the public domain.
 
 import matplotlib.pyplot as plt
@@ -10,16 +10,16 @@ MIN_PADDING = 1024
 
 x = hdf5util.read_to_ndarray(file_path='base48_tx15_rx15-calib_plane_40mm_avg1.h5', dataset_name='ascan')
 x = x.flatten()
-print 'len(x):', len(x)
+print('len(x):', len(x))
 
-#size = np.maximum(arrayutil.get_next_power_of_two(len(x) + MIN_PADDING), 2.0 * MIN_PADDING)
-size = np.maximum(arrayutil.get_next_fast_even_fft_size(len(x) + MIN_PADDING), 2.0 * MIN_PADDING)
-print 'size:', size
+#size = np.maximum(arrayutil.get_next_power_of_two(len(x) + MIN_PADDING), 2 * MIN_PADDING)
+size = np.maximum(arrayutil.get_next_fast_even_fft_size(len(x) + MIN_PADDING), 2 * MIN_PADDING)
+print('size:', size)
 
 xp = arrayutil.pad_with_zeros(x, size)
 
 h = hilbert(xp)[:len(x)]
-print 'h.shape:', h.shape
+print('h.shape:', h.shape)
 ah = np.abs(h)
 
 plt.figure()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # This file is in the public domain.
 
 import h5py
@@ -22,7 +22,7 @@ b = np.zeros(b_dataset.shape)
 b_dataset.read_direct(b)
 plt.plot(b[0, :])
 plt.title('b')
-print 'b.shape = ', b.shape
+print('b.shape = ', b.shape)
 #plt.figure(1, figsize=(8, 3.5), dpi=85)
 #plt.clf()
 #plt.hold(True)
@@ -39,7 +39,7 @@ plt.title('x')
 
 plt.figure(3)
 y = sp.signal.convolve(x, b)
-print 'y.shape = ', y.shape
+print('y.shape = ', y.shape)
 plt.plot(y[0, :])
 plt.title('y')
 f = h5py.File('filter_y.h5', 'w')
@@ -48,7 +48,7 @@ f.close()
 
 plt.figure(4)
 y2 = sp.signal.convolve(x, y)
-print 'y2.shape = ', y2.shape
+print('y2.shape = ', y2.shape)
 plt.plot(y2[0, :])
 plt.title('y2')
 f = h5py.File('filter_y2.h5', 'w')

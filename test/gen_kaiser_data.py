@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # This file is in the public domain.
 
 import matplotlib.pyplot as plt
@@ -47,7 +47,7 @@ beta_list_ref = np.empty_like(tol_db_list)
 for i, tol in enumerate(np.nditer(tol_db_list)):
     beta_list_ref[i] = kaiser_beta(tol)
 
-print 'max abs beta error:', np.abs(beta_list - beta_list_ref).max()
+print('max abs beta error:', np.abs(beta_list - beta_list_ref).max())
 hdf5util.write_ndarray(data=tol_db_list, file_path='kaiser_tol_db.h5', dataset_name='v')
 hdf5util.write_ndarray(data=beta_list_ref, file_path='kaiser_beta.h5', dataset_name='v')
 
@@ -75,7 +75,7 @@ for i, trans_width in enumerate(np.nditer(trans_width_list)):
     plt.title('Window size (transition width: ' + str(trans_width))
     plt.legend(loc='upper right', labelspacing=0.2)
 
-    print 'max abs size error (trans. width = ', trans_width, '):', np.abs(size_matrix[i, :] - size_matrix_ref[i, :]).max()
+    print('max abs size error (trans. width = ', trans_width, '):', np.abs(size_matrix[i, :] - size_matrix_ref[i, :]).max())
 
     hdf5util.write_ndarray(data=size_matrix_ref[i, :].astype(float),
                            file_path='kaiser_size-trans_width_' + str(trans_width) + '.h5',

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # This file is in the public domain.
 
 import matplotlib.pyplot as plt

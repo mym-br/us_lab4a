@@ -80,9 +80,9 @@ def get_next_fast_even_fft_size(n):
         n += 1
     while True:
         m = n
-        while m & 1 == 0: m /= 2
-        while m % 3 == 0: m /= 3
-        while m % 5 == 0: m /= 5
+        while m & 1 == 0: m //= 2
+        while m % 3 == 0: m //= 3
+        while m % 5 == 0: m //= 5
         if m == 1:
             break # n is completely factorable by twos, threes, and fives and is even
         n += 2

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # This file is in the public domain.
 
 import matplotlib.pyplot as plt
@@ -18,27 +18,27 @@ t = arrayutil.get_time_sequence(ascan, FS, offset=0)
 hdf5util.write_ndarray(data=ascan, file_path='interp_source.h5', dataset_name='v')
 
 for upsamp_factor in [2, 8, 64]:
-    print '### upsamp_factor:', upsamp_factor
+    print('### upsamp_factor:', upsamp_factor)
     upsamp_filter = interpolation.upsampling_filter(upsamp_factor=upsamp_factor,
                                                     transition_width=UPSAMP_FILTER_TRANSITION_WIDTH,
                                                     tolerance=UPSAMP_FILTER_TOLERANCE,
                                                     plot=False)
-    print 'filter length:', len(upsamp_filter)
+    print('filter length:', len(upsamp_filter))
 
     ascan_r, t_r = interpolation.interpolate(ascan,
                                              upsamp_factor,
                                              upsamp_filter,
                                              t,
                                              FS)
-    offset = (len(ascan_r) - (len(ascan) * upsamp_factor)) / 2
-    print 'offset:', offset
+    offset = (len(ascan_r) - len(ascan) * upsamp_factor) // 2
+    print('offset:', offset)
     ascan_r = ascan_r[offset:-offset]
     t_r = t_r[offset:-offset]
-    print 'len(ascan)', len(ascan)
-    print 'len(ascan_r)', len(ascan_r)
+    print('len(ascan)', len(ascan))
+    print('len(ascan_r)', len(ascan_r))
 
     max_error = np.abs(ascan - ascan_r[::upsamp_factor]).max()
-    print 'max_error:', max_error
+    print('max_error:', max_error)
 
     plt.figure()
     plt.plot(t, ascan, label='orig')
