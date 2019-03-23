@@ -1,0 +1,10 @@
+
+method = single_virtual_source_network_sync_save_signals
+
+img_config_file = config.txt
+
+array_config_file = config-array.txt
+
+data_dir = saved_acquisition
+
+sync_server_port = 5544

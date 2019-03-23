@@ -26,6 +26,7 @@
 #include "FileUtil.h"
 #include "ImageGrid.h"
 #include "Log.h"
+#include "Matrix.h"
 #include "Method.h"
 #include "NetworkSTAAcquisition.h"
 #include "ParallelHilbertEnvelope.h"
@@ -88,15 +89,15 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 	if (project_.method() == MethodType::sta_network_sync_save_signals) {
 		auto acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
-		const unsigned int serverPort = taskPM->value<unsigned int>("sync_server_port" , 1024, 65535);
+		const unsigned int serverPort = taskPM->value<unsigned int>("sync_server_port", 1024, 65535);
 		project_.createDirectory(dataDir, true);
 		saveSignals(config, *acquisition, serverPort, baseElement, dataDir);
 		return;
 	}
 
-	const FloatType peakOffset           = taskPM->value<FloatType>(   "peak_offset"      ,      0.0,    50.0);
+	const FloatType peakOffset           = taskPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
 	bool vectorialProcessingWithEnvelope = taskPM->value<bool>(        "calculate_envelope_in_processing");
-	const unsigned int upsamplingFactor  = taskPM->value<unsigned int>("upsampling_factor",        1,     128);
+	const unsigned int upsamplingFactor  = taskPM->value<unsigned int>("upsampling_factor",   1,  128);
 	const std::string outputDir          = taskPM->value<std::string>( "output_dir");
 	const std::string txApodDesc         = taskPM->value<std::string>( "tx_apodization");
 	const std::string rxApodDesc         = taskPM->value<std::string>( "rx_apodization");

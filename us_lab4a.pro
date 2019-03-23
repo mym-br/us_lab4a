@@ -150,7 +150,8 @@ HEADERS  += \
     src/processor/Vectorial3DTnRnProcessor.h \
     src/processor/ArrayProcessor.h \
     src/network_acquisition/NetworkTnRnAcquisition.h \
-    src/acquisition/SavedTnRnAcquisition.h
+    src/acquisition/SavedTnRnAcquisition.h \
+    src/method/NetworkSyncSingleVirtualSourceMethod.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \

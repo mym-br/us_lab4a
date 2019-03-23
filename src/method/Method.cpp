@@ -20,6 +20,7 @@
 #include "DeviceSectorialScanMethod.h"
 #include "Exception.h"
 #include "MultiLayerImageMethod.h"
+#include "NetworkSyncSingleVirtualSourceMethod.h"
 #include "NetworkSyncSTAMethod.h"
 #include "Project.h"
 #include "ShowImageMethod.h"
@@ -75,6 +76,8 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_dp_saved_sequence);
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_simulated);
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_sp_network_continuous);
+	ADD_MAP_ITEM(single_virtual_source_network_sync_imaging);
+	ADD_MAP_ITEM(single_virtual_source_network_sync_save_signals);
 	ADD_MAP_ITEM(sta_3d_simulated_save_signals);
 	ADD_MAP_ITEM(sta_3d_simulated_seq_y_save_signals);
 	ADD_MAP_ITEM(sta_3d_vectorial_simulated);
@@ -154,6 +157,9 @@ Method::get(Project& project)
 		return new SingleVirtualSourceMethod<double>(project);
 	case MethodType::single_virtual_source_3d_vectorial_sp_network_continuous:
 		return new SingleVirtualSourceMethod<float>(project);
+	case MethodType::single_virtual_source_network_sync_imaging:      // falls through
+	case MethodType::single_virtual_source_network_sync_save_signals:
+		return new NetworkSyncSingleVirtualSourceMethod<double>(project);
 	case MethodType::show_image:
 		return new ShowImageMethod(project);
 	case MethodType::multi_layer_image:

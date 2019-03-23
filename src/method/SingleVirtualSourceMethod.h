@@ -297,7 +297,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		return;
 	}
 
-	const FloatType peakOffset  = taskPM->value<FloatType>("peak_offset", 0.0, 50.0);
+	const FloatType peakOffset = taskPM->value<FloatType>("peak_offset", 0.0, 50.0);
 
 	const std::string rxApodFile = taskPM->value<std::string>("rx_apodization_file");
 	std::vector<FloatType> rxApod;

@@ -60,6 +60,8 @@ enum class MethodType {
 	single_virtual_source_3d_vectorial_dp_saved_sequence,
 	single_virtual_source_3d_vectorial_simulated,
 	single_virtual_source_3d_vectorial_sp_network_continuous,
+	single_virtual_source_network_sync_imaging,
+	single_virtual_source_network_sync_save_signals,
 	sta_3d_simulated_save_signals,
 	sta_3d_simulated_seq_y_save_signals,
 	sta_3d_vectorial_simulated,

@@ -1,0 +1,24 @@
+
+method = multi_image_vtk_file
+
+image_dir = output
+
+x_file = image_x
+x_dataset = x
+
+y_file = image_y
+y_dataset = y
+
+z_file = image_z
+z_dataset = z
+
+#image_file = image_value
+#image_dataset = value
+image_file = image_cf
+image_dataset = cf
+
+# (dB)
+min_decibels = -30.0
+
+log_scale = true
+invert_z = true

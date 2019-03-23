@@ -1,0 +1,44 @@
+
+#
+num_elements = 32
+
+#
+num_elements_mux = 64
+
+#
+base_element = 16
+
+# (Hz)
+center_frequency = 0.5e6
+max_frequency = 1.0e6
+
+#
+num_pulses = 1
+
+# (s)
+acquisition_time = 667.0e-6
+
+# 0 - 48 (dB)
+min_gain = 45.0
+
+# 0 - 48 (dB)
+max_gain = 45.0
+
+# (m/s) [T = 22.14 °C]
+propagation_speed_1 = 1488.76
+
+# (s)
+acquisition_delay = 0.0
+
+# (Hz)
+sampling_frequency = 4.0e6
+
+# (m)
+dead_zone_m = 10.0e-3
+
+# 0.0: normalize
+value_scale = 0.0
+
+# (m)
+tx_focus_z = -50.0e-3
+#tx_focus_z = 50.0e-3
