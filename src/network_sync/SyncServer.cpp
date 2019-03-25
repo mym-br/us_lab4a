@@ -17,6 +17,7 @@
 
 #include "SyncServer.h"
 
+#include <cstddef> /* std::size_t */
 #include <iostream>
 #include <string>
 
@@ -81,7 +82,7 @@ SyncServer::waitForTrigger()
 	}
 
 	boost::asio::streambuf buf;
-	/*size_t n =*/ boost::asio::read_until(socket_, buf, '\n', ec);
+	/*std::size_t n =*/ boost::asio::read_until(socket_, buf, '\n', ec);
 	if (ec) {
 		THROW_EXCEPTION(IOException, "Error occurred while reading from client: " << ec.message() << '.');
 	}
@@ -120,7 +121,7 @@ SyncServer::freeTrigger()
 	LOG_INFO << "[SyncServer] Waiting for the client to disconnect...";
 
 	boost::asio::streambuf buf;
-	size_t n = boost::asio::read_until(socket_, buf, '\n', ec);
+	std::size_t n = boost::asio::read_until(socket_, buf, '\n', ec);
 	if (ec && ec != boost::asio::error::eof) {
 		THROW_EXCEPTION(IOException, "Error occurred while reading from client: " << ec.message() << '.');
 	}
