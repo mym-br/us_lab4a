@@ -4,4 +4,4 @@ analytic_signal_coherence_factor_method = phase_coherence_factor
 #analytic_signal_coherence_factor_method = prng_phase_coherence_factor
 
 #
-phase_coherence_factor_gamma = 1.2
+phase_coherence_factor_gamma = 2.0
