@@ -88,9 +88,9 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	const std::string dataDir      = taskPM->value<std::string>( "data_dir");
 
 	if (project_.method() == MethodType::sta_network_sync_save_signals) {
+		project_.createDirectory(dataDir, true);
 		auto acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
 		const unsigned int serverPort = taskPM->value<unsigned int>("sync_server_port", 1024, 65535);
-		project_.createDirectory(dataDir, true);
 		saveSignals(config, *acquisition, serverPort, baseElement, dataDir);
 		return;
 	}

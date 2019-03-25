@@ -109,9 +109,9 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 						config.txElemPos, baseElement, config.numElements, txDelays);
 
 	if (project_.method() == MethodType::single_virtual_source_network_sync_save_signals) {
+		project_.createDirectory(dataDir, true);
 		auto acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
 		const unsigned int serverPort = taskPM->value<unsigned int>("sync_server_port", 1024, 65535);
-		project_.createDirectory(dataDir, true);
 		saveSignals(*acquisition, serverPort, baseElement, txDelays, dataDir);
 		return;
 	}
