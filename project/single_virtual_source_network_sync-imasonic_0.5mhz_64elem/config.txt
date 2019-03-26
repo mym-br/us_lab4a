@@ -37,7 +37,8 @@ sampling_frequency = 4.0e6
 dead_zone_m = 10.0e-3
 
 # 0.0: normalize
-value_scale = 0.0
+value_scale = 1.0
+#value_scale = 0.62007
 
 # (m)
 tx_focus_z = -50.0e-3

@@ -18,6 +18,7 @@
 #ifndef NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_H
 #define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_H
 
+#include <algorithm> /* for_each */
 #include <memory>
 #include <string>
 #include <vector>
@@ -43,6 +44,8 @@
 #define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_MAX_STEPS 10000
 #define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE "/time"
 #define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET "time"
+#define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE "/y"
+#define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET "y"
 
 
 
@@ -60,7 +63,7 @@ private:
 	NetworkSyncSingleVirtualSourceMethod(const NetworkSyncSingleVirtualSourceMethod&) = delete;
 	NetworkSyncSingleVirtualSourceMethod& operator=(const NetworkSyncSingleVirtualSourceMethod&) = delete;
 
-	void saveSignals(TnRnAcquisition<FloatType>& acq, unsigned int syncServerPort,
+	void saveSignals(ConstParameterMapPtr taskPM, TnRnAcquisition<FloatType>& acq,
 				unsigned int baseElement, const std::vector<FloatType>& txDelays,
 				const std::string& dataDir);
 
@@ -111,18 +114,13 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 	if (project_.method() == MethodType::single_virtual_source_network_sync_save_signals) {
 		project_.createDirectory(dataDir, true);
 		auto acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
-		const unsigned int serverPort = taskPM->value<unsigned int>("sync_server_port", 1024, 65535);
-		saveSignals(*acquisition, serverPort, baseElement, txDelays, dataDir);
+		saveSignals(taskPM, *acquisition, baseElement, txDelays, dataDir);
 		return;
 	}
 
 	const FloatType peakOffset          = taskPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
 	const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor",   1,  128);
 	const std::string outputDir         = taskPM->value<std::string>( "output_dir");
-
-	ConstParameterMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
-	const FloatType minY  = scanPM->value<FloatType>("min_y" , -10000.0, 10000.0);
-	const FloatType yStep = scanPM->value<FloatType>("y_step",   1.0e-6,  1000.0);
 
 	const std::string rxApodFile = taskPM->value<std::string>( "rx_apodization_file");
 	std::vector<FloatType> rxApod;
@@ -146,10 +144,14 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	FloatType valueLevel = 0.0;
 
+	// Load y.
+	std::vector<double> yList;
+	const std::string yFileName = dataDir + NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE;
+	project_.loadHDF5(yFileName, NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET, yList);
+
 	Timer timer;
 
-	FloatType y = minY;
-	for (unsigned int acqNumber = 0; ; ++acqNumber, y += yStep) {
+	for (unsigned int acqNumber = 0; acqNumber < yList.size(); ++acqNumber) {
 		std::string acqDataDir = FileUtil::path(dataDir, "/", acqNumber);
 		if (!project_.directoryExists(acqDataDir)) {
 			break;
@@ -165,18 +167,24 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 		processor->process(baseElement, gridData);
 
 		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
-			iter->y = y; // this is the y value that will be saved to file
+			iter->y = yList[acqNumber]; // this is the y value that will be saved to file
 		}
 
 		std::string acqOutputDir = FileUtil::path(outputDir, "/", acqNumber);
 		project_.createDirectory(acqOutputDir, true);
+
+		if (config.valueScale != 0.0) {
+			std::for_each(gridData.begin(), gridData.end(),
+				Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(config.valueScale));
+		}
 
 		project_.saveImageToHDF5(gridData, acqOutputDir);
 		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
 		project_.showFigure3D(1, "Raw image", &gridData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config.valueScale);
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS,
+					config.valueScale != 0.0 ? 1.0 : 0.0);
 
 		if (coherenceFactorEnabled) {
 			LOG_DEBUG << "Saving the image factors...";
@@ -192,7 +200,8 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 			project_.saveHDF5(gridData, acqOutputDir + "/image_cf", "cf", Util::CopyValueOp());
 
 			project_.showFigure3D(2, "Coherence factor image", &gridData, &pointList,
-						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config.valueScale);
+						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS,
+						config.valueScale != 0.0 ? 1.0 : 0.0);
 		}
 	}
 
@@ -203,33 +212,66 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 
 template<typename FloatType>
 void
-NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(TnRnAcquisition<FloatType>& acq, unsigned int syncServerPort,
+NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPtr taskPM, TnRnAcquisition<FloatType>& acq,
 								unsigned int baseElement, const std::vector<FloatType>& txDelays,
 								const std::string& dataDir)
 {
-	SyncServer server(syncServerPort);
+	ConstParameterMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
+	const unsigned int serverPort = scanPM->value<unsigned int>("sync_server_port", 1024, 65535);
+	const bool asyncAcq           = scanPM->value<bool>(        "async_acquisition");
+	const FloatType minY          = scanPM->value<FloatType>(   "min_y", -10000.0, 10000.0);
+
+	SyncServer server(serverPort);
 	std::vector<typename TnRnAcquisition<FloatType>::AcquisitionDataType> acqDataList;
 	acqDataList.reserve(1000);
 	std::vector<double> timeList;
 	timeList.reserve(1000);
+	std::vector<double> yList;
+	yList.reserve(1000);
 
 	// Capture signals.
 	Timer timer;
-	const double t0 = timer.getTime();
 	unsigned int acqNumber = 0;
-	while (true) {
+	if (asyncAcq) {
+		const FloatType ySpeed = scanPM->value<FloatType>("y_speed", 1.0, 100000.0) * (1.0e-3 / 60.0);
+		const FloatType maxY   = scanPM->value<FloatType>("max_y", minY, 10000.0);
 		LOG_DEBUG << "Waiting for trigger...";
-		if (!server.waitForTrigger()) break;
-		if (acqNumber == NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_MAX_STEPS) break;
-		LOG_INFO << "ACQ " << acqNumber;
+		if (server.waitForTrigger()) {
+			server.freeTrigger(); // start the array movement
+			const double t0 = timer.getTime();
+			FloatType y = minY;
+			while (y <= maxY) {
+				if (acqNumber == NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_MAX_STEPS) break;
+				LOG_INFO << "ACQ " << acqNumber;
 
-		timeList.push_back(timer.getTime() - t0);
-		acqDataList.emplace_back();
-		acq.execute(baseElement, txDelays, acqDataList.back());
+				acqDataList.emplace_back();
+				timeList.push_back(timer.getTime() - t0);
+				y = minY + timeList.back() * ySpeed; // variable step
+				yList.push_back(y);
+				acq.execute(baseElement, txDelays, acqDataList.back());
 
-		server.freeTrigger();
+				++acqNumber;
+			}
+		}
+		LOG_DEBUG << "Average y step: " << (yList.back() - yList.front()) / (yList.size() - 1);
+	} else {
+		const FloatType yStep = scanPM->value<FloatType>("y_step", 1.0e-6, 1000.0);
+		const double t0 = timer.getTime();
+		while (true) {
+			LOG_DEBUG << "Waiting for trigger...";
+			if (!server.waitForTrigger()) break; // trigger abort
+			if (acqNumber == NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_MAX_STEPS) break;
+			LOG_INFO << "ACQ " << acqNumber;
 
-		++acqNumber;
+			acqDataList.emplace_back();
+			timeList.push_back(timer.getTime() - t0);
+			yList.push_back(minY + acqNumber * yStep); // fixed step
+			acq.execute(baseElement, txDelays, acqDataList.back());
+
+			server.freeTrigger(); // let the array move to the next position
+
+			++acqNumber;
+		}
 	}
 
 	// Save signals.
@@ -237,8 +279,11 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(TnRnAcquisition<Flo
 		project_.saveSignalsToHDF5(acqDataList[i], dataDir, i, baseElement);
 	}
 	// Save times.
-	const std::string fileName = dataDir + NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE;
-	project_.saveHDF5(timeList, fileName, NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET);
+	const std::string timeFileName = dataDir + NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE;
+	project_.saveHDF5(timeList, timeFileName, NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET);
+	// Save y.
+	const std::string yFileName = dataDir + NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE;
+	project_.saveHDF5(yList, yFileName, NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET);
 }
 
 } // namespace Lab

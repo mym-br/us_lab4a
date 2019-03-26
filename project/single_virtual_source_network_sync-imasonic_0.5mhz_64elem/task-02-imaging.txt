@@ -5,8 +5,6 @@ img_config_file = config.txt
 
 array_config_file = config-array.txt
 
-scan_config_file = config-scan.txt
-
 data_dir = saved_acquisition
 
 output_dir = output

@@ -18,6 +18,7 @@
 #include "MultiLayerImageMethod.h"
 
 #include <cmath>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -46,17 +47,15 @@ MultiLayerImageMethod::execute()
 	const std::string imageBaseDir = taskPM->value<std::string>("image_dir");
 	const std::string xFile        = taskPM->value<std::string>("x_file");
 	const std::string xDataset     = taskPM->value<std::string>("x_dataset");
+	const std::string yFile        = taskPM->value<std::string>("y_file");
+	const std::string yDataset     = taskPM->value<std::string>("y_dataset");
 	const std::string zFile        = taskPM->value<std::string>("z_file");
 	const std::string zDataset     = taskPM->value<std::string>("z_dataset");
 	const std::string imageFile    = taskPM->value<std::string>("image_file");
 	const std::string imageDataset = taskPM->value<std::string>("image_dataset");
-	const float minDecibels        = taskPM->value<float>(      "min_decibels",   -100.0,    -1.0);
+	const float minDecibels        = taskPM->value<float>(      "min_decibels", -100.0, -1.0);
 	const bool logScale            = taskPM->value<bool>(       "log_scale");
 	const bool invertZ             = taskPM->value<bool>(       "invert_z");
-
-	ConstParameterMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
-	const float minY  = scanPM->value<float>("min_y" , -10000.0, 10000.0);
-	const float yStep = scanPM->value<float>("y_step",      0.0,   100.0);
 
 	Project::GridDataType projGridData;
 	std::vector<XYZValue<float>> pointArray;
@@ -64,7 +63,6 @@ MultiLayerImageMethod::execute()
 	const float minValue = Util::decibelsToLinear(minDecibels);
 	const float valueCoeff = logScale ? (-1.0f / minDecibels) : (1.0f / (1.0f - minValue));
 	unsigned int j1, j2, j3;
-	float y = minY;
 
 	auto calcValue = [&](float value) -> float {
 		value = std::abs(value);
@@ -94,23 +92,26 @@ MultiLayerImageMethod::execute()
 			const unsigned int endIndex = pointArray.size();
 			storePoint(endIndex, XYZValue<float>{
 						projGridData(i, j1).x,
-						y,
+						projGridData(i, j1).y,
 						invertZ ? -projGridData(i, j1).z : projGridData(i, j1).z,
 						calcValue(projGridData(i, j1).value)});
 			storePoint(endIndex, XYZValue<float>{
 						projGridData(i, j2).x,
-						y,
+						projGridData(i, j2).y,
 						invertZ ? -projGridData(i, j2).z : projGridData(i, j2).z,
 						calcValue(projGridData(i, j2).value)});
 			storePoint(endIndex, XYZValue<float>{
 						projGridData(i, j3).x,
-						y,
+						projGridData(i, j3).y,
 						invertZ ? -projGridData(i, j3).z : projGridData(i, j3).z,
 						calcValue(projGridData(i, j3).value)});
 		}
 	};
 
-	for (unsigned int acqNumber = 0; ; ++acqNumber, y += yStep) {
+	float minY = std::numeric_limits<float>::max();
+	float maxY = std::numeric_limits<float>::lowest();
+
+	for (unsigned int acqNumber = 0; ; ++acqNumber) {
 		std::string imageDir = FileUtil::path(imageBaseDir, "/", acqNumber);
 		if (!project_.directoryExists(imageDir)) {
 			break;
@@ -121,10 +122,15 @@ MultiLayerImageMethod::execute()
 		project_.loadHDF5(imageDir + '/' + imageFile, imageDataset, projGridData, Util::CopyToValueOp());
 		LOG_DEBUG << "Loading the X coordinates...";
 		project_.loadHDF5(imageDir + '/' + xFile, xDataset, projGridData, Util::CopyToXOp());
+		LOG_DEBUG << "Loading the Y coordinates...";
+		project_.loadHDF5(imageDir + '/' + yFile, yDataset, projGridData, Util::CopyToYOp());
 		LOG_DEBUG << "Loading the Z coordinates...";
 		project_.loadHDF5(imageDir + '/' + zFile, zDataset, projGridData, Util::CopyToZOp());
 
 		if (projGridData.n1() < 2 || projGridData.n2() < 2) continue;
+
+		if (projGridData(0, 0).y < minY) minY = projGridData(0, 0).y;
+		if (projGridData(0, 0).y > maxY) maxY = projGridData(0, 0).y;
 
 		for (unsigned int i = 0; i < projGridData.n1() - 1; ++i) {
 			unsigned int jA, jB;
@@ -163,7 +169,6 @@ MultiLayerImageMethod::execute()
 
 	// Add points to indicate the original limits.
 	if (!pointArray.empty() && projGridData.n1() >= 2 && projGridData.n2() >= 2) {
-		const float maxY = y - yStep;
 		const auto& firstPoint = projGridData(0, 0);
 		float minX = firstPoint.x;
 		float maxX = firstPoint.x;

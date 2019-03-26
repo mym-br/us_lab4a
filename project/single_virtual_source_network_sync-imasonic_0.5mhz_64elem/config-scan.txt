@@ -1,4 +1,26 @@
 
+#
+async_acquisition = true
+
+#
+sync_server_port = 5544
+
 # (m)
 min_y = -170.0e-3
+
+###############################################################################
+# Synchronous acquisition.
+
+# (m)
 y_step = 1.5e-3
+
+###############################################################################
+# Asynchronous acquisition.
+
+# (mm/min)
+# target_step (mm) * approx_acq_rate (Hz) * 60
+# 1.5 * 5.8 * 60
+y_speed = 522.0
+
+# (m)
+max_y = 170.0e-3
