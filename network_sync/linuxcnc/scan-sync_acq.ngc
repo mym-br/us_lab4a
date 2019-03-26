@@ -1,0 +1,35 @@
+%
+(Scan with network sync.)
+
+(This file is in the public domain.)
+
+(==============================================================================)
+(Parameters.)
+
+#<_x_begin> =  20.0
+#<_x_end>   = 370.0 (20 + 350)
+#<_x_step>  =   1.5
+
+#<_feed_rate> = 1200.0 (mm/min)
+
+(==============================================================================)
+
+G21 (lengths in mm)
+G17 (XY plane)
+F#<_feed_rate>
+
+G0 X[#<_x_begin> - #<_x_step>]
+
+#<pos_x> = #<_x_begin>
+o200 while [#<pos_x> LE #<_x_end>]
+  G1 X#<pos_x>
+  M101 (trigger)
+
+  #<pos_x> = [#<pos_x> + #<_x_step>]
+o200 endwhile
+
+M102 (trigger abort)
+G0 X0.0
+
+M2 (end the program)
+%

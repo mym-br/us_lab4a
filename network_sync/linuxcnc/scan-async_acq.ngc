@@ -1,0 +1,28 @@
+%
+(Scan with network sync.)
+(Synchronous start, asynchronous acquisition.)
+
+(This file is in the public domain.)
+
+(==============================================================================)
+(Parameters.)
+
+#<_x_begin> =  20.0
+#<_x_end>   = 420.0 (20 + 350 + 50)
+
+#<_feed_rate> = 522.0 (mm/min)
+
+(==============================================================================)
+
+G21 (lengths in mm)
+G17 (XY plane)
+F#<_feed_rate>
+
+G0 X#<_x_begin>
+
+M101 (trigger)
+G1 X#<_x_end>
+G0 X0.0
+
+M2 (end the program)
+%
