@@ -3,6 +3,6 @@ method = sta_network_sync_save_signals
 
 sta_config_file = config-sta-cyl.txt
 
-data_dir = saved_acquisition
+scan_config_file = config-scan.txt
 
-sync_server_port = 5544
+data_dir = saved_acquisition

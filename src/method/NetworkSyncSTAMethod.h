@@ -18,6 +18,7 @@
 #ifndef NETWORKSYNCSTAMETHOD_H
 #define NETWORKSYNCSTAMETHOD_H
 
+#include <algorithm> /* for_each */
 #include <memory>
 #include <string>
 #include <vector>
@@ -42,6 +43,12 @@
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
+#define NETWORK_SYNC_STA_METHOD_MAX_STEPS 10000
+#define NETWORK_SYNC_STA_METHOD_TIME_FILE "/time"
+#define NETWORK_SYNC_STA_METHOD_TIME_DATASET "time"
+#define NETWORK_SYNC_STA_METHOD_Y_FILE "/y"
+#define NETWORK_SYNC_STA_METHOD_Y_DATASET "y"
+
 
 
 namespace Lab {
@@ -58,8 +65,8 @@ private:
 	NetworkSyncSTAMethod(const NetworkSyncSTAMethod&) = delete;
 	NetworkSyncSTAMethod& operator=(const NetworkSyncSTAMethod&) = delete;
 
-	void saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
-				unsigned int syncServerPort, unsigned int baseElement, const std::string& dataDir);
+	void saveSignals(ConstParameterMapPtr taskPM, const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
+				unsigned int baseElement, const std::string& dataDir);
 
 	Project& project_;
 };
@@ -85,13 +92,12 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	ConstParameterMapPtr staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
 	const STAConfiguration<FloatType> config(staPM);
 	const unsigned int baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-	const std::string dataDir      = taskPM->value<std::string>( "data_dir");
+	const std::string dataDir      = taskPM->value<std::string>("data_dir");
 
 	if (project_.method() == MethodType::sta_network_sync_save_signals) {
 		project_.createDirectory(dataDir, true);
 		auto acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
-		const unsigned int serverPort = taskPM->value<unsigned int>("sync_server_port", 1024, 65535);
-		saveSignals(config, *acquisition, serverPort, baseElement, dataDir);
+		saveSignals(taskPM, config, *acquisition, baseElement, dataDir);
 		return;
 	}
 
@@ -101,10 +107,6 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	const std::string outputDir          = taskPM->value<std::string>( "output_dir");
 	const std::string txApodDesc         = taskPM->value<std::string>( "tx_apodization");
 	const std::string rxApodDesc         = taskPM->value<std::string>( "rx_apodization");
-
-	ConstParameterMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
-	const FloatType minY  = scanPM->value<FloatType>("min_y" , -10000.0, 10000.0);
-	const FloatType yStep = scanPM->value<FloatType>("y_step",   1.0e-6,  1000.0);
 
 	std::vector<FloatType> txApod(config.numElements);
 	WindowFunction::get(txApodDesc, config.numElements, txApod);
@@ -139,10 +141,14 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	FloatType valueLevel = 0.0;
 
+	// Load y.
+	std::vector<double> yList;
+	const std::string yFileName = dataDir + NETWORK_SYNC_STA_METHOD_Y_FILE;
+	project_.loadHDF5(yFileName, NETWORK_SYNC_STA_METHOD_Y_DATASET, yList);
+
 	Timer timer;
 
-	FloatType y = minY;
-	for (unsigned int acqNumber = 0; ; ++acqNumber, y += yStep) {
+	for (unsigned int acqNumber = 0; acqNumber < yList.size(); ++acqNumber) {
 		std::string acqDataDir = FileUtil::path(dataDir, "/", acqNumber);
 		if (!project_.directoryExists(acqDataDir)) {
 			break;
@@ -151,20 +157,27 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		LOG_DEBUG << "ACQ number: " << acqNumber;
 
 		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
-			iter->y = y;
+			iter->y = yList[acqNumber];
 		}
+
 		acquisition->setDataDir(acqDataDir);
 		processor->process(baseElement, gridData);
 
 		std::string acqOutputDir = FileUtil::path(outputDir, "/", acqNumber);
 		project_.createDirectory(acqOutputDir, true);
 
+		if (config.valueScale != 0.0) {
+			std::for_each(gridData.begin(), gridData.end(),
+				Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(config.valueScale));
+		}
+
 		project_.saveImageToHDF5(gridData, acqOutputDir);
 		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
 		project_.showFigure3D(1, "Raw image", &gridData, &pointList,
-					true, visual, Figure::COLORMAP_VIRIDIS, config.valueScale);
+					true, visual, Figure::COLORMAP_VIRIDIS,
+					config.valueScale != 0.0 ? 1.0 : 0.0);
 
 		if (coherenceFactorEnabled) {
 			LOG_DEBUG << "Saving the image factors...";
@@ -184,7 +197,8 @@ NetworkSyncSTAMethod<FloatType>::execute()
 			project_.saveHDF5(gridData, acqOutputDir + "/image_cf", "cf", Util::CopyValueOp());
 
 			project_.showFigure3D(2, "Coherence factor image", &gridData, &pointList,
-						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config.valueScale);
+						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS,
+						config.valueScale != 0.0 ? 1.0 : 0.0);
 		}
 	}
 
@@ -195,25 +209,49 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 template<typename FloatType>
 void
-NetworkSyncSTAMethod<FloatType>::saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
-						unsigned int syncServerPort, unsigned int baseElement, const std::string& dataDir)
+NetworkSyncSTAMethod<FloatType>::saveSignals(ConstParameterMapPtr taskPM, const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
+						unsigned int baseElement, const std::string& dataDir)
 {
-	SyncServer server(syncServerPort);
-	typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+	ConstParameterMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
+	const unsigned int serverPort = scanPM->value<unsigned int>("sync_server_port", 1024, 65535);
+	const FloatType minY          = scanPM->value<FloatType>(   "min_y", -10000.0, 10000.0);
+	const FloatType yStep         = scanPM->value<FloatType>(   "y_step", 1.0e-6, 1000.0);
 
+	SyncServer server(serverPort);
+	typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+	std::vector<double> timeList;
+	timeList.reserve(1000);
+	std::vector<double> yList;
+	yList.reserve(1000);
+
+	// Capture and save signals.
+	Timer timer;
 	unsigned int acqNumber = 0;
+	const double t0 = timer.getTime();
 	while (true) {
-		if (!server.waitForTrigger()) break;
+		LOG_DEBUG << "Waiting for trigger...";
+		if (!server.waitForTrigger()) break; // trigger abort
+		if (acqNumber == NETWORK_SYNC_STA_METHOD_MAX_STEPS) break;
+		LOG_INFO << "ACQ " << acqNumber;
 
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
+			timeList.push_back(timer.getTime() - t0);
+			yList.push_back(minY + acqNumber * yStep); // fixed step
 			acq.execute(baseElement, txElem, acqData);
 			project_.saveTxElemSignalsToHDF5(acqData, dataDir, acqNumber, baseElement, txElem);
 		}
 
-		server.freeTrigger();
+		server.freeTrigger(); // let the array move to the next position
 
 		++acqNumber;
 	}
+
+	// Save times.
+	const std::string timeFileName = dataDir + NETWORK_SYNC_STA_METHOD_TIME_FILE;
+	project_.saveHDF5(timeList, timeFileName, NETWORK_SYNC_STA_METHOD_TIME_DATASET);
+	// Save y.
+	const std::string yFileName = dataDir + NETWORK_SYNC_STA_METHOD_Y_FILE;
+	project_.saveHDF5(yList, yFileName, NETWORK_SYNC_STA_METHOD_Y_DATASET);
 }
 
 } // namespace Lab

@@ -6,7 +6,7 @@ num_elements = 32
 num_elements_mux = 64
 
 #
-base_element = 0
+base_element = 16
 
 # 0 .. num_elements - 1
 # indexes relative to the base element
@@ -24,7 +24,7 @@ max_frequency = 1.0e6
 num_pulses = 1
 
 # (s)
-acquisition_time = 1.0e-3
+acquisition_time = 667.0e-6
 
 # 0 - 48 (dB)
 min_gain = 60.0
@@ -32,8 +32,8 @@ min_gain = 60.0
 # 0 - 48 (dB)
 max_gain = 60.0
 
-# (m/s)
-propagation_speed_1 = 1500.0
+# (m/s) [T = 22.14 °C]
+propagation_speed_1 = 1488.76
 
 # (s)
 acquisition_delay = 0.0
@@ -42,8 +42,8 @@ acquisition_delay = 0.0
 sampling_frequency = 4.0e6
 
 # (m)
-dead_zone_m = 5.0e-3
+dead_zone_m = 10.0e-3
 
 # 0.0: normalize
 value_scale = 1.0
-#value_scale = 0.198736
+#value_scale = 0.64904

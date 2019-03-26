@@ -92,8 +92,8 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const TnRnConfiguration<FloatType> config(imgPM, arrayPM);
 	const unsigned int baseElement = imgPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-	const FloatType focusZ         = imgPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
-	const std::string dataDir      = taskPM->value<std::string>( "data_dir");
+	const FloatType focusZ         = imgPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
+	const std::string dataDir      = taskPM->value<std::string>("data_dir");
 
 	FloatType focusX = 0, focusY = 0;
 	// Set the focus at the mean x, y.

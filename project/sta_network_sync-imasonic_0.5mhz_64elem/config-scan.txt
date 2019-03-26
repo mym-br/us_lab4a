@@ -1,4 +1,9 @@
 
+#
+sync_server_port = 5544
+
 # (m)
-min_y = -150.0e-3
-y_step = 2.0e-3
+min_y = -170.0e-3
+
+# (m)
+y_step = 1.5e-3

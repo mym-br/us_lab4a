@@ -3,10 +3,11 @@ method = multi_layer_image
 
 image_dir = output
 
-scan_config_file = config-scan.txt
-
 x_file = image_x
 x_dataset = x
+
+y_file = image_y
+y_dataset = y
 
 z_file = image_z
 z_dataset = z
