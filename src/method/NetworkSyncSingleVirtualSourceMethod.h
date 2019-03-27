@@ -157,7 +157,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 			break;
 		}
 
-		LOG_DEBUG << "ACQ number: " << acqNumber;
+		LOG_INFO << "ACQ " << acqNumber;
 
 		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
 			iter->y = focusY; // this is the y value for processing

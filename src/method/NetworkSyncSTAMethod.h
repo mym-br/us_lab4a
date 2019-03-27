@@ -154,7 +154,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 			break;
 		}
 
-		LOG_DEBUG << "ACQ number: " << acqNumber;
+		LOG_INFO << "ACQ " << acqNumber;
 
 		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
 			iter->y = yList[acqNumber];

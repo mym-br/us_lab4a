@@ -116,7 +116,7 @@ MultiLayerImageMethod::execute()
 		if (!project_.directoryExists(imageDir)) {
 			break;
 		}
-		LOG_DEBUG << "##### acqNumber: " << acqNumber;
+		LOG_INFO << "ACQ " << acqNumber;
 
 		LOG_DEBUG << "Loading the image...";
 		project_.loadHDF5(imageDir + '/' + imageFile, imageDataset, projGridData, Util::CopyToValueOp());
