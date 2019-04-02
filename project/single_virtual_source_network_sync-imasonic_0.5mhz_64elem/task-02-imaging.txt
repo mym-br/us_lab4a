@@ -5,7 +5,7 @@ img_config_file = config.txt
 
 array_config_file = config-array.txt
 
-data_dir = saved_acquisition
+data_dir = saved_acquisition-2
 
 output_dir = output
 
