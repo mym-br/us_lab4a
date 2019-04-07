@@ -1,4 +1,6 @@
 
+- Cache delays?
+
 - Move Python scripts?
 
 - [???] Sectorial grid in z-y.
