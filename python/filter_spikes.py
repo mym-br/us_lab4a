@@ -49,7 +49,7 @@ def filter_signal(signal, plot_signals):
         plt.xlabel('t (s)')
         plt.grid(True)
 
-        plot_spectrum(signal    , "Spetrum - raw signal")
+        plot_spectrum(signal    , "Spectrum - raw signal")
         plot_spectrum(s_filtered, "Spectrum - filtered signal")
     return s_filtered
 
