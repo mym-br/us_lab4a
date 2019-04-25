@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "ArrayUtil.h"
 #include "CoherenceFactor.h"
 #include "FileUtil.h"
 #include "ImageGrid.h"
