@@ -1,0 +1,22 @@
+
+method = single_virtual_source_network_sync_synth_y_imaging
+
+img_config_file = config.txt
+
+array_config_file = config-array.txt
+
+data_dir = saved_acquisition-2
+
+output_dir = output
+
+coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
+
+grid_config_file = config-grid.txt
+
+peak_offset = 0.0
+
+upsampling_factor = 4
+
+rx_apodization_file = apod_1d_rectangular-32
+
+synthetic_y_array_size = 15

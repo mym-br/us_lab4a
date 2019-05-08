@@ -29,6 +29,7 @@
 #include "SingleVirtualSourceMethod.h"
 #include "STA3DMethod.h"
 #include "STAMethod.h"
+#include "SyntheticYSingleVirtualSourceMethod.h"
 #include "T1R1SAFT3DMethod.h"
 #include "TestMethod.h"
 #include "VTKFileMultiImageMethod.h"
@@ -78,6 +79,7 @@ MethodNameMap::MethodNameMap()
 	ADD_MAP_ITEM(single_virtual_source_3d_vectorial_sp_network_continuous);
 	ADD_MAP_ITEM(single_virtual_source_network_sync_imaging);
 	ADD_MAP_ITEM(single_virtual_source_network_sync_save_signals);
+	ADD_MAP_ITEM(single_virtual_source_network_sync_synth_y_imaging);
 	ADD_MAP_ITEM(sta_3d_simulated_save_signals);
 	ADD_MAP_ITEM(sta_3d_simulated_seq_y_save_signals);
 	ADD_MAP_ITEM(sta_3d_vectorial_simulated);
@@ -160,6 +162,8 @@ Method::get(Project& project)
 	case MethodType::single_virtual_source_network_sync_imaging:      // falls through
 	case MethodType::single_virtual_source_network_sync_save_signals:
 		return new NetworkSyncSingleVirtualSourceMethod<double>(project);
+	case MethodType::single_virtual_source_network_sync_synth_y_imaging:
+		return new SyntheticYSingleVirtualSourceMethod<double>(project);
 	case MethodType::show_image:
 		return new ShowImageMethod(project);
 	case MethodType::multi_layer_image:
