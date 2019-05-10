@@ -133,7 +133,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	const std::string yFileName = dataDir + SYNTHETIC_Y_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE;
 	project_.loadHDF5(yFileName, SYNTHETIC_Y_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET, yList);
 
-	const unsigned int synthYSize  = taskPM->value<unsigned int>("synthetic_y_array_size", 0, yList.size());
+	const unsigned int synthYSize  = taskPM->value<unsigned int>("synthetic_y_array_size", 1, yList.size());
 
 	Timer timer;
 
@@ -149,14 +149,14 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 		processor->getAcqData(baseElement, yList[acqNumber]);
 	}
 
-	for (unsigned int acqNumber = 0; acqNumber < yList.size() - synthYSize; ++acqNumber) {
+	for (unsigned int acqNumber = 0; acqNumber <= yList.size() - synthYSize; ++acqNumber) {
 		LOG_INFO << "ACQ " << acqNumber;
 
 		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
 			iter->y = focusY; // this is the y value for processing
 		}
 
-		processor->process(baseElement, acqNumber, acqNumber + synthYSize - 1, gridData);
+		processor->process(baseElement, acqNumber, acqNumber + synthYSize - 1U, gridData);
 
 		std::string acqOutputDir = FileUtil::path(outputDir, "/", acqNumber);
 		project_.createDirectory(acqOutputDir, true);

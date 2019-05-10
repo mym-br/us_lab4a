@@ -231,11 +231,11 @@ SynthYVectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement,
 			// For each row:
 			for (std::size_t j = 0; j < numRows; ++j) {
 				XYZValueFactor<FloatType>& point = gridData(i, j);
-				point.value = 0.0;
 				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>(0));
 				for (unsigned int acq = firstAcq; acq <= lastAcq; ++acq) { // synthetic array in y
 					const FloatType y = acqData_[acq].y;
 					const FloatType yOffset = y - centerY;
+					const unsigned int acqOffset = (acq - firstAcq) * config_.numElements;
 
 					// Calculate the delays.
 					{
@@ -268,7 +268,7 @@ SynthYVectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement,
 						const FloatType k = delay - delayIdx;
 						if (delayIdx + 1U < acqData_[acq].analyticSignalMatrix.n2()) {
 							const std::complex<FloatType>* p = &acqData_[acq].analyticSignalMatrix(iRxElem, delayIdx);
-							local.rxSignalSumList[iRxElem] += rxApod_[iRxElem] * ((1 - k) * *p + k * *(p + 1));
+							local.rxSignalSumList[acqOffset + iRxElem] = rxApod_[iRxElem] * ((1 - k) * *p + k * *(p + 1));
 						}
 					}
 				}
