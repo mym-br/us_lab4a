@@ -70,7 +70,6 @@ private:
 	struct ThreadData {
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor;
 		std::vector<std::complex<FloatType>> rxSignalSumList;
-		std::vector<FloatType> txDelayList;
 		std::vector<FloatType> rxDelayList;
 	};
 
@@ -206,7 +205,6 @@ Vectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement, Matrix<XY
 		auto& local = tls.local();
 
 		local.rxSignalSumList.resize(config_.numElements);
-		local.txDelayList.resize(config_.numElements);
 		local.rxDelayList.resize(config_.numElements);
 		FloatType txDelay;
 
