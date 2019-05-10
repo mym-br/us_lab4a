@@ -249,7 +249,7 @@ Vectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement, Matrix<XY
 					const FloatType k = delay - delayIdx;
 					if (delayIdx + 1U < analyticSignalMatrix_.n2()) {
 						const std::complex<FloatType>* p = &analyticSignalMatrix_(iRxElem, delayIdx);
-						local.rxSignalSumList[iRxElem] += rxApod_[iRxElem] * ((1 - k) * *p + k * *(p + 1));
+						local.rxSignalSumList[iRxElem] = rxApod_[iRxElem] * ((1 - k) * *p + k * *(p + 1));
 					}
 				}
 
