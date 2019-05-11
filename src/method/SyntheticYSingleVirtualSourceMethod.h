@@ -106,7 +106,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor",   1,  128);
 	const std::string outputDir         = taskPM->value<std::string>( "output_dir");
 
-	const std::string rxApodFile = taskPM->value<std::string>( "rx_apodization_file");
+	const std::string rxApodFile = taskPM->value<std::string>("rx_apodization_file");
 	std::vector<FloatType> rxApod;
 	project_.loadHDF5(rxApodFile, "apod", rxApod);
 
@@ -133,7 +133,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	const std::string yFileName = dataDir + SYNTHETIC_Y_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE;
 	project_.loadHDF5(yFileName, SYNTHETIC_Y_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET, yList);
 
-	const unsigned int synthYSize  = taskPM->value<unsigned int>("synthetic_y_array_size", 1, yList.size());
+	const unsigned int synthYSize = taskPM->value<unsigned int>("synthetic_y_array_size", 1, yList.size());
 
 	Timer timer;
 
