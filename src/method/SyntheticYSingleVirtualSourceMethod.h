@@ -127,6 +127,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	FloatType valueLevel = 0.0;
+	FloatType cfValueLevel = 0.0;
 
 	// Load y (acquisition position).
 	std::vector<double> yList;
@@ -183,6 +184,8 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 				iter->value *= iter->factor;
 				iter->factor = 1.0;
 			}
+			const FloatType maxAbsCFValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
+			if (maxAbsCFValue > cfValueLevel) cfValueLevel = maxAbsCFValue;
 
 			LOG_DEBUG << "Saving the CF image...";
 			project_.saveHDF5(gridData, acqOutputDir + "/image_cf", "cf", Util::CopyValueOp());
@@ -194,6 +197,9 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	}
 
 	LOG_INFO << "=== value level: " << valueLevel << " (" << Util::linearToDecibels(valueLevel) << " dB)";
+	if (coherenceFactorEnabled) {
+		LOG_INFO << "=== CF value level: " << cfValueLevel << " (" << Util::linearToDecibels(cfValueLevel) << " dB)";
+	}
 
 	LOG_DEBUG << ">>> Acquisition + processing + saving data time: " << timer.getTime();
 }
