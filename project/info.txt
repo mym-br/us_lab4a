@@ -1,0 +1,104 @@
+================================================================================
+Project types
+
+--------------------------------------------------------------------------------
+/device_sectorial_scan
+
+Sectorial Scan.
+The image is formed in the acquisition device.
+
+--------------------------------------------------------------------------------
+/show_image
+
+Shows a single image.
+
+--------------------------------------------------------------------------------
+/sim_rectangular_flat_source
+
+Simulation of acoustic field produced by rectangular flat source(s).
+Single element or array.
+
+--------------------------------------------------------------------------------
+/simulated_3d_single_virtual_source
+
+Synthetic aperture imaging with all the active group elements transmitting,
+with the focus point acting as a single virtual source.
+The array transducer is simulated.
+The reflector points can be in a 3d space.
+
+--------------------------------------------------------------------------------
+/simulated_3d_sta
+
+Synthetic Transmit Aperture.
+The array transducer is simulated.
+The reflector points can be in a 3d space.
+
+--------------------------------------------------------------------------------
+/simulated_3d_t1r1saft
+
+Synthetic Aperture Focusing Technique, with 1 element transmitting and 1
+receiving in each acquisition.
+The array transducer is simulated.
+The reflector points can be in a 3d space.
+
+--------------------------------------------------------------------------------
+/simulated_sta
+
+Synthetic Transmit Aperture.
+The array transducer is simulated.
+The reflector points are in the x-z plane of the transducer.
+
+--------------------------------------------------------------------------------
+/single_acquisition
+
+Executes only one acquisition, using a single transmit element and a single
+receive element from an array transducer.
+
+--------------------------------------------------------------------------------
+/single_virtual_source
+
+Synthetic aperture imaging with all the active group elements transmitting,
+with the focus point acting as a single virtual source.
+
+--------------------------------------------------------------------------------
+/single_virtual_source_network_sync
+
+Synthetic aperture imaging with all the active group elements transmitting,
+with the focus point acting as a single virtual source.
+The acquisitions are triggered by a network sync signal.
+
+--------------------------------------------------------------------------------
+/sta
+
+Synthetic Transmit Aperture.
+
+--------------------------------------------------------------------------------
+/sta_network_sync
+
+Synthetic Transmit Aperture.
+The acquisitions are triggered by a network sync signal.
+
+================================================================================
+Labels
+
+cyl
+	Cylindrical wave: Uses only one array element in transmission.
+dp
+	Processing in double precision.
+multi_layer
+	Forms a 3D image using many 2D images (layers).
+network
+	Signal data obtained from a network server.
+seq_y
+	Obtains a sequence of images with the array moving in the y direction.
+saved
+saved_sequence
+	Signal data obtained from saved files.
+sp
+	Processing in single precision.
+synth_y
+	The movement of a linear array in the y direction is used to simulate
+	a synthetic 2D array.
+vectorial
+	The signals are converted to analytic signals, therefore the samples
+	become vectors.
