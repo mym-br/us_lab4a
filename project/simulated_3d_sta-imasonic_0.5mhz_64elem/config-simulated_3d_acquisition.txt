@@ -31,6 +31,7 @@ rx_min_edge_divisor = 0.0
 #reflectors_file = reflectors-point_pairs_and_ground
 reflectors_file = reflectors-random_column_and_ground
 #reflectors_file = reflectors-fan
+#reflectors_file = reflectors-spherical_cap
 
 # (m)
 reflectors_offset_x = 0.0
