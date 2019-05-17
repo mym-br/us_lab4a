@@ -1,3 +1,5 @@
 
 - The element numbers start with 0 (zero).
-- The HDF5 files must use double precision.
+- The HDF5 (*.h5) files must use double precision.
+- When using coherence factor with simulated signals, a small amount of noise
+  must be added to the signals (e.g. at -60dB).
