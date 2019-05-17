@@ -20,7 +20,7 @@ max_frequency = 1.0e6
 num_pulses = 1
 
 # (s)
-acquisition_time = 667.0e-6
+acquisition_time = 1333.0e-6
 
 # (dB)
 min_gain = 245.0
