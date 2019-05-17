@@ -170,11 +170,16 @@ STA3DMethod<FloatType>::execute()
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
-	const std::string txApodFile = taskPM->value<std::string>("tx_apodization_file");
-	const std::string rxApodFile = taskPM->value<std::string>("rx_apodization_file");
 	std::vector<FloatType> txApod;
-	project_.loadHDF5(txApodFile, "apod", txApod);
+	if (config.activeTxElem.size() > 1) {
+		const std::string txApodFile = taskPM->value<std::string>("tx_apodization_file");
+		project_.loadHDF5(txApodFile, "apod", txApod);
+	} else {
+		txApod.push_back(1.0);
+	}
+
 	std::vector<FloatType> rxApod;
+	const std::string rxApodFile = taskPM->value<std::string>("rx_apodization_file");
 	project_.loadHDF5(rxApodFile, "apod", rxApod);
 
 	const FloatType nyquistRate = 2.0 * config.maxFrequency;
