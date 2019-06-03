@@ -1300,12 +1300,10 @@ float
 OGLFigureWidget::calcValueFactor(const Matrix<XYZValue<float>>& data)
 {
 	maxAbsLevel_ = Util::maxAbsoluteValueField<XYZValue<float>, float>(data);
+	const float factor = (dataValueScale_ != 0.0) ? dataValueScale_ : 1.0f / std::max(maxAbsLevel_, VALUE_EPS);
+	maxAbsLevel_ *= factor;
 	maxAbsLevelDecibels_ = Util::linearToDecibels(maxAbsLevel_);
-	if (dataValueScale_ != 0.0) {
-		return 1.0f / static_cast<float>(dataValueScale_);
-	} else {
-		return 1.0f / std::max(maxAbsLevel_, VALUE_EPS);
-	}
+	return factor;
 }
 
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
