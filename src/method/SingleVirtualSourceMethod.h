@@ -73,8 +73,8 @@ private:
 				const std::vector<FloatType>& txDelays,
 				TnRnAcquisition<FloatType>& acquisition);
 	void createImagesFromSavedSignalSequence(ConstParameterMapPtr taskPM,
-							unsigned int baseElement, std::string& savedDataDir, FloatType valueScale,
-							bool coherenceFactorEnabled, ArrayProcessor<FloatType>& processor);
+							unsigned int baseElement, FloatType valueScale, bool coherenceFactorEnabled,
+							TnRnAcquisition<FloatType>& acq, ArrayProcessor<FloatType>& processor);
 
 	Project& project_;
 	Matrix<XYZValueFactor<FloatType>> gridData_;
@@ -203,11 +203,12 @@ SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr ta
 template<typename FloatType>
 void
 SingleVirtualSourceMethod<FloatType>::createImagesFromSavedSignalSequence(ConstParameterMapPtr taskPM,
-							unsigned int baseElement, std::string& savedDataDir, FloatType valueScale,
-							bool coherenceFactorEnabled, ArrayProcessor<FloatType>& processor)
+							unsigned int baseElement, FloatType valueScale, bool coherenceFactorEnabled,
+							TnRnAcquisition<FloatType>& acq, ArrayProcessor<FloatType>& processor)
 {
 	const std::string dataDir   = taskPM->value<std::string>("data_dir");
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	auto& savedAcq = dynamic_cast<SavedTnRnAcquisition<FloatType>&>(acq);
 
 	// Load times.
 	std::vector<double> timeList;
@@ -220,8 +221,7 @@ SingleVirtualSourceMethod<FloatType>::createImagesFromSavedSignalSequence(ConstP
 		const std::string imgDir = FileUtil::path(outputDir, "/", acqNumber);
 		project_.createDirectory(imgDir, false);
 
-		// The SavedTnRnAcquisition instance uses savedDataDir.
-		savedDataDir = FileUtil::path(dataDir, "/", acqNumber);
+		savedAcq.setDataDir(FileUtil::path(dataDir, "/", acqNumber));
 
 		// Process and save images.
 		process(valueScale, processor, baseElement, acqNumber == 0, imgDir);
@@ -322,8 +322,8 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		if (project_.method() == MethodType::single_virtual_source_3d_vectorial_sp_network_continuous) {
 			execContinuousNetworkImaging(config.valueScale, *processor, baseElement, coherenceFactor.enabled());
 		} else if (project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_saved_sequence) {
-			createImagesFromSavedSignalSequence(taskPM, baseElement, savedDataDir, config.valueScale,
-								coherenceFactor.enabled(), *processor);
+			createImagesFromSavedSignalSequence(taskPM, baseElement, config.valueScale, coherenceFactor.enabled(),
+								*acquisition, *processor);
 		} else {
 			const std::string outputDir = taskPM->value<std::string>("output_dir");
 			project_.createDirectory(outputDir, false);
