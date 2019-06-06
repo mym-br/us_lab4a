@@ -277,7 +277,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
 		break;
 	case MethodType::single_virtual_source_3d_vectorial_dp_saved:
-		savedDataDir = taskPM->value<std::string>("data_dir");         // falls through
+		savedDataDir = FileUtil::path(taskPM->value<std::string>("data_dir"), "/", 0); // falls through
 	case MethodType::single_virtual_source_3d_vectorial_dp_saved_sequence:
 		acquisition = std::make_unique<SavedTnRnAcquisition<FloatType>>(project_, config.numElements, savedDataDir);
 		break;
