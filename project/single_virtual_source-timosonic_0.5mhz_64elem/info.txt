@@ -1,0 +1,3 @@
+elements
+00-31    RX short
+32-63    TX tall
