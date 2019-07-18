@@ -206,7 +206,7 @@ FFTWFilter2<FloatType>::setCoefficients(const std::vector<FloatType>& filterCoef
 
 		FFTW::execute(fftPlan_);
 
-		memcpy(&filterFreqCoeff[block * freqDataSize_], fftOut_, sizeof(FloatType) * 2 * freqDataSize_);
+		memcpy(static_cast<void*>(&filterFreqCoeff[block * freqDataSize_]), fftOut_, sizeof(FloatType) * 2 * freqDataSize_);
 	}
 
 	initialized_ = true;
