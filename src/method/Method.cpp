@@ -106,6 +106,11 @@ MethodNameMap::findByName(const std::string& name)
 	return iter->second;
 }
 
+void
+Method::execute()
+{
+}
+
 Method*
 Method::get(Project& project)
 {

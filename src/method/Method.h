@@ -94,7 +94,7 @@ public:
 	Method() {}
 	virtual ~Method() {}
 
-	virtual void execute() = 0;
+	virtual void execute();
 
 	static MethodType findByName(const std::string& name) { return nameMap_.findByName(name); }
 	static Method* get(Project& project);
