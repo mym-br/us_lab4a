@@ -153,7 +153,8 @@ HEADERS  += \
     src/acquisition/SavedTnRnAcquisition.h \
     src/method/NetworkSyncSingleVirtualSourceMethod.h \
     src/method/SyntheticYSingleVirtualSourceMethod.h \
-    src/processor/SynthYVectorial3DTnRnProcessor.h
+    src/processor/SynthYVectorial3DTnRnProcessor.h \
+    src/method/method_table.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
