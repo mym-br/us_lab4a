@@ -149,7 +149,7 @@ USLab4a::fillTaskListWidget()
 
 		const std::size_t prefixLen = strlen(TASK_FILE_PREFIX);
 		const std::size_t suffixLen = strlen(TASK_FILE_SUFFIX);
-		QStringList fileList = dir.entryList(nameFilters, QDir::Files | QDir::Readable, QDir::Name);
+		const QStringList fileList = dir.entryList(nameFilters, QDir::Files | QDir::Readable, QDir::Name);
 		if (!fileList.empty()) {
 			for (QStringList::const_iterator iter = fileList.begin(); iter != fileList.end(); ++iter) {
 				QString fileName = *iter;
