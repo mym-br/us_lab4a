@@ -47,8 +47,6 @@ HEADERS  += \
     src/ProcessingNode.h \
     src/OGLFigureWidget.h \
     src/Controller.h \
-    src/acquisition/STAAcquisition.h \
-    src/acquisition/SavedSTAAcquisition.h \
     src/configuration/STAConfiguration.h \
     src/fft/FFTW.h \
     src/method/TestMethod.h \
@@ -58,10 +56,6 @@ HEADERS  += \
     src/network_acquisition/NetworkSTAAcquisition.h \
     src/network_acquisition/ArrayAcqProtocol.h \
     src/network_acquisition/ArrayAcqClient.h \
-    src/processor/VectorialSTAProcessor.h \
-    src/processor/SimpleSTAProcessor.h \
-    src/processor/DefaultSTAProcessor.h \
-    src/simulator/SimulatedSTAAcquisition.h \
     src/util/XZValue.h \
     src/util/XY.h \
     src/util/Waveform.h \
@@ -108,22 +102,14 @@ HEADERS  += \
     src/network_acquisition/PhasedArrayAcqClient.h \
     src/network_acquisition/PhasedArrayAcqProtocol.h \
     src/method/SimRectangularFlatSourceMethod.h \
-    src/simulator/NumericRectangularFlatSourceImpulseResponse.h \
-    src/simulator/SimTransientRadiationPattern.h \
     src/util/XYZ.h \
-    src/simulator/SimTransientAcousticField.h \
     src/util/ArrayUtil.h \
     src/util/Decimator.h \
-    src/simulator/Simulated3DAcquisitionDevice.h \
-    src/simulator/Simulated3DSTAAcquisition.h \
     src/util/XYZValue.h \
     src/util/Geometry.h \
-    src/simulator/AnalyticRectangularFlatSourceImpulseResponse.h \
-    src/simulator/ArrayOfRectangularFlatSourcesImpulseResponse.h \
     src/configuration/DeviceSectorialScanConfiguration.h \
     src/network_acquisition/NetworkDeviceSectorialScanAcquisition.h \
     src/method/DeviceSectorialScanMethod.h \
-    src/acquisition/DeviceSectorialScanAcquisition.h \
     src/network_sync/SyncServer.h \
     src/method/NetworkSyncSTAMethod.h \
     src/OGLMultiLayerWidget.h \
@@ -133,28 +119,42 @@ HEADERS  += \
     src/method/VTKFileMultiImageMethod.h \
     src/util/XYZValueFactor.h \
     src/method/STA3DMethod.h \
-    src/processor/Vectorial3DSTAProcessor.h \
     src/method/T1R1SAFT3DMethod.h \
-    src/simulator/Simulated3DT1R1SAFTAcquisition.h \
-    src/processor/Vectorial3DT1R1SAFTProcessor.h \
     src/configuration/SA3DConfiguration.h \
     src/util/WindowFunction.h \
     src/util/Matrix.h \
     src/util/Tensor3.h \
-    src/simulator/SimTransientPropagation.h \
     src/util/XYZValueArray.h \
     src/method/SingleVirtualSourceMethod.h \
-    src/acquisition/TnRnAcquisition.h \
-    src/simulator/Simulated3DTnRnAcquisition.h \
     src/configuration/TnRnConfiguration.h \
-    src/processor/Vectorial3DTnRnProcessor.h \
-    src/processor/ArrayProcessor.h \
     src/network_acquisition/NetworkTnRnAcquisition.h \
-    src/acquisition/SavedTnRnAcquisition.h \
     src/method/NetworkSyncSingleVirtualSourceMethod.h \
     src/method/SyntheticYSingleVirtualSourceMethod.h \
-    src/processor/SynthYVectorial3DTnRnProcessor.h \
-    src/method/method_table.h
+    src/method/method_table.h \
+    src/user/acquisition/DeviceSectorialScanAcquisition.h \
+    src/user/acquisition/SavedSTAAcquisition.h \
+    src/user/acquisition/SavedTnRnAcquisition.h \
+    src/user/acquisition/STAAcquisition.h \
+    src/user/acquisition/TnRnAcquisition.h \
+    src/user/processor/ArrayProcessor.h \
+    src/user/processor/DefaultSTAProcessor.h \
+    src/user/processor/SimpleSTAProcessor.h \
+    src/user/processor/SynthYVectorial3DTnRnProcessor.h \
+    src/user/processor/Vectorial3DSTAProcessor.h \
+    src/user/processor/Vectorial3DT1R1SAFTProcessor.h \
+    src/user/processor/Vectorial3DTnRnProcessor.h \
+    src/user/processor/VectorialSTAProcessor.h \
+    src/user/simulator/AnalyticRectangularFlatSourceImpulseResponse.h \
+    src/user/simulator/ArrayOfRectangularFlatSourcesImpulseResponse.h \
+    src/user/simulator/NumericRectangularFlatSourceImpulseResponse.h \
+    src/user/simulator/SimTransientAcousticField.h \
+    src/user/simulator/SimTransientRadiationPattern.h \
+    src/user/simulator/Simulated3DAcquisitionDevice.h \
+    src/user/simulator/Simulated3DSTAAcquisition.h \
+    src/user/simulator/Simulated3DT1R1SAFTAcquisition.h \
+    src/user/simulator/Simulated3DTnRnAcquisition.h \
+    src/user/simulator/SimulatedSTAAcquisition.h \
+    src/user/simulator/SimTransientPropagation.h
 
 FORMS    += \
     ui/Figure3DWindow.ui \
@@ -163,30 +163,30 @@ FORMS    += \
     ui/MultiLayer3DWindow.ui
 
 DEPENDPATH += src \
-    src/acquisition \
     src/configuration \
     src/fft \
     src/method \
-    src/processor \
-    src/simulator \
     src/util \
     src/network_acquisition \
     src/network_sync \
     src/qcustomplot \
-    src/parallel
+    src/parallel \
+    src/user/acquisition \
+    src/user/processor \
+    src/user/simulator
 
 INCLUDEPATH += src \
-    src/acquisition \
     src/configuration \
     src/fft \
     src/method \
-    src/processor \
-    src/simulator \
     src/util \
     src/network_acquisition \
     src/network_sync \
     src/qcustomplot \
-    src/parallel
+    src/parallel \
+    src/user/acquisition \
+    src/user/processor \
+    src/user/simulator
 
 win32 {
     # Windows 10 - VS 2017 - Qt 5.12.1
