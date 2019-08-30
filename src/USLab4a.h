@@ -35,7 +35,6 @@
 
 QT_BEGIN_NAMESPACE
 class QCloseEvent;
-//class QErrorMessage;
 class QString;
 QT_END_NAMESPACE
 

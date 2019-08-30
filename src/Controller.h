@@ -39,6 +39,12 @@ public:
 	void exit();
 	void enableProcessing();
 	bool processingEnabled() const { return (state_ == STATE_PROCESSING_ENABLED); }
+signals:
+	void processingFinished();
+	void processingRequested();
+private slots:
+	void execAfterProcessing();
+	void execAfterError();
 private:
 	enum State {
 		STATE_PROCESSING_STOPPED,
@@ -49,19 +55,6 @@ private:
 
 	State state_; // this state can only be read/changed by the main thread
 	ProcessingThread processingThread_;
-signals:
-	void processingFinished();
-	void processingRequested();
-
-private slots:
-	//void execAfterAcquisition(Acquisition::AcquisitionDataType* acqData, int step, int numberOfSteps);
-	//void execAfterSleep();
-	void execAfterProcessing();
-	void execAfterError();
-	//void execAfterAcquisitionTermination();
-	//void handleAcquisitionError(AcquisitionNode::Function f);
-	//void handleProcessingError(ProcessingNode::Function f);
-	//void executeDelayedStateChanges();
 };
 
 } // namespace Lab
