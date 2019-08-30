@@ -120,6 +120,7 @@ HEADERS += \
     src/user/configuration/STAConfiguration.h \
     src/user/configuration/TnRnConfiguration.h \
     src/user/method/DeviceSectorialScanMethod.h \
+    src/user/method/method_includes.h \
     src/user/method/method_table.h \
     src/user/method/MultiLayerImageMethod.h \
     src/user/method/NetworkSyncSTAMethod.h \
