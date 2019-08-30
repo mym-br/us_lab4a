@@ -1,4 +1,4 @@
-QT       += core gui opengl
+QT += core gui opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
@@ -10,132 +10,133 @@ CONFIG += c++14
     CONFIG += warn_on
 }
 
-SOURCES += src/main.cpp\
-    src/Project.cpp \
-    src/ProcessingThread.cpp \
-    src/ProcessingNode.cpp \
-    src/OGLFigureWidget.cpp \
+SOURCES += \
     src/Controller.cpp \
+    src/Figure2DWindow.cpp \
+    src/Figure3DWindow.cpp \
+    src/main.cpp \
+    src/MultiLayer3DWindow.cpp \
+    src/OGLFigureWidget.cpp \
+    src/OGLMultiLayerWidget.cpp \
+    src/ProcessingNode.cpp \
+    src/ProcessingThread.cpp \
+    src/Project.cpp \
+    src/USLab4a.cpp \
     src/fft/FFTW.cpp \
-    src/method/TestMethod.cpp \
-    src/network_acquisition/ArrayAcqClient.cpp \
-    src/util/MinstdPseudorandomNumberGenerator.cpp \
-    src/util/LogSyntaxHighlighter.cpp \
-    src/util/Log.cpp \
-    src/util/KeyValueFileReader.cpp \
-    src/util/HDF5Util.cpp \
-    src/util/ParameterMap.cpp \
     src/method/Method.cpp \
+    src/method/MultiLayerImageMethod.cpp \
     src/method/ShowImageMethod.cpp \
     src/method/SingleAcquisitionMethod.cpp \
-    src/Figure3DWindow.cpp \
-    src/qcustomplot/qcustomplot.cpp \
-    src/Figure2DWindow.cpp \
-    src/USLab4a.cpp \
+    src/method/TestMethod.cpp \
+    src/method/VTKFileMultiImageMethod.cpp \
+    src/network_acquisition/ArrayAcqClient.cpp \
     src/network_acquisition/PhasedArrayAcqClient.cpp \
-    src/util/Util.cpp \
     src/network_sync/SyncServer.cpp \
+    src/qcustomplot/qcustomplot.cpp \
     src/util/FileUtil.cpp \
-    src/MultiLayer3DWindow.cpp \
-    src/OGLMultiLayerWidget.cpp \
-    src/method/MultiLayerImageMethod.cpp \
-    src/method/VTKFileMultiImageMethod.cpp
+    src/util/HDF5Util.cpp \
+    src/util/KeyValueFileReader.cpp \
+    src/util/Log.cpp \
+    src/util/LogSyntaxHighlighter.cpp \
+    src/util/MinstdPseudorandomNumberGenerator.cpp \
+    src/util/ParameterMap.cpp \
+    src/util/Util.cpp
 
-HEADERS  += \
-    src/Project.h \
-    src/ProcessingThread.h \
-    src/ProcessingNode.h \
-    src/OGLFigureWidget.h \
+HEADERS += \
     src/Controller.h \
-    src/configuration/STAConfiguration.h \
-    src/fft/FFTW.h \
-    src/method/TestMethod.h \
-    src/method/STAMethod.h \
-    src/method/Method.h \
-    src/network_acquisition/RawBuffer.h \
-    src/network_acquisition/NetworkSTAAcquisition.h \
-    src/network_acquisition/ArrayAcqProtocol.h \
-    src/network_acquisition/ArrayAcqClient.h \
-    src/util/XZValue.h \
-    src/util/XY.h \
-    src/util/Waveform.h \
-    src/util/Timer.h \
-    src/util/Statistics.h \
-    src/util/MinstdPseudorandomNumberGenerator.h \
-    src/util/LogSyntaxHighlighter.h \
-    src/util/Log.h \
-    src/util/LinearInterpolator.h \
-    src/util/KeyValueFileReader.h \
-    src/util/Interpolator4X.h \
-    src/util/IndexValue.h \
-    src/util/HilbertEnvelope.h \
-    src/util/HDF5Util.h \
-    src/util/FFTWFilter2.h \
-    src/util/FFTWFilter.h \
-    src/util/Exception.h \
-    src/util/ContainerDumper.h \
-    src/util/Array.h \
-    src/util/ParameterMap.h \
-    src/global.h \
-    src/method/ShowImageMethod.h \
-    src/method/SingleAcquisitionMethod.h \
-    src/Figure3DWindow.h \
-    src/qcustomplot/qcustomplot.h \
     src/Figure2DWindow.h \
+    src/Figure3DWindow.h \
     src/FigureWindowList.h \
-    src/util/Util.h \
-    src/util/KaiserWindow.h \
-    src/util/Interpolator.h \
-    src/util/Value.h \
-    src/util/RealToComplexFFT.h \
-    src/util/ComplexToRealIFFT.h \
-    src/parallel/ParallelHilbertEnvelope.h \
-    src/util/ImageGrid.h \
-    src/util/CoherenceFactor.h \
-    src/util/ArrayGeometry.h \
-    src/util/DirectFFTWFilter.h \
-    src/fft/FFTUtil.h \
-    src/util/MeasurementList.h \
-    src/util/ExecutionTimeMeasurement.h \
-    src/util/FileUtil.h \
+    src/global.h \
+    src/MultiLayer3DWindow.h \
+    src/OGLFigureWidget.h \
+    src/OGLMultiLayerWidget.h \
+    src/ProcessingNode.h \
+    src/ProcessingThread.h \
+    src/Project.h \
     src/USLab4a.h \
+    src/fft/FFTUtil.h \
+    src/fft/FFTW.h \
+    src/method/DeviceSectorialScanMethod.h \
+    src/method/Method.h \
+    src/method/MultiLayerImageMethod.h \
+    src/method/NetworkSyncSTAMethod.h \
+    src/method/NetworkSyncSingleVirtualSourceMethod.h \
+    src/method/STA3DMethod.h \
+    src/method/STAMethod.h \
+    src/method/ShowImageMethod.h \
+    src/method/SimRectangularFlatSourceMethod.h \
+    src/method/SingleAcquisitionMethod.h \
+    src/method/SingleVirtualSourceMethod.h \
+    src/method/SyntheticYSingleVirtualSourceMethod.h \
+    src/method/T1R1SAFT3DMethod.h \
+    src/method/TestMethod.h \
+    src/method/VTKFileMultiImageMethod.h \
+    src/method/method_table.h \
+    src/network_acquisition/ArrayAcqClient.h \
+    src/network_acquisition/ArrayAcqProtocol.h \
     src/network_acquisition/PhasedArrayAcqClient.h \
     src/network_acquisition/PhasedArrayAcqProtocol.h \
-    src/method/SimRectangularFlatSourceMethod.h \
-    src/util/XYZ.h \
-    src/util/ArrayUtil.h \
-    src/util/Decimator.h \
-    src/util/XYZValue.h \
-    src/util/Geometry.h \
-    src/configuration/DeviceSectorialScanConfiguration.h \
-    src/network_acquisition/NetworkDeviceSectorialScanAcquisition.h \
-    src/method/DeviceSectorialScanMethod.h \
+    src/network_acquisition/RawBuffer.h \
     src/network_sync/SyncServer.h \
-    src/method/NetworkSyncSTAMethod.h \
-    src/OGLMultiLayerWidget.h \
-    src/MultiLayer3DWindow.h \
-    src/util/OGL.h \
-    src/method/MultiLayerImageMethod.h \
-    src/method/VTKFileMultiImageMethod.h \
-    src/util/XYZValueFactor.h \
-    src/method/STA3DMethod.h \
-    src/method/T1R1SAFT3DMethod.h \
-    src/configuration/SA3DConfiguration.h \
-    src/util/WindowFunction.h \
+    src/parallel/ParallelHilbertEnvelope.h \
+    src/qcustomplot/qcustomplot.h \
+    src/util/Array.h \
+    src/util/ArrayGeometry.h \
+    src/util/ArrayUtil.h \
+    src/util/CoherenceFactor.h \
+    src/util/ComplexToRealIFFT.h \
+    src/util/ContainerDumper.h \
+    src/util/Decimator.h \
+    src/util/DirectFFTWFilter.h \
+    src/util/Exception.h \
+    src/util/ExecutionTimeMeasurement.h \
+    src/util/FFTWFilter.h \
+    src/util/FFTWFilter2.h \
+    src/util/FileUtil.h \
+    src/util/Geometry.h \
+    src/util/HDF5Util.h \
+    src/util/HilbertEnvelope.h \
+    src/util/ImageGrid.h \
+    src/util/IndexValue.h \
+    src/util/Interpolator.h \
+    src/util/Interpolator4X.h \
+    src/util/KaiserWindow.h \
+    src/util/KeyValueFileReader.h \
+    src/util/LinearInterpolator.h \
+    src/util/Log.h \
+    src/util/LogSyntaxHighlighter.h \
     src/util/Matrix.h \
+    src/util/MeasurementList.h \
+    src/util/MinstdPseudorandomNumberGenerator.h \
+    src/util/OGL.h \
+    src/util/ParameterMap.h \
+    src/util/RealToComplexFFT.h \
+    src/util/Statistics.h \
     src/util/Tensor3.h \
+    src/util/Timer.h \
+    src/util/Util.h \
+    src/util/Value.h \
+    src/util/Waveform.h \
+    src/util/WindowFunction.h \
+    src/util/XY.h \
+    src/util/XYZ.h \
+    src/util/XYZValue.h \
     src/util/XYZValueArray.h \
-    src/method/SingleVirtualSourceMethod.h \
-    src/configuration/TnRnConfiguration.h \
-    src/network_acquisition/NetworkTnRnAcquisition.h \
-    src/method/NetworkSyncSingleVirtualSourceMethod.h \
-    src/method/SyntheticYSingleVirtualSourceMethod.h \
-    src/method/method_table.h \
+    src/util/XYZValueFactor.h \
+    src/util/XZValue.h \
     src/user/acquisition/DeviceSectorialScanAcquisition.h \
     src/user/acquisition/SavedSTAAcquisition.h \
     src/user/acquisition/SavedTnRnAcquisition.h \
     src/user/acquisition/STAAcquisition.h \
     src/user/acquisition/TnRnAcquisition.h \
+    src/user/configuration/DeviceSectorialScanConfiguration.h \
+    src/user/configuration/SA3DConfiguration.h \
+    src/user/configuration/STAConfiguration.h \
+    src/user/configuration/TnRnConfiguration.h \
+    src/user/network_acquisition/NetworkDeviceSectorialScanAcquisition.h \
+    src/user/network_acquisition/NetworkSTAAcquisition.h \
+    src/user/network_acquisition/NetworkTnRnAcquisition.h \
     src/user/processor/ArrayProcessor.h \
     src/user/processor/DefaultSTAProcessor.h \
     src/user/processor/SimpleSTAProcessor.h \
@@ -148,43 +149,45 @@ HEADERS  += \
     src/user/simulator/ArrayOfRectangularFlatSourcesImpulseResponse.h \
     src/user/simulator/NumericRectangularFlatSourceImpulseResponse.h \
     src/user/simulator/SimTransientAcousticField.h \
+    src/user/simulator/SimTransientPropagation.h \
     src/user/simulator/SimTransientRadiationPattern.h \
     src/user/simulator/Simulated3DAcquisitionDevice.h \
     src/user/simulator/Simulated3DSTAAcquisition.h \
     src/user/simulator/Simulated3DT1R1SAFTAcquisition.h \
     src/user/simulator/Simulated3DTnRnAcquisition.h \
-    src/user/simulator/SimulatedSTAAcquisition.h \
-    src/user/simulator/SimTransientPropagation.h
+    src/user/simulator/SimulatedSTAAcquisition.h
 
-FORMS    += \
-    ui/Figure3DWindow.ui \
+FORMS += \
     ui/Figure2DWindow.ui \
-    ui/USLab4a.ui \
-    ui/MultiLayer3DWindow.ui
+    ui/Figure3DWindow.ui \
+    ui/MultiLayer3DWindow.ui \
+    ui/USLab4a.ui
 
 DEPENDPATH += src \
-    src/configuration \
     src/fft \
     src/method \
-    src/util \
     src/network_acquisition \
     src/network_sync \
-    src/qcustomplot \
     src/parallel \
+    src/qcustomplot \
+    src/util \
     src/user/acquisition \
+    src/user/configuration \
+    src/user/network_acquisition \
     src/user/processor \
     src/user/simulator
 
 INCLUDEPATH += src \
-    src/configuration \
     src/fft \
     src/method \
-    src/util \
     src/network_acquisition \
     src/network_sync \
-    src/qcustomplot \
     src/parallel \
+    src/qcustomplot \
+    src/util \
     src/user/acquisition \
+    src/user/configuration \
+    src/user/network_acquisition \
     src/user/processor \
     src/user/simulator
 
@@ -225,7 +228,7 @@ win32 {
         -lrt \
         -lGLU
     exists(/usr/include/hdf5/serial) {
-        # Debian 9.
+        # Debian 9/10.
         INCLUDEPATH += /usr/include/hdf5/serial
         LIBS += -lhdf5_serial
     } else {
