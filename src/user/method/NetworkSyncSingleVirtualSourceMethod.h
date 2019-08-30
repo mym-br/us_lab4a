@@ -112,7 +112,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 	ArrayUtil::calculateTx3DFocusDelay(focusX, focusY, focusZ, config.propagationSpeed,
 						config.txElemPos, baseElement, config.numElements, txDelays);
 
-	if (project_.method() == MethodType::single_virtual_source_network_sync_save_signals) {
+	if (project_.method() == MethodEnum::single_virtual_source_network_sync_save_signals) {
 		project_.createDirectory(dataDir, true);
 		auto acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
 		saveSignals(taskPM, *acquisition, baseElement, txDelays, dataDir);

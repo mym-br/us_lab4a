@@ -72,8 +72,8 @@ public:
 		return taskParameterMap_;
 	}
 
-	MethodType method() const { return method_; }
-	void setMethod(MethodType method) { method_ = method; }
+	MethodEnum method() const { return method_; }
+	void setMethod(MethodEnum method) { method_ = method; }
 
 	// The caller becomes the owner of the ParameterMap object.
 	ConstParameterMapPtr loadParameterMap(const char* fileName) const;
@@ -235,7 +235,7 @@ private:
 	Project(const Project&) = delete;
 	Project& operator=(const Project&) = delete;
 
-	MethodType method_;
+	MethodEnum method_;
 	USLab4a& mainWindow_;
 	ConstParameterMapPtr taskParameterMap_;
 	QString directory_;

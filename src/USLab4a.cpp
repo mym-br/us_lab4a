@@ -191,7 +191,7 @@ USLab4a::processScriptEntry()
 			std::string methodName = pm->value<std::string>("method");
 			ui_.methodLineEdit->setText(methodName.c_str());
 
-			MethodType method = Method::findByName(methodName);
+			MethodEnum method = Method::findByName(methodName);
 			project_.setMethod(method);
 		} catch (std::exception& e) {
 			LOG_ERROR << "[USLab4a::processScriptEntry] Caught exception: " << e.what() << '.';
@@ -335,7 +335,7 @@ USLab4a::on_enableTaskButton_clicked()
 		std::string methodName = pm->value<std::string>("method");
 		ui_.methodLineEdit->setText(methodName.c_str());
 
-		MethodType method = Method::findByName(methodName);
+		MethodEnum method = Method::findByName(methodName);
 		project_.setMethod(method);
 	} catch (std::exception& e) {
 		LOG_ERROR << "[USLab4a::on_enableTaskButton_clicked] Caught exception: " << e.what() << '.';

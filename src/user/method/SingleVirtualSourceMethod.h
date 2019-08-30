@@ -266,33 +266,33 @@ SingleVirtualSourceMethod<FloatType>::execute()
 	std::string savedDataDir;
 
 	switch (project_.method()) {
-	case MethodType::single_virtual_source_3d_simulated_save_signals: // falls through
-	case MethodType::single_virtual_source_3d_vectorial_simulated:
+	case MethodEnum::single_virtual_source_3d_simulated_save_signals: // falls through
+	case MethodEnum::single_virtual_source_3d_vectorial_simulated:
 		acquisition = std::make_unique<Simulated3DTnRnAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodType::single_virtual_source_3d_network_save_signals:            // falls through
-	case MethodType::single_virtual_source_3d_network_save_signal_sequence:    // falls through
-	case MethodType::single_virtual_source_3d_vectorial_dp_network:            // falls through
-	case MethodType::single_virtual_source_3d_vectorial_sp_network_continuous:
+	case MethodEnum::single_virtual_source_3d_network_save_signals:            // falls through
+	case MethodEnum::single_virtual_source_3d_network_save_signal_sequence:    // falls through
+	case MethodEnum::single_virtual_source_3d_vectorial_dp_network:            // falls through
+	case MethodEnum::single_virtual_source_3d_vectorial_sp_network_continuous:
 		acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodType::single_virtual_source_3d_vectorial_dp_saved:
+	case MethodEnum::single_virtual_source_3d_vectorial_dp_saved:
 		savedDataDir = FileUtil::path(taskPM->value<std::string>("data_dir"), "/", 0); // falls through
-	case MethodType::single_virtual_source_3d_vectorial_dp_saved_sequence:
+	case MethodEnum::single_virtual_source_3d_vectorial_dp_saved_sequence:
 		acquisition = std::make_unique<SavedTnRnAcquisition<FloatType>>(project_, config.numElements, savedDataDir);
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
 
-	if (project_.method() == MethodType::single_virtual_source_3d_simulated_save_signals ||
-			project_.method() == MethodType::single_virtual_source_3d_network_save_signals) {
+	if (project_.method() == MethodEnum::single_virtual_source_3d_simulated_save_signals ||
+			project_.method() == MethodEnum::single_virtual_source_3d_network_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename TnRnAcquisition<FloatType>::AcquisitionDataType acqData;
 		acquisition->execute(baseElement, txDelays, acqData);
 		project_.saveSignalsToHDF5(acqData, dataDir, 0, baseElement);
 		return;
-	} else if (project_.method() == MethodType::single_virtual_source_3d_network_save_signal_sequence) {
+	} else if (project_.method() == MethodEnum::single_virtual_source_3d_network_save_signal_sequence) {
 		saveSignalSequence(taskPM, baseElement, txDelays, *acquisition);
 		return;
 	}
@@ -307,11 +307,11 @@ SingleVirtualSourceMethod<FloatType>::execute()
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
-	if (project_.method() == MethodType::single_virtual_source_3d_vectorial_simulated ||
-			project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_network ||
-			project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_saved ||
-			project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_saved_sequence ||
-			project_.method() == MethodType::single_virtual_source_3d_vectorial_sp_network_continuous) {
+	if (project_.method() == MethodEnum::single_virtual_source_3d_vectorial_simulated ||
+			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_dp_network ||
+			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_dp_saved ||
+			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_dp_saved_sequence ||
+			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_sp_network_continuous) {
 		const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 		auto processor = std::make_unique<Vectorial3DTnRnProcessor<FloatType>>(
@@ -319,9 +319,9 @@ SingleVirtualSourceMethod<FloatType>::execute()
 							coherenceFactor, peakOffset,
 							rxApod);
 		processor->setTxDelays(focusX, focusY, focusZ, txDelays);
-		if (project_.method() == MethodType::single_virtual_source_3d_vectorial_sp_network_continuous) {
+		if (project_.method() == MethodEnum::single_virtual_source_3d_vectorial_sp_network_continuous) {
 			execContinuousNetworkImaging(config.valueScale, *processor, baseElement, coherenceFactor.enabled());
-		} else if (project_.method() == MethodType::single_virtual_source_3d_vectorial_dp_saved_sequence) {
+		} else if (project_.method() == MethodEnum::single_virtual_source_3d_vectorial_dp_saved_sequence) {
 			createImagesFromSavedSignalSequence(taskPM, baseElement, config.valueScale, coherenceFactor.enabled(),
 								*acquisition, *processor);
 		} else {

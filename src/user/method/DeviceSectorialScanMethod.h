@@ -80,16 +80,16 @@ void
 DeviceSectorialScanMethod<FloatType>::execute()
 {
 	switch (project_.method()) {
-	case MethodType::device_sectorial_scan_sp_network:
+	case MethodEnum::device_sectorial_scan_sp_network:
 		getSingleImageFromNetwork();
 		break;
-	case MethodType::device_sectorial_scan_sp_saved:
+	case MethodEnum::device_sectorial_scan_sp_saved:
 		showSavedImage();
 		break;
-	case MethodType::device_sectorial_scan_sp_network_continuous:
+	case MethodEnum::device_sectorial_scan_sp_network_continuous:
 		execContinuousNetworkImaging();
 		break;
-	case MethodType::device_sectorial_scan_sp_network_trigger:
+	case MethodEnum::device_sectorial_scan_sp_network_trigger:
 		execTriggeredNetworkImaging();
 		break;
 	default:

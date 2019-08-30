@@ -137,20 +137,20 @@ STAMethod<FloatType>::execute()
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
 	switch (project_.method()) {
-	case MethodType::sta_simple_simulated: // falls through
-	case MethodType::sta_simulated:
+	case MethodEnum::sta_simple_simulated: // falls through
+	case MethodEnum::sta_simulated:
 		acquisition = std::make_unique<SimulatedSTAAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodType::sta_dp_network:           // falls through
-	case MethodType::sta_vectorial_dp_network: // falls through
-	case MethodType::sta_save_signals:
+	case MethodEnum::sta_dp_network:           // falls through
+	case MethodEnum::sta_vectorial_dp_network: // falls through
+	case MethodEnum::sta_save_signals:
 		acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodType::sta_simple_saved:       // falls through
-	case MethodType::sta_dp_saved:           // falls through
-	case MethodType::sta_vectorial_dp_saved: // falls through
-	case MethodType::sta_sp_saved:           // falls through
-	case MethodType::sta_vectorial_sp_saved:
+	case MethodEnum::sta_simple_saved:       // falls through
+	case MethodEnum::sta_dp_saved:           // falls through
+	case MethodEnum::sta_vectorial_dp_saved: // falls through
+	case MethodEnum::sta_sp_saved:           // falls through
+	case MethodEnum::sta_vectorial_sp_saved:
 		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(
 					project_, config.numElements,
 					taskPM->value<std::string>("data_dir"));
@@ -159,7 +159,7 @@ STAMethod<FloatType>::execute()
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
 
-	if (project_.method() == MethodType::sta_save_signals) {
+	if (project_.method() == MethodEnum::sta_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
@@ -180,16 +180,16 @@ STAMethod<FloatType>::execute()
 	visual_ = Figure::VISUALIZATION_ENVELOPE_LOG;
 
 	switch (project_.method()) {
-	case MethodType::sta_simple_simulated: // falls through
-	case MethodType::sta_simple_saved:
+	case MethodEnum::sta_simple_simulated: // falls through
+	case MethodEnum::sta_simple_saved:
 		{
 			auto processor = std::make_unique<SimpleSTAProcessor<FloatType>>(config, *acquisition, peakOffset);
 			process(config.valueScale, *processor, baseElement, outputDir);
 		}
 		break;
-	case MethodType::sta_vectorial_dp_network: // falls through
-	case MethodType::sta_vectorial_dp_saved:   // falls through
-	case MethodType::sta_vectorial_sp_saved:
+	case MethodEnum::sta_vectorial_dp_network: // falls through
+	case MethodEnum::sta_vectorial_dp_saved:   // falls through
+	case MethodEnum::sta_vectorial_sp_saved:
 		{
 			const bool processingWithEnvelope   = taskPM->value<bool>(        "calculate_envelope_in_processing");
 			const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);

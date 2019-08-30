@@ -128,16 +128,16 @@ STA3DMethod<FloatType>::execute()
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
 	switch (project_.method()) {
-	case MethodType::sta_3d_simulated_save_signals:       // falls through
-	case MethodType::sta_3d_simulated_seq_y_save_signals: // falls through
-	case MethodType::sta_3d_vectorial_simulated:
+	case MethodEnum::sta_3d_simulated_save_signals:       // falls through
+	case MethodEnum::sta_3d_simulated_seq_y_save_signals: // falls through
+	case MethodEnum::sta_3d_vectorial_simulated:
 		acquisition = std::make_unique<Simulated3DSTAAcquisition<FloatType>>(project_, config);
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
 
-	if (project_.method() == MethodType::sta_3d_simulated_save_signals) {
+	if (project_.method() == MethodEnum::sta_3d_simulated_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		for (unsigned int txElem : config.activeTxElem) {
@@ -145,7 +145,7 @@ STA3DMethod<FloatType>::execute()
 			project_.saveTxElemSignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
 		}
 		return;
-	} else if (project_.method() == MethodType::sta_3d_simulated_seq_y_save_signals) {
+	} else if (project_.method() == MethodEnum::sta_3d_simulated_seq_y_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		const FloatType yStep     = taskPM->value<FloatType>(  "y_step",          0.0,   100.0);
 		const FloatType minY      = taskPM->value<FloatType>(  "min_y" ,     -10000.0, 10000.0);
@@ -186,7 +186,7 @@ STA3DMethod<FloatType>::execute()
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
-	if (project_.method() == MethodType::sta_3d_vectorial_simulated) {
+	if (project_.method() == MethodEnum::sta_3d_vectorial_simulated) {
 		const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 		auto processor = std::make_unique<Vectorial3DSTAProcessor<FloatType>>(

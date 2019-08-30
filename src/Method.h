@@ -25,7 +25,7 @@
 
 namespace Lab {
 
-enum class MethodType {
+enum class MethodEnum {
 	invalid
 #define METHOD_ITEM(A, B) ,A
 	METHOD_TABLE
@@ -39,9 +39,9 @@ public:
 	MethodNameMap();
 	~MethodNameMap();
 
-	MethodType findByName(const std::string& name);
+	MethodEnum findByName(const std::string& name);
 private:
-	typedef std::unordered_map<std::string, MethodType> Map;
+	typedef std::unordered_map<std::string, MethodEnum> Map;
 
 	Map map_;
 };
@@ -53,7 +53,7 @@ public:
 
 	virtual void execute();
 
-	static MethodType findByName(const std::string& name) { return nameMap_.findByName(name); }
+	static MethodEnum findByName(const std::string& name) { return nameMap_.findByName(name); }
 	static Method* get(Project& project);
 private:
 	static MethodNameMap nameMap_;

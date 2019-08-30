@@ -36,7 +36,7 @@ Matrix<XYZValue<float>>* Project::emptyGridData;
 std::vector<XYZ<float>>*  Project::emptyPointList;
 
 Project::Project(USLab4a& mainWindow)
-		: method_(MethodType::invalid)
+		: method_(MethodEnum::invalid)
 		, mainWindow_(mainWindow)
 {
 }

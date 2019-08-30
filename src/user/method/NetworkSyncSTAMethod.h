@@ -94,7 +94,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	const unsigned int baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 	const std::string dataDir      = taskPM->value<std::string>("data_dir");
 
-	if (project_.method() == MethodType::sta_network_sync_save_signals) {
+	if (project_.method() == MethodEnum::sta_network_sync_save_signals) {
 		project_.createDirectory(dataDir, true);
 		auto acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
 		saveSignals(taskPM, config, *acquisition, baseElement, dataDir);

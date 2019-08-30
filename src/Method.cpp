@@ -25,7 +25,7 @@ MethodNameMap Method::nameMap_;
 
 MethodNameMap::MethodNameMap()
 {
-#define METHOD_ITEM(A, B) map_[#A] = MethodType::A;
+#define METHOD_ITEM(A, B) map_[#A] = MethodEnum::A;
 	METHOD_TABLE
 #undef METHOD_ITEM
 }
@@ -34,7 +34,7 @@ MethodNameMap::~MethodNameMap()
 {
 }
 
-MethodType
+MethodEnum
 MethodNameMap::findByName(const std::string& name)
 {
 	Map::const_iterator iter = map_.find(name);
@@ -53,7 +53,7 @@ Method*
 Method::get(Project& project)
 {
 	switch (project.method()) {
-#define METHOD_ITEM(A, B) case MethodType::A: return new B(project);
+#define METHOD_ITEM(A, B) case MethodEnum::A: return new B(project);
 	METHOD_TABLE
 #undef METHOD_ITEM
 	default:

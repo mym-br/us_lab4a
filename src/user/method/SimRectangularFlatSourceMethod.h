@@ -630,28 +630,28 @@ SimRectangularFlatSourceMethod<FloatType>::execute()
 	Timer tProc;
 
 	switch (project_.method()) {
-	case MethodType::sim_acoustic_field_rectangular_flat_source_transient:
+	case MethodEnum::sim_acoustic_field_rectangular_flat_source_transient:
 		execTransientAcousticField(false);
 		break;
-	case MethodType::sim_acoustic_field_array_of_rectangular_flat_sources_transient:
+	case MethodEnum::sim_acoustic_field_array_of_rectangular_flat_sources_transient:
 		execTransientAcousticField(true);
 		break;
-	case MethodType::sim_impulse_response_rectangular_flat_source:
+	case MethodEnum::sim_impulse_response_rectangular_flat_source:
 		execImpulseResponse(false);
 		break;
-	case MethodType::sim_impulse_response_array_of_rectangular_flat_sources:
+	case MethodEnum::sim_impulse_response_array_of_rectangular_flat_sources:
 		execImpulseResponse(true);
 		break;
-	case MethodType::sim_propagation_rectangular_flat_source_transient:
+	case MethodEnum::sim_propagation_rectangular_flat_source_transient:
 		execTransientPropagation(false);
 		break;
-	case MethodType::sim_propagation_array_of_rectangular_flat_sources_transient:
+	case MethodEnum::sim_propagation_array_of_rectangular_flat_sources_transient:
 		execTransientPropagation(true);
 		break;
-	case MethodType::sim_radiation_pattern_rectangular_flat_source_transient:
+	case MethodEnum::sim_radiation_pattern_rectangular_flat_source_transient:
 		execTransientRadiationPattern(false);
 		break;
-	case MethodType::sim_radiation_pattern_array_of_rectangular_flat_sources_transient:
+	case MethodEnum::sim_radiation_pattern_array_of_rectangular_flat_sources_transient:
 		execTransientRadiationPattern(true);
 		break;
 	default:
