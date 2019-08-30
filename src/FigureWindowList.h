@@ -37,7 +37,7 @@ public:
 private:
 	struct FigureWindowData {
 		int id;
-		std::shared_ptr<W> figure;
+		std::unique_ptr<W> figure;
 	};
 
 	FigureWindowList(const FigureWindowList&);
@@ -50,17 +50,14 @@ template<typename W>
 W&
 FigureWindowList<W>::get(int id)
 {
-	for (typename std::vector<FigureWindowData>::iterator iter = list_.begin(), end = list_.end(); iter != end; ++iter) {
-		if (iter->id == id) {
-			return *(iter->figure);
+	for (auto& item : list_) {
+		if (item.id == id) {
+			return *item.figure;
 		}
 	}
 
-	FigureWindowData data;
-	data.id = id;
-	data.figure = std::make_shared<W>();
-	list_.push_back(data);
-	return *(data.figure);
+	list_.push_back(FigureWindowData{id, std::make_unique<W>()});
+	return *list_.back().figure;
 }
 
 template<typename W>
