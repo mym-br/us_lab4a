@@ -15,6 +15,7 @@ SOURCES += \
     src/Figure2DWindow.cpp \
     src/Figure3DWindow.cpp \
     src/main.cpp \
+    src/Method.cpp \
     src/MultiLayer3DWindow.cpp \
     src/OGLFigureWidget.cpp \
     src/OGLMultiLayerWidget.cpp \
@@ -23,12 +24,6 @@ SOURCES += \
     src/Project.cpp \
     src/USLab4a.cpp \
     src/fft/FFTW.cpp \
-    src/method/Method.cpp \
-    src/method/MultiLayerImageMethod.cpp \
-    src/method/ShowImageMethod.cpp \
-    src/method/SingleAcquisitionMethod.cpp \
-    src/method/TestMethod.cpp \
-    src/method/VTKFileMultiImageMethod.cpp \
     src/network_acquisition/ArrayAcqClient.cpp \
     src/network_acquisition/PhasedArrayAcqClient.cpp \
     src/network_sync/SyncServer.cpp \
@@ -40,7 +35,12 @@ SOURCES += \
     src/util/LogSyntaxHighlighter.cpp \
     src/util/MinstdPseudorandomNumberGenerator.cpp \
     src/util/ParameterMap.cpp \
-    src/util/Util.cpp
+    src/util/Util.cpp \
+    src/user/method/MultiLayerImageMethod.cpp \
+    src/user/method/ShowImageMethod.cpp \
+    src/user/method/SingleAcquisitionMethod.cpp \
+    src/user/method/TestMethod.cpp \
+    src/user/method/VTKFileMultiImageMethod.cpp
 
 HEADERS += \
     src/Controller.h \
@@ -48,6 +48,7 @@ HEADERS += \
     src/Figure3DWindow.h \
     src/FigureWindowList.h \
     src/global.h \
+    src/Method.h \
     src/MultiLayer3DWindow.h \
     src/OGLFigureWidget.h \
     src/OGLMultiLayerWidget.h \
@@ -57,22 +58,6 @@ HEADERS += \
     src/USLab4a.h \
     src/fft/FFTUtil.h \
     src/fft/FFTW.h \
-    src/method/DeviceSectorialScanMethod.h \
-    src/method/Method.h \
-    src/method/MultiLayerImageMethod.h \
-    src/method/NetworkSyncSTAMethod.h \
-    src/method/NetworkSyncSingleVirtualSourceMethod.h \
-    src/method/STA3DMethod.h \
-    src/method/STAMethod.h \
-    src/method/ShowImageMethod.h \
-    src/method/SimRectangularFlatSourceMethod.h \
-    src/method/SingleAcquisitionMethod.h \
-    src/method/SingleVirtualSourceMethod.h \
-    src/method/SyntheticYSingleVirtualSourceMethod.h \
-    src/method/T1R1SAFT3DMethod.h \
-    src/method/TestMethod.h \
-    src/method/VTKFileMultiImageMethod.h \
-    src/method/method_table.h \
     src/network_acquisition/ArrayAcqClient.h \
     src/network_acquisition/ArrayAcqProtocol.h \
     src/network_acquisition/PhasedArrayAcqClient.h \
@@ -134,6 +119,21 @@ HEADERS += \
     src/user/configuration/SA3DConfiguration.h \
     src/user/configuration/STAConfiguration.h \
     src/user/configuration/TnRnConfiguration.h \
+    src/user/method/DeviceSectorialScanMethod.h \
+    src/user/method/method_table.h \
+    src/user/method/MultiLayerImageMethod.h \
+    src/user/method/NetworkSyncSTAMethod.h \
+    src/user/method/NetworkSyncSingleVirtualSourceMethod.h \
+    src/user/method/STA3DMethod.h \
+    src/user/method/STAMethod.h \
+    src/user/method/ShowImageMethod.h \
+    src/user/method/SimRectangularFlatSourceMethod.h \
+    src/user/method/SingleAcquisitionMethod.h \
+    src/user/method/SingleVirtualSourceMethod.h \
+    src/user/method/SyntheticYSingleVirtualSourceMethod.h \
+    src/user/method/T1R1SAFT3DMethod.h \
+    src/user/method/TestMethod.h \
+    src/user/method/VTKFileMultiImageMethod.h \
     src/user/network_acquisition/NetworkDeviceSectorialScanAcquisition.h \
     src/user/network_acquisition/NetworkSTAAcquisition.h \
     src/user/network_acquisition/NetworkTnRnAcquisition.h \
@@ -165,7 +165,6 @@ FORMS += \
 
 DEPENDPATH += src \
     src/fft \
-    src/method \
     src/network_acquisition \
     src/network_sync \
     src/parallel \
@@ -173,13 +172,13 @@ DEPENDPATH += src \
     src/util \
     src/user/acquisition \
     src/user/configuration \
+    src/user/method \
     src/user/network_acquisition \
     src/user/processor \
     src/user/simulator
 
 INCLUDEPATH += src \
     src/fft \
-    src/method \
     src/network_acquisition \
     src/network_sync \
     src/parallel \
@@ -187,6 +186,7 @@ INCLUDEPATH += src \
     src/util \
     src/user/acquisition \
     src/user/configuration \
+    src/user/method \
     src/user/network_acquisition \
     src/user/processor \
     src/user/simulator
