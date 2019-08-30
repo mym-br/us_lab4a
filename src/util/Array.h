@@ -18,6 +18,8 @@
 #ifndef ARRAY_H_
 #define ARRAY_H_
 
+#include <cstddef> /* std::size_t */
+
 namespace Lab {
 
 template<typename T, std::size_t N>
