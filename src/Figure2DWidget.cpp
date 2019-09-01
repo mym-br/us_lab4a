@@ -260,6 +260,8 @@ Figure2DWidget::wheelEvent(QWheelEvent* event)
 void
 Figure2DWidget::resizeEvent(QResizeEvent* /*event*/)
 {
+	if (xList_.empty() || xTicks_.empty()) return;
+
 	handleTransform();
 }
 
