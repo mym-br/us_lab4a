@@ -52,9 +52,3 @@ GNU LGPL 3 or GPL 3.
 FFTW 3.3.4
 
 GNU GPL 2 or later
-
--------------------------------------------------------------------------------
-
-QCustomPlot 2.0.0
-
-GNU GPL 3 or later.

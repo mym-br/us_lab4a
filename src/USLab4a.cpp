@@ -32,6 +32,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QTextStream>
 
 #include "Controller.h"
 #include "Exception.h"

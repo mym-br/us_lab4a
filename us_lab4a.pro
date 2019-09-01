@@ -1,6 +1,6 @@
 QT += core gui opengl
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = us_lab4a
 TEMPLATE = app
@@ -12,6 +12,7 @@ CONFIG += c++14
 
 SOURCES += \
     src/Controller.cpp \
+    src/Figure2DWidget.cpp \
     src/Figure2DWindow.cpp \
     src/Figure3DWindow.cpp \
     src/main.cpp \
@@ -27,7 +28,6 @@ SOURCES += \
     src/network_acquisition/ArrayAcqClient.cpp \
     src/network_acquisition/PhasedArrayAcqClient.cpp \
     src/network_sync/SyncServer.cpp \
-    src/qcustomplot/qcustomplot.cpp \
     src/util/FileUtil.cpp \
     src/util/HDF5Util.cpp \
     src/util/KeyValueFileReader.cpp \
@@ -44,6 +44,7 @@ SOURCES += \
 
 HEADERS += \
     src/Controller.h \
+    src/Figure2DWidget.h \
     src/Figure2DWindow.h \
     src/Figure3DWindow.h \
     src/FigureWindowList.h \
@@ -65,7 +66,6 @@ HEADERS += \
     src/network_acquisition/RawBuffer.h \
     src/network_sync/SyncServer.h \
     src/parallel/ParallelHilbertEnvelope.h \
-    src/qcustomplot/qcustomplot.h \
     src/util/Array.h \
     src/util/ArrayGeometry.h \
     src/util/ArrayUtil.h \
@@ -169,7 +169,6 @@ DEPENDPATH += src \
     src/network_acquisition \
     src/network_sync \
     src/parallel \
-    src/qcustomplot \
     src/util \
     src/user/acquisition \
     src/user/configuration \
@@ -183,7 +182,6 @@ INCLUDEPATH += src \
     src/network_acquisition \
     src/network_sync \
     src/parallel \
-    src/qcustomplot \
     src/util \
     src/user/acquisition \
     src/user/configuration \

@@ -15,15 +15,15 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QCustomPlot" name="figure2DWidget" native="true"/>
+    <widget class="Lab::Figure2DWidget" name="figure2DWidget" native="true"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QCustomPlot</class>
+   <class>Lab::Figure2DWidget</class>
    <extends>QWidget</extends>
-   <header>qcustomplot.h</header>
+   <header>Figure2DWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
