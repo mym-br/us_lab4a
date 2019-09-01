@@ -43,6 +43,7 @@ protected:
 	virtual void mouseMoveEvent(QMouseEvent* event);
 	virtual void resizeEvent(QResizeEvent* event);
 	virtual void wheelEvent(QWheelEvent* event);
+	virtual void keyPressEvent(QKeyEvent* event);
 private:
 	void handleTransform();
 	void autoSetAxesTicks(bool expand=false);

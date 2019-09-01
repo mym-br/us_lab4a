@@ -62,6 +62,8 @@ Figure2DWidget::Figure2DWidget(QWidget* parent)
 {
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
+
+	setFocusPolicy(Qt::StrongFocus); // enable key events
 }
 
 // Note: with no antialiasing, the coordinates in QPointF are rounded to the nearest integer.
@@ -259,6 +261,24 @@ void
 Figure2DWidget::resizeEvent(QResizeEvent* /*event*/)
 {
 	handleTransform();
+}
+
+void
+Figure2DWidget::keyPressEvent(QKeyEvent* event)
+{
+	if (xList_.empty() || xTicks_.empty()) {
+		QWidget::keyPressEvent(event);
+		return;
+	}
+
+	if (event->key() == Qt::Key_Space) {
+		drawPointMarker_ = !drawPointMarker_;
+	} else {
+		QWidget::keyPressEvent(event);
+		return;
+	}
+
+	update();
 }
 
 void
