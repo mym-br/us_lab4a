@@ -49,7 +49,9 @@ private:
 	void autoSetAxesTicks(bool expand=false);
 	bool resetFigure();
 
-	static void autoSetAxisTicks(double minValue, double maxValue, std::vector<double>& ticks, bool expand);
+	static void autoSetAxisTicks(double minValue, double maxValue,
+					std::vector<double>& ticks, double& offset, double& coef,
+					bool expand);
 
 	bool figureChanged_;
 	bool drawPointMarker_;
@@ -68,6 +70,10 @@ private:
 	double xEnd_;
 	double yBegin_;
 	double yEnd_;
+	double xTickOffset_;
+	double yTickOffset_;
+	double xTickCoef_;
+	double yTickCoef_;
 	std::vector<float> xList_;
 	std::vector<float> yList_;
 	std::vector<double> xTicks_;

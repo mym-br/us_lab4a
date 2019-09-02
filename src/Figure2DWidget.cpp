@@ -35,6 +35,8 @@
 #define MAX_VALUE_DELTA (1.0e30)
 #define MARKER_SIZE (2.0)
 #define EPS (1.0e-5)
+#define MAX_TICK_POW (2.0)
+#define MIN_TICK_POW (-2.0)
 
 namespace Lab {
 
@@ -57,6 +59,10 @@ Figure2DWidget::Figure2DWidget(QWidget* parent)
 		, xEnd_()
 		, yBegin_()
 		, yEnd_()
+		, xTickOffset_()
+		, yTickOffset_()
+		, xTickCoef_(1.0)
+		, yTickCoef_(1.0)
 		, xLabel_("x")
 		, yLabel_("y")
 {
@@ -107,7 +113,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	const double vTick = vBegin + TICK_SIZE;
 	const double vText = vTick + TEXT_SPACING + textCapHeight_;
 	for (float tick : xTicks_) {
-		const double u = uBegin + (tick - xBegin_) * xScale_;
+		const double u = uBegin + (tick * xTickCoef_ + xTickOffset_ - xBegin_) * xScale_;
 		// Vertical line.
 		painter.setPen(Qt::lightGray);
 		painter.drawLine(QPointF(u, vBegin), QPointF(u, vEnd));
@@ -120,12 +126,20 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	// X label.
 	const double vLabelPos = vText + TEXT_SPACING + textCapHeight_;
 	painter.drawText(QPointF(uBegin + mainAreaWidth_ / 2 - xLabelWidth_ / 2, vLabelPos), xLabel_);
+	// X ticks transformation.
+	QString xTickTransf;
+	if (xTickCoef_   != 1.0) xTickTransf += QString("×1e%1 ").arg(std::log10(xTickCoef_));
+	if (xTickOffset_ >  0.0) xTickTransf += "+";
+	if (xTickOffset_ != 0.0) xTickTransf += QString("%1").arg(xTickOffset_);
+	if (!xTickTransf.isEmpty()) {
+		painter.drawText(QPointF(uBegin, vLabelPos), xTickTransf);
+	}
 
 	// Y axis.
 	const double uTick = uBegin - TICK_SIZE;
 	for (unsigned int i = 0; i < yTicks_.size(); ++i) {
 		const double uText = uTick - TEXT_SPACING - yTicksWidth_[i];
-		const double v = vBegin + (yTicks_[i] - yBegin_) * yScale_;
+		const double v = vBegin + (yTicks_[i] * yTickCoef_ + yTickOffset_ - yBegin_) * yScale_;
 		// Horizontal line.
 		painter.setPen(Qt::lightGray);
 		painter.drawLine(QPointF(uBegin, v), QPointF(uEnd, v));
@@ -138,6 +152,14 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	// Y label.
 	painter.rotate(-90.0);
 	painter.drawText(QPointF(-vBegin + mainAreaHeight_ / 2 - yLabelWidth_ / 2, SPACING + textCapHeight_), yLabel_);
+	// Y ticks transformation.
+	QString yTickTransf;
+	if (yTickCoef_   != 1.0) yTickTransf += QString("×1e%1 ").arg(std::log10(yTickCoef_));
+	if (yTickOffset_ >  0.0) yTickTransf += "+";
+	if (yTickOffset_ != 0.0) yTickTransf += QString("%1").arg(yTickOffset_);
+	if (!yTickTransf.isEmpty()) {
+		painter.drawText(QPointF(-vBegin, SPACING + textCapHeight_), yTickTransf);
+	}
 	painter.resetTransform();
 
 	// Frame.
@@ -294,13 +316,15 @@ Figure2DWidget::handleTransform()
 }
 
 void
-Figure2DWidget::autoSetAxisTicks(double minValue, double maxValue, std::vector<double>& ticks, bool expand)
+Figure2DWidget::autoSetAxisTicks(double minValue, double maxValue,
+					std::vector<double>& ticks, double& offset, double& coef,
+					bool expand)
 {
 	ticks.clear();
 
+	// Calculate step.
 	const double range = maxValue - minValue;
 	const double maxStep = range / MIN_AXIS_DIV;
-
 	const double truncMaxStep = std::pow(10.0, std::floor(std::log10(maxStep)));
 	double step = truncMaxStep;
 	double aux;
@@ -309,9 +333,9 @@ Figure2DWidget::autoSetAxisTicks(double minValue, double maxValue, std::vector<d
 	} else if ((aux = truncMaxStep * 2.0) < maxStep) {
 		step = aux;
 	}
-
 	//qDebug("maxStep: %f truncMaxStep: %f step: %f", maxStep, truncMaxStep, step);
 
+	// Calculate tick values.
 	double firstTick, lastTick;
 	if (expand) {
 		firstTick = std::floor(minValue / step) * step;
@@ -326,13 +350,38 @@ Figure2DWidget::autoSetAxisTicks(double minValue, double maxValue, std::vector<d
 		if (tick > lastTick + step * EPS) break;
 		ticks.push_back(tick);
 	}
+
+	// Calculate offset.
+	const double delta = ticks.back() - ticks.front();
+	const double mean = 0.5 * (ticks.front() + ticks.back());
+	if (mean > delta) {
+		offset = ticks.front();
+		for (double& t : ticks) t -= offset;
+	} else if (mean < -delta) {
+		offset = ticks.back();
+		for (double& t : ticks) t -= offset;
+	} else {
+		offset = 0.0;
+	}
+
+	// Calculate coefficient.
+	const double stepPow = std::log10(step);
+	if (stepPow < MIN_TICK_POW) {
+		coef = std::pow(10.0, std::floor(stepPow) - MIN_TICK_POW);
+		for (double& t : ticks) t /= coef;
+	} else if (stepPow > MAX_TICK_POW) {
+		coef = std::pow(10.0, std::ceil(stepPow) - MAX_TICK_POW);
+		for (double& t : ticks) t /= coef;
+	} else {
+		coef = 1.0;
+	}
 }
 
 void
 Figure2DWidget::autoSetAxesTicks(bool expand)
 {
-	autoSetAxisTicks(xBegin_, xEnd_, xTicks_, expand);
-	autoSetAxisTicks(yBegin_, yEnd_, yTicks_, expand);
+	autoSetAxisTicks(xBegin_, xEnd_, xTicks_, xTickOffset_, xTickCoef_, expand);
+	autoSetAxisTicks(yBegin_, yEnd_, yTicks_, yTickOffset_, yTickCoef_, expand);
 
 	figureChanged_ = true;
 	update();
@@ -360,10 +409,10 @@ Figure2DWidget::resetFigure()
 
 	autoSetAxesTicks(true);
 
-	xBegin_ = std::min(xBegin_, xTicks_.front());
-	xEnd_   = std::max(xEnd_  , xTicks_.back());
-	yBegin_ = std::min(yBegin_, yTicks_.front());
-	yEnd_   = std::max(yEnd_  , yTicks_.back());
+	xBegin_ = std::min(xBegin_, xTicks_.front() * xTickCoef_ + xTickOffset_);
+	xEnd_   = std::max(xEnd_  , xTicks_.back()  * xTickCoef_ + xTickOffset_);
+	yBegin_ = std::min(yBegin_, yTicks_.front() * yTickCoef_ + yTickOffset_);
+	yEnd_   = std::max(yEnd_  , yTicks_.back()  * yTickCoef_ + yTickOffset_);
 
 	figureChanged_ = true;
 	update();
