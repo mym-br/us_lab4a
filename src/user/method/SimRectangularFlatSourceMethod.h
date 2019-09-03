@@ -43,12 +43,11 @@
 #include "Timer.h"
 #include "Util.h"
 #include "Waveform.h"
+#include "WavefrontObjFileWriter.h"
 #include "XY.h"
 #include "XYZ.h"
 #include "XYZValue.h"
 #include "XYZValueArray.h"
-
-
 
 namespace Lab {
 
@@ -136,6 +135,8 @@ template<typename FloatType>
 void
 SimRectangularFlatSourceMethod<FloatType>::loadSourceData(ConstParameterMapPtr taskPM, MainData& data, bool sourceIsArray, SourceData& srcData)
 {
+	WavefrontObjFileWriter<FloatType> fw((project_.directory() + "/source_geometry.obj").c_str());
+
 	if (sourceIsArray) {
 		ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 		ArrayUtil::calculateTxElementPositions(*arrayPM, srcData.elemPos);
@@ -153,6 +154,17 @@ SimRectangularFlatSourceMethod<FloatType>::loadSourceData(ConstParameterMapPtr t
 			srcData.focusX = srcData.focusY = srcData.focusZ = 0;
 			srcData.focusDelay.assign(srcData.elemPos.size(), 0.0);
 		}
+
+		const FloatType hw = 0.5 * srcData.sourceWidth;
+		const FloatType hh = 0.5 * srcData.sourceHeight;
+		for (const auto& pos : srcData.elemPos) {
+			fw.addPoint(pos.x - hw, pos.y + hh, 0.0);
+			fw.addPoint(pos.x + hw, pos.y + hh, 0.0);
+			fw.addPoint(pos.x + hw, pos.y - hh, 0.0);
+			fw.addPoint(pos.x - hw, pos.y - hh, 0.0);
+			fw.addQuad(-4, -3, -2, -1);
+		}
+		fw.write();
 	} else {
 		ConstParameterMapPtr singlePM = project_.loadChildParameterMap(taskPM, "single_source_config_file");
 		srcData.sourceWidth  = singlePM->value<FloatType>("source_width", 0.0, 10.0);
@@ -160,6 +172,15 @@ SimRectangularFlatSourceMethod<FloatType>::loadSourceData(ConstParameterMapPtr t
 
 		srcData.useFocus = false;
 		srcData.focusX = srcData.focusY = srcData.focusZ = 0;
+
+		const FloatType hw = 0.5 * srcData.sourceWidth;
+		const FloatType hh = 0.5 * srcData.sourceHeight;
+		fw.addPoint(-hw,  hh, 0.0);
+		fw.addPoint( hw,  hh, 0.0);
+		fw.addPoint( hw, -hh, 0.0);
+		fw.addPoint(-hw, -hh, 0.0);
+		fw.addQuad(-4, -3, -2, -1);
+		fw.write();
 	}
 }
 

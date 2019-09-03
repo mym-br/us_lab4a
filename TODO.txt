@@ -9,8 +9,6 @@
 
 - project_.loadImageFromHDF5(): Add file name as parameter?
 
-- Drawing of array elements.
-
 ================================================================================
 
 Notes:

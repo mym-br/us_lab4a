@@ -103,6 +103,7 @@ HEADERS += \
     src/util/Util.h \
     src/util/Value.h \
     src/util/Waveform.h \
+    src/util/WavefrontObjFileWriter.h \
     src/util/WindowFunction.h \
     src/util/XY.h \
     src/util/XYZ.h \
