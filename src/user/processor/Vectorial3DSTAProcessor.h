@@ -143,7 +143,6 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 
 	// Prepare the signal matrix.
 	for (unsigned int iTxElem = 0, txEnd = config_.activeTxElem.size(); iTxElem < txEnd; ++iTxElem) {
-		LOG_INFO << "ACQ/PREP txElem: " << config_.activeTxElem[iTxElem];
 
 		acquisition_.execute(baseElement, config_.activeTxElem[iTxElem], acqData_);
 
@@ -193,8 +192,6 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n1()),
 	[&, invCT, numRows](const tbb::blocked_range<std::size_t>& r) {
-		LOG_DEBUG << "IMG col range start = " << r.begin() << " n = " << (r.end() - r.begin());
-
 		auto& local = tls.local();
 
 		local.rxSignalSumList.resize(config_.activeRxElem.size());

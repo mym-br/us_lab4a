@@ -147,8 +147,6 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSour
 	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
 	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
-		LOG_INFO << "i: " << i << " < " << iEnd;
-
 		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
 			[&, i](const tbb::blocked_range<std::size_t>& r) {
 				auto& local = tls.local();
@@ -229,8 +227,6 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getArrayOfRectangularF
 	IterationCounter::reset(inputData.n1());
 
 	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
-		LOG_INFO << "i: " << i << " < " << iEnd;
-
 		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
 			[&, i](const tbb::blocked_range<std::size_t>& r) {
 				auto& local = tls.local();

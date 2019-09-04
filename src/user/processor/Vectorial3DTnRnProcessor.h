@@ -203,8 +203,6 @@ Vectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement, Matrix<XY
 
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n1()),
 	[&, invCT, numRows](const tbb::blocked_range<std::size_t>& r) {
-		LOG_DEBUG << "IMG col range start = " << r.begin() << " n = " << (r.end() - r.begin());
-
 		auto& local = tls.local();
 
 		local.rxSignalSumList.resize(config_.numElements);

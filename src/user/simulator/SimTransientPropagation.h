@@ -139,8 +139,6 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getRectangularFlatSourcePro
 	IterationCounter::reset(gridData.n1());
 
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
-		LOG_INFO << "i: " << i << " < " << iEnd;
-
 		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n2()),
 			[&, i](const tbb::blocked_range<std::size_t>& r) {
 				auto& local = tls.local();
@@ -203,8 +201,6 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSo
 	IterationCounter::reset(gridData.n1());
 
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
-		LOG_INFO << "i: " << i << " < " << iEnd;
-
 		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n2()),
 			[&, i](const tbb::blocked_range<std::size_t>& r) {
 				auto& local = tls.local();
