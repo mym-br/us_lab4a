@@ -26,7 +26,7 @@ namespace Lab {
 /*******************************************************************************
  * Static members.
  */
-tbb::atomic<Log::Level> Log::level_;
+std::atomic<Log::Level> Log::level_;
 std::ostringstream Log::buffer_;
 QMutex Log::logMutex_;
 

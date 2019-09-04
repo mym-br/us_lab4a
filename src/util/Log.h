@@ -18,15 +18,12 @@
 #ifndef LOG_H_
 #define LOG_H_
 
+#include <atomic>
 #include <cstddef> /* std::size_t */
 #include <sstream>
 #include <vector>
 
 #include <QMutex>
-
-#include <tbb/atomic.h>
-
-
 
 #define LOG_ERROR Lab::ErrorLog()
 #define LOG_WARNING if(Lab::Log::isWarningEnabled())Lab::WarningLog()
@@ -171,7 +168,7 @@ public:
 	static void add(const std::ostringstream& inputBuffer);
 	static void transferTo(std::string& out);
 private:
-	static tbb::atomic<Level> level_;
+	static std::atomic<Level> level_;
 	static std::ostringstream buffer_;
 	static QMutex logMutex_;
 
