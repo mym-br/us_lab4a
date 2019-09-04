@@ -151,7 +151,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	}
 
 	for (unsigned int acqNumber = 0; acqNumber <= yList.size() - synthYSize; ++acqNumber) {
-		LOG_INFO << "ACQ " << acqNumber;
+		LOG_INFO << "ACQ " << acqNumber << '/' << yList.size() - synthYSize;
 
 		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
 			iter->y = focusY; // this is the y value for processing

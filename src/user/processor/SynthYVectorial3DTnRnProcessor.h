@@ -33,6 +33,7 @@
 #include "Geometry.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
+#include "IterationCounter.h"
 #include "Log.h"
 #include "Matrix.h"
 #include "TnRnAcquisition.h"
@@ -216,10 +217,10 @@ SynthYVectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement,
 	const unsigned int numAcq = lastAcq - firstAcq + 1U;
 	const FloatType valueFactor = 1.0 / numAcq;
 
+	IterationCounter::reset(gridData.n1());
+
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n1()),
 	[&, invCT, numRows](const tbb::blocked_range<std::size_t>& r) {
-		LOG_DEBUG << "IMG col range start = " << r.begin() << " n = " << (r.end() - r.begin());
-
 		auto& local = tls.local();
 
 		local.rxSignalSumList.resize(config_.numElements * numAcq);
@@ -279,6 +280,8 @@ SynthYVectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement,
 				point.y = centerY;
 			}
 		}
+
+		IterationCounter::add(r.end() - r.begin());
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
