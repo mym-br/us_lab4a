@@ -35,6 +35,7 @@
 #include "Geometry.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
+#include "IterationCounter.h"
 #include "Log.h"
 #include "Matrix.h"
 #include "STAAcquisition.h"
@@ -165,10 +166,10 @@ Vectorial3DT1R1SAFTProcessor<FloatType>::process(unsigned int baseElement, Matri
 	const FloatType invCT = (config_.samplingFrequency * upsamplingFactor_) / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
 
+	IterationCounter::reset(gridData.n1());
+
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n1()),
 	[&, invCT, numRows](const tbb::blocked_range<std::size_t>& r) {
-		LOG_DEBUG << "IMG col range start = " << r.begin() << " n = " << (r.end() - r.begin());
-
 		auto& local = tls.local();
 
 		local.rxSignalSumList.resize(config_.activeRxElem.size());
@@ -211,6 +212,8 @@ Vectorial3DT1R1SAFTProcessor<FloatType>::process(unsigned int baseElement, Matri
 				point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>(0)));
 			}
 		}
+
+		IterationCounter::add(r.end() - r.begin());
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
