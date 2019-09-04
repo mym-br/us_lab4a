@@ -63,9 +63,6 @@ public:
 	const std::string directory() const { return directory_.toStdString(); }
 	void setDirectory(const std::string& dirPath) { directory_ = dirPath.c_str(); }
 
-//	const QString& taskFile() const { return taskFile_; }
-//	void setTaskFile(const QString& taskFile) { taskFile_ = taskFile; }
-
 	void loadTaskParameters(const std::string& taskFile);
 	ConstParameterMapPtr taskParameterMap() const {
 		if (!taskParameterMap_) THROW_EXCEPTION(InvalidStateException, "The task parameter map has not been loaded.");
@@ -79,15 +76,9 @@ public:
 	ConstParameterMapPtr loadParameterMap(const char* fileName) const;
 	ConstParameterMapPtr loadChildParameterMap(ConstParameterMapPtr pm, const char* fileNameKey) const;
 
-//	template<typename F> void saveData(const Matrix<F>& m, const char* subDir, const char* fileName) const;
-
-	//template<typename T> void loadHDF5(const std::string& fileName, const std::string& datasetName, T& container) const;
-	//template<typename T> void saveHDF5(const T& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<FloatType>& container) const;
-	//template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<std::pair<FloatType, FloatType>>& container) const;
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const;
 	template<typename FloatType> void saveHDF5(const std::vector<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
-	//template<typename FloatType> void saveHDF5(const std::vector<std::pair<FloatType, FloatType>>& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename FloatType> void saveHDF5(const Matrix<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename T> void saveSignalToHDF5(const std::vector<T>& container, const std::string& outputDir,
 					unsigned int acqNumber, unsigned int baseElement,
@@ -114,8 +105,8 @@ public:
 						const char* figureName,
 						const std::vector<FloatType>& xList,
 						const std::vector<FloatType>& yList,
-						bool waitPending = true,
-						bool markPoints = false);
+						bool waitPending=true,
+						bool markPoints=false);
 
 	// Called by the producer.
 	// This function blocks if waitPending = true and there is a pending request.
@@ -126,10 +117,10 @@ public:
 						const char* figureName,
 						const T* gridData,
 						const U* pointList,
-						bool waitPending = true,
-						Figure::Visualization visualization = Figure::VISUALIZATION_DEFAULT,
-						Figure::Colormap colormap = Figure::COLORMAP_DEFAULT,
-						double valueScale = 0.0);
+						bool waitPending=true,
+						Figure::Visualization visualization=Figure::VISUALIZATION_DEFAULT,
+						Figure::Colormap colormap=Figure::COLORMAP_DEFAULT,
+						double valueScale=0.0);
 
 	// Called by the producer.
 	// This function blocks if there is a pending request.
@@ -154,7 +145,7 @@ public:
 	bool processingCancellationRequested();
 	void resetTrigger();
 	void trigger();
-	bool waitForTrigger(std::size_t* triggerCount = nullptr); // returns false if processing cancellation has been requested
+	bool waitForTrigger(std::size_t* triggerCount=nullptr); // returns false if processing cancellation has been requested
 
 	static Matrix<XYZValue<float>>* const emptyGridData;
 	static std::vector<XYZ<float>>* const emptyPointList;
@@ -239,7 +230,6 @@ private:
 	USLab4a& mainWindow_;
 	ConstParameterMapPtr taskParameterMap_;
 	QString directory_;
-	//QString taskFile_;
 	Figure2DData figure2DData_;
 	Figure3DData figure3DData_;
 	MultiLayer3DData multiLayer3DData_;
@@ -262,14 +252,6 @@ Project::loadHDF5(const std::string& fileName, const std::string& datasetName, s
 	HDF5Util::load2(filePath.toStdString(), datasetName, container);
 }
 
-//template<typename FloatType>
-//void
-//Project::loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<std::pair<FloatType, FloatType>>& container) const
-//{
-//	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
-//	HDF5Util::load2(filePath.toStdString(), datasetName, container);
-//}
-
 template<typename FloatType>
 void
 Project::loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const
@@ -285,14 +267,6 @@ Project::saveHDF5(const std::vector<FloatType>& container, const std::string& fi
 	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 	HDF5Util::save2(container, filePath.toStdString(), datasetName);
 }
-
-//template<typename FloatType>
-//void
-//Project::saveHDF5(const std::vector<std::pair<FloatType, FloatType>>& container, const std::string& fileName, const std::string& datasetName) const
-//{
-//	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
-//	HDF5Util::save2(container, filePath.toStdString(), datasetName);
-//}
 
 template<typename FloatType>
 void
