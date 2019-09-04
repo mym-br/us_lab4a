@@ -25,12 +25,10 @@
 
 #include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "FFTWFilter2.h"
+#include "IterationCounter.h"
 #include "Log.h"
 #include "Matrix.h"
-
 #include "XYZValueArray.h"
-
-
 
 namespace Lab {
 
@@ -138,6 +136,8 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getRectangularFlatSourcePro
 	};
 	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
+	IterationCounter::reset(gridData.n1());
+
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
 		LOG_INFO << "i: " << i << " < " << iEnd;
 
@@ -169,6 +169,8 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getRectangularFlatSourcePro
 					}
 				}
 		});
+
+		IterationCounter::add(1);
 	}
 }
 
@@ -198,6 +200,8 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSo
 	};
 	tbb::enumerable_thread_specific<ArrayThreadData> tls(threadData);
 
+	IterationCounter::reset(gridData.n1());
+
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
 		LOG_INFO << "i: " << i << " < " << iEnd;
 
@@ -229,6 +233,8 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSo
 					}
 				}
 		});
+
+		IterationCounter::add(1);
 	}
 }
 

@@ -25,12 +25,11 @@
 
 #include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "FFTWFilter2.h"
+#include "IterationCounter.h"
 #include "Log.h"
 #include "Matrix.h"
 #include "Util.h"
 #include "XYZValue.h"
-
-
 
 namespace Lab {
 
@@ -135,6 +134,8 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularFlatSourceA
 	};
 	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
+	IterationCounter::reset(gridData.n1());
+
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
 		LOG_INFO << "i: " << i << " < " << iEnd;
 
@@ -155,6 +156,8 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularFlatSourceA
 					point.value = maxValue - minValue;
 				}
 		});
+
+		IterationCounter::add(1);
 	}
 }
 
@@ -183,6 +186,8 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getArrayOfRectangularFlat
 	};
 	tbb::enumerable_thread_specific<ArrayThreadData> tls(threadData);
 
+	IterationCounter::reset(gridData.n1());
+
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
 		LOG_INFO << "i: " << i << " < " << iEnd;
 
@@ -203,6 +208,8 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getArrayOfRectangularFlat
 					point.value = maxValue - minValue;
 				}
 		});
+
+		IterationCounter::add(1);
 	}
 }
 

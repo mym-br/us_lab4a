@@ -25,6 +25,7 @@
 
 #include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
 #include "FFTWFilter2.h"
+#include "IterationCounter.h"
 #include "Log.h"
 #include "Matrix.h"
 #include "Util.h"
@@ -132,6 +133,8 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSour
 					const Matrix<XYZ<FloatType>>& inputData,
 					Matrix<XYZValue<FloatType>>& gridData)
 {
+	IterationCounter::reset(inputData.n1());
+
 #ifdef SIM_TRANSIENT_RADIATION_PATTERN_USE_MULTITHREADING
 	ThreadData threadData{
 		samplingFreq,
@@ -163,6 +166,8 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSour
 					gridData(i, j).value = maxValue - minValue;
 				}
 		});
+
+		IterationCounter::add(1);
 	}
 #else
 	std::size_t hOffset;
@@ -189,6 +194,8 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSour
 			Util::minMax(signal, minValue, maxValue);
 			gridData(i, j).value = maxValue - minValue;
 		}
+
+		IterationCounter::add(1);
 	}
 #endif
 }
@@ -219,6 +226,8 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getArrayOfRectangularF
 	};
 	tbb::enumerable_thread_specific<ArrayThreadData> tls(threadData);
 
+	IterationCounter::reset(inputData.n1());
+
 	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
 		LOG_INFO << "i: " << i << " < " << iEnd;
 
@@ -239,6 +248,8 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getArrayOfRectangularF
 					gridData(i, j).value = maxValue - minValue;
 				}
 		});
+
+		IterationCounter::add(1);
 	}
 }
 
