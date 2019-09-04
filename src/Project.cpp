@@ -30,8 +30,8 @@
 
 namespace Lab {
 
-Matrix<XYZValue<float>>* Project::emptyGridData;
-std::vector<XYZ<float>>* Project::emptyPointList;
+Matrix<XYZValue<float>>* const Project::emptyGridData = nullptr;
+std::vector<XYZ<float>>* const Project::emptyPointList = nullptr;
 
 Project::Project(USLab4a& mainWindow)
 		: method_(MethodEnum::invalid)

@@ -156,8 +156,8 @@ public:
 	void trigger();
 	bool waitForTrigger(std::size_t* triggerCount = nullptr); // returns false if processing cancellation has been requested
 
-	static Matrix<XYZValue<float>>* emptyGridData;
-	static std::vector<XYZ<float>>* emptyPointList;
+	static Matrix<XYZValue<float>>* const emptyGridData;
+	static std::vector<XYZ<float>>* const emptyPointList;
 
 	void createDirectory(const std::string& path, bool mustNotExist);
 	bool directoryExists(const std::string& path);
