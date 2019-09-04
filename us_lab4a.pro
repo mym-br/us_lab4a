@@ -30,6 +30,7 @@ SOURCES += \
     src/network_sync/SyncServer.cpp \
     src/util/FileUtil.cpp \
     src/util/HDF5Util.cpp \
+    src/util/IterationCounter.cpp \
     src/util/KeyValueFileReader.cpp \
     src/util/Log.cpp \
     src/util/LogSyntaxHighlighter.cpp \
@@ -86,6 +87,7 @@ HEADERS += \
     src/util/IndexValue.h \
     src/util/Interpolator.h \
     src/util/Interpolator4X.h \
+    src/util/IterationCounter.h \
     src/util/KaiserWindow.h \
     src/util/KeyValueFileReader.h \
     src/util/LinearInterpolator.h \

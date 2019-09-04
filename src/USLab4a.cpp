@@ -33,11 +33,13 @@
 #include <QString>
 #include <QStringList>
 #include <QTextStream>
+#include <QTime>
 
 #include "Controller.h"
 #include "Exception.h"
 #include "Figure2DWindow.h"
 #include "Figure3DWindow.h"
+#include "IterationCounter.h"
 #include "Log.h"
 #include "LogSyntaxHighlighter.h"
 #include "Method.h"
@@ -48,7 +50,7 @@
 
 
 #define FIGURE_WINDOWS_TIMER_PERIOD_MS 10
-#define LOG_TIMER_PERIOD_MS 250
+#define INFO_TIMER_PERIOD_MS 250
 #define MAX_LOG_BLOCK_COUNT 500
 #define FLOATING_POINT_VALUE_DECIMALS 6
 #define TASK_FILE_PREFIX "task-"
@@ -61,7 +63,7 @@ USLab4a::USLab4a(QWidget* parent)
 		, controller_(std::make_unique<Controller>(project_))
 		, project_(*this)
 		, figureWindowsTimer_(this)
-		, logWidgetTimer_(this)
+		, infoTimer_(this)
 		, logFile_(LOG_FILE_NAME)
 		, nextScriptEntry_()
 {
@@ -74,8 +76,8 @@ USLab4a::USLab4a(QWidget* parent)
 	figureWindowsTimer_.start(FIGURE_WINDOWS_TIMER_PERIOD_MS);
 	connect(&figureWindowsTimer_, SIGNAL(timeout()), this, SLOT(updateFigureWindows()));
 
-	logWidgetTimer_.start(LOG_TIMER_PERIOD_MS);
-	connect(&logWidgetTimer_, SIGNAL(timeout()), this, SLOT(updateLogWidget()));
+	infoTimer_.start(INFO_TIMER_PERIOD_MS);
+	connect(&infoTimer_, SIGNAL(timeout()), this, SLOT(updateInfo()));
 
 	new LogSyntaxHighlighter(ui_.logPlainTextEdit->document());
 
@@ -238,6 +240,10 @@ USLab4a::handleControllerFinishedProcessing()
 	ui_.enableTaskButton->setText(tr("Enable"));
 	ui_.enableTaskButton->setDisabled(false);
 
+	IterationCounter::reset(0);
+	ui_.progressBar->setValue(0);
+	ui_.progressBar->setEnabled(false);
+
 	if (!scriptEntryList_.empty()) {
 		processScriptEntry();
 	}
@@ -324,6 +330,11 @@ USLab4a::on_enableTaskButton_clicked()
 		LOG_ERROR << "A task must be selected.";
 		return;
 	}
+
+	ui_.progressBar->setEnabled(true);
+	ui_.progressBar->setValue(0);
+	ui_.progressLabel->clear();
+	IterationCounter::reset(0);
 
 	try {
 		project_.loadTaskParameters((QString(TASK_FILE_PREFIX) + selectedTasks.first()->text() + TASK_FILE_SUFFIX).toStdString());
@@ -431,9 +442,10 @@ USLab4a::updateFigureWindows()
 }
 
 void
-USLab4a::updateLogWidget()
+USLab4a::updateInfo()
 {
 	try {
+		// Update log.
 		std::string s;
 		Log::transferTo(s);
 		if (!s.empty()) {
@@ -445,17 +457,28 @@ USLab4a::updateLogWidget()
 
 			qint64 n = logFile_.write("\n");
 			if (n == -1) {
-				LOG_ERROR << "[USLab4a::updateLogWidget] An error ocurred while writing to the log file.";
+				LOG_ERROR << "[USLab4a::updateInfo] An error ocurred while writing to the log file.";
 			}
 			n = logFile_.write(s.c_str());
 			if (n == -1) {
-				LOG_ERROR << "[USLab4a::updateLogWidget] An error ocurred while writing to the log file.";
+				LOG_ERROR << "[USLab4a::updateInfo] An error ocurred while writing to the log file.";
 			}
 		}
+
+		// Update progress bar.
+		const unsigned int icTotal = IterationCounter::total;
+		if (icTotal != 0) {
+			const unsigned int icCount = IterationCounter::count;
+			const double icTime = IterationCounter::timer.getTime();
+			ui_.progressBar->setValue(static_cast<int>(((static_cast<double>(icCount) / icTotal) * 100.0 + 0.5)));
+			QTime t0(0, 0);
+			QTime t1 = t0.addSecs(static_cast<int>(icTime));
+			ui_.progressLabel->setText(t1.toString() + ' ');
+		}
 	} catch (std::exception& e) {
-		LOG_ERROR << "[USLab4a::updateLogWidget] Caught exception: " << e.what() << '.';
+		LOG_ERROR << "[USLab4a::updateInfo] Caught exception: " << e.what() << '.';
 	} catch (...) {
-		LOG_ERROR << "[USLab4a::updateLogWidget] Caught an unknown exception.";
+		LOG_ERROR << "[USLab4a::updateInfo] Caught an unknown exception.";
 	}
 }
 

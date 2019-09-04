@@ -86,7 +86,7 @@ private slots:
 	void on_selectProjectDirButton_clicked();
 	void on_triggerButton_clicked();
 	void updateFigureWindows();
-	void updateLogWidget();
+	void updateInfo();
 private:
 	USLab4a(const USLab4a&) = delete;
 	USLab4a& operator=(const USLab4a&) = delete;
@@ -104,7 +104,7 @@ private:
 	FigureWindowList<MultiLayer3DWindow> multiLayer3DWindowList_;
 	Project project_;
 	QTimer figureWindowsTimer_;
-	QTimer logWidgetTimer_;
+	QTimer infoTimer_;
 	Ui::USLab4aClass ui_;
 	QFile logFile_;
 

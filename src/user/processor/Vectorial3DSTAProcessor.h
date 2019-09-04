@@ -34,6 +34,7 @@
 #include "Geometry.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
+#include "IterationCounter.h"
 #include "Log.h"
 #include "Matrix.h"
 #include "STAAcquisition.h"
@@ -138,6 +139,8 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 
 	const std::size_t numSignals = config_.activeTxElem.size() * config_.activeRxElem.size();
 
+	IterationCounter::reset(config_.activeTxElem.size());
+
 	// Prepare the signal matrix.
 	for (unsigned int iTxElem = 0, txEnd = config_.activeTxElem.size(); iTxElem < txEnd; ++iTxElem) {
 		LOG_INFO << "ACQ/PREP txElem: " << config_.activeTxElem[iTxElem];
@@ -175,6 +178,8 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 			envelope_.getAnalyticSignal(&tempSignal_[0], tempSignal_.size(),
 							&analyticSignalTensor_(iTxElem, iRxElem, 0));
 		}
+
+		IterationCounter::add(1);
 	}
 
 	ThreadData threadData;
@@ -183,6 +188,8 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 
 	const FloatType invCT = (config_.samplingFrequency * upsamplingFactor_) / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
+
+	IterationCounter::reset(gridData.n1());
 
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n1()),
 	[&, invCT, numRows](const tbb::blocked_range<std::size_t>& r) {
@@ -234,6 +241,8 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 				point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>(0)));
 			}
 		}
+
+		IterationCounter::add(r.end() - r.begin());
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
