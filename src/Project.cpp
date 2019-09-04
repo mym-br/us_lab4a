@@ -28,12 +28,10 @@
 #include "KeyValueFileReader.h"
 #include "USLab4a.h"
 
-
-
 namespace Lab {
 
 Matrix<XYZValue<float>>* Project::emptyGridData;
-std::vector<XYZ<float>>*  Project::emptyPointList;
+std::vector<XYZ<float>>* Project::emptyPointList;
 
 Project::Project(USLab4a& mainWindow)
 		: method_(MethodEnum::invalid)
@@ -50,11 +48,7 @@ Project::loadTaskParameters(const std::string& taskFileName)
 {
 	QFile taskFile(directory_ + '/' + taskFileName.c_str());
 	if (taskFile.exists()) {
-//		ui_.taskFileLineEdit->setText(filePath);
-//		QFileInfo fileInfo(taskFile);
-
-//		project_.setTaskFilePath(filePath);
-		taskParameterMap_ = std::make_shared<const ParameterMap>(taskFile.fileName().toStdString().c_str());
+		taskParameterMap_ = std::make_shared<const ParameterMap>(taskFile.fileName());
 	} else {
 		THROW_EXCEPTION(InvalidFileException, "The file \"" << taskFile.fileName().toStdString() << "\" does not exist.");
 	}
