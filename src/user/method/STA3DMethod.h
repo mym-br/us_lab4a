@@ -27,6 +27,7 @@
 #include "Exception.h"
 #include "global.h"
 #include "ImageGrid.h"
+#include "IterationCounter.h"
 #include "Log.h"
 #include "Matrix.h"
 #include "Method.h"
@@ -140,9 +141,11 @@ STA3DMethod<FloatType>::execute()
 	if (project_.method() == MethodEnum::sta_3d_simulated_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+		IterationCounter::reset(config.activeTxElem.size());
 		for (unsigned int txElem : config.activeTxElem) {
 			acquisition->execute(baseElement, txElem, acqData);
 			project_.saveTxElemSignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
+			IterationCounter::add(1);
 		}
 		return;
 	} else if (project_.method() == MethodEnum::sta_3d_simulated_seq_y_save_signals) {
@@ -155,6 +158,7 @@ STA3DMethod<FloatType>::execute()
 		std::vector<FloatType> yList;
 		Util::fillSequenceFromStartWithStep(yList, minY, maxY, yStep);
 		auto& simAcq = dynamic_cast<Simulated3DSTAAcquisition<FloatType>&>(*acquisition);
+		IterationCounter::reset(yList.size());
 		for (std::size_t i = 0, end = yList.size(); i < end; ++i) {
 			const FloatType y = yList[i];
 			simAcq.modifyReflectorsOffset(0.0, -y);
@@ -162,6 +166,7 @@ STA3DMethod<FloatType>::execute()
 				acquisition->execute(baseElement, txElem, acqData);
 				project_.saveTxElemSignalsToHDF5(acqData, dataDir, i, baseElement, txElem);
 			}
+			IterationCounter::add(1);
 		}
 		return;
 	}
