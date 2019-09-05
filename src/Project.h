@@ -430,7 +430,7 @@ Project::showFigure2D(int id,
 
 		figure2DData_.showFigureRequested = true;
 		figure2DData_.figureId = id;
-		figure2DData_.figureName = figureName;
+		figure2DData_.figureName = figureName ? figureName : "Figure";
 
 		figure2DData_.xList.resize(xList.size());
 		std::copy(xList.begin(), xList.end(), figure2DData_.xList.begin());
@@ -468,7 +468,7 @@ Project::showFigure3D(
 
 	figure3DData_.showFigureRequested = true;
 	figure3DData_.figureId = id;
-	figure3DData_.figureName = figureName;
+	figure3DData_.figureName = figureName ? figureName : "Figure";
 	if (gridData) {
 		figure3DData_.gridData.resize(gridData->n1(), gridData->n2());
 		Value::copyXYZValueSequence(gridData->begin(), gridData->end(), figure3DData_.gridData.begin());
@@ -507,7 +507,7 @@ Project::showMultiLayer3D(
 
 	multiLayer3DData_.showFigureRequested = true;
 	multiLayer3DData_.figureId = id;
-	multiLayer3DData_.figureName = figureName;
+	multiLayer3DData_.figureName = figureName ? figureName : "Figure";
 
 	multiLayer3DData_.pointArray.resize(pointArray.size());
 	Value::copyXYZValueSequence(pointArray.begin(), pointArray.end(), multiLayer3DData_.pointArray.begin());
