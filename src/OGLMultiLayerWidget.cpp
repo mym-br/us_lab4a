@@ -315,7 +315,7 @@ OGLMultiLayerWidget::resetTransformation()
 void
 OGLMultiLayerWidget::initializeGL()
 {
-	LOG_DEBUG << "initializeGL";
+	//LOG_DEBUG << "initializeGL";
 
 	//glShadeModel(GL_FLAT);
 

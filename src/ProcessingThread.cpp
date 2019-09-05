@@ -39,7 +39,7 @@ ProcessingThread::~ProcessingThread()
 void
 ProcessingThread::run()
 {
-	LOG_DEBUG << "Processing thread starting...";
+	//LOG_DEBUG << "Processing thread running...";
 
 	auto processingNode = std::make_unique<ProcessingNode>(controller_, project_);
 

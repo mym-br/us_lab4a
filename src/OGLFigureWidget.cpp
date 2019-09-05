@@ -1945,7 +1945,7 @@ OGLFigureWidget::keyReleaseEvent(QKeyEvent* e)
 void
 OGLFigureWidget::initializeGL()
 {
-	LOG_DEBUG << "initializeGL";
+	//LOG_DEBUG << "initializeGL";
 
 	//glShadeModel(GL_FLAT);
 
