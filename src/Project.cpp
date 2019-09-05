@@ -92,8 +92,8 @@ Project::handleShowFigure3DRequest()
 	mainWindow_.showFigure3D(
 			figure3DData_.figureId,
 			figure3DData_.figureName,
-			figure3DData_.newGridData ? &figure3DData_.gridData : 0,
-			figure3DData_.newPointList ? &figure3DData_.pointList : 0,
+			figure3DData_.newGridData ? &figure3DData_.gridData : nullptr,
+			figure3DData_.newPointList ? &figure3DData_.pointList : nullptr,
 			figure3DData_.visualization,
 			figure3DData_.colormap,
 			figure3DData_.valueScale);
