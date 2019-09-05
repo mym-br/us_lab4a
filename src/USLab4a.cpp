@@ -514,7 +514,7 @@ void
 USLab4a::showFigure3D(
 		int id,
 		const std::string& figureName,
-		const Project::GridDataType* gridData,
+		Project::GridDataType* gridData,
 		const std::vector<Project::PointType>* pointList,
 		Figure::Visualization visualization,
 		Figure::Colormap colormap,

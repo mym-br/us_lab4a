@@ -46,8 +46,9 @@ public:
 	float minDecibels() const { return minDecibels_; }
 	void setColormap(Figure::Colormap colormap);
 	Figure::Colormap colormap() const { return colormap_; }
+	// *gridData will contain old data after the call.
 	void updateData(float dataValueScale,
-			const Matrix<XYZValue<float>>* gridData,
+			Matrix<XYZValue<float>>* gridData,
 			const std::vector<XYZ<float>>* pointList);
 	void updateDataVisualization();
 	void setRotationMode(bool enabled) {
@@ -82,7 +83,8 @@ private:
 		float z;
 	};
 
-	void updateGridData(float dataValueScale, const Matrix<XYZValue<float>>& gridData);
+	// gridData will contain old data after the call.
+	void updateGridData(float dataValueScale, Matrix<XYZValue<float>>& gridData);
 	void updatePointList(const std::vector<XYZ<float>>& pointList);
 
 	float calcValueFactor(const Matrix<XYZValue<float>>& data);

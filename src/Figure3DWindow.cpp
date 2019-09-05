@@ -74,7 +74,7 @@ Figure3DWindow::~Figure3DWindow()
 
 void
 Figure3DWindow::updateData(float valueScale,
-				const Matrix<XYZValue<float>>* gridData,
+				Matrix<XYZValue<float>>* gridData,
 				const std::vector<XYZ<float>>* pointList)
 {
 	ui_.oglFigureWidget->updateData(valueScale, gridData, pointList);

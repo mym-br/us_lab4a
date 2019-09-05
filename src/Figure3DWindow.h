@@ -39,8 +39,9 @@ public:
 	Figure3DWindow(QWidget* parent=nullptr);
 	~Figure3DWindow();
 
+	// *gridData will contain old data after the call.
 	void updateData(float valueScale,
-			const Matrix<XYZValue<float>>* gridData=nullptr,
+			Matrix<XYZValue<float>>* gridData=nullptr,
 			const std::vector<XYZ<float>>* pointList=nullptr);
 	void setVisualization(Figure::Visualization visualization);
 	void setColormap(Figure::Colormap colormap);

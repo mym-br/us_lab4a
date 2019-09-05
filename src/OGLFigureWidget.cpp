@@ -49,7 +49,7 @@
 
 #include "OGLFigureWidget.h"
 
-#include <algorithm> /* std::max */
+#include <algorithm> /* std::max, std::swap */
 #include <cstddef> /* std::size_t */
 #include <cmath>
 
@@ -1419,7 +1419,7 @@ OGLFigureWidget::fillOGLGridData()
 }
 
 void
-OGLFigureWidget::updateGridData(float dataValueScale, const Matrix<XYZValue<float>>& gridData)
+OGLFigureWidget::updateGridData(float dataValueScale, Matrix<XYZValue<float>>& gridData)
 {
 	if (gridData.n1() < 2U || gridData.n2() < 2U) return;
 
@@ -1443,9 +1443,9 @@ OGLFigureWidget::updateGridData(float dataValueScale, const Matrix<XYZValue<floa
 	}
 
 	dataValueScale_ = dataValueScale;
-	gridData_ = gridData;
+	std::swap(gridData, gridData_);
 
-	Matrix<XYZValue<float>>::ConstIterator iter = gridData.begin(), end = gridData.end();
+	Matrix<XYZValue<float>>::ConstIterator iter = gridData_.begin(), end = gridData_.end();
 	minX_ = maxX_ = iter->x;
 	minY_ = maxY_ = iter->y;
 	minZ_ = maxZ_ = iter->z;
@@ -1513,7 +1513,7 @@ OGLFigureWidget::setMinDecibels(float minDecibels)
 
 void
 OGLFigureWidget::updateData(float dataValueScale,
-				const Matrix<XYZValue<float>>* gridData,
+				Matrix<XYZValue<float>>* gridData,
 				const std::vector<XYZ<float>>* pointList)
 {
 	if (!gridData) return;

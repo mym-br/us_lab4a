@@ -62,10 +62,11 @@ public:
 		const std::vector<double>& xList,
 		const std::vector<double>& yList,
 		bool markPoints);
+	// *gridData will contain old data after the call.
 	void showFigure3D(
 		int id,
 		const std::string& figureName,
-		const Project::GridDataType* gridData=nullptr,
+		Project::GridDataType* gridData=nullptr,
 		const std::vector<Project::PointType>* pointList=nullptr,
 		Figure::Visualization visualization=Figure::VISUALIZATION_DEFAULT,
 		Figure::Colormap colormap=Figure::COLORMAP_DEFAULT,
