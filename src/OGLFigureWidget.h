@@ -62,6 +62,10 @@ public:
 		showInfo_ = enabled;
 		update();
 	}
+	bool useManualSettings() const { return useManualSettings_; }
+	void setUseManualSettings(bool value) {
+		useManualSettings_ = value;
+	}
 protected:
 	virtual void initializeGL();
 	virtual void paintGL();
@@ -103,6 +107,7 @@ private:
 	bool showPoints_;
 	bool showInfo_;
 	bool dataChanged_;
+	bool useManualSettings_;
 	Figure::Colormap colormap_;
 	Figure::Visualization visualization_;
 	float minDecibels_;

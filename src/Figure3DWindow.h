@@ -44,10 +44,14 @@ public:
 			const std::vector<XYZ<float>>* pointList=nullptr);
 	void setVisualization(Figure::Visualization visualization);
 	void setColormap(Figure::Colormap colormap);
+protected:
+	virtual void closeEvent(QCloseEvent* event);
 private slots:
 	void on_colormapComboBox_currentIndexChanged(int index);
+	void on_colormapComboBox_activated(int index); // caused by user interaction, called after on_colormapComboBox_currentIndexChanged
 	void on_minDecibelsComboBox_currentIndexChanged(const QString& text);
 	void on_visualizationComboBox_currentIndexChanged(int index);
+	void on_visualizationComboBox_activated(int index); // caused by user interaction, called after on_visualizationComboBox_currentIndexChanged
 	void on_showInfoCheckBox_stateChanged(int state);
 	void on_rotationCheckBox_stateChanged(int state);
 private:

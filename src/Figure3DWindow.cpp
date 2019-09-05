@@ -17,6 +17,8 @@
 
 #include "Figure3DWindow.h"
 
+#include <QCloseEvent>
+
 #define MAX_MIN_DECIBELS (-1)
 #define MIN_MIN_DECIBELS (-100)
 #define MIN_DECIBELS_STEP 1
@@ -84,6 +86,11 @@ Figure3DWindow::on_visualizationComboBox_currentIndexChanged(int index)
 	ui_.oglFigureWidget->setVisualization(static_cast<Figure::Visualization>(index));
 }
 
+void Figure3DWindow::on_visualizationComboBox_activated(int /*index*/)
+{
+	ui_.oglFigureWidget->setUseManualSettings(true);
+}
+
 void
 Figure3DWindow::on_showInfoCheckBox_stateChanged(int state)
 {
@@ -109,8 +116,16 @@ Figure3DWindow::on_colormapComboBox_currentIndexChanged(int index)
 }
 
 void
+Figure3DWindow::on_colormapComboBox_activated(int /*index*/)
+{
+	ui_.oglFigureWidget->setUseManualSettings(true);
+}
+
+void
 Figure3DWindow::setVisualization(Figure::Visualization visualization)
 {
+	if (ui_.oglFigureWidget->useManualSettings()) return;
+
 	if (visualization != Figure::VISUALIZATION_DEFAULT) {
 		ui_.oglFigureWidget->setVisualization(visualization);
 		ui_.visualizationComboBox->setCurrentIndex(static_cast<int>(visualization));
@@ -120,10 +135,19 @@ Figure3DWindow::setVisualization(Figure::Visualization visualization)
 void
 Figure3DWindow::setColormap(Figure::Colormap colormap)
 {
+	if (ui_.oglFigureWidget->useManualSettings()) return;
+
 	if (colormap != Figure::COLORMAP_DEFAULT) {
 		ui_.oglFigureWidget->setColormap(colormap);
 		ui_.colormapComboBox->setCurrentIndex(static_cast<int>(colormap));
 	}
+}
+
+void
+Figure3DWindow::closeEvent(QCloseEvent* event)
+{
+	ui_.oglFigureWidget->setUseManualSettings(false);
+	event->accept();
 }
 
 } // namespace Lab
