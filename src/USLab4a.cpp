@@ -20,6 +20,7 @@
 #include <cstring>
 #include <exception>
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include <QDir>
@@ -501,7 +502,9 @@ USLab4a::showFigure2D(
 {
 	try {
 		Figure2DWindow& fig = figure2DWindowList_.get(id);
-		fig.setWindowTitle(figureName.c_str());
+		std::ostringstream title;
+		title << "2-" << id << ' ' << figureName;
+		fig.setWindowTitle(title.str().c_str());
 		fig.updateData(xList, yList, markPoints);
 		fig.show();
 	} catch (std::exception& e) {
@@ -523,7 +526,9 @@ USLab4a::showFigure3D(
 {
 	try {
 		Figure3DWindow& fig = figure3DWindowList_.get(id);
-		fig.setWindowTitle(figureName.c_str());
+		std::ostringstream title;
+		title << "3-" << id << ' ' << figureName;
+		fig.setWindowTitle(title.str().c_str());
 		fig.setVisualization(visualization);
 		fig.setColormap(colormap);
 		fig.updateData(valueScale, gridData, pointList);
@@ -544,7 +549,9 @@ USLab4a::showMultiLayer3D(
 {
 	try {
 		MultiLayer3DWindow& fig = multiLayer3DWindowList_.get(id);
-		fig.setWindowTitle(figureName.c_str());
+		std::ostringstream title;
+		title << "M3-" << id << ' ' << figureName;
+		fig.setWindowTitle(title.str().c_str());
 		fig.updateData(pointArray, indexArray);
 		fig.show();
 	} catch (std::exception& e) {
