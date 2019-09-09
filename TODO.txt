@@ -1,4 +1,6 @@
 
+- Check USLab4a::closeEvent(QCloseEvent* event) when the processing is enabled.
+
 - Cache delays?
 	continuous
 		DeviceSectorialScanMethod

@@ -48,8 +48,6 @@
 #include "ParameterMap.h"
 #include "Util.h"
 
-
-
 #define FIGURE_WINDOWS_TIMER_PERIOD_MS 10
 #define INFO_TIMER_PERIOD_MS 250
 #define MAX_LOG_BLOCK_COUNT 500
@@ -418,6 +416,10 @@ USLab4a::on_triggerButton_clicked()
 void
 USLab4a::closeEvent(QCloseEvent* event)
 {
+	if (controller_->processingEnabled()) {
+		project_.requestProcessingCancellation();
+	}
+
 	controller_->exit();
 
 	QSettings settings;
