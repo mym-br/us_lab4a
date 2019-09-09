@@ -1,5 +1,8 @@
 
 - Cache delays?
+	continuous
+		DeviceSectorialScanMethod
+		SingleVirtualSourceMethod
 
 - Move Python scripts?
 
