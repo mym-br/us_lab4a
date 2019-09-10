@@ -265,8 +265,8 @@ save2(const T& container, const std::string& filePath, const std::string& datase
 			if (retVal >= 0 &&
 					(filterConfigFlags & H5Z_FILTER_CONFIG_ENCODE_ENABLED) &&
 					(filterConfigFlags & H5Z_FILTER_CONFIG_DECODE_ENABLED)) {
-#ifdef HDF5UTIL_USE_LZF
 				dcpl.setShuffle();
+#ifdef HDF5UTIL_USE_LZF
 				dcpl.setFilter(HDF5UTIL_FILTER, H5Z_FLAG_OPTIONAL, 0, nullptr);
 #else
 				dcpl.setDeflate(HDF5UTIL_DEFLATE_LEVEL); // compress with DEFLATE (zlib)
