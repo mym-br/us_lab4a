@@ -118,6 +118,7 @@ int register_lzf(void){
     2. Compute the chunk size in bytes and store it in slot 2.
 */
 herr_t lzf_set_local(hid_t dcpl, hid_t type, hid_t space){
+    (void) space; // unused
 
     int ndims;
     int i;
