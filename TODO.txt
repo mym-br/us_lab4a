@@ -1,11 +1,6 @@
 
 - Check USLab4a::closeEvent(QCloseEvent* event) when the processing is enabled.
 
-- Cache delays?
-	continuous
-		DeviceSectorialScanMethod
-		SingleVirtualSourceMethod
-
 - Move Python scripts?
 
 - [???] Sectorial grid in z-y.
@@ -25,6 +20,13 @@ Notes:
 
 ================================================================================
 
+x- Pre-process delays?
+	continuous
+		x DeviceSectorialScanMethod
+			Already very fast, because the processing is done on
+			the acquisition device.
+		x SingleVirtualSourceMethod
+			Not much faster (7%) and with much higher memory usage.
 ok- STAProcessor -> ArrayProcessor
 ok- simulated_3d_sta_acquisition_config_file -> simulated_3d_acquisition_config_file
 	config-simulated_3d_sta_acquisition.txt -> config-simulated_3d_acquisition.txt
