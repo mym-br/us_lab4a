@@ -37,6 +37,9 @@ SOURCES += \
     src/util/MinstdPseudorandomNumberGenerator.cpp \
     src/util/ParameterMap.cpp \
     src/util/Util.cpp \
+    src/external/lzf/lzf_c.c \
+    src/external/lzf/lzf_d.c \
+    src/external/lzf/lzf_filter.c \
     src/user/method/MultiLayerImageMethod.cpp \
     src/user/method/ShowImageMethod.cpp \
     src/user/method/SingleAcquisitionMethod.cpp \
@@ -113,6 +116,9 @@ HEADERS += \
     src/util/XYZValueArray.h \
     src/util/XYZValueFactor.h \
     src/util/XZValue.h \
+    src/external/lzf/lzf.h \
+    src/external/lzf/lzfP.h \
+    src/external/lzf/lzf_filter.h \
     src/user/acquisition/DeviceSectorialScanAcquisition.h \
     src/user/acquisition/SavedSTAAcquisition.h \
     src/user/acquisition/SavedTnRnAcquisition.h \
@@ -173,6 +179,8 @@ DEPENDPATH += src \
     src/network_sync \
     src/parallel \
     src/util \
+    src/external \
+    src/external/lzf \
     src/user/acquisition \
     src/user/configuration \
     src/user/method \
@@ -186,6 +194,8 @@ INCLUDEPATH += src \
     src/network_sync \
     src/parallel \
     src/util \
+    src/external \
+    src/external/lzf \
     src/user/acquisition \
     src/user/configuration \
     src/user/method \

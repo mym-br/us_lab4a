@@ -1,0 +1,4 @@
+Source:
+https://pypi.org/project/h5py/#files
+	h5py-2.10.0.tar.gz
+		Directory "lzf".

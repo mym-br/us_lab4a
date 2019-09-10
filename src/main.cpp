@@ -18,6 +18,7 @@
 #include "USLab4a.h"
 
 #include <cfenv> /* fesetround */
+#include <cstdlib>
 #include <fftw3.h>
 #include <iostream>
 
@@ -27,6 +28,7 @@
 #include <QCoreApplication>
 
 #include "Log.h"
+#include "lzf_filter.h"
 #include "Method.h"
 
 #define FFTW_WISDOM_FILE_NAME_SP "fftw_wisdom_sp-us_lab4a.txt"
@@ -44,6 +46,11 @@ main(int argc, char* argv[])
 #ifdef _WIN32
 	timeBeginPeriod(1); // set the minimum timer resolution to 1 ms
 #endif
+
+	if (register_lzf() < 0) {
+		std::cerr << "Could not register the LZF filter (HDF5)." << std::endl;
+		return EXIT_FAILURE;
+	}
 
 	fftwf_import_wisdom_from_filename(FFTW_WISDOM_FILE_NAME_SP);
 	fftw_import_wisdom_from_filename(FFTW_WISDOM_FILE_NAME_DP);

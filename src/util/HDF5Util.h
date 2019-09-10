@@ -26,12 +26,18 @@
 #include <H5Cpp.h>
 
 #include "Exception.h"
+#include "lzf_filter.h"
 #include "Matrix.h"
 
 #define HDF5_FILE_SUFFIX ".h5"
-#define HDF5UTIL_DEFLATE_LEVEL 3
+#define HDF5UTIL_DEFLATE_LEVEL 1
+#define HDF5UTIL_USE_LZF 1
 
-
+#ifdef HDF5UTIL_USE_LZF
+# define HDF5UTIL_FILTER H5PY_FILTER_LZF
+#else
+# define HDF5UTIL_FILTER H5Z_FILTER_DEFLATE
+#endif
 
 namespace Lab {
 namespace HDF5Util {
@@ -251,16 +257,20 @@ save2(const T& container, const std::string& filePath, const std::string& datase
 		dataDims.push_back(n1);
 		dataDims.push_back(n2);
 
-		// Checks if the DEFLATE (zlib) filter is available.
-		htri_t avail = H5Zfilter_avail(H5Z_FILTER_DEFLATE);
+		// Checks if the filter is available.
+		htri_t avail = H5Zfilter_avail(HDF5UTIL_FILTER);
 		if (avail == 1) {
 			unsigned int filterConfigFlags;
-			herr_t retVal = H5Zget_filter_info(H5Z_FILTER_DEFLATE, &filterConfigFlags);
+			herr_t retVal = H5Zget_filter_info(HDF5UTIL_FILTER, &filterConfigFlags);
 			if (retVal >= 0 &&
 					(filterConfigFlags & H5Z_FILTER_CONFIG_ENCODE_ENABLED) &&
 					(filterConfigFlags & H5Z_FILTER_CONFIG_DECODE_ENABLED)) {
+#ifdef HDF5UTIL_USE_LZF
+				dcpl.setShuffle();
+				dcpl.setFilter(HDF5UTIL_FILTER, H5Z_FLAG_OPTIONAL, 0, nullptr);
+#else
 				dcpl.setDeflate(HDF5UTIL_DEFLATE_LEVEL); // compress with DEFLATE (zlib)
-
+#endif
 				std::vector<hsize_t> chunkDims;
 				calcChunkDims(dataDims, chunkDims);
 
