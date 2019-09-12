@@ -26,8 +26,6 @@ propagation_speed = 1500.0
 acquisition_delay = 0.0
 
 # (Hz)
-# When using Sitau, it must be 4x center_frequency,
-# or 2.5 MHz (the minimum value).
 sampling_frequency = 2.5e6
 
 # (m)
