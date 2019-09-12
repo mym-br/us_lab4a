@@ -1,0 +1,6 @@
+
+peak_offset = 0.0
+
+upsampling_factor = 4
+
+rx_apodization_file = apod_1d_rectangular-32

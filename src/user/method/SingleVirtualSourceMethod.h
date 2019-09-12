@@ -170,7 +170,8 @@ SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr ta
 								TnRnAcquisition<FloatType>& acquisition)
 {
 	const std::string dataDir = taskPM->value<std::string>("data_dir");
-	const double acqTime      = taskPM->value<double>("acquisition_time", 1.0, 60.0);
+	ConstParameterMapPtr seqPM = project_.loadChildParameterMap(taskPM, "seq_config_file");
+	const double acqTime = seqPM->value<double>("acquisition_time", 1.0, 60.0);
 
 	std::vector<typename TnRnAcquisition<FloatType>::AcquisitionDataType> acqDataList;
 	std::vector<double> timeList;

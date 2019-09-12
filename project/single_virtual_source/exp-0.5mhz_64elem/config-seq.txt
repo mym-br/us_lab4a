@@ -1,0 +1,3 @@
+
+# (s)
+acquisition_time = 1.0

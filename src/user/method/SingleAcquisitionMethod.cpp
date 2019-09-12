@@ -39,18 +39,20 @@ void
 SingleAcquisitionMethod::fillConfiguration()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	config_.samplingFrequency = taskPM->value<double>(      "sampling_frequency",    100.0,  200.0e6);
-	config_.centerFrequency   = taskPM->value<double>(      "center_frequency"  ,    100.0,  100.0e6);
-	config_.acquisitionTime   = taskPM->value<double>(      "acquisition_time"  ,   1.0e-6,      1.0);
-	config_.minGain           = taskPM->value<double>(      "min_gain"          ,      0.0,     100.0);
-	//config_.maxGain           = taskPM->value<double>(      "max_gain"          ,      0.0,     100.0);
-	config_.numElementsMux    = taskPM->value<unsigned int>("num_elements_mux"  ,        8,     1024);
-	config_.numElements       = taskPM->value<unsigned int>("num_elements"      ,        8, config_.numElementsMux);
-	config_.baseElement       = taskPM->value<unsigned int>("base_element"      ,        0, config_.numElementsMux - config_.numElements);
-	config_.txGroupElement    = taskPM->value<unsigned int>("tx_group_element"  ,        0, config_.numElements);
-	config_.rxGroupElement    = taskPM->value<unsigned int>("rx_group_element"  ,        0, config_.numElements);
-	config_.numPulses         = taskPM->value<unsigned int>("num_pulses"        ,        1, 100);
-	config_.savedAcqDir       = taskPM->value<std::string>( "saved_acquisition_dir");
+	config_.savedAcqDir = taskPM->value<std::string>("saved_acquisition_dir");
+
+	ConstParameterMapPtr acqPM = project_.loadChildParameterMap(taskPM, "acq_config_file");
+	config_.samplingFrequency = acqPM->value<double>(      "sampling_frequency",  100.0, 200.0e6);
+	config_.centerFrequency   = acqPM->value<double>(      "center_frequency"  ,  100.0, 100.0e6);
+	config_.acquisitionTime   = acqPM->value<double>(      "acquisition_time"  , 1.0e-6,     1.0);
+	config_.minGain           = acqPM->value<double>(      "min_gain"          ,    0.0,   100.0);
+//	config_.maxGain           = acqPM->value<double>(      "max_gain"          ,    0.0,   100.0);
+	config_.numElementsMux    = acqPM->value<unsigned int>("num_elements_mux"  ,      8,    1024);
+	config_.numElements       = acqPM->value<unsigned int>("num_elements"      ,      8, config_.numElementsMux);
+	config_.baseElement       = acqPM->value<unsigned int>("base_element"      ,      0, config_.numElementsMux - config_.numElements);
+	config_.txGroupElement    = acqPM->value<unsigned int>("tx_group_element"  ,      0, config_.numElements);
+	config_.rxGroupElement    = acqPM->value<unsigned int>("rx_group_element"  ,      0, config_.numElements);
+	config_.numPulses         = acqPM->value<unsigned int>("num_pulses"        ,      1,     100);
 }
 
 SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
