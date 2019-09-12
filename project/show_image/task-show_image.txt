@@ -1,7 +1,7 @@
 
 method = show_image
 
-data_dir = ../simulated_3d_sta-imasonic_0.5mhz_64elem/output
+data_dir = ../simulated_3d_sta/exp-0.5mhz_64elem/output-cyl-analytic
 
 x_file = image_x
 x_dataset = x
