@@ -240,11 +240,11 @@ void
 SingleVirtualSourceMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr imgPM   = project_.loadChildParameterMap(taskPM, "img_config_file");
+	ConstParameterMapPtr saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	const TnRnConfiguration<FloatType> config(imgPM, arrayPM);
-	const unsigned int baseElement = imgPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
-	const FloatType focusZ         = imgPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
+	const TnRnConfiguration<FloatType> config(saPM, arrayPM);
+	const unsigned int baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
+	const FloatType focusZ         = saPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
 
 	FloatType focusX = 0, focusY = 0;
 	// Set the focus at the mean x, y.
@@ -297,12 +297,6 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		return;
 	}
 
-	const FloatType peakOffset = taskPM->value<FloatType>("peak_offset", 0.0, 50.0);
-
-	const std::string rxApodFile = taskPM->value<std::string>("rx_apodization_file");
-	std::vector<FloatType> rxApod;
-	project_.loadHDF5(rxApodFile, "apod", rxApod);
-
 	const FloatType nyquistRate = 2.0 * config.maxFrequency;
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
@@ -312,7 +306,14 @@ SingleVirtualSourceMethod<FloatType>::execute()
 			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_dp_saved ||
 			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_dp_saved_sequence ||
 			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_sp_network_continuous) {
-		const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
+
+		ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+		const FloatType peakOffset          = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
+		const unsigned int upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
+		const std::string rxApodFile        = imagPM->value<std::string>( "rx_apodization_file");
+		std::vector<FloatType> rxApod;
+		project_.loadHDF5(rxApodFile, "apod", rxApod);
+
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 		auto processor = std::make_unique<Vectorial3DTnRnProcessor<FloatType>>(
 							config, *acquisition, upsamplingFactor,
