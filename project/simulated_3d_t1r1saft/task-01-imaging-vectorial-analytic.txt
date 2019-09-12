@@ -3,16 +3,13 @@ method = t1r1saft_3d_vectorial_simulated
 
 sa_config_file = config-t1r1saft.txt
 
-simulated_3d_acquisition_config_file = config-simulated_3d_acquisition.txt
+simulated_3d_acquisition_config_file = config-simulated_3d_acquisition-analytic.txt
 
 array_config_file = config-array.txt
 
-output_dir = output
+output_dir = output-analytic
 
 coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
 
 grid_config_file = config-grid.txt
-
-peak_offset = 0.0
-
-upsampling_factor = 4
+imag_config_file = config-imaging-vectorial.txt

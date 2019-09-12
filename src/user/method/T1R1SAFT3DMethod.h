@@ -156,9 +156,10 @@ T1R1SAFT3DMethod<FloatType>::execute()
 		return;
 	} else if (project_.method() == MethodEnum::t1r1saft_3d_simulated_seq_y_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
-		const FloatType yStep     = taskPM->value<FloatType>(  "y_step",          0.0,   100.0);
-		const FloatType minY      = taskPM->value<FloatType>(  "min_y" ,     -10000.0, 10000.0);
-		const FloatType maxY      = taskPM->value<FloatType>(  "max_y" , minY + yStep, 10000.0);
+		ConstParameterMapPtr seqYPM = project_.loadChildParameterMap(taskPM, "seq_y_config_file");
+		const FloatType yStep = seqYPM->value<FloatType>("y_step",          0.0,   100.0);
+		const FloatType minY  = seqYPM->value<FloatType>("min_y" ,     -10000.0, 10000.0);
+		const FloatType maxY  = seqYPM->value<FloatType>("max_y" , minY + yStep, 10000.0);
 		project_.createDirectory(dataDir, true);
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		std::vector<FloatType> yList;
@@ -175,7 +176,6 @@ T1R1SAFT3DMethod<FloatType>::execute()
 		return;
 	}
 
-	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset" , 0.0, 50.0);
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
@@ -184,7 +184,9 @@ T1R1SAFT3DMethod<FloatType>::execute()
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
 	if (project_.method() == MethodEnum::t1r1saft_3d_vectorial_simulated) {
-		const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
+		ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+		const FloatType peakOffset          = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
+		const unsigned int upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 		auto processor = std::make_unique<Vectorial3DT1R1SAFTProcessor<FloatType>>(
 							config, *acquisition, upsamplingFactor,

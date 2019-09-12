@@ -2,7 +2,7 @@
 # This file is in the public domain.
 
 import sys
-sys.path.append("../../python")
+sys.path.append("../../../python")
 import numpy as np
 from util import hdf5util
 import random
