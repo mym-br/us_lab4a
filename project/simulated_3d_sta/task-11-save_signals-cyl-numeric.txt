@@ -1,0 +1,10 @@
+
+method = sta_3d_simulated_save_signals
+
+sa_config_file = config-sta-cyl.txt
+
+simulated_3d_acquisition_config_file = config-simulated_3d_acquisition-numeric.txt
+
+array_config_file = config-array.txt
+
+data_dir = saved_acquisition-cyl-numeric

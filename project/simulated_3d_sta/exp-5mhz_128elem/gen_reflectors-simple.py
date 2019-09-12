@@ -2,7 +2,7 @@
 # This file is in the public domain.
 
 import sys
-sys.path.append("../../python")
+sys.path.append("../../../python")
 
 import numpy as np
 from util import hdf5util
@@ -13,12 +13,12 @@ PROJECT_DIR = "./"
 DATASET_NAME = "reflectors"
 
 X = 0.0
-X_MIN = -300.0e-3
-X_MAX = 300.0e-3
+X_MIN = -30.0e-3
+X_MAX = 30.0e-3
 Y = 0.0
-Y_MIN = -50.0e-3
-Y_MAX = 50.0e-3
-Z = 700.0e-3
+Y_MIN = -10.0e-3
+Y_MAX = 10.0e-3
+Z = 40.0e-3
 NUM_POINTS = 7
 COEFF_MIN = 0.5
 COEFF_MAX = 5.0

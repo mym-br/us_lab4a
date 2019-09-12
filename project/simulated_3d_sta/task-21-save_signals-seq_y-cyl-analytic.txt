@@ -1,0 +1,11 @@
+
+method = sta_3d_simulated_seq_y_save_signals
+
+sa_config_file = config-sta-cyl.txt
+
+simulated_3d_acquisition_config_file = config-simulated_3d_acquisition-analytic.txt
+
+array_config_file = config-array.txt
+seq_y_cyl_config_file = config-seq_y-cyl.txt
+
+data_dir = saved_acquisition-seq_y-cyl-analytic
