@@ -169,9 +169,11 @@ STAMethod<FloatType>::execute()
 		return;
 	}
 
-	const FloatType peakOffset  = taskPM->value<FloatType>(  "peak_offset" , 0.0, 50.0);
 	const std::string outputDir = taskPM->value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
+
+	ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const FloatType peakOffset = imagPM->value<FloatType>("peak_offset", 0.0, 50.0);
 
 	const FloatType nyquistRate = 2.0 * config.maxFrequency;
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
