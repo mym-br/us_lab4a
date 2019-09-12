@@ -3,10 +3,9 @@ method = sta_dp_network
 
 sta_config_file = config-sta-cyl.txt
 
-output_dir = output
+output_dir = output-cyl-dp
 
 coherence_factor_config_file = config-coherence_factor.txt
 
 grid_config_file = config-grid.txt
-
-peak_offset = 0.0
+imag_config_file = config-imaging.txt

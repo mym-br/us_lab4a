@@ -1,6 +1,0 @@
-
-method = sta_save_signals
-
-sta_config_file = config-sta.txt
-
-data_dir = saved_acquisition

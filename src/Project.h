@@ -94,9 +94,9 @@ public:
 	template<typename T> void saveSignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
 					unsigned int acqNumber, unsigned int baseElement);
 	template<typename T> void saveTxElemSignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
-					unsigned int acqNumber, unsigned int baseElement, unsigned int txElem);
+					unsigned int acqNumber, unsigned int baseElement, unsigned int txElem) const;
 	template<typename T> void loadTxElemSignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber,
-					unsigned int baseElement, unsigned int txElem, Matrix<T>& container);
+					unsigned int baseElement, unsigned int txElem, Matrix<T>& container) const;
 
 	// These functions may be called by only one thread.
 	template<typename T, typename U> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<T>& container, U copyOp);
@@ -158,8 +158,8 @@ public:
 	static Matrix<XYZValue<float>>* const emptyGridData;
 	static std::vector<XYZ<float>>* const emptyPointList;
 
-	void createDirectory(const std::string& path, bool mustNotExist);
-	bool directoryExists(const std::string& path);
+	void createDirectory(const std::string& path, bool mustNotExist) const;
+	bool directoryExists(const std::string& path) const;
 private:
 	struct Figure2DData {
 		Figure2DData()
@@ -317,7 +317,7 @@ Project::saveSignalsToHDF5(const Matrix<T>& container, const std::string& output
 template<typename T>
 void
 Project::saveTxElemSignalsToHDF5(const Matrix<T>& container, const std::string& outputDir,
-					unsigned int acqNumber, unsigned int baseElement, unsigned int txElem)
+					unsigned int acqNumber, unsigned int baseElement, unsigned int txElem) const
 {
 	std::string dirPath = FileUtil::path(outputDir, "/", acqNumber);
 	createDirectory(dirPath, false);
@@ -331,7 +331,7 @@ Project::saveTxElemSignalsToHDF5(const Matrix<T>& container, const std::string& 
 template<typename T>
 void
 Project::loadTxElemSignalsFromHDF5(const std::string& inputDir, unsigned int acqNumber, unsigned int baseElement,
-				unsigned int txElem, Matrix<T>& container)
+				unsigned int txElem, Matrix<T>& container) const
 {
 	std::string dirPath = FileUtil::path(inputDir, "/", acqNumber);
 	createDirectory(dirPath, false);

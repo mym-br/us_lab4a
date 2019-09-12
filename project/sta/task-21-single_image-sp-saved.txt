@@ -1,12 +1,13 @@
 
-method = sta_dp_network
+method = sta_sp_saved
 
 sta_config_file = config-sta.txt
 
-output_dir = output
+output_dir = output-sp
 
 coherence_factor_config_file = config-coherence_factor.txt
 
 grid_config_file = config-grid.txt
+imag_config_file = config-imaging.txt
 
-peak_offset = 0.0
+data_dir = saved_acquisition

@@ -72,12 +72,11 @@ void
 SavedSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int txElement,
 						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
 {
-	std::string filePath = FileUtil::txElemSignalsPath(dataDir_, baseElement, txElement);
-	project_.loadHDF5(filePath, "signal", acqData);
+	project_.loadTxElemSignalsFromHDF5(dataDir_, 0, baseElement, txElement, acqData);
 
 	if (numRxElements_ != acqData.n1()) {
 		THROW_EXCEPTION(InvalidFileException, "Invalid number of rx elements (" << acqData.n1() <<
-			") in file " << filePath << ", should be " << numRxElements_ << '.');
+			") in " << dataDir_ << ", should be " << numRxElements_ << '.');
 	}
 }
 

@@ -215,7 +215,7 @@ Project::waitForTrigger(std::size_t* triggerCount)
 }
 
 void
-Project::createDirectory(const std::string &path, bool mustNotExist)
+Project::createDirectory(const std::string &path, bool mustNotExist) const
 {
 	QString fullDir = expDirectory_;
 	fullDir.append('/');
@@ -231,7 +231,7 @@ Project::createDirectory(const std::string &path, bool mustNotExist)
 }
 
 bool
-Project::directoryExists(const std::string& path)
+Project::directoryExists(const std::string& path) const
 {
 	QString fullDir = expDirectory_;
 	fullDir.append('/');

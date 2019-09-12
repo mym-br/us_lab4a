@@ -193,8 +193,8 @@ STAMethod<FloatType>::execute()
 	case MethodEnum::sta_vectorial_dp_saved:   // falls through
 	case MethodEnum::sta_vectorial_sp_saved:
 		{
-			const bool processingWithEnvelope   = taskPM->value<bool>(        "calculate_envelope_in_processing");
-			const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor", 1, 128);
+			const bool processingWithEnvelope   = imagPM->value<bool>(        "calculate_envelope_in_processing");
+			const unsigned int upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 			if (processingWithEnvelope) {
 				visual_ = Figure::VISUALIZATION_RECTIFIED_LOG;
 			}

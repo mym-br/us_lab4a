@@ -74,6 +74,7 @@ private:
 	DefaultSTAProcessor& operator=(const DefaultSTAProcessor&) = delete;
 
 	const STAConfiguration<FloatType>& config_;
+	bool initialized_;
 	unsigned int deadZoneSamplesUp_;
 	STAAcquisition<FloatType>& acquisition_;
 	CoherenceFactorProcessor<FloatType>& coherenceFactor_;
@@ -93,24 +94,12 @@ DefaultSTAProcessor<FloatType>::DefaultSTAProcessor(
 			CoherenceFactorProcessor<FloatType>& coherenceFactor,
 			FloatType peakOffset)
 		: config_(config)
+		, initialized_()
 		, deadZoneSamplesUp_((DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
 		, acquisition_(acquisition)
 		, coherenceFactor_(coherenceFactor)
 {
-	// This acquisition is done to obtain the signal length.
-	acquisition_.execute(0, 0, acqData_);
-	const std::size_t signalLength = acqData_.n2() * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR;
-
-	tempSignal_.resize(signalLength);
-	signalTensor_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
-
 	signalOffset_ = (config_.samplingFrequency * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR) * peakOffset / config_.centerFrequency;
-	LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
-
-	if (deadZoneSamplesUp_ >= signalLength) {
-		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: deadZoneSamplesUp_ (" << deadZoneSamplesUp_ <<
-							") >= signalLength (" << signalLength << ").");
-	}
 }
 
 template<typename FloatType>
@@ -128,6 +117,19 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValu
 		LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
 		acquisition_.execute(baseElement, txElem, acqData_);
+
+		if (!initialized_) {
+			const std::size_t signalLength = acqData_.n2() * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR;
+			tempSignal_.resize(signalLength);
+			signalTensor_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
+			LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
+			if (deadZoneSamplesUp_ >= signalLength) {
+				THROW_EXCEPTION(InvalidValueException,
+						"Invalid dead zone: deadZoneSamplesUp_ (" << deadZoneSamplesUp_ <<
+						") >= signalLength (" << signalLength << ").");
+			}
+			initialized_ = true;
+		}
 
 		const std::size_t samplesPerChannelLow = acqData_.n2();
 

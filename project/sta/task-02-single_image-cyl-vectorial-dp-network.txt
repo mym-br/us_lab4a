@@ -3,14 +3,9 @@ method = sta_vectorial_dp_network
 
 sta_config_file = config-sta-cyl.txt
 
-output_dir = output
+output_dir = output-cyl-vectorial-dp
 
 coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
 
 grid_config_file = config-grid.txt
-
-peak_offset = 0.0
-
-upsampling_factor = 4
-
-calculate_envelope_in_processing = true
+imag_config_file = config-imaging-vectorial.txt
