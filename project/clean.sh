@@ -3,4 +3,4 @@
 
 set -e
 
-find . -type d -name 'output*' -exec rm -rf '{}' \;
+find . -type d -name 'output*' -prune -exec echo '{}' \; -exec rm -rI '{}' \;
