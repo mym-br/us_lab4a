@@ -1,9 +1,4 @@
 
-method = sim_radiation_pattern_array_of_rectangular_flat_sources_transient
-
-main_config_file = config.txt
-array_config_file = config-array.txt
-
 # (m)
 distance = 1.0
 
@@ -14,3 +9,4 @@ theta_y_max = 90.0
 theta_x_step = 0.1
 theta_x_min = -30.0
 theta_x_max = 30.0
+

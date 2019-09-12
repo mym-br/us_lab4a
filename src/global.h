@@ -23,6 +23,7 @@
 #define SETTINGS_KEY_PROJECT_DIR             "main/projectDir"
 #define SETTINGS_KEY_LOGLEVEL_COMBOBOX_INDEX "main/logLevelComboBoxIndex"
 #define SETTINGS_KEY_SELECTED_TASK           "main/selectedTask"
+#define SETTINGS_KEY_SELECTED_EXP            "main/selectedExp"
 
 #define LOG_FILE_NAME "log-us_lab4a.txt"
 

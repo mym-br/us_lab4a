@@ -163,7 +163,7 @@ VTKFileMultiImageMethod::execute()
 		prevPointIndex.swap(pointIndex);
 	}
 
-	std::ofstream out(project_.directory() + '/' + VTK_FILE_NAME);
+	std::ofstream out(project_.expDirectory() + '/' + VTK_FILE_NAME);
 	out <<
 		"# vtk DataFile Version 3.0\n"
 		"Multi image\n"

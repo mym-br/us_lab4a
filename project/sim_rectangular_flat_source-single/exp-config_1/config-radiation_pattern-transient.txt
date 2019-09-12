@@ -1,0 +1,9 @@
+
+# (m)
+distance = 1.0
+
+# (degree)
+theta_y_step = 0.1
+theta_y_max = 90.0
+theta_x_step = 0.1
+theta_x_max = 30.0

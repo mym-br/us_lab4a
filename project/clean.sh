@@ -3,4 +3,4 @@
 
 set -e
 
-find . -name output -exec rm -rf '{}' \;
+find . -type d -name 'output*' -exec rm -rf '{}' \;

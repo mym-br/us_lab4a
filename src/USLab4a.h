@@ -93,7 +93,7 @@ private:
 	USLab4a& operator=(const USLab4a&) = delete;
 
 	virtual void closeEvent(QCloseEvent* event);
-	void fillTaskListWidget();
+	void fillTaskAndExpListWidget();
 	void startAcquisition();
 	void stopAcquisition();
 	void processScriptEntry();

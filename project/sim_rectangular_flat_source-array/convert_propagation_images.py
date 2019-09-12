@@ -2,7 +2,7 @@
 # This file is in the public domain.
 
 import sys
-sys.path.append("../../python")
+sys.path.append("../../../../python")
 from util import hdf5util
 import matplotlib.pyplot as plt
 
@@ -11,7 +11,7 @@ from glob import glob
 #------------------------------------------------------------------------------
 # Configurable parameters.
 
-DATA_DIR = "./output/"
+DATA_DIR = "./"
 
 X_FILE = "image_x.h5"
 X_FILE_DATASET = "x"

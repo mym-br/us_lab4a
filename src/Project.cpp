@@ -57,7 +57,7 @@ Project::loadTaskParameters(const std::string& taskFileName)
 ConstParameterMapPtr
 Project::loadParameterMap(const char* fileName) const
 {
-	QString filePath = directory_ + '/' + fileName;
+	QString filePath = expDirectory_ + '/' + fileName;
 	return std::make_shared<const ParameterMap>(filePath);
 }
 
@@ -65,7 +65,7 @@ ConstParameterMapPtr
 Project::loadChildParameterMap(ConstParameterMapPtr pm, const char* fileNameKey) const
 {
 	std::string fileName = pm->value<std::string>(fileNameKey);
-	QString filePath = directory_ + '/' + fileName.c_str();
+	QString filePath = expDirectory_ + '/' + fileName.c_str();
 	return std::make_shared<const ParameterMap>(filePath);
 }
 
@@ -124,7 +124,7 @@ Project::executeProgram(std::string& programPath, std::vector<std::string>& prog
 	}
 
 	auto proc = std::make_unique<QProcess>();
-	proc->setWorkingDirectory(directory_);
+	proc->setWorkingDirectory(expDirectory_);
 
 	LOG_DEBUG << "Executing program: " << programPath << " with arguments: " << args.join(" ").toStdString();
 	proc->start(programPath.c_str(), args);
@@ -217,7 +217,7 @@ Project::waitForTrigger(std::size_t* triggerCount)
 void
 Project::createDirectory(const std::string &path, bool mustNotExist)
 {
-	QString fullDir = directory_;
+	QString fullDir = expDirectory_;
 	fullDir.append('/');
 	fullDir.append(path.c_str());
 	QDir dir;
@@ -233,7 +233,7 @@ Project::createDirectory(const std::string &path, bool mustNotExist)
 bool
 Project::directoryExists(const std::string& path)
 {
-	QString fullDir = directory_;
+	QString fullDir = expDirectory_;
 	fullDir.append('/');
 	fullDir.append(path.c_str());
 	QDir dir;

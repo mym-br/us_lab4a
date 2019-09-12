@@ -54,6 +54,7 @@
 #define FLOATING_POINT_VALUE_DECIMALS 6
 #define TASK_FILE_PREFIX "task-"
 #define TASK_FILE_SUFFIX ".txt"
+#define EXPERIMENT_DIR_PREFIX "exp-"
 
 namespace Lab {
 
@@ -94,13 +95,21 @@ USLab4a::USLab4a(QWidget* parent)
 		project_.setDirectory(currentPath.toStdString());
 	}
 	try {
-		fillTaskListWidget();
+		fillTaskAndExpListWidget();
 
 		QVariant selectedTask = settings.value(SETTINGS_KEY_SELECTED_TASK);
 		if (!selectedTask.isNull()) {
 			QList<QListWidgetItem*> taskItems = ui_.taskListWidget->findItems(selectedTask.toString(), Qt::MatchFixedString | Qt::MatchCaseSensitive);
 			if (taskItems.size() == 1) {
 				taskItems[0]->setSelected(true);
+			}
+		}
+
+		QVariant selectedExp = settings.value(SETTINGS_KEY_SELECTED_EXP);
+		if (!selectedExp.isNull()) {
+			QList<QListWidgetItem*> expItems = ui_.expListWidget->findItems(selectedExp.toString(), Qt::MatchFixedString | Qt::MatchCaseSensitive);
+			if (expItems.size() == 1) {
+				expItems[0]->setSelected(true);
 			}
 		}
 	} catch (std::exception& e) {
@@ -138,24 +147,35 @@ USLab4a::~USLab4a()
 
 
 void
-USLab4a::fillTaskListWidget()
+USLab4a::fillTaskAndExpListWidget()
 {
-	//LOG_DEBUG << "USLab4a::fillTaskListWidget";
+	//LOG_DEBUG << "USLab4a::fillTaskAndExpListWidget";
 
 	ui_.taskListWidget->clear();
+	ui_.expListWidget->clear();
 
 	QDir dir(project_.directory().c_str());
 	if (dir.exists()) {
-		QStringList nameFilters;
-		nameFilters << TASK_FILE_PREFIX "*" TASK_FILE_SUFFIX;
-
-		const std::size_t prefixLen = strlen(TASK_FILE_PREFIX);
-		const std::size_t suffixLen = strlen(TASK_FILE_SUFFIX);
-		const QStringList fileList = dir.entryList(nameFilters, QDir::Files | QDir::Readable, QDir::Name);
-		if (!fileList.empty()) {
-			for (QStringList::const_iterator iter = fileList.begin(); iter != fileList.end(); ++iter) {
+		QStringList taskNameFilters;
+		taskNameFilters << TASK_FILE_PREFIX "*" TASK_FILE_SUFFIX;
+		const std::size_t taskPrefixLen = strlen(TASK_FILE_PREFIX);
+		const std::size_t taskSuffixLen = strlen(TASK_FILE_SUFFIX);
+		const QStringList taskFileList = dir.entryList(taskNameFilters, QDir::Files | QDir::Readable, QDir::Name);
+		if (!taskFileList.empty()) {
+			for (QStringList::const_iterator iter = taskFileList.begin(); iter != taskFileList.end(); ++iter) {
 				QString fileName = *iter;
-				ui_.taskListWidget->addItem(fileName.mid(prefixLen, fileName.size() - prefixLen - suffixLen));
+				ui_.taskListWidget->addItem(fileName.mid(taskPrefixLen, fileName.size() - taskPrefixLen - taskSuffixLen));
+			}
+		}
+
+		QStringList expNameFilters;
+		expNameFilters << EXPERIMENT_DIR_PREFIX "*";
+		const std::size_t expPrefixLen = strlen(EXPERIMENT_DIR_PREFIX);
+		const QStringList expDirList = dir.entryList(expNameFilters, QDir::Dirs | QDir::Readable, QDir::Name);
+		if (!expDirList.empty()) {
+			for (QStringList::const_iterator iter = expDirList.begin(); iter != expDirList.end(); ++iter) {
+				QString dirName = *iter;
+				ui_.expListWidget->addItem(dirName.right(dirName.size() - expPrefixLen));
 			}
 		}
 	} else {
@@ -211,6 +231,7 @@ USLab4a::processScriptEntry()
 		ui_.selectProjectDirButton->setDisabled(true);
 		ui_.scanProjectDirButton->setDisabled(true);
 		ui_.taskListWidget->setDisabled(true);
+		ui_.expListWidget->setDisabled(true);
 		ui_.enableTaskButton->setDisabled(true);
 
 		controller_->enableProcessing();
@@ -236,6 +257,7 @@ USLab4a::handleControllerFinishedProcessing()
 	ui_.selectProjectDirButton->setDisabled(false);
 	ui_.scanProjectDirButton->setDisabled(false);
 	ui_.taskListWidget->setDisabled(false);
+	ui_.expListWidget->setDisabled(false);
 	ui_.enableTaskButton->setText(tr("Enable"));
 	ui_.enableTaskButton->setDisabled(false);
 
@@ -292,6 +314,7 @@ USLab4a::on_openScriptAction_triggered()
 		}
 
 		ui_.taskListWidget->clear();
+		ui_.expListWidget->clear();
 
 		processScriptEntry();
 	}
@@ -329,6 +352,16 @@ USLab4a::on_enableTaskButton_clicked()
 		LOG_ERROR << "A task must be selected.";
 		return;
 	}
+	if (ui_.expListWidget->count() > 0) {
+		QList<QListWidgetItem*> selectedExperiments = ui_.expListWidget->selectedItems();
+		if (selectedExperiments.size() != 1) {
+			LOG_ERROR << "An experiment must be selected.";
+			return;
+		}
+		project_.setExpDirectory(std::string(EXPERIMENT_DIR_PREFIX) + selectedExperiments.first()->text().toStdString());
+	} else {
+		project_.setExpDirectory("");
+	}
 
 	ui_.progressBar->setEnabled(true);
 	ui_.progressBar->setValue(0);
@@ -362,6 +395,7 @@ USLab4a::on_enableTaskButton_clicked()
 	ui_.selectProjectDirButton->setDisabled(true);
 	ui_.scanProjectDirButton->setDisabled(true);
 	ui_.taskListWidget->setDisabled(true);
+	ui_.expListWidget->setDisabled(true);
 	ui_.enableTaskButton->setText(tr("Disable"));
 
 	controller_->enableProcessing();
@@ -371,7 +405,7 @@ void
 USLab4a::on_scanProjectDirButton_clicked()
 {
 	try {
-		fillTaskListWidget();
+		fillTaskAndExpListWidget();
 	} catch (std::exception& e) {
 		LOG_ERROR << "[USLab4a::on_scanProjectDirButton_clicked] Caught exception: " << e.what() << '.';
 	} catch (...) {
@@ -391,7 +425,7 @@ USLab4a::on_selectProjectDirButton_clicked()
 		if (!dirPath.isEmpty()) {
 			ui_.projectDirLineEdit->setText(dirPath);
 			project_.setDirectory(dirPath.toStdString());
-			fillTaskListWidget();
+			fillTaskAndExpListWidget();
 		}
 	} catch (std::exception& e) {
 		LOG_ERROR << "[USLab4a::on_selectProjectDirButton_clicked] Caught exception: " << e.what() << '.';
@@ -431,6 +465,13 @@ USLab4a::closeEvent(QCloseEvent* event)
 		settings.setValue(SETTINGS_KEY_SELECTED_TASK, selectedTasks.first()->text());
 	} else {
 		settings.remove(SETTINGS_KEY_SELECTED_TASK);
+	}
+
+	QList<QListWidgetItem*> selectedExperiments = ui_.expListWidget->selectedItems();
+	if (selectedExperiments.size() == 1) {
+		settings.setValue(SETTINGS_KEY_SELECTED_EXP, selectedExperiments.first()->text());
+	} else {
+		settings.remove(SETTINGS_KEY_SELECTED_EXP);
 	}
 
 	event->ignore();

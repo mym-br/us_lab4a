@@ -4,13 +4,7 @@ method = sim_propagation_rectangular_flat_source_transient
 main_config_file = config.txt
 grid_config_file = config-grid.txt
 single_source_config_file = config-single.txt
+propag_config_file = config-propagation-transient.txt
 
-# (m)
-propagation_min_distance = 1.0e-3
-propagation_max_distance = 60.0e-3
-propagation_distance_step = 1.0e-3
-
-#
-propagation_repetitions = 4
-# (ms)
-propagation_pause = 200
+simulation_config_file = config-simulation-numeric.txt
+output_dir = output-propagation-transient-numeric

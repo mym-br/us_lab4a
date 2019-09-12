@@ -1,4 +1,6 @@
 
+- Fix script execution.
+
 - Check USLab4a::closeEvent(QCloseEvent* event) when the processing is enabled.
 
 - Move Python scripts?

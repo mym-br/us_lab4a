@@ -1,0 +1,7 @@
+
+# (m/s)
+propagation_speed = 1500.0
+
+# (Hz)
+center_frequency = 5.0e6
+max_frequency = 10.0e6

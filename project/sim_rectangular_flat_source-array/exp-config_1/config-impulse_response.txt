@@ -1,0 +1,5 @@
+
+# (m)
+point_x = 0.0
+point_y = 0.0
+point_z = 40.0e-3

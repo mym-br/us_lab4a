@@ -62,6 +62,14 @@ public:
 
 	const std::string directory() const { return directory_.toStdString(); }
 	void setDirectory(const std::string& dirPath) { directory_ = dirPath.c_str(); }
+	const std::string expDirectory() const { return expDirectory_.toStdString(); }
+	void setExpDirectory(const std::string& dirPath) {
+		if (dirPath.empty()) {
+			expDirectory_ = directory_;
+		} else {
+			expDirectory_ = directory_ + '/' + dirPath.c_str();
+		}
+	}
 
 	void loadTaskParameters(const std::string& taskFile);
 	ConstParameterMapPtr taskParameterMap() const {
@@ -230,6 +238,7 @@ private:
 	USLab4a& mainWindow_;
 	ConstParameterMapPtr taskParameterMap_;
 	QString directory_;
+	QString expDirectory_;
 	Figure2DData figure2DData_;
 	Figure3DData figure3DData_;
 	MultiLayer3DData multiLayer3DData_;
@@ -248,7 +257,7 @@ template<typename FloatType>
 void
 Project::loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<FloatType>& container) const
 {
-	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
+	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 	HDF5Util::load2(filePath.toStdString(), datasetName, container);
 }
 
@@ -256,7 +265,7 @@ template<typename FloatType>
 void
 Project::loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const
 {
-	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
+	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 	HDF5Util::load2(filePath.toStdString(), datasetName, container);
 }
 
@@ -264,7 +273,7 @@ template<typename FloatType>
 void
 Project::saveHDF5(const std::vector<FloatType>& container, const std::string& fileName, const std::string& datasetName) const
 {
-	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
+	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 	HDF5Util::save2(container, filePath.toStdString(), datasetName);
 }
 
@@ -272,7 +281,7 @@ template<typename FloatType>
 void
 Project::saveHDF5(const Matrix<FloatType>& container, const std::string& fileName, const std::string& datasetName) const
 {
-	QString filePath = directory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
+	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5_FILE_SUFFIX;
 	HDF5Util::save2(container, filePath.toStdString(), datasetName);
 }
 

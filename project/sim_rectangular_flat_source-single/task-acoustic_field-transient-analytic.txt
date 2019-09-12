@@ -4,3 +4,6 @@ method = sim_acoustic_field_rectangular_flat_source_transient
 main_config_file = config.txt
 grid_config_file = config-grid.txt
 single_source_config_file = config-single.txt
+
+simulation_config_file = config-simulation-analytic.txt
+output_dir = output-acoustic_field-transient-analytic
