@@ -299,7 +299,7 @@
     <property name="title">
      <string>Fi&amp;le</string>
     </property>
-    <addaction name="openScriptAction"/>
+    <addaction name="openBatchFileAction"/>
     <addaction name="separator"/>
     <addaction name="exitAction"/>
    </widget>
@@ -342,9 +342,9 @@
     <string>&amp;Close all figures</string>
    </property>
   </action>
-  <action name="openScriptAction">
+  <action name="openBatchFileAction">
    <property name="text">
-    <string>&amp;Open script</string>
+    <string>&amp;Open batch file</string>
    </property>
   </action>
  </widget>

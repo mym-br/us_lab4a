@@ -65,7 +65,7 @@ USLab4a::USLab4a(QWidget* parent)
 		, figureWindowsTimer_(this)
 		, infoTimer_(this)
 		, logFile_(LOG_FILE_NAME)
-		, nextScriptEntry_()
+		, nextBatchEntry_()
 {
 	ui_.setupUi(this);
 
@@ -184,26 +184,34 @@ USLab4a::fillTaskAndExpListWidget()
 }
 
 void
-USLab4a::processScriptEntry()
+USLab4a::processBatchEntry()
 {
-	if (nextScriptEntry_ < static_cast<unsigned int>(scriptEntryList_.size())) {
+	if (nextBatchEntry_ < static_cast<unsigned int>(batchEntryList_.size())) {
 
-		QString projectDir = scriptEntryList_[nextScriptEntry_].project;
+		ui_.progressBar->setEnabled(true);
+		ui_.progressBar->setValue(0);
+		ui_.progressLabel->clear();
+		IterationCounter::reset(0);
+
+		QString projectDir = batchEntryList_[nextBatchEntry_].projectDir;
 		QFileInfo projectInfo(projectDir);
-		if (!projectInfo.exists() || !projectInfo.isDir()) {
-			LOG_ERROR << "[USLab4a::processScriptEntry] Project path " << projectDir.toStdString() << " doesn't exist or is not a directory.";
-			resetScriptData();
+		if (!projectInfo.isDir() || !projectInfo.isReadable()) {
+			LOG_ERROR << "[USLab4a::processBatchEntry] The path " << projectDir.toStdString() << " can't be used as project directory.";
+			resetBatchData();
 			return;
 		}
 		ui_.projectDirLineEdit->setText(projectDir);
 		project_.setDirectory(projectDir.toStdString());
 
-		QString taskFile = scriptEntryList_[nextScriptEntry_].task;
-		LOG_INFO << "[SCRIPT] PROJECT " << projectDir.toStdString();
-		LOG_INFO << "         TASK    " << taskFile.toStdString();
+		QString task       = batchEntryList_[nextBatchEntry_].task;
+		QString experiment = batchEntryList_[nextBatchEntry_].experiment;
+		LOG_INFO << "[BATCH] PROJECT    " << projectDir.toStdString();
+		LOG_INFO << "        TASK       " << task.toStdString();
+		LOG_INFO << "        EXPERIMENT " << (experiment.isEmpty() ? "---" : experiment.toStdString());
 
 		try {
-			project_.loadTaskParameters(taskFile.toStdString());
+			project_.setExpDirectory(experiment.isEmpty() ? "" : (QString(EXPERIMENT_DIR_PREFIX) + experiment).toStdString());
+			project_.loadTaskParameters((QString(TASK_FILE_PREFIX) + task + TASK_FILE_SUFFIX).toStdString());
 
 			ConstParameterMapPtr pm = project_.taskParameterMap();
 			if (!pm) {
@@ -216,12 +224,12 @@ USLab4a::processScriptEntry()
 			MethodEnum method = Method::findByName(methodName);
 			project_.setMethod(method);
 		} catch (std::exception& e) {
-			LOG_ERROR << "[USLab4a::processScriptEntry] Caught exception: " << e.what() << '.';
-			resetScriptData();
+			LOG_ERROR << "[USLab4a::processBatchEntry] Caught exception: " << e.what() << '.';
+			resetBatchData();
 			return;
 		} catch (...) {
-			LOG_ERROR << "[USLab4a::processScriptEntry] Caught an unknown exception.";
-			resetScriptData();
+			LOG_ERROR << "[USLab4a::processBatchEntry] Caught an unknown exception.";
+			resetBatchData();
 			return;
 		}
 
@@ -236,18 +244,18 @@ USLab4a::processScriptEntry()
 
 		controller_->enableProcessing();
 
-		++nextScriptEntry_;
+		++nextBatchEntry_;
 	} else {
-		resetScriptData();
-		LOG_INFO << "[SCRIPT] Processing finished.";
+		resetBatchData();
+		LOG_INFO << "[BATCH] Processing finished.";
 	}
 }
 
 void
-USLab4a::resetScriptData()
+USLab4a::resetBatchData()
 {
-	scriptEntryList_.clear();
-	nextScriptEntry_ = 0;
+	batchEntryList_.clear();
+	nextBatchEntry_ = 0;
 }
 
 void
@@ -265,25 +273,29 @@ USLab4a::handleControllerFinishedProcessing()
 	ui_.progressBar->setValue(0);
 	ui_.progressBar->setEnabled(false);
 
-	if (!scriptEntryList_.empty()) {
-		processScriptEntry();
+	if (!batchEntryList_.empty()) {
+		processBatchEntry();
 	}
 }
 
 void
-USLab4a::on_openScriptAction_triggered()
+USLab4a::on_openBatchFileAction_triggered()
 {
-	QString filePath = QFileDialog::getOpenFileName(this, tr("Select script file"), project_.directory().c_str(), tr("Text files (*.txt)"));
+	resetBatchData();
+
+	QDir dir(project_.directory().c_str());
+	dir.cdUp();
+	QString filePath = QFileDialog::getOpenFileName(this, tr("Select batch file"), dir.canonicalPath(), tr("Batch files (batch-*.txt)"));
 	if (!filePath.isEmpty()) {
-		qDebug("on_openScriptAction_triggered filePath=%s", filePath.toStdString().c_str());
+		qDebug("on_openBatchFileAction_triggered filePath=%s", filePath.toStdString().c_str());
 
 		QFileInfo fileInfo(filePath);
-		QString scriptDir = fileInfo.canonicalPath();
-		qDebug("on_openScriptAction_triggered scriptDir=%s", scriptDir.toStdString().c_str());
+		QString batchFileDir = fileInfo.canonicalPath();
+		qDebug("on_openBatchFileAction_triggered batchFileDir=%s", batchFileDir.toStdString().c_str());
 
 		QFile file(filePath);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-			LOG_ERROR << "[USLab4a::on_openScriptAction_triggered] The file " << filePath.toStdString() << " could not be opened.";
+			LOG_ERROR << "[USLab4a::on_openBatchFileAction_triggered] The file " << filePath.toStdString() << " could not be opened.";
 			return;
 		}
 
@@ -299,24 +311,21 @@ USLab4a::on_openScriptAction_triggered()
 			if (line.isEmpty()) continue;
 
 			QStringList fieldList = line.split(' ', QString::SkipEmptyParts);
-			if (fieldList.size() == 1) {
-				LOG_ERROR << "[USLab4a::on_openScriptAction_triggered] Missing task at line " << lineNumber << " of file " << filePath.toStdString() << '.';
-				resetScriptData();
+			if (fieldList.size() == 2) {
+				batchEntryList_ << BatchEntry{batchFileDir + '/' + fieldList[0], fieldList[1], ""};
+			} else if (fieldList.size() == 3) {
+				batchEntryList_ << BatchEntry{batchFileDir + '/' + fieldList[0], fieldList[1], fieldList[2]};
+			} else {
+				LOG_ERROR << "[USLab4a::on_openBatchFileAction_triggered] Invalid syntax at line " << lineNumber << " of file " << filePath.toStdString() << '.';
+				resetBatchData();
 				return;
 			}
-			if (fieldList.size() != 2) {
-				LOG_ERROR << "[USLab4a::on_openScriptAction_triggered] Invalid syntax at line " << lineNumber << " of file " << filePath.toStdString() << '.';
-				resetScriptData();
-				return;
-			}
-
-			scriptEntryList_ << ScriptEntry{scriptDir + '/' + fieldList[0], fieldList[1]};
 		}
 
 		ui_.taskListWidget->clear();
 		ui_.expListWidget->clear();
 
-		processScriptEntry();
+		processBatchEntry();
 	}
 }
 

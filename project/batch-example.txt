@@ -1,0 +1,9 @@
+
+# project task [experiment]
+
+sim_rectangular_flat_source-array  impulse_response-analytic config_1
+sim_rectangular_flat_source-array  impulse_response-numeric  config_1
+sim_rectangular_flat_source-single impulse_response-analytic config_1
+sim_rectangular_flat_source-single impulse_response-numeric  config_1
+
+sim_rectangular_flat_source-single propagation-transient-analytic config_1

@@ -50,7 +50,7 @@ Project::loadTaskParameters(const std::string& taskFileName)
 	if (taskFile.exists()) {
 		taskParameterMap_ = std::make_shared<const ParameterMap>(taskFile.fileName());
 	} else {
-		THROW_EXCEPTION(InvalidFileException, "The file \"" << taskFile.fileName().toStdString() << "\" does not exist.");
+		THROW_EXCEPTION(InvalidFileException, "The file \"" << taskFile.fileName().toStdString() << "\" could not be opened.");
 	}
 }
 

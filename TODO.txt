@@ -1,7 +1,7 @@
 
-- Use WindowFunction.get()?
+- sa_config_file -> ?
 
-- Fix script execution.
+- Use WindowFunction.get()?
 
 - Check USLab4a::closeEvent(QCloseEvent* event) when the processing is enabled.
 

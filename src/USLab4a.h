@@ -44,9 +44,10 @@ class Figure2DWindow;
 class Figure3DWindow;
 class MultiLayer3DWindow;
 
-struct ScriptEntry {
-	QString project;
+struct BatchEntry {
+	QString projectDir;
 	QString task;
+	QString experiment;
 };
 
 class USLab4a : public QMainWindow {
@@ -78,7 +79,7 @@ public:
 		const std::vector<unsigned int>& indexArray);
 private slots:
 	void handleControllerFinishedProcessing();
-	void on_openScriptAction_triggered();
+	void on_openBatchFileAction_triggered();
 	void on_exitAction_triggered();
 	void on_closeAllFiguresAction_triggered();
 	void on_logLevelComboBox_activated(int index);
@@ -96,8 +97,8 @@ private:
 	void fillTaskAndExpListWidget();
 	void startAcquisition();
 	void stopAcquisition();
-	void processScriptEntry();
-	void resetScriptData();
+	void processBatchEntry();
+	void resetBatchData();
 
 	std::unique_ptr<Controller> controller_;
 	FigureWindowList<Figure2DWindow> figure2DWindowList_;
@@ -109,8 +110,8 @@ private:
 	Ui::USLab4aClass ui_;
 	QFile logFile_;
 
-	QList<ScriptEntry> scriptEntryList_;
-	unsigned int nextScriptEntry_;
+	QList<BatchEntry> batchEntryList_;
+	unsigned int nextBatchEntry_;
 };
 
 } // namespace Lab
