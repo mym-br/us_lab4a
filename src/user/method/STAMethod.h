@@ -26,6 +26,7 @@
 #include "CoherenceFactor.h"
 #include "DefaultSTAProcessor.h"
 #include "Exception.h"
+#include "FileUtil.h"
 #include "global.h"
 #include "ImageGrid.h"
 #include "Log.h"
@@ -153,7 +154,7 @@ STAMethod<FloatType>::execute()
 	case MethodEnum::sta_vectorial_sp_saved:
 		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(
 					project_, config.numElements,
-					taskPM->value<std::string>("data_dir"));
+					FileUtil::path(taskPM->value<std::string>("data_dir"), "/", 0));
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
