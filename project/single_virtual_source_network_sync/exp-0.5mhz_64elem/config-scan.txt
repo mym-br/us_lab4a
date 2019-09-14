@@ -1,6 +1,6 @@
 
 #
-async_acquisition = true
+async_acquisition = false
 
 #
 sync_server_port = 5544

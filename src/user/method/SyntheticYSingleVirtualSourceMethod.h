@@ -79,11 +79,11 @@ void
 SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr imgPM   = project_.loadChildParameterMap(taskPM, "img_config_file");
+	ConstParameterMapPtr saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	const TnRnConfiguration<FloatType> config(imgPM, arrayPM);
-	const unsigned int baseElement = imgPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-	const FloatType focusZ         = imgPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
+	const TnRnConfiguration<FloatType> config(saPM, arrayPM);
+	const unsigned int baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
+	const FloatType focusZ         = saPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
 	const std::string dataDir      = taskPM->value<std::string>("data_dir");
 
 	FloatType focusX = 0, focusY = 0;
@@ -102,11 +102,12 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	ArrayUtil::calculateTx3DFocusDelay(focusX, focusY, focusZ, config.propagationSpeed,
 						config.txElemPos, baseElement, config.numElements, txDelays);
 
-	const FloatType peakOffset          = taskPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
-	const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor",   1,  128);
-	const std::string outputDir         = taskPM->value<std::string>( "output_dir");
+	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const FloatType peakOffset          = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
+	const unsigned int upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 
-	const std::string rxApodFile = taskPM->value<std::string>("rx_apodization_file");
+	const std::string rxApodFile = imagPM->value<std::string>("rx_apodization_file");
 	std::vector<FloatType> rxApod;
 	project_.loadHDF5(rxApodFile, "apod", rxApod);
 
@@ -134,7 +135,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	const std::string yFileName = dataDir + SYNTHETIC_Y_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE;
 	project_.loadHDF5(yFileName, SYNTHETIC_Y_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET, yList);
 
-	const unsigned int synthYSize = taskPM->value<unsigned int>("synthetic_y_array_size", 1, yList.size());
+	const unsigned int synthYSize = imagPM->value<unsigned int>("synthetic_y_array_size", 1, yList.size());
 
 	Timer timer;
 

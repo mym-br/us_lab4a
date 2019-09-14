@@ -1,0 +1,6 @@
+
+method = multi_layer_image
+
+image_dir = output
+
+imag_config_file = config-imaging-multi_layer.txt

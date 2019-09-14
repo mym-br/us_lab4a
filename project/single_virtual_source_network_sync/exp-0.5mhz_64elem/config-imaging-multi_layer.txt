@@ -1,8 +1,4 @@
 
-method = multi_image_vtk_file
-
-image_dir = output
-
 x_file = image_x
 x_dataset = x
 

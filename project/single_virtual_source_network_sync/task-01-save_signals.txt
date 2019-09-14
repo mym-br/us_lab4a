@@ -1,7 +1,7 @@
 
 method = single_virtual_source_network_sync_save_signals
 
-img_config_file = config.txt
+sa_config_file = config.txt
 
 array_config_file = config-array.txt
 

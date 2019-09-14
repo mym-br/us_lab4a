@@ -89,11 +89,11 @@ void
 NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr imgPM   = project_.loadChildParameterMap(taskPM, "img_config_file");
+	ConstParameterMapPtr saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	const TnRnConfiguration<FloatType> config(imgPM, arrayPM);
-	const unsigned int baseElement = imgPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-	const FloatType focusZ         = imgPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
+	const TnRnConfiguration<FloatType> config(saPM, arrayPM);
+	const unsigned int baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
+	const FloatType focusZ         = saPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
 	const std::string dataDir      = taskPM->value<std::string>("data_dir");
 
 	FloatType focusX = 0, focusY = 0;
@@ -119,11 +119,12 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 		return;
 	}
 
-	const FloatType peakOffset          = taskPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
-	const unsigned int upsamplingFactor = taskPM->value<unsigned int>("upsampling_factor",   1,  128);
-	const std::string outputDir         = taskPM->value<std::string>( "output_dir");
+	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const FloatType peakOffset          = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
+	const unsigned int upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 
-	const std::string rxApodFile = taskPM->value<std::string>( "rx_apodization_file");
+	const std::string rxApodFile = imagPM->value<std::string>("rx_apodization_file");
 	std::vector<FloatType> rxApod;
 	project_.loadHDF5(rxApodFile, "apod", rxApod);
 
