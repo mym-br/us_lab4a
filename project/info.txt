@@ -13,10 +13,14 @@ The image is formed in the acquisition device.
 Shows a single image.
 
 --------------------------------------------------------------------------------
-/sim_rectangular_flat_source
+/sim_rectangular_flat_source-array
 
-Simulation of acoustic field produced by rectangular flat source(s).
-Single element or array.
+Simulation of acoustic field produced by an array of rectangular flat sources.
+
+--------------------------------------------------------------------------------
+/sim_rectangular_flat_source-single
+
+Simulation of acoustic field produced by a single rectangular flat source.
 
 --------------------------------------------------------------------------------
 /simulated_3d_single_virtual_source
