@@ -1,7 +1,7 @@
 
 method = single_virtual_source_3d_vectorial_simulated
 
-sa_config_file = config.txt
+svs_config_file = config.txt
 
 simulated_3d_acquisition_config_file = config-simulated_3d_acquisition-numeric.txt
 

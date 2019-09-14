@@ -1,6 +1,4 @@
 
-- sa_config_file -> ?
-
 - Use WindowFunction.get()?
 
 - Check USLab4a::closeEvent(QCloseEvent* event) when the processing is enabled.

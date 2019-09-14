@@ -1,7 +1,7 @@
 
 method = single_virtual_source_3d_vectorial_dp_network
 
-sa_config_file = config.txt
+svs_config_file = config.txt
 
 array_config_file = config-array.txt
 

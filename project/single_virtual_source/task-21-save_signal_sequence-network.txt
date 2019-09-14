@@ -1,7 +1,7 @@
 
 method = single_virtual_source_3d_network_save_signal_sequence
 
-sa_config_file = config.txt
+svs_config_file = config.txt
 
 array_config_file = config-array.txt
 seq_config_file = config-seq.txt

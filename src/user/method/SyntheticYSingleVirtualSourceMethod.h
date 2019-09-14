@@ -79,11 +79,11 @@ void
 SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
+	ConstParameterMapPtr svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	const TnRnConfiguration<FloatType> config(saPM, arrayPM);
-	const unsigned int baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-	const FloatType focusZ         = saPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
+	const TnRnConfiguration<FloatType> config(svsPM, arrayPM);
+	const unsigned int baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
+	const FloatType focusZ         = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
 	const std::string dataDir      = taskPM->value<std::string>("data_dir");
 
 	FloatType focusX = 0, focusY = 0;
