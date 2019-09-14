@@ -61,17 +61,18 @@ VTKFileMultiImageMethod::execute()
 {
 	ConstParameterMapPtr taskPM = project_.taskParameterMap();
 	const std::string imageBaseDir = taskPM->value<std::string>("image_dir");
-	const std::string xFile        = taskPM->value<std::string>("x_file");
-	const std::string xDataset     = taskPM->value<std::string>("x_dataset");
-	const std::string yFile        = taskPM->value<std::string>("y_file");
-	const std::string yDataset     = taskPM->value<std::string>("y_dataset");
-	const std::string zFile        = taskPM->value<std::string>("z_file");
-	const std::string zDataset     = taskPM->value<std::string>("z_dataset");
-	const std::string imageFile    = taskPM->value<std::string>("image_file");
-	const std::string imageDataset = taskPM->value<std::string>("image_dataset");
-	const float minDecibels        = taskPM->value<float>(      "min_decibels",   -100.0,    -1.0);
-	const bool logScale            = taskPM->value<bool>(       "log_scale");
-	const bool invertZ             = taskPM->value<bool>(       "invert_z");
+	ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const std::string xFile        = imagPM->value<std::string>("x_file");
+	const std::string xDataset     = imagPM->value<std::string>("x_dataset");
+	const std::string yFile        = imagPM->value<std::string>("y_file");
+	const std::string yDataset     = imagPM->value<std::string>("y_dataset");
+	const std::string zFile        = imagPM->value<std::string>("z_file");
+	const std::string zDataset     = imagPM->value<std::string>("z_dataset");
+	const std::string imageFile    = imagPM->value<std::string>("image_file");
+	const std::string imageDataset = imagPM->value<std::string>("image_dataset");
+	const float minDecibels        = imagPM->value<float>(      "min_decibels", -100.0, -1.0);
+	const bool logScale            = imagPM->value<bool>(       "log_scale");
+	const bool invertZ             = imagPM->value<bool>(       "invert_z");
 
 	Project::GridDataType prevGridData;
 	Matrix<std::size_t> prevPointIndex;
@@ -130,6 +131,9 @@ VTKFileMultiImageMethod::execute()
 	for (unsigned int acqNumber = 0; ; ++acqNumber) {
 		std::string imageDir = FileUtil::path(imageBaseDir, "/", acqNumber);
 		if (!project_.directoryExists(imageDir)) {
+			if (acqNumber == 0) {
+				THROW_EXCEPTION(UnavailableResourceException, "No file found at " << imageDir << '.');
+			}
 			break;
 		}
 		LOG_INFO << "ACQ " << acqNumber;

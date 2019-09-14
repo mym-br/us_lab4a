@@ -1,8 +1,0 @@
-t1:
-	x_begin =  50.0
-	x_end   = 350.0
-	x_step  =   5.0
-t2:
-	x_begin =  50.0
-	x_end   = 350.0
-	x_step  =   2.0

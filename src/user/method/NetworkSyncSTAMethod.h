@@ -101,12 +101,13 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		return;
 	}
 
-	const FloatType peakOffset           = taskPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
-	bool vectorialProcessingWithEnvelope = taskPM->value<bool>(        "calculate_envelope_in_processing");
-	const unsigned int upsamplingFactor  = taskPM->value<unsigned int>("upsampling_factor",   1,  128);
-	const std::string outputDir          = taskPM->value<std::string>( "output_dir");
-	const std::string txApodDesc         = taskPM->value<std::string>( "tx_apodization");
-	const std::string rxApodDesc         = taskPM->value<std::string>( "rx_apodization");
+	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const FloatType peakOffset           = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
+	bool vectorialProcessingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
+	const unsigned int upsamplingFactor  = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
+	const std::string txApodDesc         = imagPM->value<std::string>( "tx_apodization");
+	const std::string rxApodDesc         = imagPM->value<std::string>( "rx_apodization");
 
 	std::vector<FloatType> txApod(config.numElements);
 	WindowFunction::get(txApodDesc, config.numElements, txApod);

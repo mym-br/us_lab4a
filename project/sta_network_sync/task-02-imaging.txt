@@ -10,12 +10,4 @@ output_dir = output
 coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
 
 grid_config_file = config-grid.txt
-
-peak_offset = 0.0
-
-calculate_envelope_in_processing = true
-
-upsampling_factor = 4
-
-tx_apodization = rectangular
-rx_apodization = rectangular
+imag_config_file = config-imaging.txt
