@@ -63,6 +63,9 @@ Figure2DWidget::Figure2DWidget(QWidget* parent)
 		, yTickOffset_()
 		, xTickCoef_(1.0)
 		, yTickCoef_(1.0)
+		, lastXBegin_()
+		, lastXEnd_()
+		, lastXScale_()
 		, xLabel_("x")
 		, yLabel_("y")
 {
@@ -208,6 +211,9 @@ Figure2DWidget::mousePressEvent(QMouseEvent* event)
 	if (xList_.empty() || xTicks_.empty()) return;
 
 	lastMousePos_ = event->localPos();
+	lastXBegin_ = xBegin_;
+	lastXEnd_   = xEnd_;
+	lastXScale_ = xScale_;
 }
 
 void
@@ -225,28 +231,29 @@ Figure2DWidget::mouseMoveEvent(QMouseEvent* event)
 		xEnd_   -= dx;
 		yBegin_ -= dy;
 		yEnd_   -= dy;
+
+		lastMousePos_ = event->localPos();
 	} else if (event->buttons() & Qt::RightButton) {
 		const double valueDelta = xEnd_ - xBegin_;
 		const double factor = 1.0 + MOUSE_ZOOM_FACTOR * std::abs(delta.x());
-		const double mean = 0.5 * (xBegin_ + xEnd_);
+		const double centerX = lastXBegin_ + (lastMousePos_.x() - leftMargin_) / lastXScale_;
 		if (delta.x() > 0.0) {
 			if (valueDelta < MIN_VALUE_DELTA) {
 				qDebug("Zoom limit.");
 				return;
 			}
-			xBegin_ = mean + (xBegin_ - mean) / factor;
-			xEnd_   = mean + (xEnd_   - mean) / factor;
+			xBegin_ = centerX + (lastXBegin_ - centerX) / factor;
+			xEnd_   = centerX + (lastXEnd_   - centerX) / factor;
 		} else if (delta.x() < 0.0) {
 			if (valueDelta > MAX_VALUE_DELTA) {
 				qDebug("Zoom limit.");
 				return;
 			}
-			xBegin_ = mean + (xBegin_ - mean) * factor;
-			xEnd_   = mean + (xEnd_   - mean) * factor;
+			xBegin_ = centerX + (lastXBegin_ - centerX) * factor;
+			xEnd_   = centerX + (lastXEnd_   - centerX) * factor;
 		}
 	}
 
-	lastMousePos_ = event->localPos();
 	autoSetAxesTicks();
 }
 
@@ -255,25 +262,31 @@ Figure2DWidget::wheelEvent(QWheelEvent* event)
 {
 	if (xList_.empty() || xTicks_.empty()) return;
 
-	const double valueDelta = yEnd_ - yBegin_;
+	const double valueDeltaX = xEnd_ - xBegin_;
+	const double valueDeltaY = yEnd_ - yBegin_;
 	QPoint angle = event->angleDelta() / 8; // degrees
 
 	const double factor = 1.0 + WHEEL_ZOOM_FACTOR * std::abs(angle.y());
-	const double mean = 0.5 * (yBegin_ + yEnd_);
+	const double centerX = xBegin_ + (event->x() - leftMargin_) / xScale_;
+	const double centerY = yEnd_   + (event->y() - topMargin_) / yScale_;
 	if (angle.y() > 0.0) {
-		if (valueDelta < MIN_VALUE_DELTA) {
+		if (valueDeltaX < MIN_VALUE_DELTA || valueDeltaY < MIN_VALUE_DELTA) {
 			qDebug("Zoom limit.");
 			return;
 		}
-		yBegin_ = mean + (yBegin_ - mean) / factor;
-		yEnd_   = mean + (yEnd_   - mean) / factor;
+		xBegin_ = centerX + (xBegin_ - centerX) / factor;
+		xEnd_   = centerX + (xEnd_   - centerX) / factor;
+		yBegin_ = centerY + (yBegin_ - centerY) / factor;
+		yEnd_   = centerY + (yEnd_   - centerY) / factor;
 	} else if (angle.y() < 0.0) {
-		if (valueDelta > MAX_VALUE_DELTA) {
+		if (valueDeltaX > MAX_VALUE_DELTA || valueDeltaY > MAX_VALUE_DELTA) {
 			qDebug("Zoom limit.");
 			return;
 		}
-		yBegin_ = mean + (yBegin_ - mean) * factor;
-		yEnd_   = mean + (yEnd_   - mean) * factor;
+		xBegin_ = centerX + (xBegin_ - centerX) * factor;
+		xEnd_   = centerX + (xEnd_   - centerX) * factor;
+		yBegin_ = centerY + (yBegin_ - centerY) * factor;
+		yEnd_   = centerY + (yEnd_   - centerY) * factor;
 	}
 
 	autoSetAxesTicks();

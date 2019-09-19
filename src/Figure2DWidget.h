@@ -74,6 +74,9 @@ private:
 	double yTickOffset_;
 	double xTickCoef_;
 	double yTickCoef_;
+	double lastXBegin_;
+	double lastXEnd_;
+	double lastXScale_;
 	std::vector<float> xList_;
 	std::vector<float> yList_;
 	std::vector<double> xTicks_;
