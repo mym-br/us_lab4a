@@ -65,10 +65,9 @@ public:
 
 	void setTxDelays(FloatType focusX, FloatType focusY, FloatType focusZ /* can be negative */,
 				const std::vector<FloatType>& txDelays);
-	void getAcqData(unsigned int baseElement, FloatType y);
-
-	void process(unsigned int baseElement,
-			unsigned int firstAcq, unsigned int lastAcq,
+	void prepare(unsigned int baseElement);
+	void getAcqData(FloatType y);
+	void process(unsigned int firstAcq, unsigned int lastAcq,
 			Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
@@ -102,6 +101,7 @@ private:
 	FloatType focusY_;
 	FloatType focusZ_;
 	std::vector<FloatType> txDelays_; // focalization / divergence delays
+	unsigned int baseElement_;
 };
 
 
@@ -124,6 +124,7 @@ SynthYVectorial3DTnRnProcessor<FloatType>::SynthYVectorial3DTnRnProcessor(
 		, focusX_()
 		, focusY_()
 		, focusZ_()
+		, baseElement_()
 {
 	if (upsamplingFactor_ > 1) {
 		interpolator_.prepare(upsamplingFactor_, SYNTH_Y_VECTORIAL_3D_TN_RN_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
@@ -150,12 +151,27 @@ SynthYVectorial3DTnRnProcessor<FloatType>::setTxDelays(FloatType focusX, FloatTy
 
 template<typename FloatType>
 void
-SynthYVectorial3DTnRnProcessor<FloatType>::getAcqData(unsigned int baseElement, FloatType y)
+SynthYVectorial3DTnRnProcessor<FloatType>::prepare(unsigned int baseElement)
+{
+	if (baseElement + config_.numElements > config_.numElementsMux) {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid base element: " << baseElement << '.');
+	}
+	if (txDelays_.empty()) {
+		THROW_EXCEPTION(InvalidStateException, "Empty tx delay list.");
+	}
+
+	baseElement_ = baseElement;
+	acquisition_.prepare(baseElement_, txDelays_);
+}
+
+template<typename FloatType>
+void
+SynthYVectorial3DTnRnProcessor<FloatType>::getAcqData(FloatType y)
 {
 	AcqData data;
 	data.y = y;
 
-	acquisition_.execute(baseElement, txDelays_, singleAcqData_);
+	acquisition_.execute(singleAcqData_);
 
 	const std::size_t signalLength = singleAcqData_.n2() * upsamplingFactor_;
 	tempSignal_.resize(signalLength);
@@ -188,15 +204,11 @@ SynthYVectorial3DTnRnProcessor<FloatType>::getAcqData(unsigned int baseElement, 
 
 template<typename FloatType>
 void
-SynthYVectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement,
-							unsigned int firstAcq, unsigned int lastAcq,
+SynthYVectorial3DTnRnProcessor<FloatType>::process(unsigned int firstAcq, unsigned int lastAcq,
 							Matrix<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== SynthYVectorial3DTnRnProcessor::process ==========";
 
-	if (baseElement + config_.numElements > config_.numElementsMux) {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid base element: " << baseElement << '.');
-	}
 	if (txDelays_.empty()) {
 		THROW_EXCEPTION(InvalidStateException, "Empty tx delay list.");
 	}
@@ -243,7 +255,7 @@ SynthYVectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement,
 						// Delay of the first active element.
 						const FloatType d0 = txDelays_[0] * fsUp;
 
-						const XY<FloatType>& firstElem = config_.txElemPos[baseElement];
+						const XY<FloatType>& firstElem = config_.txElemPos[baseElement_];
 						// Travel time between the first active element and the focus.
 						const FloatType t0 = Geometry::distance3DZ0(firstElem.x, firstElem.y,
 												focusX_, focusY_, focusZ_) * invCT;
@@ -257,7 +269,7 @@ SynthYVectorial3DTnRnProcessor<FloatType>::process(unsigned int baseElement,
 						}
 					}
 					for (unsigned int iRxElem = 0, end = config_.numElements; iRxElem < end; ++iRxElem) {
-						const XY<FloatType>& elemPos = config_.rxElemPos[baseElement + iRxElem];
+						const XY<FloatType>& elemPos = config_.rxElemPos[baseElement_ + iRxElem];
 						local.rxDelayList[iRxElem] = Geometry::distance3DZ0(elemPos.x, elemPos.y,
 												point.x, point.y - yOffset, point.z) * invCT;
 					}

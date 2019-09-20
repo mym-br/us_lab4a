@@ -59,7 +59,8 @@ public:
 			FloatType peakOffset);
 	virtual ~SimpleSTAProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData);
+	virtual void prepare(unsigned int baseElement);
+	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
 	struct ThreadData {
@@ -70,6 +71,7 @@ private:
 	SimpleSTAProcessor& operator=(const SimpleSTAProcessor&) = delete;
 
 	const STAConfiguration<FloatType>& config_;
+	bool initialized_;
 	STAAcquisition<FloatType>& acquisition_;
 	Tensor3<FloatType> signalTensor_;
 	typename STAAcquisition<FloatType>::AcquisitionDataType acqData_;
@@ -86,22 +88,22 @@ SimpleSTAProcessor<FloatType>::SimpleSTAProcessor(
 			STAAcquisition<FloatType>& acquisition,
 			FloatType peakOffset)
 		: config_(config)
+		, initialized_()
 		, acquisition_(acquisition)
 {
-	// This acquisition is done to obtain the signal length.
-	acquisition_.execute(0, 0, acqData_);
-	const std::size_t signalLength = acqData_.n2() * SIMPLE_STA_PROCESSOR_UPSAMPLING_FACTOR;
-
-	tempSignal_.resize(signalLength);
-	signalTensor_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
-
 	signalOffset_ = (config_.samplingFrequency * SIMPLE_STA_PROCESSOR_UPSAMPLING_FACTOR) * peakOffset / config_.centerFrequency;
-	LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
 }
 
 template<typename FloatType>
 void
-SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData)
+SimpleSTAProcessor<FloatType>::prepare(unsigned int baseElement)
+{
+	acquisition_.prepare(baseElement);
+}
+
+template<typename FloatType>
+void
+SimpleSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== SimpleSTAProcessor::process ==========";
 
@@ -113,7 +115,15 @@ SimpleSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValue
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 		LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
-		acquisition_.execute(baseElement, txElem, acqData_);
+		acquisition_.execute(txElem, acqData_);
+
+		if (!initialized_) {
+			const std::size_t signalLength = acqData_.n2() * SIMPLE_STA_PROCESSOR_UPSAMPLING_FACTOR;
+			tempSignal_.resize(signalLength);
+			signalTensor_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
+			LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
+			initialized_ = true;
+		}
 
 		const std::size_t samplesPerChannelLow = acqData_.n2();
 

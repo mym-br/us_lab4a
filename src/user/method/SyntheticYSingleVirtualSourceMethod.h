@@ -125,6 +125,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	auto processor = std::make_unique<SynthYVectorial3DTnRnProcessor<FloatType>>(config, *acquisition,
 					upsamplingFactor, coherenceFactor, peakOffset, rxApod);
 	processor->setTxDelays(focusX, focusY, focusZ, txDelays);
+	processor->prepare(baseElement);
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	FloatType valueLevel = 0.0;
@@ -148,7 +149,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 		LOG_INFO << "ACQ " << acqNumber;
 
 		acquisition->setDataDir(acqDataDir);
-		processor->getAcqData(baseElement, yList[acqNumber]);
+		processor->getAcqData(yList[acqNumber]);
 	}
 
 	for (unsigned int acqNumber = 0; acqNumber <= yList.size() - synthYSize; ++acqNumber) {
@@ -158,7 +159,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 			iter->y = focusY; // this is the y value for processing
 		}
 
-		processor->process(baseElement, acqNumber, acqNumber + synthYSize - 1U, gridData);
+		processor->process(acqNumber, acqNumber + synthYSize - 1U, gridData);
 
 		std::string acqOutputDir = FileUtil::path(outputDir, "/", acqNumber);
 		project_.createDirectory(acqOutputDir, true);

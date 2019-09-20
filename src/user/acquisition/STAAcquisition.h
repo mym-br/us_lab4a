@@ -32,7 +32,8 @@ public:
 	STAAcquisition() {}
 	virtual ~STAAcquisition() {}
 
-	virtual void execute(unsigned int baseElement, unsigned int txElement /* relative to baseElement */, AcquisitionDataType& acqData) = 0;
+	virtual void prepare(unsigned int /*baseElement*/) {}
+	virtual void execute(unsigned int txElement /* relative to baseElement */, AcquisitionDataType& acqData) = 0;
 };
 
 } // namespace Lab

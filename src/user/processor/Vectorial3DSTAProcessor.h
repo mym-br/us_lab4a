@@ -64,7 +64,8 @@ public:
 			const std::vector<FloatType>& rxApod);
 	virtual ~Vectorial3DSTAProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData);
+	virtual void prepare(unsigned int baseElement);
+	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
 	struct ThreadData {
@@ -91,6 +92,7 @@ private:
 	bool initialized_;
 	std::vector<FloatType> txApod_;
 	std::vector<FloatType> rxApod_;
+	unsigned int baseElement_;
 };
 
 
@@ -112,6 +114,7 @@ Vectorial3DSTAProcessor<FloatType>::Vectorial3DSTAProcessor(
 		, initialized_()
 		, txApod_(txApod)
 		, rxApod_(rxApod)
+		, baseElement_()
 {
 	if (upsamplingFactor_ > 1) {
 		interpolator_.prepare(upsamplingFactor_, VECTORIAL_3D_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
@@ -131,7 +134,15 @@ Vectorial3DSTAProcessor<FloatType>::Vectorial3DSTAProcessor(
 
 template<typename FloatType>
 void
-Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData)
+Vectorial3DSTAProcessor<FloatType>::prepare(unsigned int baseElement)
+{
+	baseElement_ = baseElement;
+	acquisition_.prepare(baseElement_);
+}
+
+template<typename FloatType>
+void
+Vectorial3DSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== Vectorial3DSTAProcessor::process ==========";
 
@@ -144,7 +155,7 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 	// Prepare the signal matrix.
 	for (unsigned int iTxElem = 0, txEnd = config_.activeTxElem.size(); iTxElem < txEnd; ++iTxElem) {
 
-		acquisition_.execute(baseElement, config_.activeTxElem[iTxElem], acqData_);
+		acquisition_.execute(config_.activeTxElem[iTxElem], acqData_);
 
 		if (!initialized_) {
 			const std::size_t signalLength = acqData_.n2() * upsamplingFactor_;
@@ -208,11 +219,11 @@ Vectorial3DSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZ
 
 				// Calculate the delays.
 				for (unsigned int iTxElem = 0, end = config_.activeTxElem.size(); iTxElem < end; ++iTxElem) {
-					const XY<FloatType>& elemPos = config_.txElemPos[baseElement + config_.activeTxElem[iTxElem]];
+					const XY<FloatType>& elemPos = config_.txElemPos[baseElement_ + config_.activeTxElem[iTxElem]];
 					local.txDelayList[iTxElem] = Geometry::distance3DZ0(elemPos.x, elemPos.y, point.x, point.y, point.z) * invCT;
 				}
 				for (unsigned int iRxElem = 0, end = config_.activeRxElem.size(); iRxElem < end; ++iRxElem) {
-					const XY<FloatType>& elemPos = config_.rxElemPos[baseElement + config_.activeRxElem[iRxElem]];
+					const XY<FloatType>& elemPos = config_.rxElemPos[baseElement_ + config_.activeRxElem[iRxElem]];
 					local.rxDelayList[iRxElem] = Geometry::distance3DZ0(elemPos.x, elemPos.y, point.x, point.y, point.z) * invCT;
 				}
 

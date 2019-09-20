@@ -107,7 +107,8 @@ T1R1SAFT3DMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatT
 {
 	Timer tProc;
 
-	processor.process(baseElement, gridData_);
+	processor.prepare(baseElement);
+	processor.process(gridData_);
 
 	project_.saveImageToHDF5(gridData_, outputDir);
 
@@ -149,8 +150,9 @@ T1R1SAFT3DMethod<FloatType>::execute()
 	if (project_.method() == MethodEnum::t1r1saft_3d_simulated_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+		acquisition->prepare(baseElement);
 		for (unsigned int txElem : config.activeTxElem) {
-			acquisition->execute(baseElement, txElem, acqData);
+			acquisition->execute(txElem, acqData);
 			project_.saveTxElemSignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
 		}
 		return;
@@ -165,11 +167,12 @@ T1R1SAFT3DMethod<FloatType>::execute()
 		std::vector<FloatType> yList;
 		Util::fillSequenceFromStartWithStep(yList, minY, maxY, yStep);
 		auto& simAcq = dynamic_cast<Simulated3DT1R1SAFTAcquisition<FloatType>&>(*acquisition);
+		acquisition->prepare(baseElement);
 		for (std::size_t i = 0, end = yList.size(); i < end; ++i) {
 			const FloatType y = yList[i];
 			simAcq.modifyReflectorsOffset(0.0, -y);
 			for (unsigned int txElem : config.activeTxElem) {
-				acquisition->execute(baseElement, txElem, acqData);
+				acquisition->execute(txElem, acqData);
 				project_.saveTxElemSignalsToHDF5(acqData, dataDir, i, baseElement, txElem);
 			}
 		}

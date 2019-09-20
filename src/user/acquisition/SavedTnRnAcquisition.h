@@ -39,14 +39,16 @@ public:
 	virtual ~SavedTnRnAcquisition();
 
 	void setDataDir(const std::string& dataDir) { dataDir_ = dataDir; }
-	virtual void execute(unsigned int baseElement, const std::vector<FloatType>& txDelays,
-				typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData);
+
+	virtual void prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays);
+	virtual void execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
 	SavedTnRnAcquisition(const SavedTnRnAcquisition&) = delete;
 	SavedTnRnAcquisition& operator=(const SavedTnRnAcquisition&) = delete;
 
 	const Project& project_;
 	const unsigned int numRxElements_;
+	unsigned int baseElement_;
 	std::string dataDir_;
 };
 
@@ -59,6 +61,7 @@ SavedTnRnAcquisition<FloatType>::SavedTnRnAcquisition(
 			const std::string& dataDir)
 		: project_(project)
 		, numRxElements_(numRxElements)
+		, baseElement_()
 		, dataDir_(dataDir)
 {
 }
@@ -70,10 +73,16 @@ SavedTnRnAcquisition<FloatType>::~SavedTnRnAcquisition()
 
 template<typename FloatType>
 void
-SavedTnRnAcquisition<FloatType>::execute(unsigned int baseElement, const std::vector<FloatType>& /*txDelays*/,
-						typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData)
+SavedTnRnAcquisition<FloatType>::prepare(unsigned int baseElement, const std::vector<FloatType>& /*txDelays*/)
 {
-	std::string filePath = FileUtil::signalsPath(dataDir_, baseElement);
+	baseElement_ = baseElement;
+}
+
+template<typename FloatType>
+void
+SavedTnRnAcquisition<FloatType>::execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData)
+{
+	std::string filePath = FileUtil::signalsPath(dataDir_, baseElement_);
 	project_.loadHDF5(filePath, "signal", acqData);
 
 	if (numRxElements_ != acqData.n1()) {

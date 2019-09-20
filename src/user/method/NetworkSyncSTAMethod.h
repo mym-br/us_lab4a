@@ -149,6 +149,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 	Timer timer;
 
+	processor->prepare(baseElement);
 	for (unsigned int acqNumber = 0; acqNumber < yList.size(); ++acqNumber) {
 		std::string acqDataDir = FileUtil::path(dataDir, "/", acqNumber);
 		if (!project_.directoryExists(acqDataDir)) {
@@ -162,7 +163,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		}
 
 		acquisition->setDataDir(acqDataDir);
-		processor->process(baseElement, gridData);
+		processor->process(gridData);
 
 		std::string acqOutputDir = FileUtil::path(outputDir, "/", acqNumber);
 		project_.createDirectory(acqOutputDir, true);
@@ -229,6 +230,7 @@ NetworkSyncSTAMethod<FloatType>::saveSignals(ConstParameterMapPtr taskPM, const 
 	Timer timer;
 	unsigned int acqNumber = 0;
 	const double t0 = timer.getTime();
+	acq.prepare(baseElement);
 	while (true) {
 		LOG_DEBUG << "Waiting for trigger...";
 		if (!server.waitForTrigger()) break; // trigger abort
@@ -238,7 +240,7 @@ NetworkSyncSTAMethod<FloatType>::saveSignals(ConstParameterMapPtr taskPM, const 
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
 			timeList.push_back(timer.getTime() - t0);
 			yList.push_back(minY + acqNumber * yStep); // fixed step
-			acq.execute(baseElement, txElem, acqData);
+			acq.execute(txElem, acqData);
 			project_.saveTxElemSignalsToHDF5(acqData, dataDir, acqNumber, baseElement, txElem);
 		}
 

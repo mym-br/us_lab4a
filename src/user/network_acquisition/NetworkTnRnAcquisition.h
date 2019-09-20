@@ -47,8 +47,8 @@ public:
 		const TnRnConfiguration<FloatType>& config);
 	virtual ~NetworkTnRnAcquisition();
 
-	virtual void execute(unsigned int baseElement, const std::vector<FloatType>& txDelays,
-				typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData);
+	virtual void prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays);
+	virtual void execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
 	NetworkTnRnAcquisition(const NetworkTnRnAcquisition&) = delete;
 	NetworkTnRnAcquisition& operator=(const NetworkTnRnAcquisition&) = delete;
@@ -136,10 +136,8 @@ NetworkTnRnAcquisition<FloatType>::getSignal(TnRnAcquisition<double>::Acquisitio
 
 template<typename FloatType>
 void
-NetworkTnRnAcquisition<FloatType>::execute(unsigned int baseElement, const std::vector<FloatType>& txDelays,
-						typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData)
+NetworkTnRnAcquisition<FloatType>::prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays)
 {
-	LOG_DEBUG << "ACQ baseElement=" << baseElement;
 	if (baseElement + config_.numElements > config_.numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid base element:" << baseElement << '.');
 	}
@@ -148,6 +146,14 @@ NetworkTnRnAcquisition<FloatType>::execute(unsigned int baseElement, const std::
 				" (should be " << config_.numElements << ").");
 	}
 
+	acq_->setBaseElement(baseElement);
+	setTxDelays(txDelays);
+}
+
+template<typename FloatType>
+void
+NetworkTnRnAcquisition<FloatType>::execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData)
+{
 	const std::size_t signalLength = acq_->getSignalLength();
 	if (signalLength == 0) {
 		THROW_EXCEPTION(InvalidValueException, "signalLength = 0.");
@@ -156,10 +162,6 @@ NetworkTnRnAcquisition<FloatType>::execute(unsigned int baseElement, const std::
 		acqData.resize(config_.numElements, signalLength);
 		LOG_DEBUG << "RESIZE acqData(channels=" << config_.numElements << ", signalLength=" << signalLength << ')';
 	}
-
-	acq_->setBaseElement(baseElement);
-
-	setTxDelays(txDelays);
 
 	if (averageN_ > 1U) {
 		acqData = 0.0;

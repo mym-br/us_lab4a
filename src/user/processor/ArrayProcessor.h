@@ -31,7 +31,8 @@ public:
 	ArrayProcessor() {}
 	virtual ~ArrayProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData) = 0;
+	virtual void prepare(unsigned int /*baseElement*/) {}
+	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData) = 0;
 };
 
 } // namespace Lab

@@ -43,7 +43,8 @@ public:
 	SimulatedSTAAcquisition(Project& project, const STAConfiguration<FloatType>& config);
 	virtual ~SimulatedSTAAcquisition();
 
-	virtual void execute(unsigned int baseElement, unsigned int txElement,
+	virtual void prepare(unsigned int baseElement);
+	virtual void execute(unsigned int txElement,
 				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
 	SimulatedSTAAcquisition(const SimulatedSTAAcquisition&) = delete;
@@ -54,6 +55,7 @@ private:
 	FloatType maxAbsValue_; // auxiliar
 	std::unique_ptr<Simulated3DAcquisitionDevice<FloatType>> acqDevice_;
 	std::vector<XYZValue<FloatType>> reflectorList_;
+	unsigned int baseElement_;
 };
 
 
@@ -63,6 +65,7 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 		: project_(project)
 		, config_(config)
 		, maxAbsValue_()
+		, baseElement_()
 {
 	//TODO: check numChannels/numChannelsMux and other params
 
@@ -109,14 +112,34 @@ SimulatedSTAAcquisition<FloatType>::~SimulatedSTAAcquisition()
 
 template<typename FloatType>
 void
-SimulatedSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int txElement,
+SimulatedSTAAcquisition<FloatType>::prepare(unsigned int baseElement)
+{
+	if (baseElement + config_.numElements > config_.numElementsMux) {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid base element:" << baseElement << '.');
+	}
+
+	std::vector<bool> rxMask(config_.numElementsMux);
+	for (unsigned int i = baseElement, end = baseElement + config_.numElements; i < end; ++i) {
+		rxMask[i] = true;
+	}
+	acqDevice_->setActiveRxElements(rxMask);
+
+	baseElement_ = baseElement;
+}
+
+template<typename FloatType>
+void
+SimulatedSTAAcquisition<FloatType>::execute(unsigned int txElement,
 						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
 {
-	LOG_DEBUG << "ACQ baseElement=" << baseElement << " txElement=" << txElement;
+	LOG_DEBUG << "ACQ baseElement=" << baseElement_ << " txElement=" << txElement;
 
 	const std::size_t signalLength = acqDevice_->signalLength();
 	if (signalLength == 0) {
 		THROW_EXCEPTION(InvalidValueException, "signalLength = 0.");
+	}
+	if (baseElement_ + txElement >= config_.numElementsMux) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid tx element: " << txElement << '.');
 	}
 	if (acqData.n1() != config_.numElements || acqData.n2() != signalLength) {
 		acqData.resize(config_.numElements, signalLength);
@@ -125,14 +148,8 @@ SimulatedSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned i
 	}
 
 	std::vector<bool> txMask(config_.numElementsMux);
-	txMask[baseElement + txElement] = true;
+	txMask[baseElement_ + txElement] = true;
 	acqDevice_->setActiveTxElements(txMask);
-
-	std::vector<bool> rxMask(config_.numElementsMux);
-	for (unsigned int i = baseElement, end = baseElement + config_.numElements; i < end; ++i) {
-		rxMask[i] = true;
-	}
-	acqDevice_->setActiveRxElements(rxMask);
 
 	const std::vector<FloatType>& signalList = acqDevice_->getSignalList();
 

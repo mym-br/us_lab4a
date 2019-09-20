@@ -128,7 +128,8 @@ SingleVirtualSourceMethod<FloatType>::process(FloatType valueScale, ArrayProcess
 {
 	Timer tProc;
 
-	processor.process(baseElement, gridData_);
+	processor.prepare(baseElement);
+	processor.process(gridData_);
 
 	project_.saveImageToHDF5(gridData_, outputDir, saveCoordinates);
 
@@ -145,8 +146,9 @@ SingleVirtualSourceMethod<FloatType>::execContinuousNetworkImaging(FloatType val
 {
 	int n = 0;
 	Timer t;
+	processor.prepare(baseElement);
 	do {
-		processor.process(baseElement, gridData_);
+		processor.process(gridData_);
 
 		if (coherenceFactorEnabled) {
 			applyCoherenceFactor();
@@ -181,12 +183,13 @@ SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr ta
 	const double t0 = timer.getTime();
 	double t = 0.0;
 	unsigned int acqNumber = 0;
+	acquisition.prepare(baseElement, txDelays);
 	do {
 		LOG_INFO << "ACQ " << acqNumber;
 
 		timeList.push_back(t);
 		acqDataList.emplace_back();
-		acquisition.execute(baseElement, txDelays, acqDataList.back());
+		acquisition.execute(acqDataList.back());
 
 		t = timer.getTime() - t0;
 		++acqNumber;
@@ -290,7 +293,8 @@ SingleVirtualSourceMethod<FloatType>::execute()
 			project_.method() == MethodEnum::single_virtual_source_3d_network_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename TnRnAcquisition<FloatType>::AcquisitionDataType acqData;
-		acquisition->execute(baseElement, txDelays, acqData);
+		acquisition->prepare(baseElement, txDelays);
+		acquisition->execute(acqData);
 		project_.saveSignalsToHDF5(acqData, dataDir, 0, baseElement);
 		return;
 	} else if (project_.method() == MethodEnum::single_virtual_source_3d_network_save_signal_sequence) {

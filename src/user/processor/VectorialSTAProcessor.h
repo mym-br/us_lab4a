@@ -69,7 +69,8 @@ public:
 			const std::vector<FloatType>& rxApod);
 	virtual ~VectorialSTAProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData);
+	virtual void prepare(unsigned int baseElement);
+	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
 	struct ThreadData {
@@ -96,6 +97,7 @@ private:
 	bool initialized_;
 	std::vector<FloatType> txApod_;
 	std::vector<FloatType> rxApod_;
+	unsigned int baseElement_;
 };
 
 
@@ -119,6 +121,7 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 		, initialized_()
 		, txApod_(txApod)
 		, rxApod_(rxApod)
+		, baseElement_()
 {
 	if (upsamplingFactor_ > 1) {
 		interpolator_.prepare(upsamplingFactor_, VECTORIAL_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
@@ -129,7 +132,14 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 
 template<typename FloatType>
 void
-VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData)
+VectorialSTAProcessor<FloatType>::prepare(unsigned int baseElement)
+{
+	acquisition_.prepare(baseElement);
+}
+
+template<typename FloatType>
+void
+VectorialSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== VectorialSTAProcessor::process ==========";
 
@@ -141,7 +151,7 @@ VectorialSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZVa
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 		LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
-		acquisition_.execute(baseElement, txElem, acqData_);
+		acquisition_.execute(txElem, acqData_);
 		if (!initialized_) {
 			const std::size_t signalLength = acqData_.n2() * upsamplingFactor_;
 			tempSignal_.resize(signalLength);

@@ -116,7 +116,8 @@ STAMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& p
 {
 	Timer tProc;
 
-	processor.process(baseElement, gridData_);
+	processor.prepare(baseElement);
+	processor.process(gridData_);
 
 	project_.saveImageToHDF5(gridData_, outputDir);
 
@@ -163,8 +164,9 @@ STAMethod<FloatType>::execute()
 	if (project_.method() == MethodEnum::sta_save_signals) {
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+		acquisition->prepare(baseElement);
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
-			acquisition->execute(baseElement, txElem, acqData);
+			acquisition->execute(txElem, acqData);
 			project_.saveTxElemSignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
 		}
 		return;

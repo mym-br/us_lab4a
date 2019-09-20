@@ -105,7 +105,8 @@ STA3DMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>&
 {
 	Timer tProc;
 
-	processor.process(baseElement, gridData_);
+	processor.prepare(baseElement);
+	processor.process(gridData_);
 
 	project_.saveImageToHDF5(gridData_, outputDir);
 
@@ -142,8 +143,9 @@ STA3DMethod<FloatType>::execute()
 		const std::string dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		IterationCounter::reset(config.activeTxElem.size());
+		acquisition->prepare(baseElement);
 		for (unsigned int txElem : config.activeTxElem) {
-			acquisition->execute(baseElement, txElem, acqData);
+			acquisition->execute(txElem, acqData);
 			project_.saveTxElemSignalsToHDF5(acqData, dataDir, 0, baseElement, txElem);
 			IterationCounter::add(1);
 		}
@@ -160,11 +162,12 @@ STA3DMethod<FloatType>::execute()
 		Util::fillSequenceFromStartWithStep(yList, minY, maxY, yStep);
 		auto& simAcq = dynamic_cast<Simulated3DSTAAcquisition<FloatType>&>(*acquisition);
 		IterationCounter::reset(yList.size());
+		acquisition->prepare(baseElement);
 		for (std::size_t i = 0, end = yList.size(); i < end; ++i) {
 			const FloatType y = yList[i];
 			simAcq.modifyReflectorsOffset(0.0, -y);
 			for (unsigned int txElem : config.activeTxElem) {
-				acquisition->execute(baseElement, txElem, acqData);
+				acquisition->execute(txElem, acqData);
 				project_.saveTxElemSignalsToHDF5(acqData, dataDir, i, baseElement, txElem);
 			}
 			IterationCounter::add(1);
@@ -193,7 +196,7 @@ STA3DMethod<FloatType>::execute()
 		}
 
 		std::vector<FloatType> rxApod;
-		const std::string rxApodFile = imagPM->value<std::string>( "rx_apodization_file");
+		const std::string rxApodFile = imagPM->value<std::string>("rx_apodization_file");
 		project_.loadHDF5(rxApodFile, "apod", rxApod);
 
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));

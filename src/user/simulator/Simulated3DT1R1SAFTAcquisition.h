@@ -42,7 +42,8 @@ public:
 	Simulated3DT1R1SAFTAcquisition(Project& project, const SA3DConfiguration<FloatType>& config);
 	virtual ~Simulated3DT1R1SAFTAcquisition();
 
-	virtual void execute(unsigned int baseElement, unsigned int txElement,
+	virtual void prepare(unsigned int baseElement);
+	virtual void execute(unsigned int txElement,
 				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
 
 	void modifyReflectorsOffset(FloatType offsetX, FloatType offsetY);
@@ -57,6 +58,7 @@ private:
 	std::vector<XYZValue<FloatType>> reflectorList_;
 	FloatType reflectorsOffsetX_;
 	FloatType reflectorsOffsetY_;
+	unsigned int baseElement_;
 };
 
 
@@ -66,6 +68,7 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::Simulated3DT1R1SAFTAcquisition(Projec
 		: project_(project)
 		, config_(config)
 		, maxAbsValue_()
+		, baseElement_()
 {
 	//TODO: check numChannels/numChannelsMux and other params
 
@@ -113,10 +116,17 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::~Simulated3DT1R1SAFTAcquisition()
 
 template<typename FloatType>
 void
-Simulated3DT1R1SAFTAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int txElement,
-						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
+Simulated3DT1R1SAFTAcquisition<FloatType>::prepare(unsigned int baseElement)
 {
-	LOG_DEBUG << "ACQ baseElement=" << baseElement << " txElement=" << txElement;
+	baseElement_ = baseElement;
+}
+
+template<typename FloatType>
+void
+Simulated3DT1R1SAFTAcquisition<FloatType>::execute(unsigned int txElement,
+							typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
+{
+	LOG_DEBUG << "ACQ baseElement=" << baseElement_ << " txElement=" << txElement;
 
 	const std::size_t signalLength = acqDevice_->signalLength();
 	if (signalLength == 0) {
@@ -134,7 +144,7 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::execute(unsigned int baseElement, uns
 	for (unsigned int localElem : config_.activeTxElem) {
 		if (txElement == localElem) {
 			found = true;
-			const unsigned int elem = baseElement + localElem;
+			const unsigned int elem = baseElement_ + localElem;
 			if (elem >= txMask.size()) {
 				THROW_EXCEPTION(InvalidValueException, "Invalid active tx element: " << elem << '.');
 			}
@@ -142,15 +152,15 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::execute(unsigned int baseElement, uns
 		}
 		++iTxElem;
 	}
-	if (!found) THROW_EXCEPTION(InvalidValueException, "Invalid tx element: " << baseElement + txElement << '.');
-	txMask[baseElement + txElement] = true;
+	if (!found) THROW_EXCEPTION(InvalidValueException, "Invalid tx element: " << baseElement_ + txElement << '.');
+	txMask[baseElement_ + txElement] = true;
 	acqDevice_->setActiveTxElements(txMask);
 
 	std::vector<bool> rxMask(config_.rxElemPos.size());
 	if (iTxElem >= config_.activeRxElem.size()) {
 		THROW_EXCEPTION(InvalidValueException, "Receive element not found.");
 	}
-	const unsigned int rxElem = baseElement + config_.activeRxElem[iTxElem];
+	const unsigned int rxElem = baseElement_ + config_.activeRxElem[iTxElem];
 	if (rxElem >= rxMask.size()) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid active rx element: " << rxElem << '.');
 	}

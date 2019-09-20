@@ -142,6 +142,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 	auto processor = std::make_unique<Vectorial3DTnRnProcessor<FloatType>>(config, *acquisition,
 					upsamplingFactor, coherenceFactor, peakOffset, rxApod);
 	processor->setTxDelays(focusX, focusY, focusZ, txDelays);
+	processor->prepare(baseElement);
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	FloatType valueLevel = 0.0;
@@ -167,7 +168,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 		}
 
 		acquisition->setDataDir(acqDataDir);
-		processor->process(baseElement, gridData);
+		processor->process(gridData);
 
 		for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
 			iter->y = yList[acqNumber]; // this is the y value that will be saved to file
@@ -237,6 +238,8 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPt
 	std::vector<double> yList;
 	yList.reserve(1000);
 
+	acq.prepare(baseElement, txDelays);
+
 	// Capture signals.
 	Timer timer;
 	unsigned int acqNumber = 0;
@@ -256,7 +259,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPt
 				timeList.push_back(timer.getTime() - t0);
 				y = minY + timeList.back() * ySpeed; // variable step
 				yList.push_back(y);
-				acq.execute(baseElement, txDelays, acqDataList.back());
+				acq.execute(acqDataList.back());
 
 				++acqNumber;
 			}
@@ -274,7 +277,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPt
 			acqDataList.emplace_back();
 			timeList.push_back(timer.getTime() - t0);
 			yList.push_back(minY + acqNumber * yStep); // fixed step
-			acq.execute(baseElement, txDelays, acqDataList.back());
+			acq.execute(acqDataList.back());
 
 			server.freeTrigger(); // let the array move to the next position
 

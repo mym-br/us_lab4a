@@ -34,7 +34,8 @@ public:
 	TnRnAcquisition() {}
 	virtual ~TnRnAcquisition() {}
 
-	virtual void execute(unsigned int baseElement, const std::vector<FloatType>& txDelays, AcquisitionDataType& acqData) = 0;
+	virtual void prepare(unsigned int /*baseElement*/, const std::vector<FloatType>& /*txDelays*/) {}
+	virtual void execute(AcquisitionDataType& acqData) = 0;
 };
 
 } // namespace Lab

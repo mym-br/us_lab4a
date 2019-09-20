@@ -42,7 +42,8 @@ public:
 	Simulated3DSTAAcquisition(Project& project, const SA3DConfiguration<FloatType>& config);
 	virtual ~Simulated3DSTAAcquisition();
 
-	virtual void execute(unsigned int baseElement, unsigned int txElement,
+	virtual void prepare(unsigned int baseElement);
+	virtual void execute(unsigned int txElement,
 				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
 
 	void modifyReflectorsOffset(FloatType offsetX, FloatType offsetY);
@@ -57,6 +58,7 @@ private:
 	std::vector<XYZValue<FloatType>> reflectorList_;
 	FloatType reflectorsOffsetX_;
 	FloatType reflectorsOffsetY_;
+	unsigned int baseElement_;
 };
 
 
@@ -66,6 +68,7 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 		: project_(project)
 		, config_(config)
 		, maxAbsValue_()
+		, baseElement_()
 {
 	//TODO: check numChannels/numChannelsMux and other params
 
@@ -113,10 +116,27 @@ Simulated3DSTAAcquisition<FloatType>::~Simulated3DSTAAcquisition()
 
 template<typename FloatType>
 void
-Simulated3DSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int txElement,
+Simulated3DSTAAcquisition<FloatType>::prepare(unsigned int baseElement)
+{
+	std::vector<bool> rxMask(config_.rxElemPos.size());
+	for (unsigned int localElem : config_.activeRxElem) {
+		const unsigned int elem = baseElement + localElem;
+		if (elem >= rxMask.size()) {
+			THROW_EXCEPTION(InvalidValueException, "Invalid active rx element: " << elem << '.');
+		}
+		rxMask[elem] = true;
+	}
+	acqDevice_->setActiveRxElements(rxMask);
+
+	baseElement_ = baseElement;
+}
+
+template<typename FloatType>
+void
+Simulated3DSTAAcquisition<FloatType>::execute(unsigned int txElement,
 						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
 {
-	LOG_DEBUG << "ACQ baseElement=" << baseElement << " txElement=" << txElement;
+	LOG_DEBUG << "ACQ baseElement=" << baseElement_ << " txElement=" << txElement;
 
 	const std::size_t signalLength = acqDevice_->signalLength();
 	if (signalLength == 0) {
@@ -133,26 +153,16 @@ Simulated3DSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned
 	for (unsigned int localElem : config_.activeTxElem) {
 		if (txElement == localElem) {
 			found = true;
-			const unsigned int elem = baseElement + localElem;
+			const unsigned int elem = baseElement_ + localElem;
 			if (elem >= txMask.size()) {
 				THROW_EXCEPTION(InvalidValueException, "Invalid active tx element: " << elem << '.');
 			}
 			break;
 		}
 	}
-	if (!found) THROW_EXCEPTION(InvalidValueException, "Invalid tx element: " << baseElement + txElement << '.');
-	txMask[baseElement + txElement] = true;
+	if (!found) THROW_EXCEPTION(InvalidValueException, "Invalid tx element: " << baseElement_ + txElement << '.');
+	txMask[baseElement_ + txElement] = true;
 	acqDevice_->setActiveTxElements(txMask);
-
-	std::vector<bool> rxMask(config_.rxElemPos.size());
-	for (unsigned int localElem : config_.activeRxElem) {
-		const unsigned int elem = baseElement + localElem;
-		if (elem >= rxMask.size()) {
-			THROW_EXCEPTION(InvalidValueException, "Invalid active rx element: " << elem << '.');
-		}
-		rxMask[elem] = true;
-	}
-	acqDevice_->setActiveRxElements(rxMask);
 
 	const std::vector<FloatType>& signalList = acqDevice_->getSignalList();
 

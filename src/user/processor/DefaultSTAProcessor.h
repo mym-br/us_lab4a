@@ -61,7 +61,8 @@ public:
 			FloatType peakOffset);
 	virtual ~DefaultSTAProcessor() {}
 
-	virtual void process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData);
+	virtual void prepare(unsigned int baseElement);
+	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
 	struct ThreadData {
@@ -104,7 +105,14 @@ DefaultSTAProcessor<FloatType>::DefaultSTAProcessor(
 
 template<typename FloatType>
 void
-DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValueFactor<FloatType>>& gridData)
+DefaultSTAProcessor<FloatType>::prepare(unsigned int baseElement)
+{
+	acquisition_.prepare(baseElement);
+}
+
+template<typename FloatType>
+void
+DefaultSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== DefaultSTAProcessor::process ==========";
 
@@ -116,7 +124,7 @@ DefaultSTAProcessor<FloatType>::process(unsigned int baseElement, Matrix<XYZValu
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 		LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
-		acquisition_.execute(baseElement, txElem, acqData_);
+		acquisition_.execute(txElem, acqData_);
 
 		if (!initialized_) {
 			const std::size_t signalLength = acqData_.n2() * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR;

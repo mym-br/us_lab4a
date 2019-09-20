@@ -131,9 +131,9 @@ SA3DConfiguration<FloatType>::load(ConstParameterMapPtr saPM, ConstParameterMapP
 	}
 
 	LOG_DEBUG << "Active tx elements:";
-	fillActiveElem(saPM->value<std::string>("active_tx_elem"), txElemPos.size(), activeTxElem);
+	fillActiveElem(saPM->value<std::string>("active_tx_elem"), txElemPos.size() - 1U, activeTxElem);
 	LOG_DEBUG << "Active rx elements:";
-	fillActiveElem(saPM->value<std::string>("active_rx_elem"), rxElemPos.size(), activeRxElem);
+	fillActiveElem(saPM->value<std::string>("active_rx_elem"), rxElemPos.size() - 1U, activeRxElem);
 }
 
 } // namespace Lab

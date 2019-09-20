@@ -45,7 +45,8 @@ public:
 		const STAConfiguration<FloatType>& config);
 	virtual ~NetworkSTAAcquisition();
 
-	virtual void execute(unsigned int baseElement, unsigned int txElement,
+	virtual void prepare(unsigned int baseElement);
+	virtual void execute(unsigned int txElement,
 				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
 	NetworkSTAAcquisition(const NetworkSTAAcquisition&) = delete;
@@ -96,24 +97,33 @@ NetworkSTAAcquisition<FloatType>::~NetworkSTAAcquisition()
 
 template<typename FloatType>
 void
-NetworkSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int txElement,
-						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
+NetworkSTAAcquisition<FloatType>::prepare(unsigned int baseElement)
 {
-	LOG_DEBUG << "ACQ baseElement=" << baseElement << " txElement=" << txElement;
 	if (baseElement + config_.numElements > config_.numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid base element:" << baseElement << '.');
 	}
+
+	acq_->setBaseElement(baseElement);
+}
+
+template<typename FloatType>
+void
+NetworkSTAAcquisition<FloatType>::execute(unsigned int txElement,
+						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
+{
+	LOG_DEBUG << "ACQ txElement=" << txElement;
 
 	const std::size_t signalLength = acq_->getSignalLength();
 	if (signalLength == 0) {
 		THROW_EXCEPTION(InvalidValueException, "signalLength = 0.");
 	}
+	if (txElement >= config_.numElements) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid tx element: " << txElement << '.');
+	}
 	if (acqData.n1() != config_.numElements || acqData.n2() != signalLength) {
 		acqData.resize(config_.numElements, signalLength);
 		LOG_DEBUG << "RESIZE acqData(channels,signalLength): channels=" << config_.numElements << " signalLength=" << signalLength;
 	}
-
-	acq_->setBaseElement(baseElement);
 
 	std::string txMask(config_.numElements, '0');
 	txMask[txElement] = '1';

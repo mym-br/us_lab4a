@@ -38,7 +38,9 @@ public:
 	virtual ~SavedSTAAcquisition();
 
 	void setDataDir(const std::string& dataDir) { dataDir_ = dataDir; }
-	virtual void execute(unsigned int baseElement, unsigned int txElement,
+
+	virtual void prepare(unsigned int baseElement);
+	virtual void execute(unsigned int txElement,
 				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
 	SavedSTAAcquisition(const SavedSTAAcquisition&) = delete;
@@ -46,6 +48,7 @@ private:
 
 	const Project& project_;
 	const unsigned int numRxElements_;
+	unsigned int baseElement_;
 	std::string dataDir_;
 };
 
@@ -58,6 +61,7 @@ SavedSTAAcquisition<FloatType>::SavedSTAAcquisition(
 			const std::string& dataDir)
 		: project_(project)
 		, numRxElements_(numRxElements)
+		, baseElement_()
 		, dataDir_(dataDir)
 {
 }
@@ -69,10 +73,17 @@ SavedSTAAcquisition<FloatType>::~SavedSTAAcquisition()
 
 template<typename FloatType>
 void
-SavedSTAAcquisition<FloatType>::execute(unsigned int baseElement, unsigned int txElement,
+SavedSTAAcquisition<FloatType>::prepare(unsigned int baseElement)
+{
+	baseElement_ = baseElement;
+}
+
+template<typename FloatType>
+void
+SavedSTAAcquisition<FloatType>::execute(unsigned int txElement,
 						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
 {
-	std::string filePath = FileUtil::txElemSignalsPath(dataDir_, baseElement, txElement);
+	std::string filePath = FileUtil::txElemSignalsPath(dataDir_, baseElement_, txElement);
 	project_.loadHDF5(filePath, "signal", acqData);
 
 	if (numRxElements_ != acqData.n1()) {

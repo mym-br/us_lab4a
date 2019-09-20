@@ -43,8 +43,8 @@ public:
 	Simulated3DTnRnAcquisition(Project& project, const TnRnConfiguration<FloatType>& config);
 	virtual ~Simulated3DTnRnAcquisition() {}
 
-	virtual void execute(unsigned int baseElement, const std::vector<FloatType>& txDelays,
-				typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData);
+	virtual void prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays);
+	virtual void execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData);
 
 	void modifyReflectorsOffset(FloatType offsetX, FloatType offsetY);
 private:
@@ -109,23 +109,10 @@ Simulated3DTnRnAcquisition<FloatType>::Simulated3DTnRnAcquisition(Project& proje
 
 template<typename FloatType>
 void
-Simulated3DTnRnAcquisition<FloatType>::execute(unsigned int baseElement, const std::vector<FloatType>& txDelays,
-						typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData)
+Simulated3DTnRnAcquisition<FloatType>::prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays)
 {
-	LOG_DEBUG << "ACQ baseElement=" << baseElement;
-
 	if (baseElement + config_.numElements > config_.numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid base element: " << baseElement << '.');
-	}
-
-	const std::size_t signalLength = acqDevice_->signalLength();
-	if (signalLength == 0) {
-		THROW_EXCEPTION(InvalidValueException, "signalLength = 0.");
-	}
-	if (acqData.n1() != config_.numElements || acqData.n2() != signalLength) {
-		acqData.resize(config_.numElements, signalLength);
-		LOG_DEBUG << "RESIZE acqData(channels, signalLength): channels=" << config_.numElements
-				<< " signalLength=" << signalLength;
 	}
 
 	std::vector<bool> txMask(config_.txElemPos.size());
@@ -141,6 +128,21 @@ Simulated3DTnRnAcquisition<FloatType>::execute(unsigned int baseElement, const s
 		rxMask[baseElement + localElem] = true;
 	}
 	acqDevice_->setActiveRxElements(rxMask);
+}
+
+template<typename FloatType>
+void
+Simulated3DTnRnAcquisition<FloatType>::execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData)
+{
+	const std::size_t signalLength = acqDevice_->signalLength();
+	if (signalLength == 0) {
+		THROW_EXCEPTION(InvalidValueException, "signalLength = 0.");
+	}
+	if (acqData.n1() != config_.numElements || acqData.n2() != signalLength) {
+		acqData.resize(config_.numElements, signalLength);
+		LOG_DEBUG << "RESIZE acqData(channels, signalLength): channels=" << config_.numElements
+				<< " signalLength=" << signalLength;
+	}
 
 	const std::vector<FloatType>& signalList = acqDevice_->getSignalList();
 
