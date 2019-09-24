@@ -430,7 +430,7 @@ Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatTy
 
 	// Calculate the impulse response in transmission (all active elements).
 	std::size_t hTxOffset;
-	txImpResp->getImpulseResponse(refX, refY, refZ, hTxOffset, hTx_, &activeTxElem_);//TODO: multi-threading
+	txImpResp->getImpulseResponse(refX, refY, refZ, hTxOffset, hTx_, &activeTxElem_);
 
 	// dadt * hTx
 	dadtFilter.filter(dadtFilterFreqCoeff_, hTx_, convDadtHTx_);
