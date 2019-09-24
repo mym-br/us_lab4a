@@ -171,7 +171,7 @@ Simulated3DSTAAcquisition<FloatType>::execute(unsigned int txElement,
 	if (mx > maxAbsValue_) maxAbsValue_ = mx;
 	LOG_DEBUG << "########## max(abs(signalList)): " << mx << " global: " << maxAbsValue_;
 
-	std::copy(signalList.begin(), signalList.end(), acqData.begin()); //TODO: memcpy? how to avoid this copy?
+	std::copy(signalList.begin(), signalList.end(), acqData.begin());
 }
 
 template<typename FloatType>
