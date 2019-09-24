@@ -97,7 +97,8 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 								*arrayPM,
 								config_.samplingFrequency,
 								config_.propagationSpeed,
-								config_.maxFrequency);
+								config_.maxFrequency,
+								project_.expDirectory());
 	acqDevice_->setAcquisitionTime(config_.acquisitionTime);
 	acqDevice_->setExcitationWaveform(config_.centerFrequency);
 	acqDevice_->setReflectorList(reflectorList_);

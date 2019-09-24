@@ -21,6 +21,7 @@
 #include <complex>
 #include <cstddef> /* std::size_t */
 #include <memory>
+#include <string>
 #include <vector>
 
 #include <tbb/enumerable_thread_specific.h>
@@ -38,6 +39,7 @@
 #include "ParameterMap.h"
 #include "Util.h"
 #include "Waveform.h"
+#include "WavefrontObjFileWriter.h"
 #include "XY.h"
 #include "XYZValue.h"
 
@@ -83,7 +85,8 @@ public:
 	};
 
 	Simulated3DAcquisitionDevice(const ParameterMap& pm, const ParameterMap& arrayPM,
-					FloatType outputSamplingFreq, FloatType propagationSpeed, FloatType maxFrequency);
+					FloatType outputSamplingFreq, FloatType propagationSpeed, FloatType maxFrequency,
+					const std::string& expDirectory);
 	~Simulated3DAcquisitionDevice();
 
 	void setAcquisitionTime(FloatType acqTime);
@@ -163,7 +166,8 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 		const ParameterMap& arrayPM,
 		FloatType outputSamplingFreq,
 		FloatType propagationSpeed,
-		FloatType maxFrequency)
+		FloatType maxFrequency,
+		const std::string& expDirectory)
 			: c_(propagationSpeed)
 			, invC_(1 / c_)
 			, simFs_()
@@ -226,6 +230,33 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 
 	decimator_ = std::make_unique<Decimator<FloatType>>();
 	decimator_->prepare(simFs_ / outFs_, SIMULATED_3D_ACQUISITION_DEVICE_DECIMATOR_LP_FILTER_TRANSITION_WIDTH);
+
+	{
+		WavefrontObjFileWriter<FloatType> fw((expDirectory + "/tx_geometry.obj").c_str());
+		const FloatType hw = 0.5 * txElemWidth_;
+		const FloatType hh = 0.5 * txElemHeight_;
+		for (const auto& pos : txElemPos_) {
+			fw.addPoint(pos.x - hw, pos.y + hh, 0.0);
+			fw.addPoint(pos.x + hw, pos.y + hh, 0.0);
+			fw.addPoint(pos.x + hw, pos.y - hh, 0.0);
+			fw.addPoint(pos.x - hw, pos.y - hh, 0.0);
+			fw.addQuad(-4, -3, -2, -1);
+		}
+		fw.write();
+	}
+	{
+		WavefrontObjFileWriter<FloatType> fw((expDirectory + "/rx_geometry.obj").c_str());
+		const FloatType hw = 0.5 * rxElemWidth_;
+		const FloatType hh = 0.5 * rxElemHeight_;
+		for (const auto& pos : rxElemPos_) {
+			fw.addPoint(pos.x - hw, pos.y + hh, 0.0);
+			fw.addPoint(pos.x + hw, pos.y + hh, 0.0);
+			fw.addPoint(pos.x + hw, pos.y - hh, 0.0);
+			fw.addPoint(pos.x - hw, pos.y - hh, 0.0);
+			fw.addQuad(-4, -3, -2, -1);
+		}
+		fw.write();
+	}
 }
 
 template<typename FloatType>
