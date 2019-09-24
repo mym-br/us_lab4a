@@ -70,8 +70,6 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 		, maxAbsValue_()
 		, baseElement_()
 {
-	//TODO: check numChannels/numChannelsMux and other params
-
 	ConstParameterMapPtr taskPM  = project_.taskParameterMap();
 	ConstParameterMapPtr pm      = project_.loadChildParameterMap(taskPM, "simulated_3d_acquisition_config_file");
 	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
