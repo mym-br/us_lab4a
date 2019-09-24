@@ -141,9 +141,7 @@ PhasedArrayAcqProtocol::receiveMessage(boost::asio::ip::tcp::socket& socket)
 
 	boost::uint32_t messageType = headerRawBuffer_.getUInt32();
 
-	//TODO: check type???
 	const boost::uint32_t dataSize = headerRawBuffer_.getUInt32();
-
 	if (dataSize > 0) {
 		dataRawBuffer_.reserve(dataSize);
 		n = boost::asio::read(socket, boost::asio::buffer(&dataRawBuffer_.front(), dataRawBuffer_.size()));
