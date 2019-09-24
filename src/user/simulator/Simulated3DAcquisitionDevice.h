@@ -20,6 +20,7 @@
 #include <algorithm> /* copy, fill */
 #include <complex>
 #include <cstddef> /* std::size_t */
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -52,7 +53,6 @@
 
 
 
-//TODO: Clean.
 namespace Lab {
 
 class Project;
@@ -69,19 +69,14 @@ public:
 			FloatType propagationSpeed,
 			FloatType rxElemWidth,
 			FloatType rxElemHeight,
-			FloatType rxDiscretization,
-			const Decimator<FloatType>& dec)
-				: rxImpResp(samplingFreq, propagationSpeed, rxElemWidth, rxElemHeight, rxDiscretization)
-				, decimator(dec)
-		{
-		}
+			FloatType rxDiscretization)
+				: rxImpResp(samplingFreq, propagationSpeed, rxElemWidth, rxElemHeight, rxDiscretization) {}
 		ImpulseResponse rxImpResp;
 		std::vector<FloatType> hRx;
 		std::vector<FloatType> p;
 		std::vector<FloatType> pDown;
 		FFTWFilter2<FloatType> convDadtHTxFilter;
 		std::vector<std::complex<FloatType>> dadtFilterFreqCoeff;
-		Decimator<FloatType> decimator;
 	};
 
 	Simulated3DAcquisitionDevice(const ParameterMap& pm, const ParameterMap& arrayPM,
@@ -283,11 +278,11 @@ Simulated3DAcquisitionDevice<FloatType>::prepareExcitationDadt(const std::vector
 {
 	const FloatType period = 1.0 / simFs_;
 
-	// Calculates the excitation acceleration.
+	// Calculate the excitation acceleration.
 	std::vector<FloatType> aExc;
 	Util::centralDiff(vExc, period, aExc); // adds delay of 1 sample
 
-	// Calculates the excitation d(acceleration)/dt.
+	// Calculate the excitation d(acceleration)/dt.
 	std::vector<FloatType> unfilteredDadt;
 	Util::centralDiff(aExc, period, unfilteredDadt); // adds delay of 1 sample
 	std::vector<std::complex<FloatType>> filterFreqCoeff;
@@ -310,7 +305,7 @@ Simulated3DAcquisitionDevice<FloatType>::setExcitationWaveform(FloatType centerF
 	} else if (excitationType_ == "2b") {
 		Waveform::getType2b(centerFrequency, simFs_, excNumPeriods_, vExc);
 	} else if (excitationType_ == "2c") {
-
+		Waveform::getType2c(centerFrequency, simFs_, excNumPeriods_, vExc);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << excitationType_ << '.');
 	}
@@ -446,8 +441,7 @@ Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatTy
 		c_,
 		rxElemWidth_,
 		rxElemHeight_,
-		rxDiscretization_,
-		*decimator_
+		rxDiscretization_
 	};
 	threadData.convDadtHTxFilter.setCoefficients(convDadtHTx_, convDadtHTxFilterFreqCoeff_);
 	tbb::enumerable_thread_specific<ThreadData<ImpulseResponse>> tls(threadData);
@@ -514,7 +508,7 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 
 	// For each reflector:
 	for (std::size_t iRef = 0, iRefEnd = reflectorList_.size(); iRef < iRefEnd; ++iRef) {
-		LOG_INFO << "ACQ Reflector: " << iRef << " < " << iRefEnd;
+		LOG_DEBUG << "ACQ Reflector: " << iRef << " < " << iRefEnd;
 
 		refCoeffSum += std::abs(reflectorList_[iRef].value);
 

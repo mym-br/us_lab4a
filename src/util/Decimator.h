@@ -46,9 +46,11 @@ public:
 	//     1.0 -> pi radian / sample at the destination sampling rate
 	void prepare(unsigned int downsamplingFactor, FloatType lpFilterHalfTransitionWidth);
 
+	// Reentrant.
 	void downsample(std::size_t filterOffset,
 			std::size_t inputOffset, const std::vector<FloatType>& input,
 			std::size_t& outputOffset, std::vector<FloatType>& output);
+
 	void decimate(std::size_t inputOffset, const std::vector<FloatType>& input,
 			std::size_t& outputOffset, std::vector<FloatType>& output);
 
