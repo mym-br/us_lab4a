@@ -179,11 +179,11 @@ SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr ta
 	std::vector<double> timeList;
 
 	// Capture signals.
+	unsigned int acqNumber = 0;
+	acquisition.prepare(baseElement, txDelays);
 	Timer timer;
 	const double t0 = timer.getTime();
 	double t = 0.0;
-	unsigned int acqNumber = 0;
-	acquisition.prepare(baseElement, txDelays);
 	do {
 		LOG_INFO << "ACQ " << acqNumber;
 
