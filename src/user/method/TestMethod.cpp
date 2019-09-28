@@ -223,12 +223,11 @@ testFFT(Lab::Project& p)
 void
 testInterpolator(Lab::Project& p)
 {
-	const unsigned int upsampFactorListSize = 3;
-	const unsigned int upsampFactorList[] = {2, 8, 64};
+	const std::vector<unsigned int> upsampFactorList = {2, 8, 64};
 	std::vector<double> x, y, y2, yRef;
 	p.loadHDF5("interp_source", "v", x);
 
-	for (unsigned int i = 0; i < upsampFactorListSize; ++i) {
+	for (unsigned int i = 0; i < upsampFactorList.size(); ++i) {
 		Lab::Interpolator<double> interp;
 
 		interp.prepare(upsampFactorList[i], INTERPOLATOR_LP_FILTER_TRANSITION_WIDTH);
@@ -357,10 +356,9 @@ testKaiserWindow(Lab::Project& p)
 		}
 	}
 
-	const unsigned int transWidthListSize = 3;
-	const double transWidthList[] = {0.05, 0.1, 0.5};
+	const std::vector<double> transWidthList = {0.05, 0.1, 0.5};
 	std::vector<double> sizeRef;
-	for (unsigned int i = 0; i < transWidthListSize; ++i) {
+	for (unsigned int i = 0; i < transWidthList.size(); ++i) {
 		const double transWidth = transWidthList[i];
 		std::ostringstream fileName;
 		fileName << "kaiser_size-trans_width_" << transWidth;
@@ -466,14 +464,14 @@ testHilbertTransform(Lab::Project& p)
 void
 testStatistics()
 {
-	double a[] = {-1.0, 2.0, 4.0, 7.0};
+	const std::vector<double> a = {-1.0, 2.0, 4.0, 7.0};
 
-	const double stdDev = Lab::Statistics::standardDeviation(a, 4);
+	const double stdDev = Lab::Statistics::standardDeviation(a.data(), a.size());
 	if (std::abs(stdDev - 2.9154759474) > 1e-10) {
 		THROW_EXCEPTION(Lab::TestException, "Wrong stdDev: " << stdDev << '.');
 	}
 
-	const double mean = Lab::Statistics::arithmeticMean(a, 4);
+	const double mean = Lab::Statistics::arithmeticMean(a.data(), a.size());
 	if (mean != 3.0) {
 		THROW_EXCEPTION(Lab::TestException, "Wrong mean: " << mean << '.');
 	}
