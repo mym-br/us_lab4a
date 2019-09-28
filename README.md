@@ -8,10 +8,33 @@ WARNING
 This is an experimental software.
 Use at your own risk!
 
+Features
+--------
+
+- Acoustic field simulation of rectangular flat sources and of arrays of
+  rectangular flat sources (analytic and numeric methods).
+  - Transient acoustic field.
+  - Impulse response.
+  - Transient propagation.
+  - Radiation pattern.
+- Simulated and experimental imaging using 1D or 2D arrays.
+  - Synthetic transmit aperture.
+  - SAFT (one transmitter and one receiver in each acquisition).
+  - Single virtual source.
+- Simple 2D and 3D figures.
+
 Supported systems
 -----------------
 
 The software has been tested in Debian 10 x86_64.
+
+The following libraries are required:
+
+- Boost
+- FFTW
+- HDF5
+- Qt 5
+- TBB - Threading Building Blocks
 
 License
 -------
