@@ -212,7 +212,6 @@ win32 {
         "c:/Program Files/HDF_Group/HDF5/1.10.4/include"
     DEFINES += NOMINMAX H5_BUILT_AS_DYNAMIC_LIB
     QMAKE_CXXFLAGS += /W3
-    # winmm: timeBeginPeriod, timeEndPeriod
     LIBS += \
         c:/lib/tbb2019_20181203oss/lib/intel64/vc14/tbb.lib \
         c:/lib/tbb2019_20181203oss/lib/intel64/vc14/tbbmalloc.lib \
@@ -226,8 +225,7 @@ win32 {
         c:/lib/boost_1_69_0/lib64-msvc-14.1/libboost_date_time-vc141-mt-x64-1_69.lib \
         c:/lib/boost_1_69_0/lib64-msvc-14.1/libboost_regex-vc141-mt-x64-1_69.lib \
         opengl32.lib \
-        glu32.lib \
-        winmm.lib
+        glu32.lib
     # Add to PATH for execution:
     # c:/lib/tbb2019_20181203oss/bin/intel64/vc14;c:/lib/fftw-3.3.5-dll64;c:/lib/boost_1_69_0/lib64-msvc-14.1
 } else {

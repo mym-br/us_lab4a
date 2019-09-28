@@ -34,18 +34,10 @@
 #define FFTW_WISDOM_FILE_NAME_SP "fftw_wisdom_sp-us_lab4a.txt"
 #define FFTW_WISDOM_FILE_NAME_DP "fftw_wisdom_dp-us_lab4a.txt"
 
-#ifdef _WIN32
-# include <Windows.h> /* timeBeginPeriod, timeEndPeriod */
-#endif
-
 int
 main(int argc, char* argv[])
 {
 	std::fesetround(FE_TONEAREST);
-
-#ifdef _WIN32
-	timeBeginPeriod(1); // set the minimum timer resolution to 1 ms
-#endif
 
 	if (register_lzf() < 0) {
 		std::cerr << "Could not register the LZF filter (HDF5)." << std::endl;
@@ -75,10 +67,6 @@ main(int argc, char* argv[])
 
 	fftw_export_wisdom_to_filename(FFTW_WISDOM_FILE_NAME_DP);
 	fftwf_export_wisdom_to_filename(FFTW_WISDOM_FILE_NAME_SP);
-
-#ifdef _WIN32
-	timeEndPeriod(1);
-#endif
 
 	return returnValue;
 }
