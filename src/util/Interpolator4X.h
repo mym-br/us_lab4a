@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -23,11 +23,7 @@
 #include <cstring> /* memcpy */
 #include <vector>
 
-#include "Exception.h"
 #include "FFTWFilter.h"
-
-//TODO: multiphase?
-//TODO: optimize
 
 
 
@@ -40,6 +36,7 @@ public:
 	Interpolator4X();
 	~Interpolator4X();
 
+	// The argument "ouput" must point to an array of size inputLength * UPSAMPLING_FACTOR.
 	void interpolate(const FloatType* input, std::size_t inputLength, FloatType* output);
 private:
 	enum {
@@ -60,7 +57,6 @@ private:
 template<typename FloatType>
 Interpolator4X<FloatType>::Interpolator4X()
 		: initialized_()
-		, lowPassFIRFilter_()
 {
 	// Calculated in Octave using:
 	//-----------------------------------------------------------------------------
@@ -74,8 +70,7 @@ Interpolator4X<FloatType>::Interpolator4X()
 	// h = s' .* wd;
 	//-----------------------------------------------------------------------------
 	// UPSAMPLING_FACTOR must be = 4.
-	int filterSize = 81;
-	FloatType coeffList[] = {
+	lowPassFIRFilter_ = {
 		-1.43105366198583e-18,
 		-1.12987833807950e-03,
 		-2.10182991017381e-03,
@@ -158,7 +153,6 @@ Interpolator4X<FloatType>::Interpolator4X()
 		-1.12987833807950e-03,
 		-1.43105366198583e-18
 	};
-	lowPassFIRFilter_.assign(coeffList, coeffList + filterSize);
 }
 
 template<typename FloatType>
@@ -177,14 +171,13 @@ Interpolator4X<FloatType>::prepare()
 	initialized_ = true;
 }
 
-// The argument "ouput" must point to an array of size inputLength * UPSAMPLING_FACTOR.
 template<typename FloatType>
 void
 Interpolator4X<FloatType>::interpolate(const FloatType* input, std::size_t inputLength, FloatType* output)
 {
 	if (!initialized_) prepare();
 
-	// Upsamples.
+	// Upsample.
 	inputVector_.resize(inputLength * UPSAMPLING_FACTOR);
 	for (std::size_t i = 0, j = 0; i < inputLength; ++i, j += UPSAMPLING_FACTOR) {
 		inputVector_[j] = input[i];
@@ -193,10 +186,10 @@ Interpolator4X<FloatType>::interpolate(const FloatType* input, std::size_t input
 		}
 	}
 
-	// Applies the anti-aliasing filter.
+	// Apply the anti-aliasing filter.
 	filter_.filter(inputVector_, outputVector_);
 
-	// Copies to the output, compensating for the FIR filter delay. The signal is truncated at both ends.
+	// Copy to the output, compensating for the FIR filter delay. The signal is truncated at both ends.
 	const std::size_t offset = (lowPassFIRFilter_.size() - 1) / 2;
 //	for (std::size_t i = 0; i < inputLength * UPSAMPLING_FACTOR; ++i) {
 //		output[i] = outputVector_[i + offset];
