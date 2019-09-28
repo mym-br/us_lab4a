@@ -3,11 +3,55 @@ DefaultSTAProcessor
 	Synthetic Transmit Aperture.
 	4x interpolation.
 	Coherence factor.
+	The array elements are in the X axis.
+	The grid points are in the XZ plane.
+
 SimpleSTAProcessor
 	Synthetic Transmit Aperture.
 	4x interpolation.
-VectorialSTAProcessor
-	Synthetic Transmit Aperture, using the analytic signal.
+	The array elements are in the X axis.
+	The grid points are in the XZ plane.
+
+SynthYVectorial3DTnRnProcessor
+	Transmitting and receiving with n elements - analytic signal.
+	The transmission uses a focal point, with positive or negative Z.
+	Two or more acquisitions for the array in sequential Y positions are
+	combined, to obtain the image from a synthetic 2D array.
 	Interpolation.
-	Coherence factor.
+	Coherence factor - analytic signal.
 	Envelope.
+	The array elements are in the XY plane.
+	The grid points are in the XYZ volume.
+
+Vectorial3DSTAProcessor
+	Synthetic Transmit Aperture - analytic signal.
+	Interpolation.
+	Coherence factor - analytic signal.
+	Envelope.
+	The array elements are in the XY plane.
+	The grid points are in the XYZ volume.
+
+Vectorial3DT1R1SAFTProcessor
+	Transmitting with 1 element and receiving with 1 element - analytic signal.
+	Interpolation.
+	Coherence factor - analytic signal.
+	Envelope.
+	The array elements are in the XY plane.
+	The grid points are in the XYZ volume.
+
+Vectorial3DTnRnProcessor
+	Transmitting and receiving with n elements - analytic signal.
+	The transmission uses a focal point, with positive or negative Z.
+	Interpolation.
+	Coherence factor - analytic signal.
+	Envelope.
+	The array elements are in the XY plane.
+	The grid points are in the XYZ volume.
+
+VectorialSTAProcessor
+	Synthetic Transmit Aperture - analytic signal.
+	Interpolation.
+	Coherence factor - analytic signal.
+	Envelope (optional).
+	The array elements are in the X axis.
+	The grid points are in the XZ plane.
