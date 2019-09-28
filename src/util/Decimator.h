@@ -57,6 +57,10 @@ public:
 	const std::vector<FloatType>& lowPassFIRFilter() const { return lowPassFIRFilter_; }
 	unsigned int downsamplingFactor() const { return downsamplingFactor_; }
 private:
+	enum {
+		MAX_DOWN_FACTOR = 10
+	};
+
 	unsigned int downsamplingFactor_;
 	std::vector<FloatType> lowPassFIRFilter_;
 	std::vector<FloatType> filteredSignal_;
@@ -84,8 +88,10 @@ Decimator<FloatType>::prepare(unsigned int downsamplingFactor, FloatType lpFilte
 	if (downsamplingFactor < 2) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid downsampling factor: " << downsamplingFactor << ". Must be >= 2.");
 	}
-
-	//TODO: limit downsampling factor
+	if (downsamplingFactor > MAX_DOWN_FACTOR) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid downsampling factor: " << downsamplingFactor
+				<< ". Must be <= " << MAX_DOWN_FACTOR << '.');
+	}
 
 	const FloatType tol_dB = -20.0 * std::log10(DECIMATOR_KAISER_TOLERANCE);
 	const FloatType kaiserBeta = KaiserWindow::getBeta(tol_dB);
