@@ -2,23 +2,21 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.signal import fftconvolve, freqz
-from scipy.signal import kaiser, kaiserord
+from scipy.signal import fftconvolve, freqz, kaiser, kaiserord
 
 
 
-# transition_width:
-#     half the total transition width
-#     1.0 -> pi radian / sample at the destination sampling rate
-def downsampling_filter(decimation_factor, transition_width, tolerance=0.1, plot=False):
+# half_transition_width:
+#     1.0 --> pi radian / sample at the destination sampling rate
+def downsampling_filter(decimation_factor, half_transition_width, tolerance=0.1, plot=False):
     if (decimation_factor == 1): return [1.0]
-    if transition_width > 1.0:
-        raise ValueError('transition_width > 1.0')
+    if half_transition_width > 1.0:
+        raise ValueError('half_transition_width > 1.0')
 
     attenuation = -20.0 * np.log10(tolerance)
 
     w_size, beta = kaiserord(attenuation,
-                             width=(transition_width * 2.0 / decimation_factor))
+                             width=(half_transition_width * 2.0 / decimation_factor))
     print('window size: {} beta: {}'.format(w_size, beta))
 
     w_size = int(np.ceil((w_size - 1) / (2.0 * decimation_factor)) *
@@ -47,7 +45,7 @@ def downsampling_filter(decimation_factor, transition_width, tolerance=0.1, plot
         plt.title('Windowed sinc')
         plt.grid(True)
 
-        freq, h = freqz(coef, worN=2048)
+        freq, h = freqz(coef, worN=4096)
         ft = 0.5 / decimation_factor
         plt.figure(figsize=(12, 6), dpi=85)
         cf = 1.0 / decimation_factor

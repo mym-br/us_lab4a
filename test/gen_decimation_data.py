@@ -25,7 +25,7 @@ hdf5util.write_ndarray(data=ascan, file_path='decimation_source.h5', dataset_nam
 for decimation_factor in [2, 5, 10]:
     print('### decimation_factor: {}'.format(decimation_factor))
     decim_filter = decimation.downsampling_filter(decimation_factor=decimation_factor,
-                                                  transition_width=DECIMATION_FILTER_TRANSITION_WIDTH,
+                                                  half_transition_width=DECIMATION_FILTER_TRANSITION_WIDTH,
                                                   tolerance=DECIMATION_FILTER_TOLERANCE,
                                                   plot=False)
     print('filter length: {}'.format(len(decim_filter)))

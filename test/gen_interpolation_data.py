@@ -20,7 +20,7 @@ hdf5util.write_ndarray(data=ascan, file_path='interp_source.h5', dataset_name='v
 for upsamp_factor in [2, 8, 64]:
     print('### upsamp_factor:', upsamp_factor)
     upsamp_filter = interpolation.upsampling_filter(upsamp_factor=upsamp_factor,
-                                                    transition_width=UPSAMP_FILTER_TRANSITION_WIDTH,
+                                                    half_transition_width=UPSAMP_FILTER_TRANSITION_WIDTH,
                                                     tolerance=UPSAMP_FILTER_TOLERANCE,
                                                     plot=False)
     print('filter length:', len(upsamp_filter))
