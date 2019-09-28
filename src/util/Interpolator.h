@@ -48,6 +48,10 @@ public:
 
 	void interpolate(const FloatType* input, std::size_t inputLength, FloatType* output);
 private:
+	enum {
+		MAX_UP_FACTOR = 64
+	};
+
 	unsigned int upsamplingFactor_;
 	std::vector<FloatType> lowPassFIRFilter_;
 	std::vector<FloatType> inputVector_;
@@ -76,8 +80,10 @@ Interpolator<FloatType>::prepare(unsigned int upsamplingFactor, FloatType lpFilt
 	if (upsamplingFactor < 2) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid upsampling factor: " << upsamplingFactor << ". Must be >= 2.");
 	}
-
-	//TODO: limit upsampling factor
+	if (upsamplingFactor > MAX_UP_FACTOR) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid upsampling factor: " << upsamplingFactor
+				<< ". Must be <= " << MAX_UP_FACTOR << '.');
+	}
 
 	const FloatType tol_dB = -20.0 * std::log10(INTERPOLATOR_KAISER_TOLERANCE);
 
