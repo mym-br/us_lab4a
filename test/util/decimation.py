@@ -12,10 +12,11 @@ from scipy.signal import kaiser, kaiserord
 #     1.0 -> pi radian / sample at the destination sampling rate
 def downsampling_filter(decimation_factor, transition_width, tolerance=0.1, plot=False):
     if (decimation_factor == 1): return [1.0]
+    if transition_width > 1.0:
+        raise ValueError('transition_width > 1.0')
 
     attenuation = -20.0 * np.log10(tolerance)
 
-    #TODO:(???) Check width <= 1.0/decimation_factor or transition_width <= 0.5
     w_size, beta = kaiserord(attenuation,
                              width=(transition_width * 2.0 / decimation_factor))
     print('window size: {} beta: {}'.format(w_size, beta))

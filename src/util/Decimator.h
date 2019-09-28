@@ -92,11 +92,14 @@ Decimator<FloatType>::prepare(unsigned int downsamplingFactor, FloatType lpFilte
 		THROW_EXCEPTION(InvalidValueException, "Invalid downsampling factor: " << downsamplingFactor
 				<< ". Must be <= " << MAX_DOWN_FACTOR << '.');
 	}
+	if (lpFilterHalfTransitionWidth > 1) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid transition width: " << lpFilterHalfTransitionWidth
+				<< ". Must be <= 1.0");
+	}
 
 	const FloatType tol_dB = -20.0 * std::log10(DECIMATOR_KAISER_TOLERANCE);
 	const FloatType kaiserBeta = KaiserWindow::getBeta(tol_dB);
 
-	//TODO:(???) Check finalTransitionWidth <= 1.0/downsamplingFactor or lpFilterTransitionWidth <= 0.5
 	const FloatType finalTransitionWidth = (lpFilterHalfTransitionWidth * 2) / downsamplingFactor;
 	const unsigned int windowSize = KaiserWindow::getSize(tol_dB, finalTransitionWidth);
 

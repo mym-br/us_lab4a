@@ -12,13 +12,14 @@ from scipy.signal import kaiser, kaiserord
 #     1.0 -> pi radian / sample at the original sampling rate
 def upsampling_filter(upsamp_factor, transition_width, tolerance=0.1, plot=False):
     if (upsamp_factor == 1): return [1.0]
+    if transition_width > 1.0:
+        raise ValueError('transition_width > 1.0')
 
     attenuation = -20.0 * np.log10(tolerance)
     #print 'attenuation', attenuation
 
     #beta = kaiser_beta(FILTER_ATTENUATION)
 
-    #TODO:(???) Check width <= 1.0/upsamp_factor or transition_width <= 0.5
     w_size, beta = kaiserord(attenuation,
                              width=(transition_width * 2.0 / upsamp_factor))
     #print 'window size:', w_size, 'beta:', beta

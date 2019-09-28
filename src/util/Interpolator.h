@@ -84,17 +84,20 @@ Interpolator<FloatType>::prepare(unsigned int upsamplingFactor, FloatType lpFilt
 		THROW_EXCEPTION(InvalidValueException, "Invalid upsampling factor: " << upsamplingFactor
 				<< ". Must be <= " << MAX_UP_FACTOR << '.');
 	}
+	if (lpFilterHalfTransitionWidth > 1) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid transition width: " << lpFilterHalfTransitionWidth
+				<< ". Must be <= 1.0");
+	}
 
 	const FloatType tol_dB = -20.0 * std::log10(INTERPOLATOR_KAISER_TOLERANCE);
-
 	const FloatType kaiserBeta = KaiserWindow::getBeta(tol_dB);
 
-	//TODO:(???) Check finalTransitionWidth <= 1.0/upsamplingFactor or lpFilterTransitionWidth <= 0.5
-	const FloatType finalTransitionWidth = (lpFilterHalfTransitionWidth * 2) / static_cast<FloatType>(upsamplingFactor);
+	const FloatType finalTransitionWidth = (lpFilterHalfTransitionWidth * 2) / upsamplingFactor;
 	const unsigned int windowSize = KaiserWindow::getSize(tol_dB, finalTransitionWidth);
 
 	const FloatType twoUpFactor = 2 * upsamplingFactor;
-	const unsigned int finalWindowSize = static_cast<unsigned int>(std::ceil((windowSize - 1) / twoUpFactor) * twoUpFactor) + 1U;
+	const unsigned int finalWindowSize = static_cast<unsigned int>(
+				std::ceil((windowSize - 1) / twoUpFactor) * twoUpFactor) + 1U;
 
 	// Kaiser window.
 	std::vector<FloatType> window;
