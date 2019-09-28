@@ -1,14 +1,9 @@
-QT += core gui opengl
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += core gui opengl widgets
 
 TARGET = us_lab4a
 TEMPLATE = app
 
-CONFIG += c++14
-!win32 {
-    CONFIG += warn_on
-}
+CONFIG += c++14 warn_on
 
 SOURCES += \
     src/Controller.cpp \
@@ -203,54 +198,25 @@ INCLUDEPATH += src \
     src/user/processor \
     src/user/simulator
 
-win32 {
-    # Windows 10 - VS 2017 - Qt 5.12.1
-    INCLUDEPATH += \
-        c:/lib/tbb2019_20181203oss/include \
-        c:/lib/fftw-3.3.5-dll64 \
-        c:/lib/boost_1_69_0 \
-        "c:/Program Files/HDF_Group/HDF5/1.10.4/include"
-    DEFINES += NOMINMAX H5_BUILT_AS_DYNAMIC_LIB
-    QMAKE_CXXFLAGS += /W3
-    LIBS += \
-        c:/lib/tbb2019_20181203oss/lib/intel64/vc14/tbb.lib \
-        c:/lib/tbb2019_20181203oss/lib/intel64/vc14/tbbmalloc.lib \
-        "c:/Program Files/HDF_Group/HDF5/1.10.4/lib/szip.lib" \
-        "c:/Program Files/HDF_Group/HDF5/1.10.4/lib/zlib.lib" \
-        "c:/Program Files/HDF_Group/HDF5/1.10.4/lib/hdf5.lib" \
-        "c:/Program Files/HDF_Group/HDF5/1.10.4/lib/hdf5_cpp.lib" \
-        c:/lib/fftw-3.3.5-dll64/libfftw3-3.lib \
-        c:/lib/fftw-3.3.5-dll64/libfftw3f-3.lib \
-        c:/lib/boost_1_69_0/lib64-msvc-14.1/libboost_system-vc141-mt-x64-1_69.lib \
-        c:/lib/boost_1_69_0/lib64-msvc-14.1/libboost_date_time-vc141-mt-x64-1_69.lib \
-        c:/lib/boost_1_69_0/lib64-msvc-14.1/libboost_regex-vc141-mt-x64-1_69.lib \
-        opengl32.lib \
-        glu32.lib
-    # Add to PATH for execution:
-    # c:/lib/tbb2019_20181203oss/bin/intel64/vc14;c:/lib/fftw-3.3.5-dll64;c:/lib/boost_1_69_0/lib64-msvc-14.1
+LIBS += \
+    -ltbb \
+    -ltbbmalloc \
+    -lhdf5_cpp \
+    -lfftw3 \
+    -lfftw3f \
+    -lboost_system \
+    -lrt \
+    -lGLU
+exists(/usr/include/hdf5/serial) {
+    # Debian 10.
+    INCLUDEPATH += /usr/include/hdf5/serial
+    LIBS += -lhdf5_serial
 } else {
-    LIBS += -ltbb \
-        -ltbbmalloc \
-        -lhdf5_cpp \
-        -lfftw3 \
-        -lfftw3f \
-        -lboost_system \
-        -lrt \
-        -lGLU
-    exists(/usr/include/hdf5/serial) {
-        # Debian 9/10.
-        INCLUDEPATH += /usr/include/hdf5/serial
-        LIBS += -lhdf5_serial
-    } else {
-        LIBS += -lhdf5
-    }
-
-    #QMAKE_CXXFLAGS += -std=c++14
-    QMAKE_CXXFLAGS_DEBUG = -march=native -O0 -g
-    QMAKE_CXXFLAGS_RELEASE = -march=native -O3
-    #QMAKE_CXXFLAGS_RELEASE = -march=native -O3 -ftree-vectorize -ftree-vectorizer-verbose=2
-    #QMAKE_LFLAGS += -std=c++14
+    LIBS += -lhdf5
 }
+
+QMAKE_CXXFLAGS_DEBUG = -march=native -O0 -g
+QMAKE_CXXFLAGS_RELEASE = -march=native -O3
 
 MOC_DIR = tmp
 OBJECTS_DIR = tmp

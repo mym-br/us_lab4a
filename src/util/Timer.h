@@ -18,45 +18,11 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
-#ifdef _WIN32
-# include <Windows.h>
-# include <WinBase.h>
-# include "Exception.h"
-#else
-# include <time.h>
-#endif
+#include <time.h>
 
 
 
 namespace Lab {
-
-#ifdef _WIN32
-
-struct Timer {
-	LARGE_INTEGER ticksPerSecond;
-	LARGE_INTEGER start;
-	Timer() {
-		reset();
-	}
-	void reset() {
-		if (!QueryPerformanceFrequency(&ticksPerSecond)) {
-			THROW_EXCEPTION(Exception, "Error in QueryPerformanceFrequency.");
-		}
-		if (!QueryPerformanceCounter(&start)) {
-			THROW_EXCEPTION(Exception, "Error in QueryPerformanceCounter.");
-		}
-	}
-	double getTime() {
-		LARGE_INTEGER cputime, end;
-		if (!QueryPerformanceCounter(&end)) {
-			THROW_EXCEPTION(Exception, "Error in QueryPerformanceCounter.");
-		}
-		cputime.QuadPart = end.QuadPart - start.QuadPart;
-		return static_cast<double>(cputime.QuadPart) / ticksPerSecond.QuadPart;
-	}
-};
-
-#else /* _WIN32 */
 
 class Timer {
 public:
@@ -86,8 +52,6 @@ private:
 	bool valid_;
 	struct timespec start_;
 };
-
-#endif /* _WIN32 */
 
 } // namespace Lab
 

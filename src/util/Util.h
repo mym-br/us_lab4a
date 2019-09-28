@@ -19,19 +19,14 @@
 #define UTIL_H_
 
 #include <algorithm> /* for_each, max_element */
-#include <cstddef> /* std::size_t */
-#include <vector>
-#ifdef _WIN32
-# include <Windows.h> /* Sleep */
-#else
-# include <ctime> /* nanosleep */
-#endif
-
 #include <cmath>
 #include <complex>
+#include <cstddef> /* std::size_t */
 #include <cstring>
+#include <ctime> /* nanosleep */
 #include <limits>
 #include <numeric> /* accumulate */
+#include <vector>
 
 #include "Exception.h"
 #include "Matrix.h"
@@ -339,9 +334,6 @@ inline
 void
 sleepMs(unsigned long milliseconds)
 {
-#ifdef _WIN32
-	Sleep(milliseconds);
-#else
 	struct timespec tspec;
 	if (milliseconds >= 1000) {
 		tspec.tv_sec = milliseconds / 1000;
@@ -350,8 +342,7 @@ sleepMs(unsigned long milliseconds)
 		tspec.tv_sec = 0;
 		tspec.tv_nsec = milliseconds * 1000000;
 	}
-	nanosleep(&tspec, 0);
-#endif
+	nanosleep(&tspec, NULL);
 }
 
 template<typename T>
