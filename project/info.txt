@@ -4,83 +4,85 @@ Project types
 --------------------------------------------------------------------------------
 /device_sectorial_scan
 
-Sectorial Scan.
-The image is formed in the acquisition device.
+	Sectorial Scan.
+	The image is formed in the acquisition device.
 
 --------------------------------------------------------------------------------
 /show_image
 
-Shows a single image.
+	Shows a single image.
 
 --------------------------------------------------------------------------------
 /sim_rectangular_flat_source-array
 
-Simulation of acoustic field produced by an array of rectangular flat sources.
+	Simulation of acoustic field produced by an array of rectangular flat
+	sources.
 
 --------------------------------------------------------------------------------
 /sim_rectangular_flat_source-single
 
-Simulation of acoustic field produced by a single rectangular flat source.
+	Simulation of acoustic field produced by a single rectangular flat
+	source.
 
 --------------------------------------------------------------------------------
 /simulated_3d_single_virtual_source
 
-Synthetic aperture imaging with all the active group elements transmitting,
-with the focus point acting as a single virtual source.
-The array transducer is simulated.
-The reflector points can be in a 3d space.
+	Synthetic aperture imaging with all the active group elements
+	transmitting, with the focus point acting as a single virtual source.
+	The array transducer is simulated.
+	The reflector points can be in a 3d space.
 
 --------------------------------------------------------------------------------
 /simulated_3d_sta
 
-Synthetic Transmit Aperture.
-The array transducer is simulated.
-The reflector points can be in a 3d space.
+	Synthetic Transmit Aperture.
+	The array transducer is simulated.
+	The reflector points can be in a 3d space.
 
 --------------------------------------------------------------------------------
 /simulated_3d_t1r1saft
 
-Synthetic Aperture Focusing Technique, with 1 element transmitting and 1
-receiving in each acquisition.
-The array transducer is simulated.
-The reflector points can be in a 3d space.
+	Synthetic Aperture Focusing Technique, with 1 element transmitting and 1
+	receiving in each acquisition.
+	The array transducer is simulated.
+	The reflector points can be in a 3d space.
 
 --------------------------------------------------------------------------------
 /simulated_sta
 
-Synthetic Transmit Aperture.
-The array transducer is simulated.
-The reflector points are in the x-z plane of the transducer.
+	Synthetic Transmit Aperture.
+	The array transducer is simulated.
+	The reflector points are in the x-z plane of the transducer.
 
 --------------------------------------------------------------------------------
 /single_acquisition
 
-Executes only one acquisition, using a single transmit element and a single
-receive element from an array transducer.
+	Executes only one acquisition, using a single transmit element and a
+	single receive element from an array transducer.
 
 --------------------------------------------------------------------------------
 /single_virtual_source
 
-Synthetic aperture imaging with all the active group elements transmitting,
-with the focus point acting as a single virtual source.
+	Synthetic aperture imaging with all the active group elements
+	transmitting, with the focus point acting as a single virtual source.
 
 --------------------------------------------------------------------------------
 /single_virtual_source_network_sync
 
-Synthetic aperture imaging with all the active group elements transmitting,
-with the focus point acting as a single virtual source.
-The acquisitions are triggered by a network sync signal.
+	Synthetic aperture imaging with all the active group elements
+	transmitting, with the focus point acting as a single virtual source.
+	The acquisitions are triggered by a network sync signal.
 
 --------------------------------------------------------------------------------
 /sta
 
-Synthetic Transmit Aperture.
+	Synthetic Transmit Aperture.
 
 --------------------------------------------------------------------------------
 /sta_network_sync
 
-Synthetic Transmit Aperture.
-The acquisitions are triggered by a network sync signal.
+	Synthetic Transmit Aperture.
+	The acquisitions are triggered by a network sync signal.
 
 ================================================================================
 Labels
