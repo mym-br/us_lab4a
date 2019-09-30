@@ -19,13 +19,15 @@
 #define UTIL_H_
 
 #include <algorithm> /* for_each, max_element */
+#include <chrono>
 #include <cmath>
 #include <complex>
 #include <cstddef> /* std::size_t */
 #include <cstring>
-#include <ctime> /* nanosleep */
 #include <limits>
 #include <numeric> /* accumulate */
+#include <ratio>
+#include <thread>
 #include <vector>
 
 #include "Exception.h"
@@ -334,15 +336,7 @@ inline
 void
 sleepMs(unsigned long milliseconds)
 {
-	struct timespec tspec;
-	if (milliseconds >= 1000) {
-		tspec.tv_sec = milliseconds / 1000;
-		tspec.tv_nsec = (milliseconds % 1000) * 1000000;
-	} else {
-		tspec.tv_sec = 0;
-		tspec.tv_nsec = milliseconds * 1000000;
-	}
-	nanosleep(&tspec, NULL);
+	std::this_thread::sleep_for(std::chrono::duration<unsigned long, std::milli>(milliseconds));
 }
 
 template<typename T>
