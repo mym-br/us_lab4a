@@ -17,7 +17,7 @@ rectangular_max_y = 0.0
 rectangular_min_z = 1.0e-3
 rectangular_max_z = 60.0e-3
 
-# One wavelength (at Nyquist rate) divided by this number.
+# Step is one wavelength (at Nyquist rate) divided by this number.
 rectangular_step_div = 2.0
 
 # (m)
@@ -37,7 +37,7 @@ sectorial_min_angle = -45.0
 sectorial_max_angle = 45.0
 sectorial_angle_step = 0.5
 
-# One wavelength (at Nyquist rate) divided by this number.
+# Step is one wavelength (at Nyquist rate) divided by this number.
 sectorial_radius_step_div = 2.0
 
 # (m)
