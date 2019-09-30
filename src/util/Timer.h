@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,7 +18,7 @@
 #ifndef TIMER_H_
 #define TIMER_H_
 
-#include <time.h>
+#include <chrono>
 
 
 
@@ -26,31 +26,18 @@ namespace Lab {
 
 class Timer {
 public:
-	Timer() : valid_() {
+	Timer() {
 		reset();
 	}
 	void reset() {
-		int rv = clock_gettime(CLOCK_MONOTONIC, &start_);
-		if (rv == 0) {
-			valid_ = true;
-		} else {
-			valid_ = false;
-		}
+		start_ = std::chrono::steady_clock::now();
 	}
 	double getTime() {
-		if (!valid_) return -1.0;
-
-		struct timespec ts;
-		int rv = clock_gettime(CLOCK_MONOTONIC, &ts);
-		if (rv == 0) {
-			return static_cast<double>(ts.tv_sec - start_.tv_sec) + static_cast<double>(ts.tv_nsec - start_.tv_nsec) * 1.0e-9;
-		} else {
-			return -2.0;
-		}
+		std::chrono::duration<double> d = std::chrono::steady_clock::now() - start_;
+		return d.count();
 	}
 private:
-	bool valid_;
-	struct timespec start_;
+	std::chrono::time_point<std::chrono::steady_clock> start_;
 };
 
 } // namespace Lab
