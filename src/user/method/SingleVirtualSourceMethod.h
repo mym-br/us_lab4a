@@ -24,6 +24,7 @@
 
 #include "ArrayUtil.h"
 #include "CoherenceFactor.h"
+#include "ContainerDumper.h"
 #include "Exception.h"
 #include "FileUtil.h"
 #include "global.h"
@@ -265,6 +266,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 	std::vector<FloatType> txDelays;
 	ArrayUtil::calculateTx3DFocusDelay(focusX, focusY, focusZ, config.propagationSpeed,
 						config.txElemPos, baseElement, config.numElements, txDelays);
+	ContainerDumper::save((project_.expDirectory() + "/tx_delays.txt").c_str(), txDelays.begin(), txDelays.end());
 
 	std::unique_ptr<TnRnAcquisition<FloatType>> acquisition;
 	std::string savedDataDir;
