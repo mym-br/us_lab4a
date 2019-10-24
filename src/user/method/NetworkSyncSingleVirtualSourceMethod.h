@@ -42,12 +42,6 @@
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
-#define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_MAX_STEPS 10000
-#define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE "/time"
-#define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET "time"
-#define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE "/y"
-#define NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET "y"
-
 
 
 namespace Lab {
@@ -61,6 +55,12 @@ public:
 	virtual void execute();
 
 private:
+	static constexpr unsigned int maxSteps = 10000;
+	static constexpr const char* timeFile    = "/time";
+	static constexpr const char* timeDataset = "time";
+	static constexpr const char* yFile    = "/y";
+	static constexpr const char* yDataset = "y";
+
 	NetworkSyncSingleVirtualSourceMethod(const NetworkSyncSingleVirtualSourceMethod&) = delete;
 	NetworkSyncSingleVirtualSourceMethod& operator=(const NetworkSyncSingleVirtualSourceMethod&) = delete;
 
@@ -150,8 +150,8 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 
 	// Load y (acquisition position).
 	std::vector<double> yList;
-	const std::string yFileName = dataDir + NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE;
-	project_.loadHDF5(yFileName, NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET, yList);
+	const std::string yFileName = dataDir + yFile;
+	project_.loadHDF5(yFileName, yDataset, yList);
 
 	Timer timer;
 
@@ -252,7 +252,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPt
 			const double t0 = timer.getTime();
 			FloatType y = minY;
 			while (y <= maxY) {
-				if (acqNumber == NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_MAX_STEPS) break;
+				if (acqNumber == maxSteps) break;
 				LOG_INFO << "ACQ " << acqNumber;
 
 				acqDataList.emplace_back();
@@ -271,7 +271,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPt
 		while (true) {
 			LOG_DEBUG << "Waiting for trigger...";
 			if (!server.waitForTrigger()) break; // trigger abort
-			if (acqNumber == NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_MAX_STEPS) break;
+			if (acqNumber == maxSteps) break;
 			LOG_INFO << "ACQ " << acqNumber;
 
 			acqDataList.emplace_back();
@@ -290,11 +290,11 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPt
 		project_.saveSignalsToHDF5(acqDataList[i], dataDir, i, baseElement);
 	}
 	// Save times.
-	const std::string timeFileName = dataDir + NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE;
-	project_.saveHDF5(timeList, timeFileName, NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET);
+	const std::string timeFileName = dataDir + timeFile;
+	project_.saveHDF5(timeList, timeFileName, timeDataset);
 	// Save y.
-	const std::string yFileName = dataDir + NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE;
-	project_.saveHDF5(yList, yFileName, NETWORK_SYNC_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET);
+	const std::string yFileName = dataDir + yFile;
+	project_.saveHDF5(yList, yFileName, yDataset);
 }
 
 } // namespace Lab

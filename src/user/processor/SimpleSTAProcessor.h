@@ -39,9 +39,6 @@
 #include "Util.h"
 #include "XYZValueFactor.h"
 
-// Do not change.
-#define SIMPLE_STA_PROCESSOR_UPSAMPLING_FACTOR 4
-
 
 
 namespace Lab {
@@ -63,6 +60,9 @@ public:
 	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
+	// Do not change.
+	static constexpr unsigned int upsamplingFactor = 4;
+
 	struct ThreadData {
 		std::vector<FloatType> delayList;
 	};
@@ -91,7 +91,7 @@ SimpleSTAProcessor<FloatType>::SimpleSTAProcessor(
 		, initialized_()
 		, acquisition_(acquisition)
 {
-	signalOffset_ = (config_.samplingFrequency * SIMPLE_STA_PROCESSOR_UPSAMPLING_FACTOR) * peakOffset / config_.centerFrequency;
+	signalOffset_ = (config_.samplingFrequency * upsamplingFactor) * peakOffset / config_.centerFrequency;
 }
 
 template<typename FloatType>
@@ -118,7 +118,7 @@ SimpleSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridDa
 		acquisition_.execute(txElem, acqData_);
 
 		if (!initialized_) {
-			const std::size_t signalLength = acqData_.n2() * SIMPLE_STA_PROCESSOR_UPSAMPLING_FACTOR;
+			const std::size_t signalLength = acqData_.n2() * upsamplingFactor;
 			tempSignal_.resize(signalLength);
 			signalTensor_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
 			LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
@@ -146,7 +146,7 @@ SimpleSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridDa
 	ThreadData threadData;
 	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
-	const FloatType invCT = (config_.samplingFrequency * SIMPLE_STA_PROCESSOR_UPSAMPLING_FACTOR) / config_.propagationSpeed;
+	const FloatType invCT = (config_.samplingFrequency * upsamplingFactor) / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
 
 	IterationCounter::reset(gridData.n1());

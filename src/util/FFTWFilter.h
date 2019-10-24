@@ -52,9 +52,7 @@ public:
 	// y.size() will be x.size() + filterCoeff.size() - 1.
 	void filter(const std::vector<FloatType>& x, std::vector<FloatType>& y);
 private:
-	enum {
-		MIN_FFT_SIZE = 512
-	};
+	static constexpr unsigned int minFFTSize = 512;
 
 	void clean();
 	void copyInput(const std::vector<FloatType>& v, long offset);
@@ -195,8 +193,8 @@ FFTWFilter<FloatType>::setCoefficients(const std::vector<FloatType>& filterCoeff
 		THROW_EXCEPTION(InvalidValueException, "The filter coefficients vector is empty.");
 	}
 
-	//fftSize_ = Util::nextPowerOf2(std::max(filterSize * 2, static_cast<unsigned int>(MIN_FFT_SIZE)));
-	fftSize_ = FFTUtil::nextFastEvenSize(std::max(filterSize * 2, static_cast<unsigned int>(MIN_FFT_SIZE)));
+	//fftSize_ = Util::nextPowerOf2(std::max(filterSize * 2, minFFTSize));
+	fftSize_ = FFTUtil::nextFastEvenSize(std::max(filterSize * 2, minFFTSize));
 	//LOG_DEBUG << "[FFTWFilter::setCoefficients] fftSize: " << fftSize_ << " filterSize: " << filterSize;
 	freqDataSize_ = fftSize_ / 2 + 1;
 	filterLength_ = filterSize;

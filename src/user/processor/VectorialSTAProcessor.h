@@ -44,10 +44,6 @@
 #include "Util.h"
 #include "XYZValueFactor.h"
 
-// Depends on the signal.
-// 1.0 --> pi radian / sample at the original sampling rate.
-#define VECTORIAL_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH 0.2
-
 
 
 namespace Lab {
@@ -73,6 +69,10 @@ public:
 	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
+	// Depends on the signal.
+	// 1.0 --> pi radian / sample at the original sampling rate.
+	static constexpr FloatType upsampFilterHalfTransitionWidth = 0.2;
+
 	struct ThreadData {
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor;
 		std::vector<std::complex<FloatType>> rxSignalSumList;
@@ -124,7 +124,7 @@ VectorialSTAProcessor<FloatType>::VectorialSTAProcessor(
 		, baseElement_()
 {
 	if (upsamplingFactor_ > 1) {
-		interpolator_.prepare(upsamplingFactor_, VECTORIAL_STA_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
+		interpolator_.prepare(upsamplingFactor_, upsampFilterHalfTransitionWidth);
 	}
 
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * peakOffset / config_.centerFrequency;

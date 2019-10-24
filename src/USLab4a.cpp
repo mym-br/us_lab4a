@@ -48,13 +48,16 @@
 #include "ParameterMap.h"
 #include "Util.h"
 
-#define FIGURE_WINDOWS_TIMER_PERIOD_MS 10
-#define INFO_TIMER_PERIOD_MS 250
-#define MAX_LOG_BLOCK_COUNT 500
-#define FLOATING_POINT_VALUE_DECIMALS 6
-#define TASK_FILE_PREFIX "task-"
-#define TASK_FILE_SUFFIX ".txt"
-#define EXPERIMENT_DIR_PREFIX "exp-"
+namespace {
+
+constexpr int FIGURE_WINDOWS_TIMER_PERIOD_MS = 10;
+constexpr int INFO_TIMER_PERIOD_MS = 250;
+constexpr int MAX_LOG_BLOCK_COUNT = 500;
+constexpr const char* TASK_FILE_PREFIX = "task-";
+constexpr const char* TASK_FILE_SUFFIX = ".txt";
+constexpr const char* EXPERIMENT_DIR_PREFIX = "exp-";
+
+}
 
 namespace Lab {
 
@@ -157,7 +160,7 @@ USLab4a::fillTaskAndExpListWidget()
 	QDir dir(project_.directory().c_str());
 	if (dir.exists()) {
 		QStringList taskNameFilters;
-		taskNameFilters << TASK_FILE_PREFIX "*" TASK_FILE_SUFFIX;
+		taskNameFilters << (QString(TASK_FILE_PREFIX) + "*" + TASK_FILE_SUFFIX);
 		const std::size_t taskPrefixLen = strlen(TASK_FILE_PREFIX);
 		const std::size_t taskSuffixLen = strlen(TASK_FILE_SUFFIX);
 		const QStringList taskFileList = dir.entryList(taskNameFilters, QDir::Files | QDir::Readable, QDir::Name);
@@ -169,7 +172,7 @@ USLab4a::fillTaskAndExpListWidget()
 		}
 
 		QStringList expNameFilters;
-		expNameFilters << EXPERIMENT_DIR_PREFIX "*";
+		expNameFilters << (QString(EXPERIMENT_DIR_PREFIX) + "*");
 		const std::size_t expPrefixLen = strlen(EXPERIMENT_DIR_PREFIX);
 		const QStringList expDirList = dir.entryList(expNameFilters, QDir::Dirs | QDir::Readable, QDir::Name);
 		if (!expDirList.empty()) {

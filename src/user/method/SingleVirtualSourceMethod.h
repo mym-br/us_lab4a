@@ -45,9 +45,6 @@
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
-#define SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE "/time"
-#define SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET "time"
-
 
 
 namespace Lab {
@@ -61,6 +58,9 @@ public:
 	virtual void execute();
 
 private:
+	static constexpr const char* timeFile    = "/time";
+	static constexpr const char* timeDataset = "time";
+
 	SingleVirtualSourceMethod(const SingleVirtualSourceMethod&) = delete;
 	SingleVirtualSourceMethod& operator=(const SingleVirtualSourceMethod&) = delete;
 
@@ -201,8 +201,8 @@ SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr ta
 		project_.saveSignalsToHDF5(acqDataList[i], dataDir, i, baseElement);
 	}
 	// Save times.
-	const std::string fileName = dataDir + SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE;
-	project_.saveHDF5(timeList, fileName, SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET);
+	const std::string fileName = dataDir + timeFile;
+	project_.saveHDF5(timeList, fileName, timeDataset);
 }
 
 template<typename FloatType>
@@ -217,8 +217,7 @@ SingleVirtualSourceMethod<FloatType>::createImagesFromSavedSignalSequence(ConstP
 
 	// Load times.
 	std::vector<double> timeList;
-	project_.loadHDF5(dataDir + SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE,
-				SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET, timeList);
+	project_.loadHDF5(dataDir + timeFile, timeDataset, timeList);
 
 	for (unsigned int acqNumber = 0, end = timeList.size(); acqNumber < end; ++acqNumber) {
 		LOG_INFO << "ACQ " << acqNumber;
@@ -236,8 +235,7 @@ SingleVirtualSourceMethod<FloatType>::createImagesFromSavedSignalSequence(ConstP
 	}
 
 	// Save times.
-	project_.saveHDF5(timeList, outputDir + SINGLE_VIRTUAL_SOURCE_METHOD_TIME_FILE,
-				SINGLE_VIRTUAL_SOURCE_METHOD_TIME_DATASET);
+	project_.saveHDF5(timeList, outputDir + timeFile, timeDataset);
 }
 
 template<typename FloatType>

@@ -32,12 +32,12 @@
 #include "Util.h"
 #include "XYZValue.h"
 
-#define VTK_FILE_NAME "multi_image.vtk"
-#define NUM_CELL_POINTS 8
-
 
 
 namespace {
+
+constexpr const char* VTK_FILE_NAME = "multi_image.vtk";
+constexpr int NUM_CELL_POINTS = 8;
 
 struct Cell {
 	std::size_t i[NUM_CELL_POINTS];

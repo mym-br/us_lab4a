@@ -28,17 +28,21 @@
 #include "Log.h"
 #include "Util.h"
 
-#define MININUM_WIDTH 400
-#define MININUM_HEIGHT 300
-#define MIN_SCALE 0.1f
-#define MAX_SCALE 50.0f
-#define MARGIN 0.005f
-#define ZOOM_IN_FACTOR 1.1f
-#define ZOOM_OUT_FACTOR 0.9f
-#define ARROWHEAD_SIZE_FACTOR 0.015f
-#define ARROW_SIZE_FACTOR 0.1f
 
 
+namespace {
+
+constexpr int MININUM_WIDTH = 400;
+constexpr int MININUM_HEIGHT = 300;
+constexpr float MIN_SCALE = 0.1f;
+constexpr float MAX_SCALE = 50.0f;
+constexpr float MARGIN = 0.005f;
+constexpr float ZOOM_IN_FACTOR = 1.1f;
+constexpr float ZOOM_OUT_FACTOR = 0.9f;
+constexpr float ARROWHEAD_SIZE_FACTOR = 0.015f;
+constexpr float ARROW_SIZE_FACTOR = 0.1f;
+
+}
 
 namespace Lab {
 

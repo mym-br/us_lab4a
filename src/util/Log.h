@@ -30,10 +30,8 @@
 #define LOG_INFO if(Lab::Log::isInfoEnabled())Lab::InfoLog()
 #define LOG_DEBUG if(Lab::Log::isDebugEnabled())Lab::DebugLog()
 
-#define ERROR_LOG_PREFIX "ERROR >>>"
-#define ERROR_LOG_SUFFIX "<<<"
-
-
+constexpr const char* ERROR_LOG_PREFIX = "ERROR >>>";
+constexpr const char* ERROR_LOG_SUFFIX = "<<<";
 
 namespace Lab {
 

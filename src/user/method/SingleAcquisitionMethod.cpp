@@ -163,7 +163,7 @@ SingleAcquisitionMethod::execute()
 	arg1 << config_.savedAcqDir << '/' << config_.signalFile << ".h5";
 	args.push_back(arg1.str());
 	std::ostringstream arg2;
-	arg2.precision(FLOAT_SCIENTIFIC_NOTATION_NUM_DIGITS_AFTER_DECIMAL_POINT);
+	arg2.precision(SCIENTIFIC_NOTATION_NUM_DIGITS_AFTER_DECIMAL_POINT);
 	arg2 << std::scientific << config_.samplingFrequency;
 	args.push_back(arg2.str());
 	project_.executeProgram(config_.plotScript, args);

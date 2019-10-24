@@ -28,8 +28,6 @@
 #include "KaiserWindow.h"
 #include "Util.h"
 
-#define DECIMATOR_KAISER_TOLERANCE (1.0e-4)
-
 
 
 namespace Lab {
@@ -57,9 +55,8 @@ public:
 	const std::vector<FloatType>& lowPassFIRFilter() const { return lowPassFIRFilter_; }
 	unsigned int downsamplingFactor() const { return downsamplingFactor_; }
 private:
-	enum {
-		MAX_DOWN_FACTOR = 10
-	};
+	static constexpr unsigned int maxDownFactor = 10;
+	static constexpr FloatType kaiserTolerance = 1.0e-4;
 
 	unsigned int downsamplingFactor_;
 	std::vector<FloatType> lowPassFIRFilter_;
@@ -88,16 +85,16 @@ Decimator<FloatType>::prepare(unsigned int downsamplingFactor, FloatType lpFilte
 	if (downsamplingFactor < 2) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid downsampling factor: " << downsamplingFactor << ". Must be >= 2.");
 	}
-	if (downsamplingFactor > MAX_DOWN_FACTOR) {
+	if (downsamplingFactor > maxDownFactor) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid downsampling factor: " << downsamplingFactor
-				<< ". Must be <= " << MAX_DOWN_FACTOR << '.');
+				<< ". Must be <= " << maxDownFactor << '.');
 	}
 	if (lpFilterHalfTransitionWidth > 1) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid transition width: " << lpFilterHalfTransitionWidth
 				<< ". Must be <= 1.0");
 	}
 
-	const FloatType tol_dB = -20.0 * std::log10(DECIMATOR_KAISER_TOLERANCE);
+	const FloatType tol_dB = -20.0 * std::log10(kaiserTolerance);
 	const FloatType kaiserBeta = KaiserWindow::getBeta(tol_dB);
 
 	const FloatType finalTransitionWidth = (lpFilterHalfTransitionWidth * 2) / downsamplingFactor;

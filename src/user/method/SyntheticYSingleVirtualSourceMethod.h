@@ -39,9 +39,6 @@
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
-#define SYNTHETIC_Y_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE "/y"
-#define SYNTHETIC_Y_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET "y"
-
 
 
 namespace Lab {
@@ -55,6 +52,9 @@ public:
 	virtual void execute();
 
 private:
+	static constexpr const char* yFile    = "/y";
+	static constexpr const char* yDataset = "y";
+
 	SyntheticYSingleVirtualSourceMethod(const SyntheticYSingleVirtualSourceMethod&) = delete;
 	SyntheticYSingleVirtualSourceMethod& operator=(const SyntheticYSingleVirtualSourceMethod&) = delete;
 
@@ -133,8 +133,8 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 
 	// Load y (acquisition position).
 	std::vector<double> yList;
-	const std::string yFileName = dataDir + SYNTHETIC_Y_SINGLE_VIRTUAL_SOURCE_METHOD_Y_FILE;
-	project_.loadHDF5(yFileName, SYNTHETIC_Y_SINGLE_VIRTUAL_SOURCE_METHOD_Y_DATASET, yList);
+	const std::string yFileName = dataDir + yFile;
+	project_.loadHDF5(yFileName, yDataset, yList);
 
 	const unsigned int synthYSize = imagPM->value<unsigned int>("synthetic_y_array_size", 1, yList.size());
 

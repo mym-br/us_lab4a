@@ -51,9 +51,7 @@ public:
 	// y.size() will be x.size() + filterCoeff_.size() - 1.
 	void filter(const std::vector<FloatType>& x, std::vector<FloatType>& y);
 private:
-	enum {
-		MAX_DATA_SIZE = 1000000 // arbitrary
-	};
+	static constexpr unsigned int maxDataSize = 1000000; // arbitrary
 
 	void clean();
 	void prepare();
@@ -223,7 +221,7 @@ void
 DirectFFTWFilter<FloatType>::setCoefficients(const std::vector<FloatType>& filterCoeff)
 {
 	if (filterCoeff.empty()) THROW_EXCEPTION(InvalidParameterException, "The list of filter coefficients is empty.");
-	if (filterCoeff.size() > MAX_DATA_SIZE) THROW_EXCEPTION(InvalidValueException, "The filter length is greater than " << MAX_DATA_SIZE << '.');
+	if (filterCoeff.size() > maxDataSize) THROW_EXCEPTION(InvalidValueException, "The filter length is greater than " << maxDataSize << '.');
 
 	filterCoeff_ = filterCoeff;
 	initialized_ = false;
@@ -238,7 +236,7 @@ DirectFFTWFilter<FloatType>::filter(const std::vector<FloatType>& x, std::vector
 
 	const std::size_t xSize = x.size();
 	if (xSize == 0) THROW_EXCEPTION(InvalidValueException, "x is empty.");
-	if (xSize > MAX_DATA_SIZE) THROW_EXCEPTION(InvalidValueException, "The size of x is greater than " << MAX_DATA_SIZE << '.');
+	if (xSize > maxDataSize) THROW_EXCEPTION(InvalidValueException, "The size of x is greater than " << maxDataSize << '.');
 	if (!initialized_ || dataSize_ != xSize) {
 		dataSize_ = xSize;
 		prepare();

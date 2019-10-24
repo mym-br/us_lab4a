@@ -36,12 +36,10 @@ public:
 	Interpolator4X();
 	~Interpolator4X();
 
-	// The argument "ouput" must point to an array of size inputLength * UPSAMPLING_FACTOR.
+	// The argument "ouput" must point to an array of size inputLength * upsamplingFactor.
 	void interpolate(const FloatType* input, std::size_t inputLength, FloatType* output);
 private:
-	enum {
-		UPSAMPLING_FACTOR = 4 /* do not change */
-	};
+	static constexpr unsigned int upsamplingFactor = 4; /* do not change */
 
 	void prepare();
 
@@ -69,7 +67,7 @@ Interpolator4X<FloatType>::Interpolator4X()
 	// s = sinc(w);
 	// h = s' .* wd;
 	//-----------------------------------------------------------------------------
-	// UPSAMPLING_FACTOR must be = 4.
+	// upsamplingFactor must be = 4.
 	lowPassFIRFilter_ = {
 		-1.43105366198583e-18,
 		-1.12987833807950e-03,
@@ -178,10 +176,10 @@ Interpolator4X<FloatType>::interpolate(const FloatType* input, std::size_t input
 	if (!initialized_) prepare();
 
 	// Upsample.
-	inputVector_.resize(inputLength * UPSAMPLING_FACTOR);
-	for (std::size_t i = 0, j = 0; i < inputLength; ++i, j += UPSAMPLING_FACTOR) {
+	inputVector_.resize(inputLength * upsamplingFactor);
+	for (std::size_t i = 0, j = 0; i < inputLength; ++i, j += upsamplingFactor) {
 		inputVector_[j] = input[i];
-		for (std::size_t k = j + 1, end = j + UPSAMPLING_FACTOR; k < end; ++k) {
+		for (std::size_t k = j + 1, end = j + upsamplingFactor; k < end; ++k) {
 			inputVector_[k] = 0;
 		}
 	}
@@ -191,10 +189,10 @@ Interpolator4X<FloatType>::interpolate(const FloatType* input, std::size_t input
 
 	// Copy to the output, compensating for the FIR filter delay. The signal is truncated at both ends.
 	const std::size_t offset = (lowPassFIRFilter_.size() - 1) / 2;
-//	for (std::size_t i = 0; i < inputLength * UPSAMPLING_FACTOR; ++i) {
+//	for (std::size_t i = 0; i < inputLength * upsamplingFactor; ++i) {
 //		output[i] = outputVector_[i + offset];
 //	}
-	memcpy(output, &outputVector_[offset], inputLength * UPSAMPLING_FACTOR * sizeof(FloatType));
+	memcpy(output, &outputVector_[offset], inputLength * upsamplingFactor * sizeof(FloatType));
 }
 
 } // namespace Lab

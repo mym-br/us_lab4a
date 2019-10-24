@@ -44,12 +44,7 @@ public:
 	template<typename InputElementType, typename OutputElementType>
 		void calculate(InputElementType* origData, unsigned int size, OutputElementType* destData);
 private:
-	enum {
-		// Must be a power of two.
-		MIN_PADDING = 1024, /* reduces the aliasing to around -60 dB */
-
-		MAX_INPUT_SIZE = 1 << 20 // arbitrary
-	};
+	static constexpr unsigned int maxInputSize = 1 << 20; // arbitrary
 
 	void clean();
 	void prepare(unsigned int numInputSamples);
@@ -148,9 +143,9 @@ ComplexToRealIFFT<FloatType>::calculate(InputElementType* origData, unsigned int
 	if (size == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of input samples (" << size << ") is = 0.");
 	}
-	if (size > MAX_INPUT_SIZE) {
+	if (size > maxInputSize) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of input samples (" << size <<
-				") is greater than " << MAX_INPUT_SIZE << '.');
+				") is greater than " << maxInputSize << '.');
 	}
 	if (!initialized_ || size != fftSize_) {
 		prepare(size);

@@ -25,10 +25,6 @@
 
 namespace Lab {
 
-const double MinstdPseudorandomNumberGenerator::a = 16807.0;
-const double MinstdPseudorandomNumberGenerator::m = 2147483647.0;
-const double MinstdPseudorandomNumberGenerator::invM = 1.0 / MinstdPseudorandomNumberGenerator::m;
-
 MinstdPseudorandomNumberGenerator::MinstdPseudorandomNumberGenerator(long seed) : x_(seed)
 {
 	if (seed < 1 || seed >= m) {

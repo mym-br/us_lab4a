@@ -19,11 +19,13 @@
 
 #include <QCloseEvent>
 
-#define MAX_MIN_DECIBELS (-1)
-#define MIN_MIN_DECIBELS (-100)
-#define MIN_DECIBELS_STEP 1
+namespace {
 
+constexpr int MAX_MIN_DECIBELS = -1;
+constexpr int MIN_MIN_DECIBELS = -100;
+constexpr int MIN_DECIBELS_STEP = 1;
 
+}
 
 namespace Lab {
 

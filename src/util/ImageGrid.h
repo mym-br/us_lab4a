@@ -26,8 +26,6 @@
 #include "ParameterMap.h"
 #include "Util.h"
 
-#define IMAGE_GRID_MIN_LAMBDA (1.0e-6)
-
 
 
 namespace Lab {
@@ -38,6 +36,8 @@ public:
 	template<typename T>
 		static void get(ConstParameterMapPtr pm, FloatType lambda, T &grid);
 private:
+	static constexpr FloatType minLambda = 1.0e-6;
+
 	ImageGrid();
 	~ImageGrid();
 
@@ -156,7 +156,7 @@ template<typename T>
 void
 ImageGrid<FloatType>::get(ConstParameterMapPtr pm, FloatType lambda, T& grid)
 {
-	if (lambda < IMAGE_GRID_MIN_LAMBDA) {
+	if (lambda < minLambda) {
 		THROW_EXCEPTION(InvalidParameterException, "Lambda is too small: " << lambda << '.');
 	}
 

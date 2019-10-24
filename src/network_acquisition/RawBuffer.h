@@ -40,12 +40,8 @@ public:
 	typedef boost::uint8_t* iterator;
 	typedef const boost::uint8_t* const_iterator;
 
-	enum {
-		INITIAL_RESERVED_SIZE = 8192
-	};
-
 	RawBuffer() : readIndex_() {
-		buffer_.reserve(INITIAL_RESERVED_SIZE);
+		buffer_.reserve(8192);
 	}
 	~RawBuffer() {}
 
@@ -78,18 +74,15 @@ public:
 	template<typename T> void getInt16Array(std::vector<T>& a);
 	template<typename T> void getInt16Array(T* a, std::size_t arraySize);
 
-	boost::uint8_t& front()
-	{
+	boost::uint8_t& front() {
 		return buffer_.front();
 	}
 
-	const boost::uint8_t& front() const
-	{
+	const boost::uint8_t& front() const {
 		return buffer_.front();
 	}
 
-	std::size_t size() const
-	{
+	std::size_t size() const {
 		return buffer_.size();
 	}
 private:

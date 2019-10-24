@@ -30,12 +30,10 @@ public:
 	// Returns one value of the pseudorandom sequence ]0.0,1.0[.
 	double get();
 private:
-	//MinstdPseudorandomNumberGenerator(const MinstdPseudorandomNumberGenerator&);
-	//MinstdPseudorandomNumberGenerator& operator=(const MinstdPseudorandomNumberGenerator&);
+	static constexpr double a = 16807.0;
+	static constexpr double m = 2147483647.0;
+	static constexpr double invM = 1.0 / m;
 
-	static const double a;
-	static const double m;
-	static const double invM;
 	double x_;
 };
 

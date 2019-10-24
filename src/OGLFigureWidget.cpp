@@ -66,25 +66,25 @@
 #include "ParallelHilbertEnvelope.h"
 #include "Util.h"
 
-#define DEFAULT_MIN_DECIBELS (-60.0f)
-#define MININUM_WIDTH 400
-#define MININUM_HEIGHT 300
-#define MIN_VALUE_SCALE 0.1f
-#define MAX_VALUE_SCALE 10.0f
-#define MIN_SCALE 0.1f
-#define MAX_SCALE 100.0f
-#define MARGIN 0.005f
-#define MAX_OFFSET (1.0e5f)
-#define ZOOM_IN_FACTOR 1.1f
-#define ZOOM_OUT_FACTOR 0.9f
-#define REFLECTOR_POINT_SIZE_SMALL 1.0f
-#define REFLECTOR_POINT_SIZE_BIG 3.0f
-//#define REFLECTOR_SIZE_THRESHOLD 20
-#define VALUE_EPS (1e-30f)
-
 
 
 namespace {
+
+constexpr float DEFAULT_MIN_DECIBELS = -60.0f;
+constexpr int MININUM_WIDTH = 400;
+constexpr int MININUM_HEIGHT = 300;
+constexpr float MIN_VALUE_SCALE = 0.1f;
+constexpr float MAX_VALUE_SCALE = 10.0f;
+constexpr float MIN_SCALE = 0.1f;
+constexpr float MAX_SCALE = 100.0f;
+constexpr float MARGIN = 0.005f;
+constexpr float MAX_OFFSET = 1.0e5f;
+constexpr float ZOOM_IN_FACTOR = 1.1f;
+constexpr float ZOOM_OUT_FACTOR = 0.9f;
+constexpr float REFLECTOR_POINT_SIZE_SMALL = 1.0f;
+constexpr float REFLECTOR_POINT_SIZE_BIG = 3.0f;
+//constexpr unsigned int REFLECTOR_SIZE_THRESHOLD = 20;
+constexpr float VALUE_EPS = 1e-30f;
 
 using namespace Lab;
 

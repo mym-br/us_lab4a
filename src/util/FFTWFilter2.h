@@ -53,9 +53,7 @@ public:
 	// y.size() will be x.size() + filterCoeff.size() - 1.
 	void filter(const std::vector<std::complex<FloatType>>& filterFreqCoeff, const std::vector<FloatType>& x, std::vector<FloatType>& y);
 private:
-	enum {
-		FFT_SIZE = 512 // must be a power of two
-	};
+	static constexpr int fftSize = 512; // must be a power of two
 
 	void clean();
 	void copyInput(const std::vector<FloatType>& v, long offset);
@@ -159,12 +157,12 @@ FFTWFilter2<FloatType>::prepare()
 	//LOG_DEBUG << "FFTW2Filter::prepare()";
 
 	try {
-		fftIn_    = FFTW::alloc_real<FloatType>(FFT_SIZE);
+		fftIn_    = FFTW::alloc_real<FloatType>(fftSize);
 		fftOut_   = FFTW::alloc_complex<FloatType>(freqDataSize_);
-		ifftOut_  = FFTW::alloc_real<FloatType>(FFT_SIZE);
+		ifftOut_  = FFTW::alloc_real<FloatType>(fftSize);
 		FFTW fftw;
-		fftPlan_  = fftw.plan_dft_r2c_1d(FFT_SIZE, fftIn_, fftOut_);
-		ifftPlan_ = fftw.plan_idft_c2r_1d(FFT_SIZE, fftOut_, ifftOut_);
+		fftPlan_  = fftw.plan_dft_r2c_1d(fftSize, fftIn_, fftOut_);
+		ifftPlan_ = fftw.plan_idft_c2r_1d(fftSize, fftOut_, ifftOut_);
 	} catch (std::exception& e) {
 		clean();
 		THROW_EXCEPTION(Exception, "Error in FFTW preparation: " << e.what() << '.');
@@ -182,12 +180,12 @@ FFTWFilter2<FloatType>::setCoefficients(const std::vector<FloatType>& filterCoef
 		THROW_EXCEPTION(InvalidValueException, "The filter coefficients vector is empty.");
 	}
 
-	freqDataSize_ = FFT_SIZE / 2 + 1;
+	freqDataSize_ = fftSize / 2 + 1;
 	filterLength_ = filterSize;
 
 	prepare();
 
-	const unsigned int blockSize = FFT_SIZE / 2;
+	const unsigned int blockSize = fftSize / 2;
 	numFilterBlocks_ = (filterSize % blockSize != 0) ? (filterSize / blockSize + 1) : (filterSize / blockSize);
 	filterFreqCoeffSize_ = numFilterBlocks_ * freqDataSize_;
 	filterFreqCoeff.resize(filterFreqCoeffSize_);
@@ -198,10 +196,10 @@ FFTWFilter2<FloatType>::setCoefficients(const std::vector<FloatType>& filterCoef
 		const unsigned int remainingDataSize = filterSize - offset;
 		if (remainingDataSize < blockSize) {
 			std::copy(&filterCoeff[offset], &filterCoeff[offset] + remainingDataSize, fftIn_);
-			std::fill(fftIn_ + remainingDataSize, fftIn_ + FFT_SIZE, FloatType(0));
+			std::fill(fftIn_ + remainingDataSize, fftIn_ + fftSize, FloatType(0));
 		} else {
 			std::copy(&filterCoeff[offset], &filterCoeff[offset] + blockSize, fftIn_);
-			std::fill(fftIn_ + blockSize, fftIn_ + FFT_SIZE, FloatType(0));
+			std::fill(fftIn_ + blockSize, fftIn_ + fftSize, FloatType(0));
 		}
 
 		FFTW::execute(fftPlan_);
@@ -218,22 +216,22 @@ FFTWFilter2<FloatType>::copyInput(const std::vector<FloatType>& v, long offset)
 {
 	if (offset < 0) {
 		const std::size_t dataSize = v.size();
-		memset(fftIn_, 0, sizeof(FloatType) * (FFT_SIZE / 2));
-		if (dataSize < FFT_SIZE / 2) {
-			memcpy(fftIn_ + FFT_SIZE / 2           , &v[0], sizeof(FloatType) * dataSize);
-			memset(fftIn_ + FFT_SIZE / 2 + dataSize,     0, sizeof(FloatType) * (FFT_SIZE / 2 - dataSize));
+		memset(fftIn_, 0, sizeof(FloatType) * (fftSize / 2));
+		if (dataSize < fftSize / 2) {
+			memcpy(fftIn_ + fftSize / 2           , &v[0], sizeof(FloatType) * dataSize);
+			memset(fftIn_ + fftSize / 2 + dataSize,     0, sizeof(FloatType) * (fftSize / 2 - dataSize));
 		} else {
-			memcpy(fftIn_ + FFT_SIZE / 2           , &v[0], sizeof(FloatType) * (FFT_SIZE / 2));
+			memcpy(fftIn_ + fftSize / 2           , &v[0], sizeof(FloatType) * (fftSize / 2));
 		}
 	} else {
 		const std::size_t base = offset + 1;
 		const std::size_t dataSize = v.size() - base;
 		fftIn_[0] = 0.0;
-		if (dataSize < FFT_SIZE - 1) {
+		if (dataSize < fftSize - 1) {
 			memcpy(fftIn_ + 1           , &v[base], sizeof(FloatType) * dataSize);
-			memset(fftIn_ + 1 + dataSize,        0, sizeof(FloatType) * (FFT_SIZE - 1 - dataSize));
+			memset(fftIn_ + 1 + dataSize,        0, sizeof(FloatType) * (fftSize - 1 - dataSize));
 		} else {
-			memcpy(fftIn_ + 1           , &v[base], sizeof(FloatType) * (FFT_SIZE - 1));
+			memcpy(fftIn_ + 1           , &v[base], sizeof(FloatType) * (fftSize - 1));
 		}
 	}
 }
@@ -248,7 +246,7 @@ FFTWFilter2<FloatType>::filter(const std::vector<std::complex<FloatType>>& filte
 		THROW_EXCEPTION(InvalidParameterException, "The filter coefficients are invalid (wrong size).");
 	}
 
-	const int blockSize = FFT_SIZE / 2;
+	const int blockSize = fftSize / 2;
 	const std::size_t xSize = x.size();
 	const std::size_t ySize = filterLength_ + xSize - 1;
 	y.assign(ySize, 0.0);
@@ -294,7 +292,7 @@ FFTWFilter2<FloatType>::filter(const std::vector<std::complex<FloatType>>& filte
 	}
 
 	// Normalization.
-	Util::multiply<FloatType>(y, 1 / FloatType(FFT_SIZE));
+	Util::multiply<FloatType>(y, 1 / FloatType(fftSize));
 }
 
 } // namespace Lab

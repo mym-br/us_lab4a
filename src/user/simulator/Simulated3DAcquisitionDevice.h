@@ -44,13 +44,6 @@
 #include "XY.h"
 #include "XYZValue.h"
 
-#define SIMULATED_3D_ACQUISITION_DEVICE_PSEUDORANDOM_NUMBER_GENERATOR_SEED 1
-
-// Fraction of the destination bandwidth.
-#define SIMULATED_3D_ACQUISITION_DEVICE_DECIMATOR_LP_FILTER_TRANSITION_WIDTH (0.3)
-
-#define SIMULATED_3D_ACQUISITION_DEVICE_MAX_SIGNAL_LENGTH (std::numeric_limits<unsigned int>::max() / sizeof(FloatType))
-
 
 
 namespace Lab {
@@ -112,6 +105,11 @@ public:
 	void setGain(FloatType gain /* dB */);
 
 private:
+	static constexpr long pseudorandomNumberGeneratorSeed = 1;
+	// Fraction of the destination bandwidth.
+	static constexpr FloatType decimatorLPFilterTransitionWidth = 0.3;
+	static constexpr FloatType maxSignalLength = std::numeric_limits<unsigned int>::max() / sizeof(FloatType);
+
 	Simulated3DAcquisitionDevice(const Simulated3DAcquisitionDevice&) = delete;
 	Simulated3DAcquisitionDevice& operator=(const Simulated3DAcquisitionDevice&) = delete;
 
@@ -180,7 +178,7 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 			, reflectorsOffsetX_()
 			, reflectorsOffsetY_()
 			, signalCoeff_(1.0)
-			, prng_(SIMULATED_3D_ACQUISITION_DEVICE_PSEUDORANDOM_NUMBER_GENERATOR_SEED)
+			, prng_(pseudorandomNumberGeneratorSeed)
 {
 	txElemWidth_  = arrayPM.value<FloatType>("tx_element_width" , 1.0e-6, 1000.0e-3);
 	txElemHeight_ = arrayPM.value<FloatType>("tx_element_height", 1.0e-6, 1000.0e-3);
@@ -224,7 +222,7 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 	ArrayUtil::calculateRxElementPositions(arrayPM, rxElemPos_);
 
 	decimator_ = std::make_unique<Decimator<FloatType>>();
-	decimator_->prepare(simFs_ / outFs_, SIMULATED_3D_ACQUISITION_DEVICE_DECIMATOR_LP_FILTER_TRANSITION_WIDTH);
+	decimator_->prepare(simFs_ / outFs_, decimatorLPFilterTransitionWidth);
 
 	{
 		WavefrontObjFileWriter<FloatType> fw((expDirectory + "/tx_geometry.obj").c_str());
@@ -264,7 +262,7 @@ void
 Simulated3DAcquisitionDevice<FloatType>::setAcquisitionTime(FloatType acqTime)
 {
 	FloatType len = std::ceil(acqTime * outFs_);
-	if (len > SIMULATED_3D_ACQUISITION_DEVICE_MAX_SIGNAL_LENGTH) {
+	if (len > maxSignalLength) {
 		THROW_EXCEPTION(InvalidValueException, "The acquisition time is too long.");
 	}
 

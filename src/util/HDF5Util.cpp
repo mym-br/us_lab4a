@@ -21,13 +21,13 @@
 
 #include "Util.h"
 
-#define HDF5UTIL_MAX_CHUNK_SIZE_2D 64
-#define HDF5UTIL_MAX_CHUNK_SIZE_1D (64 * 64 * 2)
-
 
 
 namespace Lab {
 namespace HDF5Util {
+
+constexpr unsigned int MAX_CHUNK_SIZE_2D = 64;
+constexpr unsigned int MAX_CHUNK_SIZE_1D = 64 * 64 * 2;
 
 template<>
 PredType
@@ -85,25 +85,25 @@ calcChunkDims(const std::vector<hsize_t>& dataDims, std::vector<hsize_t>& chunkD
 	unsigned int rank = dataDims.size();
 	switch (rank) {
 	case 1:
-		chunkDims[0] = std::min<hsize_t>(dataDims[0], HDF5UTIL_MAX_CHUNK_SIZE_1D);
+		chunkDims[0] = std::min<hsize_t>(dataDims[0], MAX_CHUNK_SIZE_1D);
 		return;
 	case 2:
 		if (dataDims[0] == 1) {
 			chunkDims[0] = 1;
-			chunkDims[1] = std::min<hsize_t>(dataDims[1], HDF5UTIL_MAX_CHUNK_SIZE_1D);
+			chunkDims[1] = std::min<hsize_t>(dataDims[1], MAX_CHUNK_SIZE_1D);
 			return;
 		} else if (dataDims[1] == 1) {
-			chunkDims[0] = std::min<hsize_t>(dataDims[0], HDF5UTIL_MAX_CHUNK_SIZE_1D);
+			chunkDims[0] = std::min<hsize_t>(dataDims[0], MAX_CHUNK_SIZE_1D);
 			chunkDims[1] = 1;
 			return;
-		} else if (dataDims[0] >= HDF5UTIL_MAX_CHUNK_SIZE_2D && dataDims[1] >= HDF5UTIL_MAX_CHUNK_SIZE_2D) {
-			chunkDims[0] = std::min<hsize_t>(dataDims[0], HDF5UTIL_MAX_CHUNK_SIZE_2D);
-			chunkDims[1] = std::min<hsize_t>(dataDims[1], HDF5UTIL_MAX_CHUNK_SIZE_2D);
+		} else if (dataDims[0] >= MAX_CHUNK_SIZE_2D && dataDims[1] >= MAX_CHUNK_SIZE_2D) {
+			chunkDims[0] = std::min<hsize_t>(dataDims[0], MAX_CHUNK_SIZE_2D);
+			chunkDims[1] = std::min<hsize_t>(dataDims[1], MAX_CHUNK_SIZE_2D);
 			return;
 		} else {
 			chunkDims = dataDims;
 			hsize_t size = Util::multiplyElements(chunkDims);
-			while (size > HDF5UTIL_MAX_CHUNK_SIZE_1D) {
+			while (size > MAX_CHUNK_SIZE_1D) {
 				std::vector<hsize_t>::iterator maxElement = std::max_element(chunkDims.begin(), chunkDims.end());
 				*maxElement /= 2;
 				size = Util::multiplyElements(chunkDims);

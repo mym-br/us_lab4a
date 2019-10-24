@@ -29,8 +29,6 @@
 #include "lzf_filter.h"
 #include "Matrix.h"
 
-#define HDF5_FILE_SUFFIX ".h5"
-#define HDF5UTIL_DEFLATE_LEVEL 1
 #define HDF5UTIL_USE_LZF 1
 
 #ifdef HDF5UTIL_USE_LZF
@@ -41,6 +39,9 @@
 
 namespace Lab {
 namespace HDF5Util {
+
+constexpr const char* fileSuffix = ".h5";
+constexpr int deflateLevel = 1;
 
 #ifndef H5_NO_NAMESPACE
 using namespace H5;
@@ -269,7 +270,7 @@ save2(const T& container, const std::string& filePath, const std::string& datase
 #ifdef HDF5UTIL_USE_LZF
 				dcpl.setFilter(HDF5UTIL_FILTER, H5Z_FLAG_OPTIONAL, 0, nullptr);
 #else
-				dcpl.setDeflate(HDF5UTIL_DEFLATE_LEVEL); // compress with DEFLATE (zlib)
+				dcpl.setDeflate(deflateLevel); // compress with DEFLATE (zlib)
 #endif
 				std::vector<hsize_t> chunkDims;
 				calcChunkDims(dataDims, chunkDims);

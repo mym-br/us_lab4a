@@ -28,8 +28,6 @@
 #include "KaiserWindow.h"
 #include "Util.h"
 
-#define INTERPOLATOR_KAISER_TOLERANCE (1.0e-4)
-
 
 
 namespace Lab {
@@ -48,9 +46,8 @@ public:
 
 	void interpolate(const FloatType* input, std::size_t inputLength, FloatType* output);
 private:
-	enum {
-		MAX_UP_FACTOR = 64
-	};
+	static constexpr double kaiserTolerance = 1.0e-4;
+	static constexpr unsigned int maxUpFactor = 64;
 
 	unsigned int upsamplingFactor_;
 	std::vector<FloatType> lowPassFIRFilter_;
@@ -80,16 +77,16 @@ Interpolator<FloatType>::prepare(unsigned int upsamplingFactor, FloatType lpFilt
 	if (upsamplingFactor < 2) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid upsampling factor: " << upsamplingFactor << ". Must be >= 2.");
 	}
-	if (upsamplingFactor > MAX_UP_FACTOR) {
+	if (upsamplingFactor > maxUpFactor) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid upsampling factor: " << upsamplingFactor
-				<< ". Must be <= " << MAX_UP_FACTOR << '.');
+				<< ". Must be <= " << maxUpFactor << '.');
 	}
 	if (lpFilterHalfTransitionWidth > 1) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid transition width: " << lpFilterHalfTransitionWidth
 				<< ". Must be <= 1.0");
 	}
 
-	const FloatType tol_dB = -20.0 * std::log10(INTERPOLATOR_KAISER_TOLERANCE);
+	const FloatType tol_dB = -20.0 * std::log10(kaiserTolerance);
 	const FloatType kaiserBeta = KaiserWindow::getBeta(tol_dB);
 
 	const FloatType finalTransitionWidth = (lpFilterHalfTransitionWidth * 2) / upsamplingFactor;

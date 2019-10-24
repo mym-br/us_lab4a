@@ -41,9 +41,6 @@
 #include "Util.h"
 #include "XYZValueFactor.h"
 
-// Do not change.
-#define DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR 4
-
 
 
 namespace Lab {
@@ -65,6 +62,9 @@ public:
 	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
 
 private:
+	// Do not change.
+	static constexpr unsigned int upsamplingFactor = 4;
+
 	struct ThreadData {
 		CoherenceFactorProcessor<FloatType> coherenceFactor;
 		std::vector<FloatType> rxSignalSumList;
@@ -96,11 +96,11 @@ DefaultSTAProcessor<FloatType>::DefaultSTAProcessor(
 			FloatType peakOffset)
 		: config_(config)
 		, initialized_()
-		, deadZoneSamplesUp_((DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
+		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
 		, acquisition_(acquisition)
 		, coherenceFactor_(coherenceFactor)
 {
-	signalOffset_ = (config_.samplingFrequency * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR) * peakOffset / config_.centerFrequency;
+	signalOffset_ = (config_.samplingFrequency * upsamplingFactor) * peakOffset / config_.centerFrequency;
 }
 
 template<typename FloatType>
@@ -127,7 +127,7 @@ DefaultSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridD
 		acquisition_.execute(txElem, acqData_);
 
 		if (!initialized_) {
-			const std::size_t signalLength = acqData_.n2() * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR;
+			const std::size_t signalLength = acqData_.n2() * upsamplingFactor;
 			tempSignal_.resize(signalLength);
 			signalTensor_.resize(config_.lastTxElem - config_.firstTxElem + 1, config_.numElements, signalLength);
 			LOG_DEBUG << "signalOffset_=" << signalOffset_ << " signalLength=" << signalLength;
@@ -161,7 +161,7 @@ DefaultSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridD
 	threadData.coherenceFactor = coherenceFactor_;
 	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
-	const FloatType invCT = (config_.samplingFrequency * DEFAULT_STA_PROCESSOR_UPSAMPLING_FACTOR) / config_.propagationSpeed;
+	const FloatType invCT = (config_.samplingFrequency * upsamplingFactor) / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
 
 	IterationCounter::reset(gridData.n1());

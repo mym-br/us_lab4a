@@ -24,19 +24,23 @@
 #include <QPointF>
 #include <QRectF>
 
-#define SPACING 10
-#define TEXT_SPACING 10
-#define TICK_SIZE 5
-#define MIN_AXIS_DIV 8
-#define WHEEL_ZOOM_FACTOR (0.01)
-#define MOUSE_ZOOM_FACTOR (0.002)
-#define DEFAULT_Y_DELTA (1.0)
-#define MIN_VALUE_DELTA (1.0e-30)
-#define MAX_VALUE_DELTA (1.0e30)
-#define MARKER_SIZE (2.0)
-#define EPS (1.0e-5)
-#define MAX_TICK_POW (2.0)
-#define MIN_TICK_POW (-2.0)
+namespace {
+
+constexpr int SPACING = 10;
+constexpr int TEXT_SPACING = 10;
+constexpr int TICK_SIZE = 5;
+constexpr int MIN_AXIS_DIV = 8;
+constexpr double WHEEL_ZOOM_FACTOR = 0.01;
+constexpr double MOUSE_ZOOM_FACTOR = 0.002;
+constexpr double DEFAULT_Y_DELTA = 1.0;
+constexpr double MIN_VALUE_DELTA = 1.0e-30;
+constexpr double MAX_VALUE_DELTA = 1.0e30;
+constexpr double MARKER_SIZE = 2.0;
+constexpr double EPS = 1.0e-5;
+constexpr double MAX_TICK_POW = 2.0;
+constexpr double MIN_TICK_POW = -2.0;
+
+}
 
 namespace Lab {
 

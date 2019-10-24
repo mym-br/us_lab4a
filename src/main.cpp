@@ -31,8 +31,12 @@
 #include "lzf_filter.h"
 #include "Method.h"
 
-#define FFTW_WISDOM_FILE_NAME_SP "fftw_wisdom_sp-us_lab4a.txt"
-#define FFTW_WISDOM_FILE_NAME_DP "fftw_wisdom_dp-us_lab4a.txt"
+namespace {
+
+constexpr const char* FFTW_WISDOM_FILE_NAME_SP = "fftw_wisdom_sp-us_lab4a.txt";
+constexpr const char* FFTW_WISDOM_FILE_NAME_DP = "fftw_wisdom_dp-us_lab4a.txt";
+
+}
 
 int
 main(int argc, char* argv[])

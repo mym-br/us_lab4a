@@ -18,16 +18,16 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#define NETWORK_AQUISITION_CONFIG_FILE "config-network_acquisition.txt"
+constexpr const char* NETWORK_AQUISITION_CONFIG_FILE = "config-network_acquisition.txt";
 
-#define SETTINGS_KEY_PROJECT_DIR             "main/projectDir"
-#define SETTINGS_KEY_LOGLEVEL_COMBOBOX_INDEX "main/logLevelComboBoxIndex"
-#define SETTINGS_KEY_SELECTED_TASK           "main/selectedTask"
-#define SETTINGS_KEY_SELECTED_EXP            "main/selectedExp"
+constexpr const char* SETTINGS_KEY_PROJECT_DIR             = "main/projectDir";
+constexpr const char* SETTINGS_KEY_LOGLEVEL_COMBOBOX_INDEX = "main/logLevelComboBoxIndex";
+constexpr const char* SETTINGS_KEY_SELECTED_TASK           = "main/selectedTask";
+constexpr const char* SETTINGS_KEY_SELECTED_EXP            = "main/selectedExp";
 
-#define LOG_FILE_NAME "log-us_lab4a.txt"
+constexpr const char* LOG_FILE_NAME = "log-us_lab4a.txt";
 
-#define FLOAT_SCIENTIFIC_NOTATION_NUM_DIGITS_AFTER_DECIMAL_POINT 7
+constexpr unsigned int SCIENTIFIC_NOTATION_NUM_DIGITS_AFTER_DECIMAL_POINT = 7;
 
 
 
