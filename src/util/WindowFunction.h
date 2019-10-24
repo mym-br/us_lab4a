@@ -178,7 +178,7 @@ hanning(unsigned int n, std::vector<FloatType>& w)
 	const double c1 = 1.0 / (n - 1.0);
 	for (unsigned int i = 0; i < n; ++i) {
 		const double c2 = i * c1;
-		w[i] = 0.5 - 0.5 * std::cos(2.0 * PI * c2);
+		w[i] = 0.5 - 0.5 * std::cos(2.0 * pi * c2);
 	}
 }
 
@@ -191,7 +191,7 @@ hanning2(unsigned int n, std::vector<FloatType>& w)
 	const double c1 = 1.0 / (n + 1.0);
 	for (unsigned int i = 0; i < n; ++i) {
 		const double c2 = (i + 1.0) * c1;
-		w[i] = 0.5 - 0.5 * std::cos(2.0 * PI * c2);
+		w[i] = 0.5 - 0.5 * std::cos(2.0 * pi * c2);
 	}
 }
 
@@ -204,7 +204,7 @@ hamming(unsigned int n, std::vector<FloatType>& w)
 	const double c1 = 1.0 / (n - 1.0);
 	for (unsigned int i = 0; i < n; ++i) {
 		const double c2 = i * c1;
-		w[i] = 0.54 - 0.46 * std::cos(2.0 * PI * c2);
+		w[i] = 0.54 - 0.46 * std::cos(2.0 * pi * c2);
 	}
 }
 
@@ -217,7 +217,7 @@ blackman(unsigned int n, std::vector<FloatType>& w)
 	const double c1 = 1.0 / (n - 1.0);
 	for (unsigned int i = 0; i < n; ++i) {
 		const double c2 = i * c1;
-		w[i] = 0.42 - 0.5 * std::cos(2.0 * PI * c2) + 0.08 * std::cos(4.0 * PI * c2);
+		w[i] = 0.42 - 0.5 * std::cos(2.0 * pi * c2) + 0.08 * std::cos(4.0 * pi * c2);
 	}
 }
 
@@ -230,7 +230,7 @@ blackman2(unsigned int n, std::vector<FloatType>& w)
 	const double c1 = 1.0 / (n + 1.0);
 	for (unsigned int i = 0; i < n; ++i) {
 		const double c2 = (i + 1.0) * c1;
-		w[i] = 0.42 - 0.5 * std::cos(2.0 * PI * c2) + 0.08 * std::cos(4.0 * PI * c2);
+		w[i] = 0.42 - 0.5 * std::cos(2.0 * pi * c2) + 0.08 * std::cos(4.0 * pi * c2);
 	}
 }
 

@@ -36,7 +36,7 @@
 #include "XYZValueArray.h"
 #include "XZValue.h"
 
-#define PI 3.14159265358979323846
+constexpr double pi = M_PI;
 
 
 
@@ -584,14 +584,14 @@ template<typename T>
 T
 degreeToRadian(T d)
 {
-	return T(PI) * d / T(180);
+	return T(pi) * d / T(180);
 }
 
 template<typename T>
 T
 radianToDegree(T r)
 {
-	return T(180) * r / T(PI);
+	return T(180) * r / T(pi);
 }
 
 template<typename InputIterator, typename InputOutputIterator>

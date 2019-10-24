@@ -117,7 +117,7 @@ Decimator<FloatType>::prepare(unsigned int downsamplingFactor, FloatType lpFilte
 	Util::fillSequenceFromStartToEndWithSize(x, -numPeriods, numPeriods, finalWindowSize);
 	lowPassFIRFilter_.resize(x.size());
 	for (unsigned int i = 0; i < lowPassFIRFilter_.size(); ++i) {
-		lowPassFIRFilter_[i] = boost::math::sinc_pi(PI * x[i]) / downsamplingFactor;
+		lowPassFIRFilter_[i] = boost::math::sinc_pi(pi * x[i]) / downsamplingFactor;
 	}
 
 	Util::multiply(window, lowPassFIRFilter_);

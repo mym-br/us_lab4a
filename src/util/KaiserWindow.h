@@ -62,7 +62,7 @@ unsigned int getSize(FloatType tolerance_dB, FloatType transitionWidth)
 {
 	// Scipy and Matlab use 7.95.
 	// Oppenheim and Octave use 8.0.
-	double size = std::ceil((tolerance_dB - 7.95) / (2.285 * transitionWidth * PI) + 1.0);
+	double size = std::ceil((tolerance_dB - 7.95) / (2.285 * transitionWidth * pi) + 1.0);
 	if (size < 2.0 || size >= static_cast<double>(std::numeric_limits<unsigned int>::max())) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid Kaiser window size: " << size << '.');
 	}

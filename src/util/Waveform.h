@@ -48,7 +48,7 @@ void getType1(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods
 
 	const FloatType end = numPeriods / centerFreq;
 	const FloatType dt = 1.0 / samplingFreq;
-	const FloatType w = 2.0 * PI * centerFreq;
+	const FloatType w = 2.0 * pi * centerFreq;
 	const FloatType k = 1.0 / numPeriods;
 	const unsigned int numSamples = static_cast<unsigned int>(end / dt) + 1U;
 	v.resize(numSamples);
@@ -68,7 +68,7 @@ void getType2(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods
 {
 	const FloatType end = numPeriods / centerFreq;
 	const FloatType dt = 1.0 / samplingFreq;
-	const FloatType w = 2.0 * PI * centerFreq;
+	const FloatType w = 2.0 * pi * centerFreq;
 	const unsigned int numSamples = static_cast<unsigned int>(end / dt) + 1U;
 	v.resize(numSamples);
 	FloatType maxVal = 0.0;

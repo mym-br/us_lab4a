@@ -109,7 +109,7 @@ Interpolator<FloatType>::prepare(unsigned int upsamplingFactor, FloatType lpFilt
 	Util::fillSequenceFromStartToEndWithSize(x, -numPeriods, numPeriods, finalWindowSize);
 	lowPassFIRFilter_.resize(x.size());
 	for (unsigned int i = 0; i < lowPassFIRFilter_.size(); ++i) {
-		lowPassFIRFilter_[i] = boost::math::sinc_pi(PI * x[i]);
+		lowPassFIRFilter_[i] = boost::math::sinc_pi(pi * x[i]);
 	}
 
 	Util::multiply(window, lowPassFIRFilter_);

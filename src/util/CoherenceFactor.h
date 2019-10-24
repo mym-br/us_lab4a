@@ -227,7 +227,7 @@ class PhaseCoherenceFactor : public AnalyticSignalCoherenceFactor<FloatType> {
 public:
 	PhaseCoherenceFactor(FloatType gamma)
 		: gamma_(gamma)
-		, sigma0_(PI / std::sqrt(3.0))
+		, sigma0_(pi / std::sqrt(3.0))
 		, factor_(gamma / sigma0_) { }
 	virtual ~PhaseCoherenceFactor() { }
 
@@ -275,7 +275,7 @@ PhaseCoherenceFactor<FloatType>::calculate(const std::complex<FloatType>* data, 
 		phi_[i] = std::atan2(c.imag(), c.real());
 	}
 	for (unsigned int i = 0; i < size; ++i) {
-		phiAux_[i] = phi_[i] + ((phi_[i] < 0) ? FloatType(PI) : -FloatType(PI));
+		phiAux_[i] = phi_[i] + ((phi_[i] < 0) ? FloatType(pi) : -FloatType(pi));
 	}
 
 	const FloatType sf = std::min(
@@ -302,7 +302,7 @@ public:
 	PRNGPhaseCoherenceFactor(FloatType gamma)
 		: prng_(1)
 		, gamma_(gamma)
-		, sigma0_(PI / std::sqrt(3.0))
+		, sigma0_(pi / std::sqrt(3.0))
 		, factor_(gamma / sigma0_) { }
 	virtual ~PRNGPhaseCoherenceFactor() { }
 
@@ -351,14 +351,14 @@ PRNGPhaseCoherenceFactor<FloatType>::calculate(const std::complex<FloatType>* da
 	for (unsigned int i = 0; i < size; ++i) {
 		const std::complex<FloatType> c = data[i];
 		if (c == FloatType(0)) {
-			phi_[i] = (2.0 * prng_.get() - 1.0) * PI;
+			phi_[i] = (2.0 * prng_.get() - 1.0) * pi;
 		} else {
 			phi_[i] = std::atan2(c.imag(), c.real());
 		}
 		if (phi_[i] < 0) {
-			phiAux_[i] = phi_[i] + FloatType(PI);
+			phiAux_[i] = phi_[i] + FloatType(pi);
 		} else {
-			phiAux_[i] = phi_[i] - FloatType(PI);
+			phiAux_[i] = phi_[i] - FloatType(pi);
 		}
 	}
 

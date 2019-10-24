@@ -114,7 +114,7 @@ NumericRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 	std::size_t minN0 = std::numeric_limits<std::size_t>::max();
 	std::size_t maxN0 = 0;
 	const FloatType k1 = samplingFreq_ / propagationSpeed_;
-	const FloatType k2 = samplingFreq_ * subElemWidth_ * subElemHeight_ * 0.5 / (PI * propagationSpeed_);
+	const FloatType k2 = samplingFreq_ * subElemWidth_ * subElemHeight_ * 0.5 / (pi * propagationSpeed_);
 	const FloatType z2 = z * z;
 	for (unsigned int iy = 0; iy < numElemY_; ++iy) {
 		const FloatType dy = y - subElem_(iy, 0).y;
