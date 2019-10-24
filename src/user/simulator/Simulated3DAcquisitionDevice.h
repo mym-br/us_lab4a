@@ -180,16 +180,16 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 			, signalCoeff_(1.0)
 			, prng_(pseudorandomNumberGeneratorSeed)
 {
-	txElemWidth_  = arrayPM.value<FloatType>("tx_element_width" , 1.0e-6, 1000.0e-3);
-	txElemHeight_ = arrayPM.value<FloatType>("tx_element_height", 1.0e-6, 1000.0e-3);
-	rxElemWidth_  = arrayPM.value<FloatType>("rx_element_width" , 1.0e-6, 1000.0e-3);
-	rxElemHeight_ = arrayPM.value<FloatType>("rx_element_height", 1.0e-6, 1000.0e-3);
+	arrayPM.getValue(txElemWidth_ , "tx_element_width" , 1.0e-6, 1000.0e-3);
+	arrayPM.getValue(txElemHeight_, "tx_element_height", 1.0e-6, 1000.0e-3);
+	arrayPM.getValue(rxElemWidth_ , "rx_element_width" , 1.0e-6, 1000.0e-3);
+	arrayPM.getValue(rxElemHeight_, "rx_element_height", 1.0e-6, 1000.0e-3);
 
-	noiseAmplitude_ = pm.value<FloatType>(  "noise_amplitude"       , 0.0, 1.0e100);
-	excitationType_ = pm.value<std::string>("excitation_type");
-	excNumPeriods_  = pm.value<FloatType>(  "excitation_num_periods", 0.0, 100.0);
+	pm.getValue(noiseAmplitude_, "noise_amplitude"       , 0.0, 1.0e100);
+	pm.getValue(excitationType_, "excitation_type");
+	pm.getValue(excNumPeriods_ , "excitation_num_periods", 0.0, 100.0);
 
-	const std::string irMethod = pm.value<std::string>("impulse_response_method");
+	const auto irMethod = pm.value<std::string>("impulse_response_method");
 	const FloatType nyquistRate = 2.0 * maxFrequency;
 	if (irMethod == "numeric") {
 		useNumericMethod_ = true;
@@ -206,8 +206,8 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 		txDiscretization_ = txSubElemSize;
 		rxDiscretization_ = rxSubElemSize;
 	} else if (irMethod == "analytic") {
-		const FloatType txMinEdgeDivisor = pm.value<FloatType>("tx_min_edge_divisor", 0.0, 1.0e6);
-		const FloatType rxMinEdgeDivisor = pm.value<FloatType>("rx_min_edge_divisor", 0.0, 1.0e6);
+		const auto txMinEdgeDivisor = pm.value<FloatType>("tx_min_edge_divisor", 0.0, 1.0e6);
+		const auto rxMinEdgeDivisor = pm.value<FloatType>("rx_min_edge_divisor", 0.0, 1.0e6);
 		txDiscretization_ = txMinEdgeDivisor;
 		rxDiscretization_ = rxMinEdgeDivisor;
 	} else {

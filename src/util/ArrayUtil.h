@@ -72,12 +72,12 @@ template<typename FloatType>
 void
 calculateTxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos)
 {
-	const FloatType pitchX      = pm.value<FloatType>("tx_pitch_x"   ,  1.0e-6, 1000.0);
-	const FloatType pitchY      = pm.value<FloatType>("tx_pitch_y"   ,  1.0e-6, 1000.0);
-	const unsigned int numElemX = pm.value<FloatType>("tx_num_elem_x",       1,   1024);
-	const unsigned int numElemY = pm.value<FloatType>("tx_num_elem_y",       1,   1024);
-	const FloatType offsetX     = pm.value<FloatType>("tx_offset_x"  , -1000.0, 1000.0);
-	const FloatType offsetY     = pm.value<FloatType>("tx_offset_y"  , -1000.0, 1000.0);
+	const auto pitchX   = pm.value<FloatType>("tx_pitch_x"   ,  1.0e-6, 1000.0);
+	const auto pitchY   = pm.value<FloatType>("tx_pitch_y"   ,  1.0e-6, 1000.0);
+	const auto numElemX = pm.value<FloatType>("tx_num_elem_x",       1,   1024);
+	const auto numElemY = pm.value<FloatType>("tx_num_elem_y",       1,   1024);
+	const auto offsetX  = pm.value<FloatType>("tx_offset_x"  , -1000.0, 1000.0);
+	const auto offsetY  = pm.value<FloatType>("tx_offset_y"  , -1000.0, 1000.0);
 
 	calculateElementPositions(pitchX, numElemX, offsetX, pitchY, numElemY, offsetY, elemPos);
 }
@@ -86,12 +86,12 @@ template<typename FloatType>
 void
 calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos)
 {
-	const FloatType pitchX      = pm.value<FloatType>("rx_pitch_x"   ,  1.0e-6, 1000.0);
-	const FloatType pitchY      = pm.value<FloatType>("rx_pitch_y"   ,  1.0e-6, 1000.0);
-	const unsigned int numElemX = pm.value<FloatType>("rx_num_elem_x",       1,   1024);
-	const unsigned int numElemY = pm.value<FloatType>("rx_num_elem_y",       1,   1024);
-	const FloatType offsetX     = pm.value<FloatType>("rx_offset_x"  , -1000.0, 1000.0);
-	const FloatType offsetY     = pm.value<FloatType>("rx_offset_y"  , -1000.0, 1000.0);
+	const auto pitchX   = pm.value<FloatType>("rx_pitch_x"   ,  1.0e-6, 1000.0);
+	const auto pitchY   = pm.value<FloatType>("rx_pitch_y"   ,  1.0e-6, 1000.0);
+	const auto numElemX = pm.value<FloatType>("rx_num_elem_x",       1,   1024);
+	const auto numElemY = pm.value<FloatType>("rx_num_elem_y",       1,   1024);
+	const auto offsetX  = pm.value<FloatType>("rx_offset_x"  , -1000.0, 1000.0);
+	const auto offsetY  = pm.value<FloatType>("rx_offset_y"  , -1000.0, 1000.0);
 
 	calculateElementPositions(pitchX, numElemX, offsetX, pitchY, numElemY, offsetY, elemPos);
 }

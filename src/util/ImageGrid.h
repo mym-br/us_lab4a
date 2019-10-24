@@ -52,16 +52,16 @@ template<typename T>
 void
 ImageGrid<FloatType>::getRectangularGrid(ConstParameterMapPtr pm, FloatType lambda, T& grid)
 {
-	const FloatType minX    = pm->value<FloatType>("rectangular_min_x"   , -10000.0, 10000.0);
-	const FloatType maxX    = pm->value<FloatType>("rectangular_max_x"   ,     minX, 10000.0);
-	const FloatType minY    = pm->value<FloatType>("rectangular_min_y"   , -10000.0, 10000.0);
-	const FloatType maxY    = pm->value<FloatType>("rectangular_max_y"   ,     minY, 10000.0);
-	const FloatType minZ    = pm->value<FloatType>("rectangular_min_z"   , -10000.0, 10000.0);
-	const FloatType maxZ    = pm->value<FloatType>("rectangular_max_z"   ,     minZ, 10000.0);
-	const FloatType stepDiv = pm->value<FloatType>("rectangular_step_div",   1.0e-2,  1000.0);
-	const FloatType originX = pm->value<FloatType>("rectangular_origin_x", -10000.0, 10000.0);
-	const FloatType originY = pm->value<FloatType>("rectangular_origin_y", -10000.0, 10000.0);
-	const FloatType originZ = pm->value<FloatType>("rectangular_origin_z", -10000.0, 10000.0);
+	const auto minX    = pm->value<FloatType>("rectangular_min_x"   , -10000.0, 10000.0);
+	const auto maxX    = pm->value<FloatType>("rectangular_max_x"   ,     minX, 10000.0);
+	const auto minY    = pm->value<FloatType>("rectangular_min_y"   , -10000.0, 10000.0);
+	const auto maxY    = pm->value<FloatType>("rectangular_max_y"   ,     minY, 10000.0);
+	const auto minZ    = pm->value<FloatType>("rectangular_min_z"   , -10000.0, 10000.0);
+	const auto maxZ    = pm->value<FloatType>("rectangular_max_z"   ,     minZ, 10000.0);
+	const auto stepDiv = pm->value<FloatType>("rectangular_step_div",   1.0e-2,  1000.0);
+	const auto originX = pm->value<FloatType>("rectangular_origin_x", -10000.0, 10000.0);
+	const auto originY = pm->value<FloatType>("rectangular_origin_y", -10000.0, 10000.0);
+	const auto originZ = pm->value<FloatType>("rectangular_origin_z", -10000.0, 10000.0);
 
 	const FloatType maxStep = lambda / stepDiv;
 	const FloatType dx = maxX - minX;
@@ -120,14 +120,14 @@ template<typename T>
 void
 ImageGrid<FloatType>::getSectorialGrid(ConstParameterMapPtr pm, FloatType lambda, T& grid)
 {
-	const FloatType minRadius     = pm->value<FloatType>("sectorial_min_radius"     ,             1.0e-4, 10000.0);
-	const FloatType maxRadius     = pm->value<FloatType>("sectorial_max_radius"     , minRadius + 1.0e-6, 10000.0);
-	const FloatType radiusStepDiv = pm->value<FloatType>("sectorial_radius_step_div",             1.0e-2,  1000.0);
-	const FloatType minAngle      = pm->value<FloatType>("sectorial_min_angle"      ,              -88.0,    88.0);
-	const FloatType maxAngle      = pm->value<FloatType>("sectorial_max_angle"      ,  minAngle + 1.0e-3,    88.0);
-	const FloatType angleStep     = pm->value<FloatType>("sectorial_angle_step"     ,             1.0e-6,    10.0);
-	const FloatType originX       = pm->value<FloatType>("sectorial_origin_x"       ,           -10000.0, 10000.0);
-	const FloatType originZ       = pm->value<FloatType>("sectorial_origin_z"       ,           -10000.0, 10000.0);
+	const auto minRadius     = pm->value<FloatType>("sectorial_min_radius"     ,             1.0e-4, 10000.0);
+	const auto maxRadius     = pm->value<FloatType>("sectorial_max_radius"     , minRadius + 1.0e-6, 10000.0);
+	const auto radiusStepDiv = pm->value<FloatType>("sectorial_radius_step_div",             1.0e-2,  1000.0);
+	const auto minAngle      = pm->value<FloatType>("sectorial_min_angle"      ,              -88.0,    88.0);
+	const auto maxAngle      = pm->value<FloatType>("sectorial_max_angle"      ,  minAngle + 1.0e-3,    88.0);
+	const auto angleStep     = pm->value<FloatType>("sectorial_angle_step"     ,             1.0e-6,    10.0);
+	const auto originX       = pm->value<FloatType>("sectorial_origin_x"       ,           -10000.0, 10000.0);
+	const auto originZ       = pm->value<FloatType>("sectorial_origin_z"       ,           -10000.0, 10000.0);
 
 	std::vector<FloatType> radiusList;
 	Util::fillSequenceFromStartToEndWithMaximumStep(radiusList,
@@ -160,7 +160,7 @@ ImageGrid<FloatType>::get(ConstParameterMapPtr pm, FloatType lambda, T& grid)
 		THROW_EXCEPTION(InvalidParameterException, "Lambda is too small: " << lambda << '.');
 	}
 
-	std::string gridType = pm->value<std::string>("image_grid_type");
+	const auto gridType = pm->value<std::string>("image_grid_type");
 	if (gridType == "rectangular") {
 		getRectangularGrid(pm, lambda, grid);
 	} else if (gridType == "sectorial") {

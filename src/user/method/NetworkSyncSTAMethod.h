@@ -88,11 +88,11 @@ template<typename FloatType>
 void
 NetworkSyncSTAMethod<FloatType>::execute()
 {
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	auto taskPM = project_.taskParameterMap();
+	auto staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
 	const STAConfiguration<FloatType> config(staPM);
-	const unsigned int baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-	const std::string dataDir      = taskPM->value<std::string>("data_dir");
+	const auto baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
+	const auto dataDir = taskPM->value<std::string>("data_dir");
 
 	if (project_.method() == MethodEnum::sta_network_sync_save_signals) {
 		project_.createDirectory(dataDir, true);
@@ -101,13 +101,13 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		return;
 	}
 
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
-	ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
-	const FloatType peakOffset           = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
-	bool vectorialProcessingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
-	const unsigned int upsamplingFactor  = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
-	const std::string txApodDesc         = imagPM->value<std::string>( "tx_apodization");
-	const std::string rxApodDesc         = imagPM->value<std::string>( "rx_apodization");
+	const auto outputDir = taskPM->value<std::string>("output_dir");
+	auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const auto peakOffset                      = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
+	const auto vectorialProcessingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
+	const auto upsamplingFactor                = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
+	const auto txApodDesc                      = imagPM->value<std::string>( "tx_apodization");
+	const auto rxApodDesc                      = imagPM->value<std::string>( "rx_apodization");
 
 	std::vector<FloatType> txApod(config.numElements);
 	WindowFunction::get(txApodDesc, config.numElements, txApod);
@@ -214,10 +214,10 @@ void
 NetworkSyncSTAMethod<FloatType>::saveSignals(ConstParameterMapPtr taskPM, const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
 						unsigned int baseElement, const std::string& dataDir)
 {
-	ConstParameterMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
-	const unsigned int serverPort = scanPM->value<unsigned int>("sync_server_port", 1024, 65535);
-	const FloatType minY          = scanPM->value<FloatType>(   "min_y", -10000.0, 10000.0);
-	const FloatType yStep         = scanPM->value<FloatType>(   "y_step", 1.0e-6, 1000.0);
+	auto scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
+	const auto serverPort = scanPM->value<unsigned int>("sync_server_port",     1024,   65535);
+	const auto minY       = scanPM->value<FloatType>(   "min_y"           , -10000.0, 10000.0);
+	const auto yStep      = scanPM->value<FloatType>(   "y_step"          ,   1.0e-6,  1000.0);
 
 	SyncServer server(serverPort);
 	typename STAAcquisition<FloatType>::AcquisitionDataType acqData;

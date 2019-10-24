@@ -111,18 +111,18 @@ template<typename FloatType>
 void
 SA3DConfiguration<FloatType>::load(ConstParameterMapPtr saPM, ConstParameterMapPtr arrayPM)
 {
-	numElementsMux    = saPM->value<unsigned int>("num_elements_mux"   ,       1,    1024);
-	numPulses         = saPM->value<unsigned int>("num_pulses"         ,       1,     100);
-	centerFrequency   = saPM->value<FloatType>(   "center_frequency"   ,   100.0, 100.0e6);
-	maxFrequency      = saPM->value<FloatType>(   "max_frequency"      ,   100.0, 100.0e6);
-	acquisitionTime   = saPM->value<FloatType>(   "acquisition_time"   ,  1.0e-6,     1.0);
-	minGain           = saPM->value<FloatType>(   "min_gain"           , -2000.0,  2000.0);
-	maxGain           = saPM->value<FloatType>(   "max_gain"           , minGain,  2000.0);
-	propagationSpeed  = saPM->value<FloatType>(   "propagation_speed_1",   100.0, 10000.0);
-	acquisitionDelay  = saPM->value<FloatType>(   "acquisition_delay"  ,     0.0,     1.0);
-	samplingFrequency = saPM->value<FloatType>(   "sampling_frequency" ,   100.0, 200.0e6);
-	deadZoneM         = saPM->value<FloatType>(   "dead_zone_m"        ,     0.0, 50.0e-3);
-	valueScale        = saPM->value<FloatType>(   "value_scale"        ,     0.0,  1.0e30);
+	saPM->getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
+	saPM->getValue(numPulses        , "num_pulses"         ,       1,     100);
+	saPM->getValue(centerFrequency  , "center_frequency"   ,   100.0, 100.0e6);
+	saPM->getValue(maxFrequency     , "max_frequency"      ,   100.0, 100.0e6);
+	saPM->getValue(acquisitionTime  , "acquisition_time"   ,  1.0e-6,     1.0);
+	saPM->getValue(minGain          , "min_gain"           , -2000.0,  2000.0);
+	saPM->getValue(maxGain          , "max_gain"           , minGain,  2000.0);
+	saPM->getValue(propagationSpeed , "propagation_speed_1",   100.0, 10000.0);
+	saPM->getValue(acquisitionDelay , "acquisition_delay"  ,     0.0,     1.0);
+	saPM->getValue(samplingFrequency, "sampling_frequency" ,   100.0, 200.0e6);
+	saPM->getValue(deadZoneM        , "dead_zone_m"        ,     0.0, 50.0e-3);
+	saPM->getValue(valueScale       , "value_scale"        ,     0.0,  1.0e30);
 
 	ArrayUtil::calculateTxElementPositions(*arrayPM, txElemPos);
 	ArrayUtil::calculateRxElementPositions(*arrayPM, rxElemPos);

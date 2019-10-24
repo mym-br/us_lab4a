@@ -42,16 +42,16 @@ ShowImageMethod::~ShowImageMethod()
 void
 ShowImageMethod::execute()
 {
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	const std::string dataDir      = taskPM->value<std::string>("data_dir");
-	const std::string xFile        = taskPM->value<std::string>("x_file");
-	const std::string xDataset     = taskPM->value<std::string>("x_dataset");
-	const std::string yFile        = taskPM->value<std::string>("y_file");
-	const std::string yDataset     = taskPM->value<std::string>("y_dataset");
-	const std::string zFile        = taskPM->value<std::string>("z_file");
-	const std::string zDataset     = taskPM->value<std::string>("z_dataset");
-	const std::string imageFile    = taskPM->value<std::string>("image_file");
-	const std::string imageDataset = taskPM->value<std::string>("image_dataset");
+	auto taskPM = project_.taskParameterMap();
+	const auto dataDir      = taskPM->value<std::string>("data_dir");
+	const auto xFile        = taskPM->value<std::string>("x_file");
+	const auto xDataset     = taskPM->value<std::string>("x_dataset");
+	const auto yFile        = taskPM->value<std::string>("y_file");
+	const auto yDataset     = taskPM->value<std::string>("y_dataset");
+	const auto zFile        = taskPM->value<std::string>("z_file");
+	const auto zDataset     = taskPM->value<std::string>("z_dataset");
+	const auto imageFile    = taskPM->value<std::string>("image_file");
+	const auto imageDataset = taskPM->value<std::string>("image_dataset");
 
 	Project::GridDataType projGridData;
 
@@ -67,11 +67,11 @@ ShowImageMethod::execute()
 	if (taskPM->contains("points_x_file")) {
 		std::vector<Project::PointType> projPointList;
 		std::vector<float> pointsX, pointsY, pointsZ;
-		std::string pointsXFile = taskPM->value<std::string>("points_x_file");
+		const auto pointsXFile = taskPM->value<std::string>("points_x_file");
 		project_.loadHDF5(dataDir + '/' + pointsXFile, "x", pointsX);
-		std::string pointsYFile = taskPM->value<std::string>("points_y_file");
+		const auto pointsYFile = taskPM->value<std::string>("points_y_file");
 		project_.loadHDF5(dataDir + '/' + pointsYFile, "y", pointsY);
-		std::string pointsZFile = taskPM->value<std::string>("points_z_file");
+		const auto pointsZFile = taskPM->value<std::string>("points_z_file");
 		project_.loadHDF5(dataDir + '/' + pointsZFile, "z", pointsZ);
 		projPointList.resize(pointsX.size());
 		Util::copyXYZFromSimpleVectors(pointsX, pointsY, pointsZ, projPointList);

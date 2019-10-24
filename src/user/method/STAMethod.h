@@ -131,10 +131,10 @@ template<typename FloatType>
 void
 STAMethod<FloatType>::execute()
 {
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	auto taskPM = project_.taskParameterMap();
+	auto staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
 	const STAConfiguration<FloatType> config(staPM);
-	const unsigned int baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
+	const auto baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
@@ -162,7 +162,7 @@ STAMethod<FloatType>::execute()
 	}
 
 	if (project_.method() == MethodEnum::sta_save_signals) {
-		const std::string dataDir = taskPM->value<std::string>("data_dir");
+		const auto dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		acquisition->prepare(baseElement);
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
@@ -172,11 +172,11 @@ STAMethod<FloatType>::execute()
 		return;
 	}
 
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	const auto outputDir = taskPM->value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
-	ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
-	const FloatType peakOffset = imagPM->value<FloatType>("peak_offset", 0.0, 50.0);
+	auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const auto peakOffset = imagPM->value<FloatType>("peak_offset", 0.0, 50.0);
 
 	const FloatType nyquistRate = 2.0 * config.maxFrequency;
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
@@ -196,8 +196,8 @@ STAMethod<FloatType>::execute()
 	case MethodEnum::sta_vectorial_dp_saved:   // falls through
 	case MethodEnum::sta_vectorial_sp_saved:
 		{
-			const bool processingWithEnvelope   = imagPM->value<bool>(        "calculate_envelope_in_processing");
-			const unsigned int upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
+			const auto processingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
+			const auto upsamplingFactor       = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 			if (processingWithEnvelope) {
 				visual_ = Figure::VISUALIZATION_RECTIFIED_LOG;
 			}

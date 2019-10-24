@@ -64,7 +64,7 @@ Project::loadParameterMap(const char* fileName) const
 ConstParameterMapPtr
 Project::loadChildParameterMap(ConstParameterMapPtr pm, const char* fileNameKey) const
 {
-	std::string fileName = pm->value<std::string>(fileNameKey);
+	const auto fileName = pm->value<std::string>(fileNameKey);
 	QString filePath = expDirectory_ + '/' + fileName.c_str();
 	return std::make_shared<const ParameterMap>(filePath);
 }

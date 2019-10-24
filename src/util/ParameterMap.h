@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -19,6 +19,7 @@
 #define PARAMETERMAP_H
 
 #include <memory>
+#include <string>
 
 #include <QHash>
 #include <QString>
@@ -37,6 +38,37 @@ public:
 	bool contains(const char* key) const;
 	template<typename T> T value(const char* key) const;
 	template<typename T> T value(const char* key, T minValue, T maxValue) const;
+
+	void getValue(double& dest, const char* key, double minValue, double maxValue) const {
+		dest = value<double>(key, minValue, maxValue);
+	}
+	void getValue(float& dest, const char* key, float minValue, float maxValue) const {
+		dest = value<float>(key, minValue, maxValue);
+	}
+	void getValue(long& dest, const char* key, long minValue, long maxValue) const {
+		dest = value<long>(key, minValue, maxValue);
+	}
+	void getValue(unsigned long& dest, const char* key, unsigned long minValue, unsigned long maxValue) const {
+		dest = value<unsigned long>(key, minValue, maxValue);
+	}
+	void getValue(int& dest, const char* key, int minValue, int maxValue) const {
+		dest = value<int>(key, minValue, maxValue);
+	}
+	void getValue(unsigned int& dest, const char* key, unsigned int minValue, unsigned int maxValue) const {
+		dest = value<unsigned int>(key, minValue, maxValue);
+	}
+	void getValue(short& dest, const char* key, short minValue, short maxValue) const {
+		dest = value<short>(key, minValue, maxValue);
+	}
+	void getValue(unsigned short& dest, const char* key, unsigned short minValue, unsigned short maxValue) const {
+		dest = value<unsigned short>(key, minValue, maxValue);
+	}
+	void getValue(bool& dest, const char* key) const {
+		dest = value<bool>(key);
+	}
+	void getValue(std::string& dest, const char* key) const {
+		dest = value<std::string>(key);
+	}
 private:
 	ParameterMap(const ParameterMap&);
 	ParameterMap& operator=(const ParameterMap&);

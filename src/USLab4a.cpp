@@ -216,12 +216,12 @@ USLab4a::processBatchEntry()
 			project_.setExpDirectory(experiment.isEmpty() ? "" : (QString(EXPERIMENT_DIR_PREFIX) + experiment).toStdString());
 			project_.loadTaskParameters((QString(TASK_FILE_PREFIX) + task + TASK_FILE_SUFFIX).toStdString());
 
-			ConstParameterMapPtr pm = project_.taskParameterMap();
+			auto pm = project_.taskParameterMap();
 			if (!pm) {
 				THROW_EXCEPTION(InvalidStateException, "The task parameter map has not been initialized.");
 			}
 
-			std::string methodName = pm->value<std::string>("method");
+			const auto methodName = pm->value<std::string>("method");
 			ui_.methodLineEdit->setText(methodName.c_str());
 
 			MethodEnum method = Method::findByName(methodName);
@@ -383,12 +383,12 @@ USLab4a::on_enableTaskButton_clicked()
 	try {
 		project_.loadTaskParameters((QString(TASK_FILE_PREFIX) + selectedTasks.first()->text() + TASK_FILE_SUFFIX).toStdString());
 
-		ConstParameterMapPtr pm = project_.taskParameterMap();
+		auto pm = project_.taskParameterMap();
 		if (!pm) {
 			THROW_EXCEPTION(InvalidStateException, "The task parameter map has not been initialized.");
 		}
 
-		std::string methodName = pm->value<std::string>("method");
+		const auto methodName = pm->value<std::string>("method");
 		ui_.methodLineEdit->setText(methodName.c_str());
 
 		MethodEnum method = Method::findByName(methodName);

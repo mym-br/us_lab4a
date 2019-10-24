@@ -38,21 +38,21 @@ namespace Lab {
 void
 SingleAcquisitionMethod::fillConfiguration()
 {
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	config_.savedAcqDir = taskPM->value<std::string>("saved_acquisition_dir");
+	auto taskPM = project_.taskParameterMap();
+	taskPM->getValue(config_.savedAcqDir, "saved_acquisition_dir");
 
-	ConstParameterMapPtr acqPM = project_.loadChildParameterMap(taskPM, "acq_config_file");
-	config_.samplingFrequency = acqPM->value<double>(      "sampling_frequency",  100.0, 200.0e6);
-	config_.centerFrequency   = acqPM->value<double>(      "center_frequency"  ,  100.0, 100.0e6);
-	config_.acquisitionTime   = acqPM->value<double>(      "acquisition_time"  , 1.0e-6,     1.0);
-	config_.minGain           = acqPM->value<double>(      "min_gain"          ,    0.0,   100.0);
-//	config_.maxGain           = acqPM->value<double>(      "max_gain"          ,    0.0,   100.0);
-	config_.numElementsMux    = acqPM->value<unsigned int>("num_elements_mux"  ,      8,    1024);
-	config_.numElements       = acqPM->value<unsigned int>("num_elements"      ,      8, config_.numElementsMux);
-	config_.baseElement       = acqPM->value<unsigned int>("base_element"      ,      0, config_.numElementsMux - config_.numElements);
-	config_.txGroupElement    = acqPM->value<unsigned int>("tx_group_element"  ,      0, config_.numElements);
-	config_.rxGroupElement    = acqPM->value<unsigned int>("rx_group_element"  ,      0, config_.numElements);
-	config_.numPulses         = acqPM->value<unsigned int>("num_pulses"        ,      1,     100);
+	auto acqPM = project_.loadChildParameterMap(taskPM, "acq_config_file");
+	acqPM->getValue(config_.samplingFrequency, "sampling_frequency",  100.0, 200.0e6);
+	acqPM->getValue(config_.centerFrequency  , "center_frequency"  ,  100.0, 100.0e6);
+	acqPM->getValue(config_.acquisitionTime  , "acquisition_time"  , 1.0e-6,     1.0);
+	acqPM->getValue(config_.minGain          , "min_gain"          ,    0.0,   100.0);
+	//acqPM->getValue(config_.maxGain          , "max_gain"          ,    0.0,   100.0);
+	acqPM->getValue(config_.numElementsMux   , "num_elements_mux"  ,      8,    1024);
+	acqPM->getValue(config_.numElements      , "num_elements"      ,      8, config_.numElementsMux);
+	acqPM->getValue(config_.baseElement      , "base_element"      ,      0, config_.numElementsMux - config_.numElements);
+	acqPM->getValue(config_.txGroupElement   , "tx_group_element"  ,      0, config_.numElements);
+	acqPM->getValue(config_.rxGroupElement   , "rx_group_element"  ,      0, config_.numElements);
+	acqPM->getValue(config_.numPulses        , "num_pulses"        ,      1,     100);
 }
 
 SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
@@ -62,11 +62,11 @@ SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
 
 	project_.createDirectory(config_.savedAcqDir, false);
 
-	ConstParameterMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
-	const std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");
-	const unsigned short portNumber   = pm->value<unsigned short>("server_port_number",   49152,  65535);
-	valueFactor_                = 1.0 / pm->value<double>(        "value_scale"       , 1.0e-30, 1.0e30);
-	averageN_                         = pm->value<unsigned int>(  "average_n"         ,       1,    256);
+	auto pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
+	const auto serverIpAddress = pm->value<std::string>(   "server_ip_address");
+	const auto portNumber      = pm->value<unsigned short>("server_port_number",   49152,  65535);
+	valueFactor_         = 1.0 / pm->value<double>(        "value_scale"       , 1.0e-30, 1.0e30);
+	pm->getValue(averageN_, "average_n", 1, 256);
 
 #ifndef TEST_MODE
 	acq_ = std::make_unique<ArrayAcqClient>(serverIpAddress.c_str(), portNumber);

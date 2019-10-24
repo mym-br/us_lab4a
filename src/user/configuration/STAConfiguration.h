@@ -57,22 +57,22 @@ template<typename FloatType>
 void
 STAConfiguration<FloatType>::load(ConstParameterMapPtr pm)
 {
-	numElementsMux    = pm->value<unsigned int>("num_elements_mux"   ,       1,    1024);
-	numElements       = pm->value<unsigned int>("num_elements"       ,       1, numElementsMux);
-	firstTxElem       = pm->value<unsigned int>("first_tx_elem"      ,           0, numElements - 1);
-	lastTxElem        = pm->value<unsigned int>("last_tx_elem"       , firstTxElem, numElements - 1);
-	numPulses         = pm->value<unsigned int>("num_pulses"         ,       1,     100);
-	pitch             = pm->value<FloatType>(   "pitch"              ,  1.0e-6,  1000.0);
-	centerFrequency   = pm->value<FloatType>(   "center_frequency"   ,   100.0, 100.0e6);
-	maxFrequency      = pm->value<FloatType>(   "max_frequency"      ,   100.0, 100.0e6);
-	acquisitionTime   = pm->value<FloatType>(   "acquisition_time"   ,  1.0e-6,     1.0);
-	minGain           = pm->value<FloatType>(   "min_gain"           , -2000.0,  2000.0);
-	maxGain           = pm->value<FloatType>(   "max_gain"           , minGain,  2000.0);
-	propagationSpeed  = pm->value<FloatType>(   "propagation_speed_1",   100.0, 10000.0);
-	acquisitionDelay  = pm->value<FloatType>(   "acquisition_delay"  ,     0.0,     1.0);
-	samplingFrequency = pm->value<FloatType>(   "sampling_frequency" ,   100.0, 200.0e6);
-	deadZoneM         = pm->value<FloatType>(   "dead_zone_m"        ,     0.0, 50.0e-3);
-	valueScale        = pm->value<FloatType>(   "value_scale"        ,     0.0,  1.0e30);
+	pm->getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
+	pm->getValue(numElements      , "num_elements"       ,       1, numElementsMux);
+	pm->getValue(firstTxElem      , "first_tx_elem"      ,       0, numElements - 1);
+	pm->getValue(lastTxElem       , "last_tx_elem"       , firstTxElem, numElements - 1);
+	pm->getValue(numPulses        , "num_pulses"         ,       1,     100);
+	pm->getValue(pitch            , "pitch"              ,  1.0e-6,  1000.0);
+	pm->getValue(centerFrequency  , "center_frequency"   ,   100.0, 100.0e6);
+	pm->getValue(maxFrequency     , "max_frequency"      ,   100.0, 100.0e6);
+	pm->getValue(acquisitionTime  , "acquisition_time"   ,  1.0e-6,     1.0);
+	pm->getValue(minGain          , "min_gain"           , -2000.0,  2000.0);
+	pm->getValue(maxGain          , "max_gain"           , minGain,  2000.0);
+	pm->getValue(propagationSpeed , "propagation_speed_1",   100.0, 10000.0);
+	pm->getValue(acquisitionDelay , "acquisition_delay"  ,     0.0,     1.0);
+	pm->getValue(samplingFrequency, "sampling_frequency" ,   100.0, 200.0e6);
+	pm->getValue(deadZoneM        , "dead_zone_m"        ,     0.0, 50.0e-3);
+	pm->getValue(valueScale       , "value_scale"        ,     0.0,  1.0e30);
 }
 
 } // namespace Lab

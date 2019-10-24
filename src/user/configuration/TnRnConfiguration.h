@@ -61,19 +61,19 @@ template<typename FloatType>
 void
 TnRnConfiguration<FloatType>::load(ConstParameterMapPtr imgPM, ConstParameterMapPtr arrayPM)
 {
-	numElementsMux    = imgPM->value<unsigned int>("num_elements_mux"   ,       1,    1024);
-	numElements       = imgPM->value<unsigned int>("num_elements"       ,       1, numElementsMux);
-	numPulses         = imgPM->value<unsigned int>("num_pulses"         ,       1,     100);
-	centerFrequency   = imgPM->value<FloatType>(   "center_frequency"   ,   100.0, 100.0e6);
-	maxFrequency      = imgPM->value<FloatType>(   "max_frequency"      ,   100.0, 100.0e6);
-	acquisitionTime   = imgPM->value<FloatType>(   "acquisition_time"   ,  1.0e-6,     1.0);
-	minGain           = imgPM->value<FloatType>(   "min_gain"           , -2000.0,  2000.0);
-	maxGain           = imgPM->value<FloatType>(   "max_gain"           , minGain,  2000.0);
-	propagationSpeed  = imgPM->value<FloatType>(   "propagation_speed_1",   100.0, 10000.0);
-	acquisitionDelay  = imgPM->value<FloatType>(   "acquisition_delay"  ,     0.0,     1.0);
-	samplingFrequency = imgPM->value<FloatType>(   "sampling_frequency" ,   100.0, 200.0e6);
-	deadZoneM         = imgPM->value<FloatType>(   "dead_zone_m"        ,     0.0, 50.0e-3);
-	valueScale        = imgPM->value<FloatType>(   "value_scale"        ,     0.0,  1.0e30);
+	imgPM->getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
+	imgPM->getValue(numElements      , "num_elements"       ,       1, numElementsMux);
+	imgPM->getValue(numPulses        , "num_pulses"         ,       1,     100);
+	imgPM->getValue(centerFrequency  , "center_frequency"   ,   100.0, 100.0e6);
+	imgPM->getValue(maxFrequency     , "max_frequency"      ,   100.0, 100.0e6);
+	imgPM->getValue(acquisitionTime  , "acquisition_time"   ,  1.0e-6,     1.0);
+	imgPM->getValue(minGain          , "min_gain"           , -2000.0,  2000.0);
+	imgPM->getValue(maxGain          , "max_gain"           , minGain,  2000.0);
+	imgPM->getValue(propagationSpeed , "propagation_speed_1",   100.0, 10000.0);
+	imgPM->getValue(acquisitionDelay , "acquisition_delay"  ,     0.0,     1.0);
+	imgPM->getValue(samplingFrequency, "sampling_frequency" ,   100.0, 200.0e6);
+	imgPM->getValue(deadZoneM        , "dead_zone_m"        ,     0.0, 50.0e-3);
+	imgPM->getValue(valueScale       , "value_scale"        ,     0.0,  1.0e30);
 
 	ArrayUtil::calculateTxElementPositions(*arrayPM, txElemPos);
 	ArrayUtil::calculateRxElementPositions(*arrayPM, rxElemPos);

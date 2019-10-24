@@ -172,9 +172,9 @@ SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr ta
 								const std::vector<FloatType>& txDelays,
 								TnRnAcquisition<FloatType>& acquisition)
 {
-	const std::string dataDir = taskPM->value<std::string>("data_dir");
-	ConstParameterMapPtr seqPM = project_.loadChildParameterMap(taskPM, "seq_config_file");
-	const double acqTime = seqPM->value<double>("acquisition_time", 1.0, 60.0);
+	const auto dataDir = taskPM->value<std::string>("data_dir");
+	auto seqPM = project_.loadChildParameterMap(taskPM, "seq_config_file");
+	const auto acqTime = seqPM->value<double>("acquisition_time", 1.0, 60.0);
 
 	std::vector<typename TnRnAcquisition<FloatType>::AcquisitionDataType> acqDataList;
 	std::vector<double> timeList;
@@ -211,8 +211,8 @@ SingleVirtualSourceMethod<FloatType>::createImagesFromSavedSignalSequence(ConstP
 							unsigned int baseElement, FloatType valueScale, bool coherenceFactorEnabled,
 							TnRnAcquisition<FloatType>& acq, ArrayProcessor<FloatType>& processor)
 {
-	const std::string dataDir   = taskPM->value<std::string>("data_dir");
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	const auto dataDir   = taskPM->value<std::string>("data_dir");
+	const auto outputDir = taskPM->value<std::string>("output_dir");
 	auto& savedAcq = dynamic_cast<SavedTnRnAcquisition<FloatType>&>(acq);
 
 	// Load times.
@@ -242,12 +242,12 @@ template<typename FloatType>
 void
 SingleVirtualSourceMethod<FloatType>::execute()
 {
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
-	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	auto taskPM = project_.taskParameterMap();
+	auto svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
+	auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const TnRnConfiguration<FloatType> config(svsPM, arrayPM);
-	const unsigned int baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
-	const FloatType focusZ         = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
+	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
+	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
 
 	FloatType focusX = 0, focusY = 0;
 	// Set the focus at the mean x, y.
@@ -291,7 +291,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 
 	if (project_.method() == MethodEnum::single_virtual_source_3d_simulated_save_signals ||
 			project_.method() == MethodEnum::single_virtual_source_3d_network_save_signals) {
-		const std::string dataDir = taskPM->value<std::string>("data_dir");
+		const auto dataDir = taskPM->value<std::string>("data_dir");
 		typename TnRnAcquisition<FloatType>::AcquisitionDataType acqData;
 		acquisition->prepare(baseElement, txDelays);
 		acquisition->execute(acqData);
@@ -312,10 +312,10 @@ SingleVirtualSourceMethod<FloatType>::execute()
 			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_dp_saved_sequence ||
 			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_sp_network_continuous) {
 
-		ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
-		const FloatType peakOffset          = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
-		const unsigned int upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
-		const std::string rxApodFile        = imagPM->value<std::string>( "rx_apodization_file");
+		auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+		const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
+		const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
+		const auto rxApodFile       = imagPM->value<std::string>( "rx_apodization_file");
 		std::vector<FloatType> rxApod;
 		project_.loadHDF5(rxApodFile, "apod", rxApod);
 
@@ -331,7 +331,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 			createImagesFromSavedSignalSequence(taskPM, baseElement, config.valueScale, coherenceFactor.enabled(),
 								*acquisition, *processor);
 		} else {
-			const std::string outputDir = taskPM->value<std::string>("output_dir");
+			const auto outputDir = taskPM->value<std::string>("output_dir");
 			project_.createDirectory(outputDir, false);
 			process(config.valueScale, *processor, baseElement, true, outputDir);
 			if (coherenceFactor.enabled()) {

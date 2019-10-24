@@ -88,13 +88,13 @@ template<typename FloatType>
 void
 NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 {
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
-	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	auto taskPM = project_.taskParameterMap();
+	auto svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
+	auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const TnRnConfiguration<FloatType> config(svsPM, arrayPM);
-	const unsigned int baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-	const FloatType focusZ         = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
-	const std::string dataDir      = taskPM->value<std::string>("data_dir");
+	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
+	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
+	const auto dataDir = taskPM->value<std::string>("data_dir");
 
 	FloatType focusX = 0, focusY = 0;
 	// Set the focus at the mean x, y.
@@ -119,12 +119,12 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 		return;
 	}
 
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
-	ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
-	const FloatType peakOffset          = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
-	const unsigned int upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
+	const auto outputDir = taskPM->value<std::string>("output_dir");
+	auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
+	const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 
-	const std::string rxApodFile = imagPM->value<std::string>("rx_apodization_file");
+	const auto rxApodFile = imagPM->value<std::string>("rx_apodization_file");
 	std::vector<FloatType> rxApod;
 	project_.loadHDF5(rxApodFile, "apod", rxApod);
 
@@ -225,10 +225,10 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPt
 								unsigned int baseElement, const std::vector<FloatType>& txDelays,
 								const std::string& dataDir)
 {
-	ConstParameterMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
-	const unsigned int serverPort = scanPM->value<unsigned int>("sync_server_port", 1024, 65535);
-	const bool asyncAcq           = scanPM->value<bool>(        "async_acquisition");
-	const FloatType minY          = scanPM->value<FloatType>(   "min_y", -10000.0, 10000.0);
+	auto scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
+	const auto serverPort = scanPM->value<unsigned int>("sync_server_port", 1024, 65535);
+	const auto asyncAcq   = scanPM->value<bool>(        "async_acquisition");
+	const auto minY       = scanPM->value<FloatType>(   "min_y", -10000.0, 10000.0);
 
 	SyncServer server(serverPort);
 	std::vector<typename TnRnAcquisition<FloatType>::AcquisitionDataType> acqDataList;
@@ -244,8 +244,8 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPt
 	Timer timer;
 	unsigned int acqNumber = 0;
 	if (asyncAcq) {
-		const FloatType ySpeed = scanPM->value<FloatType>("y_speed", 1.0, 100000.0) * (1.0e-3 / 60.0);
-		const FloatType maxY   = scanPM->value<FloatType>("max_y", minY, 10000.0);
+		const auto ySpeed = scanPM->value<FloatType>("y_speed", 1.0, 100000.0) * FloatType(1.0e-3 / 60.0);
+		const auto maxY   = scanPM->value<FloatType>("max_y", minY, 10000.0);
 		LOG_DEBUG << "Waiting for trigger...";
 		if (server.waitForTrigger()) {
 			server.freeTrigger(); // start the array movement
@@ -266,7 +266,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPt
 		}
 		LOG_DEBUG << "Average y step: " << (yList.back() - yList.front()) / (yList.size() - 1);
 	} else {
-		const FloatType yStep = scanPM->value<FloatType>("y_step", 1.0e-6, 1000.0);
+		const auto yStep = scanPM->value<FloatType>("y_step", 1.0e-6, 1000.0);
 		const double t0 = timer.getTime();
 		while (true) {
 			LOG_DEBUG << "Waiting for trigger...";

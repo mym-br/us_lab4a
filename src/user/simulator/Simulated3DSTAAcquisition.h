@@ -70,13 +70,13 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 		, maxAbsValue_()
 		, baseElement_()
 {
-	ConstParameterMapPtr taskPM  = project_.taskParameterMap();
-	ConstParameterMapPtr pm      = project_.loadChildParameterMap(taskPM, "simulated_3d_acquisition_config_file");
-	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	auto taskPM  = project_.taskParameterMap();
+	auto pm      = project_.loadChildParameterMap(taskPM, "simulated_3d_acquisition_config_file");
+	auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 
-	const std::string reflectorsFileName = pm->value<std::string>("reflectors_file");
-	reflectorsOffsetX_                   = pm->value<FloatType>(  "reflectors_offset_x", -10000.0, 10000.0);
-	reflectorsOffsetY_                   = pm->value<FloatType>(  "reflectors_offset_y", -10000.0, 10000.0);
+	const auto reflectorsFileName = pm->value<std::string>("reflectors_file");
+	pm->getValue(reflectorsOffsetX_, "reflectors_offset_x", -10000.0, 10000.0);
+	pm->getValue(reflectorsOffsetY_, "reflectors_offset_y", -10000.0, 10000.0);
 
 	Matrix<FloatType> inputReflectorList;
 	project_.loadHDF5(reflectorsFileName, "reflectors", inputReflectorList);

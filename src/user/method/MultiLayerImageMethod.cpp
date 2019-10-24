@@ -44,20 +44,20 @@ MultiLayerImageMethod::~MultiLayerImageMethod()
 void
 MultiLayerImageMethod::execute()
 {
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	const std::string imageBaseDir = taskPM->value<std::string>("image_dir");
-	ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
-	const std::string xFile        = imagPM->value<std::string>("x_file");
-	const std::string xDataset     = imagPM->value<std::string>("x_dataset");
-	const std::string yFile        = imagPM->value<std::string>("y_file");
-	const std::string yDataset     = imagPM->value<std::string>("y_dataset");
-	const std::string zFile        = imagPM->value<std::string>("z_file");
-	const std::string zDataset     = imagPM->value<std::string>("z_dataset");
-	const std::string imageFile    = imagPM->value<std::string>("image_file");
-	const std::string imageDataset = imagPM->value<std::string>("image_dataset");
-	const float minDecibels        = imagPM->value<float>(      "min_decibels", -100.0, -1.0);
-	const bool logScale            = imagPM->value<bool>(       "log_scale");
-	const bool invertZ             = imagPM->value<bool>(       "invert_z");
+	auto taskPM = project_.taskParameterMap();
+	const auto imageBaseDir = taskPM->value<std::string>("image_dir");
+	auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const auto xFile        = imagPM->value<std::string>("x_file");
+	const auto xDataset     = imagPM->value<std::string>("x_dataset");
+	const auto yFile        = imagPM->value<std::string>("y_file");
+	const auto yDataset     = imagPM->value<std::string>("y_dataset");
+	const auto zFile        = imagPM->value<std::string>("z_file");
+	const auto zDataset     = imagPM->value<std::string>("z_dataset");
+	const auto imageFile    = imagPM->value<std::string>("image_file");
+	const auto imageDataset = imagPM->value<std::string>("image_dataset");
+	const auto minDecibels  = imagPM->value<float>(      "min_decibels", -100.0, -1.0);
+	const auto logScale     = imagPM->value<bool>(       "log_scale");
+	const auto invertZ      = imagPM->value<bool>(       "invert_z");
 
 	Project::GridDataType projGridData;
 	std::vector<XYZValue<float>> pointArray;

@@ -76,11 +76,11 @@ NetworkTnRnAcquisition<FloatType>::NetworkTnRnAcquisition(const Project& project
 		, acq_()
 		, txDelays_(config_.numElements)
 {
-	ConstParameterMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
-	const std::string serverIpAddress = pm->value<std::string>(   "server_ip_address");
-	const unsigned short portNumber   = pm->value<unsigned short>("server_port_number",   49152,  65535);
-	valueFactor_               = 1.0f / pm->value<FloatType>(     "value_scale"       , 1.0e-30, 1.0e30);
-	averageN_                         = pm->value<unsigned int>(  "average_n"         ,       1,    256);
+	auto pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
+	const auto serverIpAddress = pm->value<std::string>(   "server_ip_address");
+	const auto portNumber      = pm->value<unsigned short>("server_port_number",   49152,  65535);
+	valueFactor_        = 1.0f / pm->value<FloatType>(     "value_scale"       , 1.0e-30, 1.0e30);
+	pm->getValue(averageN_, "average_n", 1, 256);
 
 	acq_ = std::make_unique<ArrayAcqClient>(serverIpAddress.c_str(), portNumber);
 

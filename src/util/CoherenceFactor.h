@@ -57,11 +57,11 @@ CoherenceFactor<FloatType>::get(ConstParameterMapPtr pm)
 	if (!pm) {
 		THROW_EXCEPTION(InvalidParameterException, "The parameter map has not been initialized.");
 	}
-	std::string coherenceFactorMethod = pm->value<std::string>("coherence_factor_method");
+	const auto coherenceFactorMethod = pm->value<std::string>("coherence_factor_method");
 	if (coherenceFactorMethod == "none") {
 		return 0;
 	} else if (coherenceFactorMethod == "sign_coherence_factor") {
-		const FloatType p = pm->value<FloatType>("sign_coherence_factor_p", 0.0, 100.0);
+		const auto p = pm->value<FloatType>("sign_coherence_factor_p", 0.0, 100.0);
 		return new SignCoherenceFactor<FloatType>(p);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid coherence factor method: " << coherenceFactorMethod << '.');
@@ -126,14 +126,14 @@ AnalyticSignalCoherenceFactor<FloatType>::get(ConstParameterMapPtr pm)
 	if (!pm) {
 		THROW_EXCEPTION(InvalidParameterException, "The parameter map has not been initialized.");
 	}
-	std::string coherenceFactorMethod = pm->value<std::string>("analytic_signal_coherence_factor_method");
+	const auto coherenceFactorMethod = pm->value<std::string>("analytic_signal_coherence_factor_method");
 	if (coherenceFactorMethod == "none") {
 		return 0;
 	} else if (coherenceFactorMethod == "phase_coherence_factor") {
-		const FloatType gamma = pm->value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
+		const auto gamma = pm->value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
 		return new PhaseCoherenceFactor<FloatType>(gamma);
 	} else if (coherenceFactorMethod == "prng_phase_coherence_factor") {
-		const FloatType gamma = pm->value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
+		const auto gamma = pm->value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
 		return new PRNGPhaseCoherenceFactor<FloatType>(gamma);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid coherence factor method: " << coherenceFactorMethod << '.');

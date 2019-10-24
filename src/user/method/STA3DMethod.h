@@ -120,12 +120,12 @@ template<typename FloatType>
 void
 STA3DMethod<FloatType>::execute()
 {
-	ConstParameterMapPtr taskPM = project_.taskParameterMap();
-	ConstParameterMapPtr saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
-	ConstParameterMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	auto taskPM = project_.taskParameterMap();
+	auto saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
+	auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const SA3DConfiguration<FloatType> config(saPM, arrayPM);
 
-	const unsigned int baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
+	const auto baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
 
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
@@ -140,7 +140,7 @@ STA3DMethod<FloatType>::execute()
 	}
 
 	if (project_.method() == MethodEnum::sta_3d_simulated_save_signals) {
-		const std::string dataDir = taskPM->value<std::string>("data_dir");
+		const auto dataDir = taskPM->value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		IterationCounter::reset(config.activeTxElem.size());
 		acquisition->prepare(baseElement);
@@ -151,11 +151,11 @@ STA3DMethod<FloatType>::execute()
 		}
 		return;
 	} else if (project_.method() == MethodEnum::sta_3d_simulated_seq_y_save_signals) {
-		const std::string dataDir = taskPM->value<std::string>("data_dir");
-		ConstParameterMapPtr seqYCylPM = project_.loadChildParameterMap(taskPM, "seq_y_cyl_config_file");
-		const FloatType yStep = seqYCylPM->value<FloatType>("y_step",          0.0,   100.0);
-		const FloatType minY  = seqYCylPM->value<FloatType>("min_y" ,     -10000.0, 10000.0);
-		const FloatType maxY  = seqYCylPM->value<FloatType>("max_y" , minY + yStep, 10000.0);
+		const auto dataDir = taskPM->value<std::string>("data_dir");
+		auto seqYCylPM = project_.loadChildParameterMap(taskPM, "seq_y_cyl_config_file");
+		const auto yStep = seqYCylPM->value<FloatType>("y_step",          0.0,   100.0);
+		const auto minY  = seqYCylPM->value<FloatType>("min_y" ,     -10000.0, 10000.0);
+		const auto maxY  = seqYCylPM->value<FloatType>("max_y" , minY + yStep, 10000.0);
 		project_.createDirectory(dataDir, true);
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		std::vector<FloatType> yList;
@@ -175,7 +175,7 @@ STA3DMethod<FloatType>::execute()
 		return;
 	}
 
-	const std::string outputDir = taskPM->value<std::string>("output_dir");
+	const auto outputDir = taskPM->value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
 	const FloatType nyquistRate = 2.0 * config.maxFrequency;
@@ -183,20 +183,20 @@ STA3DMethod<FloatType>::execute()
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
 	if (project_.method() == MethodEnum::sta_3d_vectorial_simulated) {
-		ConstParameterMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
-		const unsigned int upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
-		const FloatType peakOffset          = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
+		auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+		const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
+		const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
 
 		std::vector<FloatType> txApod;
 		if (config.activeTxElem.size() > 1) {
-			const std::string txApodFile = imagPM->value<std::string>("tx_apodization_file");
+			const auto txApodFile = imagPM->value<std::string>("tx_apodization_file");
 			project_.loadHDF5(txApodFile, "apod", txApod);
 		} else {
 			txApod.push_back(1.0);
 		}
 
 		std::vector<FloatType> rxApod;
-		const std::string rxApodFile = imagPM->value<std::string>("rx_apodization_file");
+		const auto rxApodFile = imagPM->value<std::string>("rx_apodization_file");
 		project_.loadHDF5(rxApodFile, "apod", rxApod);
 
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));

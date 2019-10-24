@@ -1,8 +1,4 @@
 
-- Use:
-	svsPM->getValue(focusZ_, "tx_focus_z", -10000.0, 10000.0);
-	const auto focusZ = svsPM->value<FloatType>("tx_focus_z", -10000.0, 10000.0);
-
 - Use WindowFunction.get()?
 
 - Check USLab4a::closeEvent(QCloseEvent* event) when the processing is enabled.
