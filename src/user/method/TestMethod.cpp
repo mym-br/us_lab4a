@@ -24,8 +24,6 @@
 #include <fstream>
 #include <vector>
 
-#include <boost/math/special_functions/bessel.hpp>
-
 #include "CoherenceFactor.h"
 #include "ComplexToRealIFFT.h"
 #include "ContainerDumper.h"
@@ -386,7 +384,7 @@ testBessel(Lab::Project& p)
 
 	for (unsigned int i = 0; i < xBesselI0.size(); ++i) {
 		const double x = xBesselI0[i];
-		const double f = boost::math::cyl_bessel_i(0, x);
+		const double f = std::cyl_bessel_i(0, x);
 		const double error = std::abs(f - besselI0[i]) / besselI0[i];
 		if (error > BESSEL_I_MAX_RELATIVE_ABS_ERROR) {
 			THROW_EXCEPTION(Lab::TestException, "Wrong value for x = " << x << ": " << f << " (error: " << error << ").");

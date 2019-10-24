@@ -18,11 +18,9 @@
 #ifndef KAISERWINDOW_H_
 #define KAISERWINDOW_H_
 
-#include <cmath> /* ceil, pow */
+#include <cmath> /* ceil, cyl_bessel_i, pow */
 #include <climits>
 #include <vector>
-
-#include <boost/math/special_functions/bessel.hpp>
 
 #include "Exception.h"
 #include "Util.h"
@@ -79,12 +77,12 @@ void getWindow(unsigned int size, FloatType beta, std::vector<FloatType>& window
 	window.resize(size);
 
 	const FloatType c1 = 2 / static_cast<FloatType>(size - 1U);
-	const FloatType c2 = 1 / boost::math::cyl_bessel_i(0, beta);
+	const FloatType c2 = 1 / std::cyl_bessel_i(0, beta);
 	for (unsigned int n = 0; n < size; ++n) {
 		const FloatType k = c1 * n - 1;
 		FloatType x = 1 - k * k;
 		if (x < 0.0) x = 0.0;
-		window[n] = c2 * boost::math::cyl_bessel_i(0, beta * std::sqrt(x));
+		window[n] = c2 * std::cyl_bessel_i(0, beta * std::sqrt(x));
 	}
 }
 

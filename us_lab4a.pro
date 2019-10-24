@@ -3,7 +3,7 @@ QT += core gui opengl widgets
 TARGET = us_lab4a
 TEMPLATE = app
 
-CONFIG += c++14 warn_on
+CONFIG += warn_on
 
 SOURCES += \
     src/Controller.cpp \
@@ -215,8 +215,9 @@ exists(/usr/include/hdf5/serial) {
     LIBS += -lhdf5
 }
 
-QMAKE_CXXFLAGS_DEBUG = -march=native -O0 -g
-QMAKE_CXXFLAGS_RELEASE = -march=native -O3
+QMAKE_CXXFLAGS += -std=c++17
+QMAKE_CXXFLAGS_DEBUG += -march=native -O0 -g
+QMAKE_CXXFLAGS_RELEASE += -march=native -O3
 
 MOC_DIR = tmp
 OBJECTS_DIR = tmp
