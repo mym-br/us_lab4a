@@ -54,15 +54,15 @@ Project::loadTaskParameters(const std::string& taskFileName)
 	}
 }
 
-ConstParameterMapPtr
+ParamMapPtr
 Project::loadParameterMap(const char* fileName) const
 {
 	QString filePath = expDirectory_ + '/' + fileName;
 	return std::make_shared<const ParameterMap>(filePath);
 }
 
-ConstParameterMapPtr
-Project::loadChildParameterMap(ConstParameterMapPtr pm, const char* fileNameKey) const
+ParamMapPtr
+Project::loadChildParameterMap(ParamMapPtr pm, const char* fileNameKey) const
 {
 	const auto fileName = pm->value<std::string>(fileNameKey);
 	QString filePath = expDirectory_ + '/' + fileName.c_str();

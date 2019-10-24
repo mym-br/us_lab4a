@@ -131,8 +131,8 @@ template<typename FloatType>
 void
 STAMethod<FloatType>::execute()
 {
-	auto taskPM = project_.taskParameterMap();
-	auto staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	ParamMapPtr taskPM = project_.taskParameterMap();
+	ParamMapPtr staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
 	const STAConfiguration<FloatType> config(staPM);
 	const auto baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 
@@ -175,7 +175,7 @@ STAMethod<FloatType>::execute()
 	const auto outputDir = taskPM->value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
-	auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto peakOffset = imagPM->value<FloatType>("peak_offset", 0.0, 50.0);
 
 	const FloatType nyquistRate = 2.0 * config.maxFrequency;

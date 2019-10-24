@@ -72,7 +72,7 @@ public:
 	}
 
 	void loadTaskParameters(const std::string& taskFile);
-	ConstParameterMapPtr taskParameterMap() const {
+	ParamMapPtr taskParameterMap() const {
 		if (!taskParameterMap_) THROW_EXCEPTION(InvalidStateException, "The task parameter map has not been loaded.");
 		return taskParameterMap_;
 	}
@@ -81,8 +81,8 @@ public:
 	void setMethod(MethodEnum method) { method_ = method; }
 
 	// The caller becomes the owner of the ParameterMap object.
-	ConstParameterMapPtr loadParameterMap(const char* fileName) const;
-	ConstParameterMapPtr loadChildParameterMap(ConstParameterMapPtr pm, const char* fileNameKey) const;
+	ParamMapPtr loadParameterMap(const char* fileName) const;
+	ParamMapPtr loadChildParameterMap(ParamMapPtr pm, const char* fileNameKey) const;
 
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<FloatType>& container) const;
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const;
@@ -236,7 +236,7 @@ private:
 
 	MethodEnum method_;
 	USLab4a& mainWindow_;
-	ConstParameterMapPtr taskParameterMap_;
+	ParamMapPtr taskParameterMap_;
 	QString directory_;
 	QString expDirectory_;
 	Figure2DData figure2DData_;

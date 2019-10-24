@@ -64,7 +64,7 @@ private:
 	NetworkSyncSingleVirtualSourceMethod(const NetworkSyncSingleVirtualSourceMethod&) = delete;
 	NetworkSyncSingleVirtualSourceMethod& operator=(const NetworkSyncSingleVirtualSourceMethod&) = delete;
 
-	void saveSignals(ConstParameterMapPtr taskPM, TnRnAcquisition<FloatType>& acq,
+	void saveSignals(ParamMapPtr taskPM, TnRnAcquisition<FloatType>& acq,
 				unsigned int baseElement, const std::vector<FloatType>& txDelays,
 				const std::string& dataDir);
 
@@ -88,9 +88,9 @@ template<typename FloatType>
 void
 NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 {
-	auto taskPM = project_.taskParameterMap();
-	auto svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
-	auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	ParamMapPtr taskPM = project_.taskParameterMap();
+	ParamMapPtr svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
+	ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const TnRnConfiguration<FloatType> config(svsPM, arrayPM);
 	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
@@ -120,7 +120,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 	}
 
 	const auto outputDir = taskPM->value<std::string>("output_dir");
-	auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
 	const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 
@@ -221,11 +221,11 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 
 template<typename FloatType>
 void
-NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ConstParameterMapPtr taskPM, TnRnAcquisition<FloatType>& acq,
+NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ParamMapPtr taskPM, TnRnAcquisition<FloatType>& acq,
 								unsigned int baseElement, const std::vector<FloatType>& txDelays,
 								const std::string& dataDir)
 {
-	auto scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
+	ParamMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
 	const auto serverPort = scanPM->value<unsigned int>("sync_server_port", 1024, 65535);
 	const auto asyncAcq   = scanPM->value<bool>(        "async_acquisition");
 	const auto minY       = scanPM->value<FloatType>(   "min_y", -10000.0, 10000.0);

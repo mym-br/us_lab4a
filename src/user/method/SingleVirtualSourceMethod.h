@@ -70,10 +70,10 @@ private:
 	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
 	void execContinuousNetworkImaging(FloatType valueScale, ArrayProcessor<FloatType>& processor,
 						unsigned int baseElement, bool coherenceFactorEnabled);
-	void saveSignalSequence(ConstParameterMapPtr taskPM, unsigned int baseElement,
+	void saveSignalSequence(ParamMapPtr taskPM, unsigned int baseElement,
 				const std::vector<FloatType>& txDelays,
 				TnRnAcquisition<FloatType>& acquisition);
-	void createImagesFromSavedSignalSequence(ConstParameterMapPtr taskPM,
+	void createImagesFromSavedSignalSequence(ParamMapPtr taskPM,
 							unsigned int baseElement, FloatType valueScale, bool coherenceFactorEnabled,
 							TnRnAcquisition<FloatType>& acq, ArrayProcessor<FloatType>& processor);
 
@@ -168,12 +168,12 @@ SingleVirtualSourceMethod<FloatType>::execContinuousNetworkImaging(FloatType val
 
 template<typename FloatType>
 void
-SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr taskPM, unsigned int baseElement,
+SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ParamMapPtr taskPM, unsigned int baseElement,
 								const std::vector<FloatType>& txDelays,
 								TnRnAcquisition<FloatType>& acquisition)
 {
 	const auto dataDir = taskPM->value<std::string>("data_dir");
-	auto seqPM = project_.loadChildParameterMap(taskPM, "seq_config_file");
+	ParamMapPtr seqPM = project_.loadChildParameterMap(taskPM, "seq_config_file");
 	const auto acqTime = seqPM->value<double>("acquisition_time", 1.0, 60.0);
 
 	std::vector<typename TnRnAcquisition<FloatType>::AcquisitionDataType> acqDataList;
@@ -207,7 +207,7 @@ SingleVirtualSourceMethod<FloatType>::saveSignalSequence(ConstParameterMapPtr ta
 
 template<typename FloatType>
 void
-SingleVirtualSourceMethod<FloatType>::createImagesFromSavedSignalSequence(ConstParameterMapPtr taskPM,
+SingleVirtualSourceMethod<FloatType>::createImagesFromSavedSignalSequence(ParamMapPtr taskPM,
 							unsigned int baseElement, FloatType valueScale, bool coherenceFactorEnabled,
 							TnRnAcquisition<FloatType>& acq, ArrayProcessor<FloatType>& processor)
 {
@@ -242,9 +242,9 @@ template<typename FloatType>
 void
 SingleVirtualSourceMethod<FloatType>::execute()
 {
-	auto taskPM = project_.taskParameterMap();
-	auto svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
-	auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	ParamMapPtr taskPM = project_.taskParameterMap();
+	ParamMapPtr svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
+	ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const TnRnConfiguration<FloatType> config(svsPM, arrayPM);
 	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
 	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
@@ -312,7 +312,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_dp_saved_sequence ||
 			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_sp_network_continuous) {
 
-		auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+		ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 		const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
 		const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 		const auto rxApodFile       = imagPM->value<std::string>( "rx_apodization_file");

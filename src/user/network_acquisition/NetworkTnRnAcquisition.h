@@ -76,7 +76,7 @@ NetworkTnRnAcquisition<FloatType>::NetworkTnRnAcquisition(const Project& project
 		, acq_()
 		, txDelays_(config_.numElements)
 {
-	auto pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
+	ParamMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
 	const auto serverIpAddress = pm->value<std::string>(   "server_ip_address");
 	const auto portNumber      = pm->value<unsigned short>("server_port_number",   49152,  65535);
 	valueFactor_        = 1.0f / pm->value<FloatType>(     "value_scale"       , 1.0e-30, 1.0e30);

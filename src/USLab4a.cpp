@@ -216,7 +216,7 @@ USLab4a::processBatchEntry()
 			project_.setExpDirectory(experiment.isEmpty() ? "" : (QString(EXPERIMENT_DIR_PREFIX) + experiment).toStdString());
 			project_.loadTaskParameters((QString(TASK_FILE_PREFIX) + task + TASK_FILE_SUFFIX).toStdString());
 
-			auto pm = project_.taskParameterMap();
+			ParamMapPtr pm = project_.taskParameterMap();
 			if (!pm) {
 				THROW_EXCEPTION(InvalidStateException, "The task parameter map has not been initialized.");
 			}
@@ -383,7 +383,7 @@ USLab4a::on_enableTaskButton_clicked()
 	try {
 		project_.loadTaskParameters((QString(TASK_FILE_PREFIX) + selectedTasks.first()->text() + TASK_FILE_SUFFIX).toStdString());
 
-		auto pm = project_.taskParameterMap();
+		ParamMapPtr pm = project_.taskParameterMap();
 		if (!pm) {
 			THROW_EXCEPTION(InvalidStateException, "The task parameter map has not been initialized.");
 		}

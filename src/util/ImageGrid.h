@@ -34,7 +34,7 @@ template<typename FloatType>
 class ImageGrid {
 public:
 	template<typename T>
-		static void get(ConstParameterMapPtr pm, FloatType lambda, T &grid);
+		static void get(ParamMapPtr pm, FloatType lambda, T &grid);
 private:
 	static constexpr FloatType minLambda = 1.0e-6;
 
@@ -42,15 +42,15 @@ private:
 	~ImageGrid();
 
 	template<typename T>
-		static void getRectangularGrid(ConstParameterMapPtr pm, FloatType lambda, T& grid);
+		static void getRectangularGrid(ParamMapPtr pm, FloatType lambda, T& grid);
 	template<typename T>
-		static void getSectorialGrid(ConstParameterMapPtr pm, FloatType lambda, T& grid);
+		static void getSectorialGrid(ParamMapPtr pm, FloatType lambda, T& grid);
 };
 
 template<typename FloatType>
 template<typename T>
 void
-ImageGrid<FloatType>::getRectangularGrid(ConstParameterMapPtr pm, FloatType lambda, T& grid)
+ImageGrid<FloatType>::getRectangularGrid(ParamMapPtr pm, FloatType lambda, T& grid)
 {
 	const auto minX    = pm->value<FloatType>("rectangular_min_x"   , -10000.0, 10000.0);
 	const auto maxX    = pm->value<FloatType>("rectangular_max_x"   ,     minX, 10000.0);
@@ -118,7 +118,7 @@ ImageGrid<FloatType>::getRectangularGrid(ConstParameterMapPtr pm, FloatType lamb
 template<typename FloatType>
 template<typename T>
 void
-ImageGrid<FloatType>::getSectorialGrid(ConstParameterMapPtr pm, FloatType lambda, T& grid)
+ImageGrid<FloatType>::getSectorialGrid(ParamMapPtr pm, FloatType lambda, T& grid)
 {
 	const auto minRadius     = pm->value<FloatType>("sectorial_min_radius"     ,             1.0e-4, 10000.0);
 	const auto maxRadius     = pm->value<FloatType>("sectorial_max_radius"     , minRadius + 1.0e-6, 10000.0);
@@ -154,7 +154,7 @@ ImageGrid<FloatType>::getSectorialGrid(ConstParameterMapPtr pm, FloatType lambda
 template<typename FloatType>
 template<typename T>
 void
-ImageGrid<FloatType>::get(ConstParameterMapPtr pm, FloatType lambda, T& grid)
+ImageGrid<FloatType>::get(ParamMapPtr pm, FloatType lambda, T& grid)
 {
 	if (lambda < minLambda) {
 		THROW_EXCEPTION(InvalidParameterException, "Lambda is too small: " << lambda << '.');

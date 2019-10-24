@@ -29,7 +29,7 @@ template<typename FloatType>
 struct STAConfiguration {
 	STAConfiguration() { }
 	~STAConfiguration() { }
-	STAConfiguration(ConstParameterMapPtr pm) { load(pm); }
+	STAConfiguration(ParamMapPtr pm) { load(pm); }
 
 	unsigned int numElements;
 	unsigned int numElementsMux;
@@ -48,14 +48,14 @@ struct STAConfiguration {
 	FloatType deadZoneM; // m
 	FloatType valueScale;
 
-	void load(ConstParameterMapPtr pm);
+	void load(ParamMapPtr pm);
 };
 
 
 
 template<typename FloatType>
 void
-STAConfiguration<FloatType>::load(ConstParameterMapPtr pm)
+STAConfiguration<FloatType>::load(ParamMapPtr pm)
 {
 	pm->getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
 	pm->getValue(numElements      , "num_elements"       ,       1, numElementsMux);

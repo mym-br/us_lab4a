@@ -70,9 +70,9 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::Simulated3DT1R1SAFTAcquisition(Projec
 		, maxAbsValue_()
 		, baseElement_()
 {
-	auto taskPM  = project_.taskParameterMap();
-	auto pm      = project_.loadChildParameterMap(taskPM, "simulated_3d_acquisition_config_file");
-	auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	ParamMapPtr taskPM  = project_.taskParameterMap();
+	ParamMapPtr pm      = project_.loadChildParameterMap(taskPM, "simulated_3d_acquisition_config_file");
+	ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 
 	const auto reflectorsFileName = pm->value<std::string>("reflectors_file");
 	pm->getValue(reflectorsOffsetX_, "reflectors_offset_x", -10000.0, 10000.0);

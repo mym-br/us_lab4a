@@ -122,9 +122,9 @@ template<typename FloatType>
 void
 T1R1SAFT3DMethod<FloatType>::execute()
 {
-	auto taskPM = project_.taskParameterMap();
-	auto saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
-	auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	ParamMapPtr taskPM = project_.taskParameterMap();
+	ParamMapPtr saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
+	ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const SA3DConfiguration<FloatType> config(saPM, arrayPM);
 	if (config.txElemPos.size() != config.rxElemPos.size()) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of receive elements is not equal to the number of transmit elements.");
@@ -158,7 +158,7 @@ T1R1SAFT3DMethod<FloatType>::execute()
 		return;
 	} else if (project_.method() == MethodEnum::t1r1saft_3d_simulated_seq_y_save_signals) {
 		const auto dataDir = taskPM->value<std::string>("data_dir");
-		auto seqYPM = project_.loadChildParameterMap(taskPM, "seq_y_config_file");
+		ParamMapPtr seqYPM = project_.loadChildParameterMap(taskPM, "seq_y_config_file");
 		const auto yStep = seqYPM->value<FloatType>("y_step",          0.0,   100.0);
 		const auto minY  = seqYPM->value<FloatType>("min_y" ,     -10000.0, 10000.0);
 		const auto maxY  = seqYPM->value<FloatType>("max_y" , minY + yStep, 10000.0);
@@ -187,7 +187,7 @@ T1R1SAFT3DMethod<FloatType>::execute()
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
 	if (project_.method() == MethodEnum::t1r1saft_3d_vectorial_simulated) {
-		auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+		ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 		const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
 		const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));

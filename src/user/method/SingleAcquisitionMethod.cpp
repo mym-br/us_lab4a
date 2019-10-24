@@ -38,10 +38,10 @@ namespace Lab {
 void
 SingleAcquisitionMethod::fillConfiguration()
 {
-	auto taskPM = project_.taskParameterMap();
+	ParamMapPtr taskPM = project_.taskParameterMap();
 	taskPM->getValue(config_.savedAcqDir, "saved_acquisition_dir");
 
-	auto acqPM = project_.loadChildParameterMap(taskPM, "acq_config_file");
+	ParamMapPtr acqPM = project_.loadChildParameterMap(taskPM, "acq_config_file");
 	acqPM->getValue(config_.samplingFrequency, "sampling_frequency",  100.0, 200.0e6);
 	acqPM->getValue(config_.centerFrequency  , "center_frequency"  ,  100.0, 100.0e6);
 	acqPM->getValue(config_.acquisitionTime  , "acquisition_time"  , 1.0e-6,     1.0);
@@ -62,7 +62,7 @@ SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
 
 	project_.createDirectory(config_.savedAcqDir, false);
 
-	auto pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
+	ParamMapPtr pm = project_.loadParameterMap(NETWORK_AQUISITION_CONFIG_FILE);
 	const auto serverIpAddress = pm->value<std::string>(   "server_ip_address");
 	const auto portNumber      = pm->value<unsigned short>("server_port_number",   49152,  65535);
 	valueFactor_         = 1.0 / pm->value<double>(        "value_scale"       , 1.0e-30, 1.0e30);

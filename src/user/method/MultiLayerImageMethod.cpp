@@ -44,9 +44,9 @@ MultiLayerImageMethod::~MultiLayerImageMethod()
 void
 MultiLayerImageMethod::execute()
 {
-	auto taskPM = project_.taskParameterMap();
+	ParamMapPtr taskPM = project_.taskParameterMap();
 	const auto imageBaseDir = taskPM->value<std::string>("image_dir");
-	auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto xFile        = imagPM->value<std::string>("x_file");
 	const auto xDataset     = imagPM->value<std::string>("x_dataset");
 	const auto yFile        = imagPM->value<std::string>("y_file");

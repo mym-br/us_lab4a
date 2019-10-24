@@ -44,7 +44,7 @@ public:
 	virtual CoherenceFactor<FloatType>* clone() const = 0;
 	virtual FloatType calculate(const FloatType* data, unsigned int size) = 0;
 
-	static CoherenceFactor<FloatType>* get(ConstParameterMapPtr pm);
+	static CoherenceFactor<FloatType>* get(ParamMapPtr pm);
 private:
 	CoherenceFactor(const CoherenceFactor&);
 	CoherenceFactor& operator=(const CoherenceFactor&);
@@ -52,7 +52,7 @@ private:
 
 template<typename FloatType>
 CoherenceFactor<FloatType>*
-CoherenceFactor<FloatType>::get(ConstParameterMapPtr pm)
+CoherenceFactor<FloatType>::get(ParamMapPtr pm)
 {
 	if (!pm) {
 		THROW_EXCEPTION(InvalidParameterException, "The parameter map has not been initialized.");
@@ -76,7 +76,7 @@ template<typename FloatType>
 class CoherenceFactorProcessor {
 public:
 	CoherenceFactorProcessor() : cf_() { }
-	CoherenceFactorProcessor(ConstParameterMapPtr pm)
+	CoherenceFactorProcessor(ParamMapPtr pm)
 			: cf_(CoherenceFactor<FloatType>::get(pm)) {
 	}
 	~CoherenceFactorProcessor() { }
@@ -113,7 +113,7 @@ public:
 	virtual FloatType calculate(const std::complex<FloatType>* data, unsigned int size) = 0;
 	virtual void getConstants(std::vector<FloatType>& list) const = 0;
 
-	static AnalyticSignalCoherenceFactor<FloatType>* get(ConstParameterMapPtr pm);
+	static AnalyticSignalCoherenceFactor<FloatType>* get(ParamMapPtr pm);
 private:
 	AnalyticSignalCoherenceFactor(const AnalyticSignalCoherenceFactor&);
 	AnalyticSignalCoherenceFactor& operator=(const AnalyticSignalCoherenceFactor&);
@@ -121,7 +121,7 @@ private:
 
 template<typename FloatType>
 AnalyticSignalCoherenceFactor<FloatType>*
-AnalyticSignalCoherenceFactor<FloatType>::get(ConstParameterMapPtr pm)
+AnalyticSignalCoherenceFactor<FloatType>::get(ParamMapPtr pm)
 {
 	if (!pm) {
 		THROW_EXCEPTION(InvalidParameterException, "The parameter map has not been initialized.");
@@ -148,7 +148,7 @@ template<typename FloatType>
 class AnalyticSignalCoherenceFactorProcessor {
 public:
 	AnalyticSignalCoherenceFactorProcessor() : cf_() { }
-	AnalyticSignalCoherenceFactorProcessor(ConstParameterMapPtr pm)
+	AnalyticSignalCoherenceFactorProcessor(ParamMapPtr pm)
 			: cf_(AnalyticSignalCoherenceFactor<FloatType>::get(pm)) {
 	}
 	~AnalyticSignalCoherenceFactorProcessor() { }

@@ -38,7 +38,7 @@ struct SA3DConfiguration {
 	SA3DConfiguration() { }
 	~SA3DConfiguration() { }
 
-	SA3DConfiguration(ConstParameterMapPtr saPM, ConstParameterMapPtr arrayPM) { load(saPM, arrayPM); }
+	SA3DConfiguration(ParamMapPtr saPM, ParamMapPtr arrayPM) { load(saPM, arrayPM); }
 
 	unsigned int numElementsMux;
 	unsigned int numPulses;
@@ -58,7 +58,7 @@ struct SA3DConfiguration {
 	std::vector<XY<FloatType>> txElemPos; // m
 	std::vector<XY<FloatType>> rxElemPos; // m
 
-	void load(ConstParameterMapPtr saPM, ConstParameterMapPtr arrayPM);
+	void load(ParamMapPtr saPM, ParamMapPtr arrayPM);
 
 private:
 	void fillActiveElem(const std::string& listStr, unsigned int maxElem, std::vector<unsigned int>& activeElem);
@@ -109,7 +109,7 @@ SA3DConfiguration<FloatType>::fillActiveElem(const std::string& listStr, unsigne
 
 template<typename FloatType>
 void
-SA3DConfiguration<FloatType>::load(ConstParameterMapPtr saPM, ConstParameterMapPtr arrayPM)
+SA3DConfiguration<FloatType>::load(ParamMapPtr saPM, ParamMapPtr arrayPM)
 {
 	saPM->getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
 	saPM->getValue(numPulses        , "num_pulses"         ,       1,     100);

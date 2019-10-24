@@ -35,7 +35,7 @@ struct TnRnConfiguration {
 	TnRnConfiguration() { }
 	~TnRnConfiguration() { }
 
-	TnRnConfiguration(ConstParameterMapPtr imgPM, ConstParameterMapPtr arrayPM) { load(imgPM, arrayPM); }
+	TnRnConfiguration(ParamMapPtr imgPM, ParamMapPtr arrayPM) { load(imgPM, arrayPM); }
 
 	unsigned int numElements;
 	unsigned int numElementsMux;
@@ -54,12 +54,12 @@ struct TnRnConfiguration {
 	std::vector<XY<FloatType>> txElemPos; // m
 	std::vector<XY<FloatType>> rxElemPos; // m
 
-	void load(ConstParameterMapPtr imgPM, ConstParameterMapPtr arrayPM);
+	void load(ParamMapPtr imgPM, ParamMapPtr arrayPM);
 };
 
 template<typename FloatType>
 void
-TnRnConfiguration<FloatType>::load(ConstParameterMapPtr imgPM, ConstParameterMapPtr arrayPM)
+TnRnConfiguration<FloatType>::load(ParamMapPtr imgPM, ParamMapPtr arrayPM)
 {
 	imgPM->getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
 	imgPM->getValue(numElements      , "num_elements"       ,       1, numElementsMux);

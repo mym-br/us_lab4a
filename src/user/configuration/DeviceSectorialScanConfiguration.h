@@ -49,14 +49,14 @@ struct DeviceSectorialScanConfiguration {
 
 	bool enableFocusing;
 
-	void load(ConstParameterMapPtr pm);
+	void load(ParamMapPtr pm);
 };
 
 
 
 template<typename FloatType>
 void
-DeviceSectorialScanConfiguration<FloatType>::load(ConstParameterMapPtr pm)
+DeviceSectorialScanConfiguration<FloatType>::load(ParamMapPtr pm)
 {
 	pm->getValue(numElementsMux        , "num_elements_mux"        ,       8,      1024);
 	pm->getValue(numElements           , "num_elements"            ,       8, numElementsMux);
