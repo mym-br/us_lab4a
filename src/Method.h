@@ -27,7 +27,7 @@ namespace Lab {
 
 enum class MethodEnum {
 	invalid
-#define METHOD_ITEM(A, B) ,A
+#define METHOD_ITEM(A, B) ,B
 	METHOD_TABLE
 #undef METHOD_ITEM
 };

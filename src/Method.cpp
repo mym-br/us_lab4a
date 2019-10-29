@@ -25,7 +25,7 @@ MethodNameMap Method::nameMap_;
 
 MethodNameMap::MethodNameMap()
 {
-#define METHOD_ITEM(A, B) map_[#A] = MethodEnum::A;
+#define METHOD_ITEM(A, B) map_[#B] = MethodEnum::B;
 	METHOD_TABLE
 #undef METHOD_ITEM
 }
@@ -53,7 +53,7 @@ Method*
 Method::get(Project& project)
 {
 	switch (project.method()) {
-#define METHOD_ITEM(A, B) case MethodEnum::A: return new B(project);
+#define METHOD_ITEM(A, B) case MethodEnum::B: return new A(project);
 	METHOD_TABLE
 #undef METHOD_ITEM
 	default:

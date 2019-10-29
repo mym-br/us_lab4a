@@ -19,51 +19,51 @@
 #define METHOD_TABLE_H
 
 #define METHOD_TABLE \
-  METHOD_ITEM(single_acquisition, SingleAcquisitionMethod) \
-  METHOD_ITEM(device_sectorial_scan_sp_network           , DeviceSectorialScanMethod<float>) \
-  METHOD_ITEM(device_sectorial_scan_sp_network_continuous, DeviceSectorialScanMethod<float>) \
-  METHOD_ITEM(device_sectorial_scan_sp_network_trigger   , DeviceSectorialScanMethod<float>) \
-  METHOD_ITEM(device_sectorial_scan_sp_saved             , DeviceSectorialScanMethod<float>) \
-  METHOD_ITEM(sta_simple_simulated    , STAMethod<double>) \
-  METHOD_ITEM(sta_simple_saved        , STAMethod<double>) \
-  METHOD_ITEM(sta_simulated           , STAMethod<double>) \
-  METHOD_ITEM(sta_dp_network          , STAMethod<double>) \
-  METHOD_ITEM(sta_vectorial_dp_network, STAMethod<double>) \
-  METHOD_ITEM(sta_dp_saved            , STAMethod<double>) \
-  METHOD_ITEM(sta_vectorial_dp_saved  , STAMethod<double>) \
-  METHOD_ITEM(sta_sp_saved            , STAMethod<float>) \
-  METHOD_ITEM(sta_vectorial_sp_saved  , STAMethod<float>) \
-  METHOD_ITEM(sta_save_signals        , STAMethod<double>) \
-  METHOD_ITEM(sta_network_sync             , NetworkSyncSTAMethod<double>) \
-  METHOD_ITEM(sta_network_sync_save_signals, NetworkSyncSTAMethod<double>) \
-  METHOD_ITEM(sim_acoustic_field_array_of_rectangular_flat_sources_transient   , SimRectangularFlatSourceMethod<double>) \
-  METHOD_ITEM(sim_acoustic_field_rectangular_flat_source_transient             , SimRectangularFlatSourceMethod<double>) \
-  METHOD_ITEM(sim_impulse_response_array_of_rectangular_flat_sources           , SimRectangularFlatSourceMethod<double>) \
-  METHOD_ITEM(sim_impulse_response_rectangular_flat_source                     , SimRectangularFlatSourceMethod<double>) \
-  METHOD_ITEM(sim_propagation_array_of_rectangular_flat_sources_transient      , SimRectangularFlatSourceMethod<double>) \
-  METHOD_ITEM(sim_propagation_rectangular_flat_source_transient                , SimRectangularFlatSourceMethod<double>) \
-  METHOD_ITEM(sim_radiation_pattern_array_of_rectangular_flat_sources_transient, SimRectangularFlatSourceMethod<double>) \
-  METHOD_ITEM(sim_radiation_pattern_rectangular_flat_source_transient          , SimRectangularFlatSourceMethod<double>) \
-  METHOD_ITEM(single_virtual_source_3d_network_save_signals           , SingleVirtualSourceMethod<double>) \
-  METHOD_ITEM(single_virtual_source_3d_network_save_signal_sequence   , SingleVirtualSourceMethod<double>) \
-  METHOD_ITEM(single_virtual_source_3d_simulated_save_signals         , SingleVirtualSourceMethod<double>) \
-  METHOD_ITEM(single_virtual_source_3d_vectorial_dp_network           , SingleVirtualSourceMethod<double>) \
-  METHOD_ITEM(single_virtual_source_3d_vectorial_dp_saved             , SingleVirtualSourceMethod<double>) \
-  METHOD_ITEM(single_virtual_source_3d_vectorial_dp_saved_sequence    , SingleVirtualSourceMethod<double>) \
-  METHOD_ITEM(single_virtual_source_3d_vectorial_simulated            , SingleVirtualSourceMethod<double>) \
-  METHOD_ITEM(single_virtual_source_3d_vectorial_sp_network_continuous, SingleVirtualSourceMethod<float>) \
-  METHOD_ITEM(single_virtual_source_network_sync_imaging     , NetworkSyncSingleVirtualSourceMethod<double>) \
-  METHOD_ITEM(single_virtual_source_network_sync_save_signals, NetworkSyncSingleVirtualSourceMethod<double>) \
-  METHOD_ITEM(single_virtual_source_network_sync_synth_y_imaging, SyntheticYSingleVirtualSourceMethod<double>) \
-  METHOD_ITEM(sta_3d_simulated_save_signals      , STA3DMethod<double>) \
-  METHOD_ITEM(sta_3d_simulated_seq_y_save_signals, STA3DMethod<double>) \
-  METHOD_ITEM(sta_3d_vectorial_simulated         , STA3DMethod<double>) \
-  METHOD_ITEM(t1r1saft_3d_simulated_save_signals      , T1R1SAFT3DMethod<double>) \
-  METHOD_ITEM(t1r1saft_3d_simulated_seq_y_save_signals, T1R1SAFT3DMethod<double>) \
-  METHOD_ITEM(t1r1saft_3d_vectorial_simulated         , T1R1SAFT3DMethod<double>) \
-  METHOD_ITEM(show_image, ShowImageMethod) \
-  METHOD_ITEM(multi_layer_image, MultiLayerImageMethod) \
-  METHOD_ITEM(multi_image_vtk_file, VTKFileMultiImageMethod) \
-  METHOD_ITEM(test, TestMethod)
+METHOD_ITEM(DeviceSectorialScanMethod<float>, device_sectorial_scan_sp_network) \
+METHOD_ITEM(DeviceSectorialScanMethod<float>, device_sectorial_scan_sp_network_continuous) \
+METHOD_ITEM(DeviceSectorialScanMethod<float>, device_sectorial_scan_sp_network_trigger) \
+METHOD_ITEM(DeviceSectorialScanMethod<float>, device_sectorial_scan_sp_saved) \
+METHOD_ITEM(MultiLayerImageMethod, multi_layer_image) \
+METHOD_ITEM(NetworkSyncSingleVirtualSourceMethod<double>, single_virtual_source_network_sync_imaging) \
+METHOD_ITEM(NetworkSyncSingleVirtualSourceMethod<double>, single_virtual_source_network_sync_save_signals) \
+METHOD_ITEM(NetworkSyncSTAMethod<double>, sta_network_sync) \
+METHOD_ITEM(NetworkSyncSTAMethod<double>, sta_network_sync_save_signals) \
+METHOD_ITEM(ShowImageMethod, show_image) \
+METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_acoustic_field_array_of_rectangular_flat_sources_transient) \
+METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_acoustic_field_rectangular_flat_source_transient) \
+METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_impulse_response_array_of_rectangular_flat_sources) \
+METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_impulse_response_rectangular_flat_source) \
+METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_propagation_array_of_rectangular_flat_sources_transient) \
+METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_propagation_rectangular_flat_source_transient) \
+METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_radiation_pattern_array_of_rectangular_flat_sources_transient) \
+METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_radiation_pattern_rectangular_flat_source_transient) \
+METHOD_ITEM(SingleAcquisitionMethod, single_acquisition) \
+METHOD_ITEM(SingleVirtualSourceMethod<double>, single_virtual_source_3d_network_save_signals) \
+METHOD_ITEM(SingleVirtualSourceMethod<double>, single_virtual_source_3d_network_save_signal_sequence) \
+METHOD_ITEM(SingleVirtualSourceMethod<double>, single_virtual_source_3d_simulated_save_signals) \
+METHOD_ITEM(SingleVirtualSourceMethod<double>, single_virtual_source_3d_vectorial_dp_network) \
+METHOD_ITEM(SingleVirtualSourceMethod<double>, single_virtual_source_3d_vectorial_dp_saved) \
+METHOD_ITEM(SingleVirtualSourceMethod<double>, single_virtual_source_3d_vectorial_dp_saved_sequence) \
+METHOD_ITEM(SingleVirtualSourceMethod<double>, single_virtual_source_3d_vectorial_simulated) \
+METHOD_ITEM(SingleVirtualSourceMethod<float>, single_virtual_source_3d_vectorial_sp_network_continuous) \
+METHOD_ITEM(STA3DMethod<double>, sta_3d_simulated_save_signals) \
+METHOD_ITEM(STA3DMethod<double>, sta_3d_simulated_seq_y_save_signals) \
+METHOD_ITEM(STA3DMethod<double>, sta_3d_vectorial_simulated) \
+METHOD_ITEM(STAMethod<double>, sta_dp_network) \
+METHOD_ITEM(STAMethod<double>, sta_dp_saved) \
+METHOD_ITEM(STAMethod<double>, sta_save_signals) \
+METHOD_ITEM(STAMethod<double>, sta_simple_saved) \
+METHOD_ITEM(STAMethod<double>, sta_simple_simulated) \
+METHOD_ITEM(STAMethod<double>, sta_simulated) \
+METHOD_ITEM(STAMethod<float>, sta_sp_saved) \
+METHOD_ITEM(STAMethod<double>, sta_vectorial_dp_network) \
+METHOD_ITEM(STAMethod<double>, sta_vectorial_dp_saved) \
+METHOD_ITEM(STAMethod<float>, sta_vectorial_sp_saved) \
+METHOD_ITEM(SyntheticYSingleVirtualSourceMethod<double>, single_virtual_source_network_sync_synth_y_imaging) \
+METHOD_ITEM(T1R1SAFT3DMethod<double>, t1r1saft_3d_simulated_save_signals) \
+METHOD_ITEM(T1R1SAFT3DMethod<double>, t1r1saft_3d_simulated_seq_y_save_signals) \
+METHOD_ITEM(T1R1SAFT3DMethod<double>, t1r1saft_3d_vectorial_simulated) \
+METHOD_ITEM(TestMethod, test) \
+METHOD_ITEM(VTKFileMultiImageMethod, multi_image_vtk_file)
 
 #endif // METHOD_TABLE_H
