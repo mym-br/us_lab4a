@@ -72,11 +72,12 @@ NumericCircularSourceImpulseResponse<FloatType>::NumericCircularSourceImpulseRes
 	std::mt19937 rndGen;
 	std::random_device rd;
 	rndGen.seed(rd());
-	std::uniform_real_distribution<FloatType> dist(-1.0, 1.0);
+	std::uniform_real_distribution<FloatType> xDist(-1.0, 1.0);
+	std::uniform_real_distribution<FloatType> yDist(0.0, 1.0);
 
 	while (subElem_.size() < numSubElem) {
-		const FloatType x = dist(rndGen) * sourceRadius;
-		const FloatType y = dist(rndGen) * sourceRadius;
+		const FloatType x = xDist(rndGen) * sourceRadius;
+		const FloatType y = yDist(rndGen) * sourceRadius;
 		if (std::sqrt(x * x + y * y) < sourceRadius) {
 			subElem_.emplace_back(x, y);
 		}
@@ -95,6 +96,11 @@ NumericCircularSourceImpulseResponse<FloatType>::getImpulseResponse(
 								std::size_t& hOffset,
 								std::vector<FloatType>& h)
 {
+	// The field is symmetric.
+	x = std::sqrt(x * x + y * y);
+	y = 0;
+	z = std::abs(z);
+
 	std::size_t minN0 = std::numeric_limits<std::size_t>::max();
 	std::size_t maxN0 = 0;
 	const FloatType k1 = samplingFreq_ / propagationSpeed_;
