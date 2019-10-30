@@ -132,6 +132,7 @@ HEADERS += \
     src/user/method/STA3DMethod.h \
     src/user/method/STAMethod.h \
     src/user/method/ShowImageMethod.h \
+    src/user/method/SimCircularSourceMethod.h \
     src/user/method/SimRectangularFlatSourceMethod.h \
     src/user/method/SingleAcquisitionMethod.h \
     src/user/method/SingleVirtualSourceMethod.h \
@@ -150,6 +151,7 @@ HEADERS += \
     src/user/processor/Vectorial3DT1R1SAFTProcessor.h \
     src/user/processor/Vectorial3DTnRnProcessor.h \
     src/user/processor/VectorialSTAProcessor.h \
+    src/user/simulator/AnalyticCircularSourceImpulseResponse.h \
     src/user/simulator/AnalyticRectangularFlatSourceImpulseResponse.h \
     src/user/simulator/ArrayOfRectangularFlatSourcesImpulseResponse.h \
     src/user/simulator/NumericRectangularFlatSourceImpulseResponse.h \

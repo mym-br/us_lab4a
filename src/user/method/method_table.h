@@ -29,6 +29,10 @@ METHOD_ITEM(NetworkSyncSingleVirtualSourceMethod<double>, single_virtual_source_
 METHOD_ITEM(NetworkSyncSTAMethod<double>, sta_network_sync) \
 METHOD_ITEM(NetworkSyncSTAMethod<double>, sta_network_sync_save_signals) \
 METHOD_ITEM(ShowImageMethod, show_image) \
+METHOD_ITEM(SimCircularSourceMethod<double>, sim_acoustic_field_circular_source_transient) \
+METHOD_ITEM(SimCircularSourceMethod<double>, sim_impulse_response_circular_source) \
+METHOD_ITEM(SimCircularSourceMethod<double>, sim_propagation_circular_source_transient) \
+METHOD_ITEM(SimCircularSourceMethod<double>, sim_radiation_pattern_circular_source_transient) \
 METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_acoustic_field_array_of_rectangular_flat_sources_transient) \
 METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_acoustic_field_rectangular_flat_source_transient) \
 METHOD_ITEM(SimRectangularFlatSourceMethod<double>, sim_impulse_response_array_of_rectangular_flat_sources) \

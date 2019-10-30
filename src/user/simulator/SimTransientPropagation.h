@@ -38,8 +38,25 @@ public:
 	SimTransientPropagation();
 	~SimTransientPropagation() {}
 
-	struct ThreadData {
-		ThreadData(
+	struct CircularSourceThreadData {
+		CircularSourceThreadData(
+			FloatType samplingFreq,
+			FloatType propagationSpeed,
+			FloatType sourceRadius,
+			const std::vector<FloatType>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceRadius)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ImpulseResponse ir;
+		std::vector<std::complex<FloatType>> filterFreqCoeff;
+		std::vector<FloatType> h;
+		std::vector<FloatType> signal;
+		FFTWFilter2<FloatType> filter;
+	};
+
+	struct RectangularSourceThreadData {
+		RectangularSourceThreadData(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -57,8 +74,8 @@ public:
 		FFTWFilter2<FloatType> filter;
 	};
 
-	struct ArrayThreadData {
-		ArrayThreadData(
+	struct ArrayOfRectangularSourcesThreadData {
+		ArrayOfRectangularSourcesThreadData(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -78,6 +95,14 @@ public:
 		std::vector<FloatType> signal;
 		FFTWFilter2<FloatType> filter;
 	};
+
+	void getCircularSourcePropagation(
+			FloatType samplingFreq,
+			FloatType propagationSpeed,
+			FloatType sourceRadius,
+			const std::vector<FloatType>& dvdt,
+			const std::vector<unsigned int>& propagIndexList,
+			Matrix<XYZValueArray<FloatType>>& gridData);
 
 	void getRectangularFlatSourcePropagation(
 			FloatType samplingFreq,
@@ -116,6 +141,60 @@ SimTransientPropagation<FloatType, ImpulseResponse>::SimTransientPropagation()
 
 template<typename FloatType, typename ImpulseResponse>
 void
+SimTransientPropagation<FloatType, ImpulseResponse>::getCircularSourcePropagation(
+					FloatType samplingFreq,
+					FloatType propagationSpeed,
+					FloatType sourceRadius,
+					const std::vector<FloatType>& dvdt,
+					const std::vector<unsigned int>& propagIndexList,
+					Matrix<XYZValueArray<FloatType>>& gridData)
+{
+	CircularSourceThreadData threadData{
+		samplingFreq,
+		propagationSpeed,
+		sourceRadius,
+		dvdt
+	};
+	tbb::enumerable_thread_specific<CircularSourceThreadData> tls(threadData);
+
+	IterationCounter::reset(gridData.n1());
+
+	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
+		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n2()),
+			[&, i](const tbb::blocked_range<std::size_t>& r) {
+				auto& local = tls.local();
+
+				std::size_t hOffset;
+
+				for (std::size_t j = r.begin(); j != r.end(); ++j) {
+					XYZValueArray<FloatType>& point = gridData(i, j);
+					local.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, local.h);
+
+					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
+
+					point.values.resize(propagIndexList.size());
+					for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
+						const unsigned int index = propagIndexList[i];
+						if (index < hOffset) {
+							point.values[i] = 0;
+						} else {
+							const unsigned int localIndex = index - hOffset;
+							if (localIndex < local.signal.size()) {
+								point.values[i] = local.signal[localIndex];
+							} else {
+								point.values[i] = 0;
+							}
+						}
+					}
+				}
+		});
+
+		IterationCounter::add(1);
+	}
+}
+
+template<typename FloatType, typename ImpulseResponse>
+void
 SimTransientPropagation<FloatType, ImpulseResponse>::getRectangularFlatSourcePropagation(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
@@ -126,7 +205,7 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getRectangularFlatSourcePro
 					const std::vector<unsigned int>& propagIndexList,
 					Matrix<XYZValueArray<FloatType>>& gridData)
 {
-	ThreadData threadData{
+	RectangularSourceThreadData threadData{
 		samplingFreq,
 		propagationSpeed,
 		sourceWidth,
@@ -134,7 +213,7 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getRectangularFlatSourcePro
 		discretization,
 		dvdt
 	};
-	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
+	tbb::enumerable_thread_specific<RectangularSourceThreadData> tls(threadData);
 
 	IterationCounter::reset(gridData.n1());
 
@@ -186,7 +265,7 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSo
 					const std::vector<unsigned int>& propagIndexList,
 					Matrix<XYZValueArray<FloatType>>& gridData)
 {
-	ArrayThreadData threadData{
+	ArrayOfRectangularSourcesThreadData threadData{
 		samplingFreq,
 		propagationSpeed,
 		sourceWidth,
@@ -196,7 +275,7 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSo
 		focusDelay,
 		dvdt
 	};
-	tbb::enumerable_thread_specific<ArrayThreadData> tls(threadData);
+	tbb::enumerable_thread_specific<ArrayOfRectangularSourcesThreadData> tls(threadData);
 
 	IterationCounter::reset(gridData.n1());
 

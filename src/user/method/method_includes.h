@@ -25,6 +25,7 @@
 #include "NetworkSyncSTAMethod.h"
 #include "Project.h"
 #include "ShowImageMethod.h"
+#include "SimCircularSourceMethod.h"
 #include "SimRectangularFlatSourceMethod.h"
 #include "SingleAcquisitionMethod.h"
 #include "SingleVirtualSourceMethod.h"

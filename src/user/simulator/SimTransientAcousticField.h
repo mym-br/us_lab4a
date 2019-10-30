@@ -39,8 +39,25 @@ public:
 	SimTransientAcousticField();
 	~SimTransientAcousticField() {}
 
-	struct ThreadData {
-		ThreadData(
+	struct CircularSourceThreadData {
+		CircularSourceThreadData(
+			FloatType samplingFreq,
+			FloatType propagationSpeed,
+			FloatType sourceRadius,
+			const std::vector<FloatType>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceRadius)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ImpulseResponse ir;
+		std::vector<std::complex<FloatType>> filterFreqCoeff;
+		std::vector<FloatType> h;
+		std::vector<FloatType> signal;
+		FFTWFilter2<FloatType> filter;
+	};
+
+	struct RectangularSourceThreadData {
+		RectangularSourceThreadData(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -58,8 +75,8 @@ public:
 		FFTWFilter2<FloatType> filter;
 	};
 
-	struct ArrayThreadData {
-		ArrayThreadData(
+	struct ArrayOfRectangularSourcesThreadData {
+		ArrayOfRectangularSourcesThreadData(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -79,6 +96,13 @@ public:
 		std::vector<FloatType> signal;
 		FFTWFilter2<FloatType> filter;
 	};
+
+	void getCircularSourceAcousticField(
+			FloatType samplingFreq,
+			FloatType propagationSpeed,
+			FloatType sourceRadius,
+			const std::vector<FloatType>& dvdt,
+			Matrix<XYZValue<FloatType>>& gridData);
 
 	void getRectangularFlatSourceAcousticField(
 			FloatType samplingFreq,
@@ -115,6 +139,48 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::SimTransientAcousticField
 
 template<typename FloatType, typename ImpulseResponse>
 void
+SimTransientAcousticField<FloatType, ImpulseResponse>::getCircularSourceAcousticField(
+					FloatType samplingFreq,
+					FloatType propagationSpeed,
+					FloatType sourceRadius,
+					const std::vector<FloatType>& dvdt,
+					Matrix<XYZValue<FloatType>>& gridData)
+{
+	CircularSourceThreadData threadData{
+		samplingFreq,
+		propagationSpeed,
+		sourceRadius,
+		dvdt
+	};
+	tbb::enumerable_thread_specific<CircularSourceThreadData> tls(threadData);
+
+	IterationCounter::reset(gridData.n1());
+
+	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
+		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n2()),
+			[&, i](const tbb::blocked_range<std::size_t>& r) {
+				auto& local = tls.local();
+
+				std::size_t hOffset;
+
+				for (std::size_t j = r.begin(); j != r.end(); ++j) {
+					XYZValue<FloatType>& point = gridData(i, j);
+					local.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, local.h);
+
+					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
+
+					FloatType minValue, maxValue;
+					Util::minMax(local.signal, minValue, maxValue);
+					point.value = maxValue - minValue;
+				}
+		});
+
+		IterationCounter::add(1);
+	}
+}
+
+template<typename FloatType, typename ImpulseResponse>
+void
 SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularFlatSourceAcousticField(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
@@ -124,7 +190,7 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularFlatSourceA
 					const std::vector<FloatType>& dvdt,
 					Matrix<XYZValue<FloatType>>& gridData)
 {
-	ThreadData threadData{
+	RectangularSourceThreadData threadData{
 		samplingFreq,
 		propagationSpeed,
 		sourceWidth,
@@ -132,7 +198,7 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularFlatSourceA
 		discretization,
 		dvdt
 	};
-	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
+	tbb::enumerable_thread_specific<RectangularSourceThreadData> tls(threadData);
 
 	IterationCounter::reset(gridData.n1());
 
@@ -172,7 +238,7 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getArrayOfRectangularFlat
 					const std::vector<FloatType>& focusDelay,
 					Matrix<XYZValue<FloatType>>& gridData)
 {
-	ArrayThreadData threadData{
+	ArrayOfRectangularSourcesThreadData threadData{
 		samplingFreq,
 		propagationSpeed,
 		sourceWidth,
@@ -182,7 +248,7 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getArrayOfRectangularFlat
 		focusDelay,
 		dvdt
 	};
-	tbb::enumerable_thread_specific<ArrayThreadData> tls(threadData);
+	tbb::enumerable_thread_specific<ArrayOfRectangularSourcesThreadData> tls(threadData);
 
 	IterationCounter::reset(gridData.n1());
 

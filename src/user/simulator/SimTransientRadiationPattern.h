@@ -44,9 +44,26 @@ public:
 	SimTransientRadiationPattern();
 	~SimTransientRadiationPattern() {}
 
+	struct CircularSourceThreadData {
+		CircularSourceThreadData(
+			FloatType samplingFreq,
+			FloatType propagationSpeed,
+			FloatType sourceRadius,
+			const std::vector<FloatType>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceRadius)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ImpulseResponse ir;
+		std::vector<std::complex<FloatType>> filterFreqCoeff;
+		std::vector<FloatType> h;
+		std::vector<FloatType> signal;
+		FFTWFilter2<FloatType> filter;
+	};
+
 #ifdef SIM_TRANSIENT_RADIATION_PATTERN_USE_MULTITHREADING
-	struct ThreadData {
-		ThreadData(
+	struct RectangularSourceThreadData {
+		RectangularSourceThreadData(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -64,8 +81,8 @@ public:
 		FFTWFilter2<FloatType> filter;
 	};
 #endif
-	struct ArrayThreadData {
-		ArrayThreadData(
+	struct ArrayOfRectangularSourcesThreadData {
+		ArrayOfRectangularSourcesThreadData(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -85,6 +102,14 @@ public:
 		std::vector<FloatType> signal;
 		FFTWFilter2<FloatType> filter;
 	};
+
+	void getCircularSourceRadiationPattern(
+			FloatType samplingFreq,
+			FloatType propagationSpeed,
+			FloatType sourceRadius,
+			const std::vector<FloatType>& dvdt,
+			const std::vector<XYZ<FloatType>>& inputData,
+			std::vector<FloatType>& radData);
 
 	void getRectangularFlatSourceRadiationPattern(
 			FloatType samplingFreq,
@@ -123,6 +148,43 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::SimTransientRadiationP
 
 template<typename FloatType, typename ImpulseResponse>
 void
+SimTransientRadiationPattern<FloatType, ImpulseResponse>::getCircularSourceRadiationPattern(
+					FloatType samplingFreq,
+					FloatType propagationSpeed,
+					FloatType sourceRadius,
+					const std::vector<FloatType>& dvdt,
+					const std::vector<XYZ<FloatType>>& inputData,
+					std::vector<FloatType>& radData)
+{
+	CircularSourceThreadData threadData{
+		samplingFreq,
+		propagationSpeed,
+		sourceRadius,
+		dvdt
+	};
+	tbb::enumerable_thread_specific<CircularSourceThreadData> tls(threadData);
+
+	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.size()),
+		[&](const tbb::blocked_range<std::size_t>& r) {
+			auto& local = tls.local();
+
+			std::size_t hOffset;
+
+			for (std::size_t i = r.begin(); i != r.end(); ++i) {
+				const XYZ<FloatType>& id = inputData[i];
+				local.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, local.h);
+
+				local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
+
+				FloatType minValue, maxValue;
+				Util::minMax(local.signal, minValue, maxValue);
+				radData[i] = maxValue - minValue;
+			}
+	});
+}
+
+template<typename FloatType, typename ImpulseResponse>
+void
 SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSourceRadiationPattern(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
@@ -136,7 +198,7 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSour
 	IterationCounter::reset(inputData.n1());
 
 #ifdef SIM_TRANSIENT_RADIATION_PATTERN_USE_MULTITHREADING
-	ThreadData threadData{
+	RectangularSourceThreadData threadData{
 		samplingFreq,
 		propagationSpeed,
 		sourceWidth,
@@ -144,7 +206,7 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSour
 		discretization,
 		dvdt
 	};
-	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
+	tbb::enumerable_thread_specific<RectangularSourceThreadData> tls(threadData);
 
 	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
 		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
@@ -212,7 +274,7 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getArrayOfRectangularF
 					const Matrix<XYZ<FloatType>>& inputData,
 					Matrix<XYZValue<FloatType>>& gridData)
 {
-	ArrayThreadData threadData{
+	ArrayOfRectangularSourcesThreadData threadData{
 		samplingFreq,
 		propagationSpeed,
 		sourceWidth,
@@ -222,7 +284,7 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getArrayOfRectangularF
 		focusDelay,
 		dvdt
 	};
-	tbb::enumerable_thread_specific<ArrayThreadData> tls(threadData);
+	tbb::enumerable_thread_specific<ArrayOfRectangularSourcesThreadData> tls(threadData);
 
 	IterationCounter::reset(inputData.n1());
 
