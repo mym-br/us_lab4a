@@ -36,7 +36,7 @@ public:
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceRadius,
-					unsigned int numSubElem);
+					FloatType numSubElemInRadius);
 	~NumericCircularSourceImpulseResponse() {}
 
 	// Return h/c.
@@ -64,11 +64,16 @@ NumericCircularSourceImpulseResponse<FloatType>::NumericCircularSourceImpulseRes
 		FloatType samplingFreq,
 		FloatType propagationSpeed,
 		FloatType sourceRadius,
-		unsigned int numSubElem)
+		FloatType numSubElemInRadius)
 			: samplingFreq_(samplingFreq)
 			, propagationSpeed_(propagationSpeed)
-			, subElemArea_(pi * (sourceRadius * sourceRadius) / numSubElem)
+			, subElemArea_()
 {
+	const FloatType area = pi * (sourceRadius * sourceRadius);
+	const FloatType subElemDensity = numSubElemInRadius * numSubElemInRadius / (sourceRadius * sourceRadius);
+	const unsigned int numSubElem = static_cast<unsigned int>(subElemDensity * area);
+	subElemArea_ = area / numSubElem;
+
 	std::mt19937 rndGen;
 	std::random_device rd;
 	rndGen.seed(rd());

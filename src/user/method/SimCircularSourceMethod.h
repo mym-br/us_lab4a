@@ -434,11 +434,10 @@ SimCircularSourceMethod<FloatType>::execImpulseResponse()
 	if (simData.irMethod == "numeric") {
 		const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
 		const FloatType numSubElemPerLambda = simData.discretFactor;
-		const FloatType density = numSubElemPerLambda * numSubElemPerLambda / (nyquistLambda * nyquistLambda);
-		const unsigned int numSubElem = density * FloatType(pi) * (srcData.sourceRadius * srcData.sourceRadius);
+		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
 		auto impResp = std::make_unique<NumericCircularSourceImpulseResponse<FloatType>>(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
-					numSubElem);
+					numSubElemInRadius);
 		impResp->getImpulseResponse(pointX, 0.0, pointZ, hOffset, h);
 	} else if (simData.irMethod == "analytic") {
 		auto impResp = std::make_unique<AnalyticCircularSourceImpulseResponse<FloatType>>(
