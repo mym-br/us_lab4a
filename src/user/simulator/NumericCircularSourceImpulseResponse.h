@@ -19,13 +19,16 @@
 
 #include <cmath>
 #include <limits>
-#include <random>
 #include <vector>
 
 #include "Log.h"
 #include "Util.h"
 
+#define NUMERIC_CIRCULAR_SOURCE_IMPULSE_RESPONSE_USE_RANDOM 1
 
+#ifdef NUMERIC_CIRCULAR_SOURCE_IMPULSE_RESPONSE_USE_RANDOM
+# include <random>
+#endif
 
 namespace Lab {
 
@@ -69,6 +72,7 @@ NumericCircularSourceImpulseResponse<FloatType>::NumericCircularSourceImpulseRes
 			, propagationSpeed_(propagationSpeed)
 			, subElemArea_()
 {
+#ifdef NUMERIC_CIRCULAR_SOURCE_IMPULSE_RESPONSE_USE_RANDOM
 	const FloatType area = pi * (sourceRadius * sourceRadius);
 	const FloatType subElemDensity = numSubElemInRadius * numSubElemInRadius / (sourceRadius * sourceRadius);
 	const unsigned int numSubElem = static_cast<unsigned int>(subElemDensity * area);
@@ -113,8 +117,29 @@ NumericCircularSourceImpulseResponse<FloatType>::NumericCircularSourceImpulseRes
 		}
 		++i;
 	}
+#else
+	const FloatType d = sourceRadius / numSubElemInRadius; // sub-element side
+	subElemArea_ = d * d * 2; // multiplied by 2 because only one half of the circle is used
+	const FloatType d2 = d * 0.5;
 
-	LOG_DEBUG << "[NumericCircularSourceImpulseResponse] numSubElem=" << numSubElem;
+	const unsigned int n = numSubElemInRadius;
+	for (unsigned int iy = 0; iy < n; ++iy) {
+		const FloatType yc = d2 + iy * d;
+		const FloatType yt = yc + d2; // to test if the sub-element is inside the circle
+		for (unsigned int ix = 0; ix < n; ++ix) {
+			const FloatType xc = d2 + ix * d;
+			const FloatType xt = xc + d2;
+			if (std::sqrt(xt * xt + yt * yt) <= sourceRadius) {
+				subElem_.emplace_back(xc, yc);
+				subElem_.emplace_back(-xc, yc);
+			} else {
+				break;
+			}
+		}
+	}
+#endif
+
+	LOG_DEBUG << "[NumericCircularSourceImpulseResponse] subElem_.size()=" << subElem_.size();
 }
 
 template<typename FloatType>
