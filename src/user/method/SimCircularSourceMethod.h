@@ -32,7 +32,7 @@
 #include "Log.h"
 #include "Matrix.h"
 #include "Method.h"
-//#include "NumericCircularSourceImpulseResponse.h"
+#include "NumericCircularSourceImpulseResponse.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "SimTransientAcousticField.h"
@@ -65,6 +65,7 @@ private:
 	struct SimulationData {
 		FloatType samplingFreq;
 		FloatType excNumPeriods;
+		FloatType discretFactor;
 		std::string irMethod;
 		std::string excitationType;
 		std::vector<FloatType> exc;
@@ -144,6 +145,14 @@ SimCircularSourceMethod<FloatType>::loadSimulationData(ParamMapPtr taskPM, const
 		Waveform::getType2b(data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << simData.excitationType << '.');
+	}
+
+	if (simData.irMethod == "numeric") {
+		simPM->getValue(simData.discretFactor , "num_sub_elem_per_lambda", 0.01, 100.0);
+	} else if (simData.irMethod == "analytic") {
+		// Empty.
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 }
 
@@ -423,11 +432,14 @@ SimCircularSourceMethod<FloatType>::execImpulseResponse()
 	std::size_t hOffset;
 	std::vector<FloatType> h;
 	if (simData.irMethod == "numeric") {
-//		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-//		auto impResp = std::make_unique<NumericCircularSourceImpulseResponse<FloatType>>(
-//					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
-//					subElemSize);
-//		impResp->getImpulseResponse(pointX, 0.0, pointZ, hOffset, h);
+		const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
+		const FloatType numSubElemPerLambda = simData.discretFactor;
+		const FloatType density = numSubElemPerLambda * numSubElemPerLambda / (nyquistLambda * nyquistLambda);
+		const unsigned int numSubElem = density * FloatType(pi) * (srcData.sourceRadius * srcData.sourceRadius);
+		auto impResp = std::make_unique<NumericCircularSourceImpulseResponse<FloatType>>(
+					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					numSubElem);
+		impResp->getImpulseResponse(pointX, 0.0, pointZ, hOffset, h);
 	} else if (simData.irMethod == "analytic") {
 		auto impResp = std::make_unique<AnalyticCircularSourceImpulseResponse<FloatType>>(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius);

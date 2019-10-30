@@ -154,6 +154,7 @@ HEADERS += \
     src/user/simulator/AnalyticCircularSourceImpulseResponse.h \
     src/user/simulator/AnalyticRectangularFlatSourceImpulseResponse.h \
     src/user/simulator/ArrayOfRectangularFlatSourcesImpulseResponse.h \
+    src/user/simulator/NumericCircularSourceImpulseResponse.h \
     src/user/simulator/NumericRectangularFlatSourceImpulseResponse.h \
     src/user/simulator/SimTransientAcousticField.h \
     src/user/simulator/SimTransientPropagation.h \
