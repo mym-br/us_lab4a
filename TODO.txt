@@ -1,4 +1,8 @@
 
+- Figure2D: Numbers near 0: 1e-17
+
+- Remove "Flat" (Source)?
+
 - Use WindowFunction.get()?
 
 - Check USLab4a::closeEvent(QCloseEvent* event) when the processing is enabled.
