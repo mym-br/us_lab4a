@@ -72,19 +72,44 @@ NumericCircularSourceImpulseResponse<FloatType>::NumericCircularSourceImpulseRes
 	std::mt19937 rndGen;
 	std::random_device rd;
 	rndGen.seed(rd());
-	std::uniform_real_distribution<FloatType> xDist(-1.0, 1.0);
-	std::uniform_real_distribution<FloatType> yDist(0.0, 1.0);
+	std::uniform_real_distribution<FloatType> dist(0.0, 1.0);
 
+	// http://extremelearning.com.au/a-simple-method-to-construct-isotropic-quasirandom-blue-noise-point-sequences/
+	// Infinite R2 jittered sequence.
+	// i = 0, 1, 2, ...
+	// u0, u1 = random numbers [0.0, 1.0)
+	auto jitteredPoint2D = [&](int i, double u0, double u1, FloatType& x, FloatType& y) {
+		constexpr double lambda = 0.5; // jitter parameter ( > 0)
+		constexpr double phi = 1.324717957244746;
+		constexpr double alpha0 = 1.0 / phi;
+		constexpr double alpha1 = 1.0 / (phi * phi);
+		constexpr double delta0 = 0.76;
+		constexpr double i0 = 0.300;
+		const double k = lambda * delta0 * std::sqrt(pi) / (4.0 * std::sqrt(i + i0));
+		const double i1 = i + 1;
+		const double x0 = alpha0 * i1 + k * u0; // x0 > 0
+		const double y0 = alpha1 * i1 + k * u1; // y0 > 0
+		x = x0 - std::floor(x0);
+		y = y0 - std::floor(y0);
+	};
+
+	int i = 0;
 	while (subElem_.size() < numSubElem) {
-		const FloatType x = xDist(rndGen) * sourceRadius;
-		const FloatType y = yDist(rndGen) * sourceRadius;
+		FloatType x, y;
+		jitteredPoint2D(i, dist(rndGen), dist(rndGen), x, y);
+		// [0.0, 1.0) --> [-1.0, 1.0)
+		x = -1.0 + 2.0 * x;
+		y = -1.0 + 2.0 * y;
+		x *= sourceRadius;
+		y *= sourceRadius;
+
 		if (std::sqrt(x * x + y * y) < sourceRadius) {
 			subElem_.emplace_back(x, y);
 		}
+		++i;
 	}
 
 	LOG_DEBUG << "[NumericCircularSourceImpulseResponse] numSubElem=" << numSubElem;
-	//TODO: Export sub elem positions.
 }
 
 template<typename FloatType>
