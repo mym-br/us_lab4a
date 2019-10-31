@@ -17,6 +17,7 @@
 
 #include "Figure2DWidget.h"
 
+#include <cassert>
 #include <cmath>
 
 #include <QMouseEvent>
@@ -33,8 +34,8 @@ constexpr int MIN_AXIS_DIV = 8;
 constexpr double WHEEL_ZOOM_FACTOR = 0.01;
 constexpr double MOUSE_ZOOM_FACTOR = 0.002;
 constexpr double DEFAULT_Y_DELTA = 1.0;
-constexpr double MIN_VALUE_DELTA = 1.0e-30;
-constexpr double MAX_VALUE_DELTA = 1.0e30;
+constexpr double MIN_VALUE_DELTA = 1.0e-12;
+constexpr double MAX_VALUE_DELTA = 1.0e12;
 constexpr double MARKER_SIZE = 2.0;
 constexpr double EPS = 1.0e-5;
 constexpr double MAX_TICK_POW = 2.0;
@@ -358,6 +359,8 @@ Figure2DWidget::autoSetAxisTicks(double minValue, double maxValue,
 
 	// Calculate step.
 	const double range = maxValue - minValue;
+	assert(range > 0.1 * MIN_VALUE_DELTA);
+
 	const double maxStep = range / MIN_AXIS_DIV;
 	const double truncMaxStep = std::pow(10.0, std::floor(std::log10(maxStep)));
 	double step = truncMaxStep;
