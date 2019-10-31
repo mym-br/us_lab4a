@@ -1,5 +1,4 @@
 
-- Figure2D: Numbers near 0: 1e-17
 
 - Remove "Flat" (Source)?
 

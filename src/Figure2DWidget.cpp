@@ -88,6 +88,23 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	QPainter painter(this);
 	painter.setFont(QFont("monospace"));
 
+	auto formatTickValue = [](double value, bool showFractionalPart) {
+		if (showFractionalPart) {
+			return QString::number(value, 'f', 2);
+		} else {
+			return QString::number(value, 'f', 0);
+		}
+	};
+	auto hasFractionalPart = [&](const std::vector<double>& v) {
+		for (float n : v) {
+			const double x = n - std::floor(n);
+			if (x > 1.0e-4 && x < 1.0 - 1.0e-4) return true;
+		}
+		return false;
+	};
+	bool showXTicksFractionalPart = hasFractionalPart(xTicks_);
+	bool showYTicksFractionalPart = hasFractionalPart(yTicks_);
+
 	if (figureChanged_) {
 		QFontMetrics fm = painter.fontMetrics();
 		textCapHeight_ = fm.capHeight();
@@ -95,7 +112,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 		yTicksWidth_.resize(yTicks_.size());
 		int maxW = 0;
 		for (unsigned int i = 0; i < yTicks_.size(); ++i) {
-			yTicksWidth_[i] = fm.width(QString::number(yTicks_[i]));
+			yTicksWidth_[i] = fm.width(formatTickValue(yTicks_[i], showYTicksFractionalPart));
 			if (yTicksWidth_[i] > maxW) maxW = yTicksWidth_[i];
 		}
 		leftMargin_ = SPACING + textCapHeight_ + 2 * TEXT_SPACING + maxW + TICK_SIZE;
@@ -128,7 +145,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 		// Tick.
 		painter.drawLine(QPointF(u, vBegin), QPointF(u, vTick));
 		// Tich value.
-		painter.drawText(QPointF(u, vText), QString::number(tick));
+		painter.drawText(QPointF(u, vText), formatTickValue(tick, showXTicksFractionalPart));
 	}
 	// X label.
 	const double vLabelPos = vText + TEXT_SPACING + textCapHeight_;
@@ -154,7 +171,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 		// Tick.
 		painter.drawLine(QPointF(uBegin, v), QPointF(uTick, v));
 		// Tick value.
-		painter.drawText(QPointF(uText, v), QString::number(yTicks_[i]));
+		painter.drawText(QPointF(uText, v), formatTickValue(yTicks_[i], showYTicksFractionalPart));
 	}
 	// Y label.
 	painter.rotate(-90.0);
