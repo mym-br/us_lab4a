@@ -59,9 +59,9 @@ METHOD_ITEM(STAMethod<double>, sta_save_signals) \
 METHOD_ITEM(STAMethod<double>, sta_simple_saved) \
 METHOD_ITEM(STAMethod<double>, sta_simple_simulated) \
 METHOD_ITEM(STAMethod<double>, sta_simulated) \
-METHOD_ITEM(STAMethod<float>, sta_sp_saved) \
 METHOD_ITEM(STAMethod<double>, sta_vectorial_dp_network) \
 METHOD_ITEM(STAMethod<double>, sta_vectorial_dp_saved) \
+METHOD_ITEM(STAMethod<float>, sta_sp_saved) \
 METHOD_ITEM(STAMethod<float>, sta_vectorial_sp_saved) \
 METHOD_ITEM(SyntheticYSingleVirtualSourceMethod<double>, single_virtual_source_network_sync_synth_y_imaging) \
 METHOD_ITEM(T1R1SAFT3DMethod<double>, t1r1saft_3d_simulated_save_signals) \
