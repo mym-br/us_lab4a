@@ -44,8 +44,9 @@ public:
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceRadius,
+			FloatType discretization,
 			const std::vector<FloatType>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceRadius)
+				: ir(samplingFreq, propagationSpeed, sourceRadius, discretization)
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
@@ -101,6 +102,7 @@ public:
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceRadius,
+			FloatType discretization,
 			const std::vector<FloatType>& dvdt,
 			Matrix<XYZValue<FloatType>>& gridData);
 
@@ -143,6 +145,7 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getCircularSourceAcoustic
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceRadius,
+					FloatType discretization,
 					const std::vector<FloatType>& dvdt,
 					Matrix<XYZValue<FloatType>>& gridData)
 {
@@ -150,6 +153,7 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getCircularSourceAcoustic
 		samplingFreq,
 		propagationSpeed,
 		sourceRadius,
+		discretization,
 		dvdt
 	};
 	tbb::enumerable_thread_specific<CircularSourceThreadData> tls(threadData);

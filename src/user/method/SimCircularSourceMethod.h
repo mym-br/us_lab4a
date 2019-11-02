@@ -212,16 +212,19 @@ SimCircularSourceMethod<FloatType>::execTransientRadiationPattern()
 	}
 
 	if (simData.irMethod == "numeric") {
-//		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-//		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericCircularSourceImpulseResponse<FloatType>>>();
-//		radPat->getCircularSourceRadiationPattern(
-//					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
-//					subElemSize,
-//					dvdt, inputData, gridData);
+		const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
+		const FloatType numSubElemPerLambda = simData.discretFactor;
+		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericCircularSourceImpulseResponse<FloatType>>>();
+		radPat->getCircularSourceRadiationPattern(
+					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					numSubElemInRadius,
+					dvdt, inputData, radData);
 	} else if (simData.irMethod == "analytic") {
 		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, AnalyticCircularSourceImpulseResponse<FloatType>>>();
 		radPat->getCircularSourceRadiationPattern(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					0.0,
 					dvdt, inputData, radData);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
@@ -265,16 +268,18 @@ SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
-//		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-//		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericCircularSourceImpulseResponse<FloatType>>>();
-//		acField->getCircularSourceAcousticField(
-//					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
-//					subElemSize,
-//					dvdt, gridData);
+		const FloatType numSubElemPerLambda = simData.discretFactor;
+		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericCircularSourceImpulseResponse<FloatType>>>();
+		acField->getCircularSourceAcousticField(
+					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					numSubElemInRadius,
+					dvdt, gridData);
 	} else if (simData.irMethod == "analytic") {
 		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticCircularSourceImpulseResponse<FloatType>>>();
 		acField->getCircularSourceAcousticField(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					0.0,
 					dvdt, gridData);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
@@ -336,16 +341,18 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
-//		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-//		auto propag = std::make_unique<SimTransientPropagation<FloatType, NumericCircularSourceImpulseResponse<FloatType>>>();
-//		propag->getCircularSourcePropagation(
-//					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
-//					subElemSize,
-//					dvdt, propagIndexList, gridData);
+		const FloatType numSubElemPerLambda = simData.discretFactor;
+		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		auto propag = std::make_unique<SimTransientPropagation<FloatType, NumericCircularSourceImpulseResponse<FloatType>>>();
+		propag->getCircularSourcePropagation(
+					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					numSubElemInRadius,
+					dvdt, propagIndexList, gridData);
 	} else if (simData.irMethod == "analytic") {
 		auto propag = std::make_unique<SimTransientPropagation<FloatType, AnalyticCircularSourceImpulseResponse<FloatType>>>();
 		propag->getCircularSourcePropagation(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					0.0,
 					dvdt, propagIndexList, gridData);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');

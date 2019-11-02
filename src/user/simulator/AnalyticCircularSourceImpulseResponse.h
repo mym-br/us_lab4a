@@ -45,7 +45,8 @@ public:
 	AnalyticCircularSourceImpulseResponse(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
-					FloatType sourceRadius);
+					FloatType sourceRadius,
+					FloatType discretization=0.0 /* not used */);
 	~AnalyticCircularSourceImpulseResponse() {}
 
 	// Return h/c.
@@ -63,7 +64,8 @@ template<typename FloatType>
 AnalyticCircularSourceImpulseResponse<FloatType>::AnalyticCircularSourceImpulseResponse(
 		FloatType samplingFreq,
 		FloatType propagationSpeed,
-		FloatType sourceRadius)
+		FloatType sourceRadius,
+		FloatType /*discretization*/)
 			: samplingFreq_(samplingFreq)
 			, propagationSpeed_(propagationSpeed)
 			, r_(sourceRadius)
