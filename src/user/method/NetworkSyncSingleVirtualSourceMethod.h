@@ -194,11 +194,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 		if (coherenceFactorEnabled) {
 			project_.saveFactorToHDF5(gridData, acqOutputDir, "image_factor", "factor");
 
-			// Apply the coherence factor method.
-			for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
-				iter->value *= iter->factor;
-				iter->factor = 1.0;
-			}
+			Util::applyFactorToValue(gridData.begin(), gridData.end());
 			const FloatType maxAbsCFValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
 			if (maxAbsCFValue > cfValueLevel) cfValueLevel = maxAbsCFValue;
 

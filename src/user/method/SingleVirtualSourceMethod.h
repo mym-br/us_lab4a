@@ -66,7 +66,6 @@ private:
 
 	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement,
 			bool saveCoordinates, const std::string& outputDir);
-	void applyCoherenceFactor();
 	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
 	void execContinuousNetworkImaging(FloatType valueScale, ArrayProcessor<FloatType>& processor,
 						unsigned int baseElement, bool coherenceFactorEnabled);
@@ -98,21 +97,11 @@ SingleVirtualSourceMethod<FloatType>::~SingleVirtualSourceMethod()
 
 template<typename FloatType>
 void
-SingleVirtualSourceMethod<FloatType>::applyCoherenceFactor()
-{
-	for (auto iter = gridData_.begin(); iter != gridData_.end(); ++iter) {
-		iter->value *= iter->factor;
-		//iter->factor = 1.0;
-	}
-}
-
-template<typename FloatType>
-void
 SingleVirtualSourceMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std::string& outputDir)
 {
 	project_.saveFactorToHDF5(gridData_, outputDir, "image_factor", "factor");
 
-	applyCoherenceFactor();
+	Util::applyFactorToValue(gridData_.begin(), gridData_.end());
 
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
@@ -153,7 +142,7 @@ SingleVirtualSourceMethod<FloatType>::execContinuousNetworkImaging(FloatType val
 		processor.process(gridData_);
 
 		if (coherenceFactorEnabled) {
-			applyCoherenceFactor();
+			Util::applyFactorToValue(gridData_.begin(), gridData_.end());
 		}
 
 		project_.showFigure3D(1, "Image", &gridData_, &pointList_,

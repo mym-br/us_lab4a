@@ -87,11 +87,7 @@ T1R1SAFT3DMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std:
 {
 	project_.saveFactorToHDF5(gridData_, outputDir, "image_factor", "factor");
 
-	// Applies the coherence factor method.
-	for (auto iter = gridData_.begin(); iter != gridData_.end(); ++iter) {
-		iter->value *= iter->factor;
-		iter->factor = 1.0;
-	}
+	Util::applyFactorToValue(gridData_.begin(), gridData_.end());
 
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 

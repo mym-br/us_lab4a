@@ -139,6 +139,8 @@ template<typename T> void normalizeBySumOfAbs(std::vector<T>& data);
 
 unsigned int numberOfDigits(unsigned int value);
 
+template<typename Iterator> void applyFactorToValue(Iterator iter, Iterator iterEnd);
+
 //#############################################################################
 
 template<typename T>
@@ -1015,6 +1017,16 @@ normalizeBySumOfAbs(std::vector<T>& data)
 	if (sumAbs == 0) return;
 	const auto coeff = 1 / sumAbs;
 	multiply(data, coeff);
+}
+
+template<typename Iterator>
+void
+applyFactorToValue(Iterator iter, Iterator iterEnd)
+{
+	for ( ; iter != iterEnd; ++iter) {
+		iter->value *= iter->factor;
+		iter->factor = 1;
+	}
 }
 
 } // namespace Util

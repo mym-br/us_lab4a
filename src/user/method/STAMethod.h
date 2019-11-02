@@ -96,11 +96,7 @@ STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnv
 		ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData_);
 	}
 
-	// Applies the coherence factor method.
-	for (auto iter = gridData_.begin(); iter != gridData_.end(); ++iter) {
-		iter->value *= iter->factor;
-		iter->factor = 1.0;
-	}
+	Util::applyFactorToValue(gridData_.begin(), gridData_.end());
 
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 

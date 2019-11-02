@@ -189,11 +189,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 				ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData);
 			}
 
-			// Apply the coherence factor method.
-			for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
-				iter->value *= iter->factor;
-				iter->factor = 1.0;
-			}
+			Util::applyFactorToValue(gridData.begin(), gridData.end());
 
 			project_.saveImageToHDF5(gridData, acqOutputDir, "image_cf", "cf");
 
