@@ -14,8 +14,8 @@
  *  You should have received a copy of the GNU General Public License      *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef ARRAYOFRECTANGULARFLATSOURCESIMPULSERESPONSE_H
-#define ARRAYOFRECTANGULARFLATSOURCESIMPULSERESPONSE_H
+#ifndef ARRAYOFRECTANGULARSOURCESIMPULSERESPONSE_H
+#define ARRAYOFRECTANGULARSOURCESIMPULSERESPONSE_H
 
 #include <limits>
 #include <vector>
@@ -29,9 +29,9 @@
 namespace Lab {
 
 template<typename FloatType, typename ImpulseResponse>
-class ArrayOfRectangularFlatSourcesImpulseResponse {
+class ArrayOfRectangularSourcesImpulseResponse {
 public:
-	ArrayOfRectangularFlatSourcesImpulseResponse(
+	ArrayOfRectangularSourcesImpulseResponse(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,
@@ -39,7 +39,7 @@ public:
 					FloatType discretization,
 					const std::vector<XY<FloatType>>& elemPos,
 					const std::vector<FloatType>& focusDelay);
-	~ArrayOfRectangularFlatSourcesImpulseResponse() {}
+	~ArrayOfRectangularSourcesImpulseResponse() {}
 
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
 				std::vector<unsigned int>* activeElemList=nullptr);
@@ -55,7 +55,7 @@ private:
 
 
 template<typename FloatType, typename ImpulseResponse>
-ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::ArrayOfRectangularFlatSourcesImpulseResponse(
+ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse>::ArrayOfRectangularSourcesImpulseResponse(
 				FloatType samplingFreq,
 				FloatType propagationSpeed,
 				FloatType sourceWidth,
@@ -80,7 +80,7 @@ ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::ArrayO
 
 template<typename FloatType, typename ImpulseResponse>
 void
-ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::getImpulseResponse(
+ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse>::getImpulseResponse(
 		FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
 		std::vector<unsigned int>* activeElemList)
 {
@@ -145,4 +145,4 @@ ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>::getImp
 
 } // namespace Lab
 
-#endif // ARRAYOFRECTANGULARFLATSOURCESIMPULSERESPONSE_H
+#endif // ARRAYOFRECTANGULARSOURCESIMPULSERESPONSE_H

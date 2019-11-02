@@ -23,7 +23,7 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
-#include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
+#include "ArrayOfRectangularSourcesImpulseResponse.h"
 #include "FFTWFilter2.h"
 #include "IterationCounter.h"
 #include "Log.h"
@@ -91,7 +91,7 @@ public:
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
-		ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse> ir;
+		ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse> ir;
 		std::vector<std::complex<FloatType>> filterFreqCoeff;
 		std::vector<FloatType> h;
 		std::vector<FloatType> signal;
@@ -106,7 +106,7 @@ public:
 			const std::vector<FloatType>& dvdt,
 			Matrix<XYZValue<FloatType>>& gridData);
 
-	void getRectangularFlatSourceAcousticField(
+	void getRectangularSourceAcousticField(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -115,7 +115,7 @@ public:
 			const std::vector<FloatType>& dvdt,
 			Matrix<XYZValue<FloatType>>& gridData);
 
-	void getArrayOfRectangularFlatSourcesAcousticField(
+	void getArrayOfRectangularSourcesAcousticField(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -185,7 +185,7 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getCircularSourceAcoustic
 
 template<typename FloatType, typename ImpulseResponse>
 void
-SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularFlatSourceAcousticField(
+SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularSourceAcousticField(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,
@@ -231,7 +231,7 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularFlatSourceA
 
 template<typename FloatType, typename ImpulseResponse>
 void
-SimTransientAcousticField<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSourcesAcousticField(
+SimTransientAcousticField<FloatType, ImpulseResponse>::getArrayOfRectangularSourcesAcousticField(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,

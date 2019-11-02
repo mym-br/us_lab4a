@@ -14,8 +14,8 @@
  *  You should have received a copy of the GNU General Public License      *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef NUMERICRECTANGULARFLATSOURCEIMPULSERESPONSE_H
-#define NUMERICRECTANGULARFLATSOURCEIMPULSERESPONSE_H
+#ifndef NUMERICRECTANGULARSOURCEIMPULSERESPONSE_H
+#define NUMERICRECTANGULARSOURCEIMPULSERESPONSE_H
 
 #include <cmath>
 #include <limits>
@@ -30,15 +30,15 @@
 namespace Lab {
 
 template<typename FloatType>
-class NumericRectangularFlatSourceImpulseResponse {
+class NumericRectangularSourceImpulseResponse {
 public:
-	NumericRectangularFlatSourceImpulseResponse(
+	NumericRectangularSourceImpulseResponse(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,
 					FloatType sourceHeight,
 					FloatType subElemSize);
-	~NumericRectangularFlatSourceImpulseResponse() {}
+	~NumericRectangularSourceImpulseResponse() {}
 
 	// Return h/c.
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z,
@@ -63,7 +63,7 @@ private:
 
 
 template<typename FloatType>
-NumericRectangularFlatSourceImpulseResponse<FloatType>::NumericRectangularFlatSourceImpulseResponse(
+NumericRectangularSourceImpulseResponse<FloatType>::NumericRectangularSourceImpulseResponse(
 		FloatType samplingFreq,
 		FloatType propagationSpeed,
 		FloatType sourceWidth,
@@ -99,12 +99,12 @@ NumericRectangularFlatSourceImpulseResponse<FloatType>::NumericRectangularFlatSo
 		}
 	}
 
-	LOG_DEBUG << "[NumericRectangularFlatSourceImpulseResponse] numElemX=" << numElemX_ << " numElemY=" << numElemY_;
+	LOG_DEBUG << "[NumericRectangularSourceImpulseResponse] numElemX=" << numElemX_ << " numElemY=" << numElemY_;
 }
 
 template<typename FloatType>
 void
-NumericRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
+NumericRectangularSourceImpulseResponse<FloatType>::getImpulseResponse(
 								FloatType x,
 								FloatType y,
 								FloatType z,
@@ -140,4 +140,4 @@ NumericRectangularFlatSourceImpulseResponse<FloatType>::getImpulseResponse(
 
 } // namespace Lab
 
-#endif // NUMERICRECTANGULARFLATSOURCEIMPULSERESPONSE_H
+#endif // NUMERICRECTANGULARSOURCEIMPULSERESPONSE_H

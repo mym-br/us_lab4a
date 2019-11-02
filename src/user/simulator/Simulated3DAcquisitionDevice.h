@@ -28,15 +28,15 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
-#include "AnalyticRectangularFlatSourceImpulseResponse.h"
-#include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
+#include "AnalyticRectangularSourceImpulseResponse.h"
+#include "ArrayOfRectangularSourcesImpulseResponse.h"
 #include "ArrayUtil.h"
 #include "Decimator.h"
 #include "Exception.h"
 #include "FFTWFilter2.h"
 #include "Log.h"
 #include "MinstdPseudorandomNumberGenerator.h"
-#include "NumericRectangularFlatSourceImpulseResponse.h"
+#include "NumericRectangularSourceImpulseResponse.h"
 #include "ParameterMap.h"
 #include "Util.h"
 #include "Waveform.h"
@@ -423,7 +423,7 @@ Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatTy
 	const FloatType refZ = reflector.z;
 	const FloatType refCoeff = reflector.value;
 
-	auto txImpResp = std::make_unique<ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse>>(
+	auto txImpResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse>>(
 				simFs_, c_, txElemWidth_, txElemHeight_, txDiscretization_, txElemPos_, txDelays_);
 
 	// Calculate the impulse response in transmission (all active elements).
@@ -511,9 +511,9 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 		refCoeffSum += std::abs(reflectorList_[iRef].value);
 
 		if (useNumericMethod_) {
-			processReflector<NumericRectangularFlatSourceImpulseResponse<FloatType>>(reflectorList_[iRef], dadtFilter);
+			processReflector<NumericRectangularSourceImpulseResponse<FloatType>>(reflectorList_[iRef], dadtFilter);
 		} else {
-			processReflector<AnalyticRectangularFlatSourceImpulseResponse<FloatType>>(reflectorList_[iRef], dadtFilter);
+			processReflector<AnalyticRectangularSourceImpulseResponse<FloatType>>(reflectorList_[iRef], dadtFilter);
 		}
 	}
 

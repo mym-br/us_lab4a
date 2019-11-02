@@ -1,6 +1,8 @@
 
-us_lab4a is a tool for acoustic field simulation and imaging
-============================================================
+us_lab4a
+========
+
+us_lab4a is a tool for acoustic field simulation and imaging.
 
 WARNING
 -------
@@ -11,8 +13,8 @@ Use at your own risk!
 Features
 --------
 
-- Acoustic field simulation of rectangular flat sources and of arrays of
-  rectangular flat sources (analytic and numeric methods).
+- Acoustic field simulation of circular sources, rectangular sources and
+  arrays of rectangular sources (analytic and numeric methods).
   - Transient acoustic field.
   - Impulse response.
   - Transient propagation.

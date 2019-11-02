@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef SIMRECTANGULARFLATSOURCEMETHOD_H
-#define SIMRECTANGULARFLATSOURCEMETHOD_H
+#ifndef SIMRECTANGULARSOURCEMETHOD_H
+#define SIMRECTANGULARSOURCEMETHOD_H
 
 #include <cmath>
 #include <iomanip>
@@ -25,8 +25,8 @@
 #include <string>
 #include <vector>
 
-#include "AnalyticRectangularFlatSourceImpulseResponse.h"
-#include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
+#include "AnalyticRectangularSourceImpulseResponse.h"
+#include "ArrayOfRectangularSourcesImpulseResponse.h"
 #include "ArrayUtil.h"
 #include "Exception.h"
 #include "FFTWFilter2.h"
@@ -34,7 +34,7 @@
 #include "Log.h"
 #include "Matrix.h"
 #include "Method.h"
-#include "NumericRectangularFlatSourceImpulseResponse.h"
+#include "NumericRectangularSourceImpulseResponse.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "SimTransientAcousticField.h"
@@ -52,10 +52,10 @@
 namespace Lab {
 
 template<typename FloatType>
-class SimRectangularFlatSourceMethod : public Method {
+class SimRectangularSourceMethod : public Method {
 public:
-	SimRectangularFlatSourceMethod(Project& project);
-	virtual ~SimRectangularFlatSourceMethod();
+	SimRectangularSourceMethod(Project& project);
+	virtual ~SimRectangularSourceMethod();
 
 	virtual void execute();
 private:
@@ -87,8 +87,8 @@ private:
 		bool useFocus;
 	};
 
-	SimRectangularFlatSourceMethod(const SimRectangularFlatSourceMethod&) = delete;
-	SimRectangularFlatSourceMethod& operator=(const SimRectangularFlatSourceMethod&) = delete;
+	SimRectangularSourceMethod(const SimRectangularSourceMethod&) = delete;
+	SimRectangularSourceMethod& operator=(const SimRectangularSourceMethod&) = delete;
 
 	void loadData(ParamMapPtr taskPM, MainData& data, SimulationData& simData);
 	void loadSourceData(ParamMapPtr taskPM, MainData& data, bool sourceIsArray, SourceData& srcData);
@@ -106,19 +106,19 @@ private:
 };
 
 template<typename FloatType>
-SimRectangularFlatSourceMethod<FloatType>::SimRectangularFlatSourceMethod(Project& project)
+SimRectangularSourceMethod<FloatType>::SimRectangularSourceMethod(Project& project)
 		: project_(project)
 {
 }
 
 template<typename FloatType>
-SimRectangularFlatSourceMethod<FloatType>::~SimRectangularFlatSourceMethod()
+SimRectangularSourceMethod<FloatType>::~SimRectangularSourceMethod()
 {
 }
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::loadData(ParamMapPtr taskPM, MainData& data, SimulationData& simData)
+SimRectangularSourceMethod<FloatType>::loadData(ParamMapPtr taskPM, MainData& data, SimulationData& simData)
 {
 	ParamMapPtr mainPM = project_.loadChildParameterMap(taskPM, "main_config_file");
 	//mainPM->getValue(data.density         , "density"          , 0.0, 100000.0);
@@ -133,7 +133,7 @@ SimRectangularFlatSourceMethod<FloatType>::loadData(ParamMapPtr taskPM, MainData
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::loadSourceData(ParamMapPtr taskPM, MainData& data, bool sourceIsArray, SourceData& srcData)
+SimRectangularSourceMethod<FloatType>::loadSourceData(ParamMapPtr taskPM, MainData& data, bool sourceIsArray, SourceData& srcData)
 {
 	WavefrontObjFileWriter<FloatType> fw((project_.expDirectory() + "/source_geometry.obj").c_str());
 
@@ -186,7 +186,7 @@ SimRectangularFlatSourceMethod<FloatType>::loadSourceData(ParamMapPtr taskPM, Ma
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::loadSimulationData(ParamMapPtr taskPM, const MainData& data, SimulationData& simData)
+SimRectangularSourceMethod<FloatType>::loadSimulationData(ParamMapPtr taskPM, const MainData& data, SimulationData& simData)
 {
 	ParamMapPtr simPM = project_.loadChildParameterMap(taskPM, "simulation_config_file");
 	simData.samplingFreq = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
@@ -215,7 +215,7 @@ SimRectangularFlatSourceMethod<FloatType>::loadSimulationData(ParamMapPtr taskPM
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::prepareExcitation(FloatType dt,
+SimRectangularSourceMethod<FloatType>::prepareExcitation(FloatType dt,
 						const SimulationData& simData, std::vector<FloatType>& tExc,
 						std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt)
 {
@@ -230,7 +230,7 @@ SimRectangularFlatSourceMethod<FloatType>::prepareExcitation(FloatType dt,
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool sourceIsArray)
+SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool sourceIsArray)
 {
 	ParamMapPtr taskPM = project_.taskParameterMap();
 	MainData mainData;
@@ -286,28 +286,28 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool so
 
 	if (simData.irMethod == "numeric") {
 		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
+		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			radPat->getArrayOfRectangularFlatSourcesRadiationPattern(
+			radPat->getArrayOfRectangularSourcesRadiationPattern(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
 		} else {
-			radPat->getRectangularFlatSourceRadiationPattern(
+			radPat->getRectangularSourceRadiationPattern(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, inputData, gridData);
 		}
 	} else if (simData.irMethod == "analytic") {
 		const FloatType minEdgeDivisor = simData.discretFactor;
-		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
+		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, AnalyticRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			radPat->getArrayOfRectangularFlatSourcesRadiationPattern(
+			radPat->getArrayOfRectangularSourcesRadiationPattern(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
 		} else {
-			radPat->getRectangularFlatSourceRadiationPattern(
+			radPat->getRectangularSourceRadiationPattern(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, inputData, gridData);
@@ -366,7 +366,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientRadiationPattern(bool so
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsArray)
+SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsArray)
 {
 	ParamMapPtr taskPM = project_.taskParameterMap();
 	MainData mainData;
@@ -388,28 +388,28 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField(bool sourc
 
 	if (simData.irMethod == "numeric") {
 		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
+		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			acField->getArrayOfRectangularFlatSourcesAcousticField(
+			acField->getArrayOfRectangularSourcesAcousticField(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
-			acField->getRectangularFlatSourceAcousticField(
+			acField->getRectangularSourceAcousticField(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, gridData);
 		}
 	} else if (simData.irMethod == "analytic") {
 		const FloatType minEdgeDivisor = simData.discretFactor;
-		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
+		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			acField->getArrayOfRectangularFlatSourcesAcousticField(
+			acField->getArrayOfRectangularSourcesAcousticField(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
-			acField->getRectangularFlatSourceAcousticField(
+			acField->getRectangularSourceAcousticField(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, gridData);
@@ -438,7 +438,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientAcousticField(bool sourc
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArray)
+SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArray)
 {
 	ParamMapPtr taskPM = project_.taskParameterMap();
 	MainData mainData;
@@ -475,28 +475,28 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation(bool sourceI
 
 	if (simData.irMethod == "numeric") {
 		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-		auto propag = std::make_unique<SimTransientPropagation<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>();
+		auto propag = std::make_unique<SimTransientPropagation<FloatType, NumericRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			propag->getArrayOfRectangularFlatSourcesPropagation(
+			propag->getArrayOfRectangularSourcesPropagation(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
 		} else {
-			propag->getRectangularFlatSourcePropagation(
+			propag->getRectangularSourcePropagation(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, propagIndexList, gridData);
 		}
 	} else if (simData.irMethod == "analytic") {
 		const FloatType minEdgeDivisor = simData.discretFactor;
-		auto propag = std::make_unique<SimTransientPropagation<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>();
+		auto propag = std::make_unique<SimTransientPropagation<FloatType, AnalyticRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			propag->getArrayOfRectangularFlatSourcesPropagation(
+			propag->getArrayOfRectangularSourcesPropagation(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
 		} else {
-			propag->getRectangularFlatSourcePropagation(
+			propag->getRectangularSourcePropagation(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, propagIndexList, gridData);
@@ -564,7 +564,7 @@ SimRectangularFlatSourceMethod<FloatType>::execTransientPropagation(bool sourceI
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArray)
+SimRectangularSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArray)
 {
 	ParamMapPtr taskPM = project_.taskParameterMap();
 	MainData mainData;
@@ -589,13 +589,13 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArra
 	if (simData.irMethod == "numeric") {
 		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
-			auto impResp = std::make_unique<ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, NumericRectangularFlatSourceImpulseResponse<FloatType>>>(
+			auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<FloatType, NumericRectangularSourceImpulseResponse<FloatType>>>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						srcData.elemPos, srcData.focusDelay);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		} else {
-			auto impResp = std::make_unique<NumericRectangularFlatSourceImpulseResponse<FloatType>>(
+			auto impResp = std::make_unique<NumericRectangularSourceImpulseResponse<FloatType>>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
@@ -603,13 +603,13 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArra
 	} else if (simData.irMethod == "analytic") {
 		const FloatType minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
-			auto impResp = std::make_unique<ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, AnalyticRectangularFlatSourceImpulseResponse<FloatType>>>(
+			auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<FloatType, AnalyticRectangularSourceImpulseResponse<FloatType>>>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						srcData.elemPos, srcData.focusDelay);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		} else {
-			auto impResp = std::make_unique<AnalyticRectangularFlatSourceImpulseResponse<FloatType>>(
+			auto impResp = std::make_unique<AnalyticRectangularSourceImpulseResponse<FloatType>>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
@@ -649,33 +649,33 @@ SimRectangularFlatSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArra
 
 template<typename FloatType>
 void
-SimRectangularFlatSourceMethod<FloatType>::execute()
+SimRectangularSourceMethod<FloatType>::execute()
 {
 	Timer tProc;
 
 	switch (project_.method()) {
-	case MethodEnum::sim_acoustic_field_rectangular_flat_source_transient:
+	case MethodEnum::sim_acoustic_field_rectangular_source_transient:
 		execTransientAcousticField(false);
 		break;
-	case MethodEnum::sim_acoustic_field_array_of_rectangular_flat_sources_transient:
+	case MethodEnum::sim_acoustic_field_array_of_rectangular_sources_transient:
 		execTransientAcousticField(true);
 		break;
-	case MethodEnum::sim_impulse_response_rectangular_flat_source:
+	case MethodEnum::sim_impulse_response_rectangular_source:
 		execImpulseResponse(false);
 		break;
-	case MethodEnum::sim_impulse_response_array_of_rectangular_flat_sources:
+	case MethodEnum::sim_impulse_response_array_of_rectangular_sources:
 		execImpulseResponse(true);
 		break;
-	case MethodEnum::sim_propagation_rectangular_flat_source_transient:
+	case MethodEnum::sim_propagation_rectangular_source_transient:
 		execTransientPropagation(false);
 		break;
-	case MethodEnum::sim_propagation_array_of_rectangular_flat_sources_transient:
+	case MethodEnum::sim_propagation_array_of_rectangular_sources_transient:
 		execTransientPropagation(true);
 		break;
-	case MethodEnum::sim_radiation_pattern_rectangular_flat_source_transient:
+	case MethodEnum::sim_radiation_pattern_rectangular_source_transient:
 		execTransientRadiationPattern(false);
 		break;
-	case MethodEnum::sim_radiation_pattern_array_of_rectangular_flat_sources_transient:
+	case MethodEnum::sim_radiation_pattern_array_of_rectangular_sources_transient:
 		execTransientRadiationPattern(true);
 		break;
 	default:
@@ -687,4 +687,4 @@ SimRectangularFlatSourceMethod<FloatType>::execute()
 
 } // namespace Lab
 
-#endif // SIMRECTANGULARFLATSOURCEMETHOD_H
+#endif // SIMRECTANGULARSOURCEMETHOD_H

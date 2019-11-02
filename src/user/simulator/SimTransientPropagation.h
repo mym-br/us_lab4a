@@ -23,7 +23,7 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
-#include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
+#include "ArrayOfRectangularSourcesImpulseResponse.h"
 #include "FFTWFilter2.h"
 #include "IterationCounter.h"
 #include "Log.h"
@@ -90,7 +90,7 @@ public:
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
-		ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse> ir;
+		ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse> ir;
 		std::vector<std::complex<FloatType>> filterFreqCoeff;
 		std::vector<FloatType> h;
 		std::vector<FloatType> signal;
@@ -106,7 +106,7 @@ public:
 			const std::vector<unsigned int>& propagIndexList,
 			Matrix<XYZValueArray<FloatType>>& gridData);
 
-	void getRectangularFlatSourcePropagation(
+	void getRectangularSourcePropagation(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -116,7 +116,7 @@ public:
 			const std::vector<unsigned int>& propagIndexList,
 			Matrix<XYZValueArray<FloatType>>& gridData);
 
-	void getArrayOfRectangularFlatSourcesPropagation(
+	void getArrayOfRectangularSourcesPropagation(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -199,7 +199,7 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getCircularSourcePropagatio
 
 template<typename FloatType, typename ImpulseResponse>
 void
-SimTransientPropagation<FloatType, ImpulseResponse>::getRectangularFlatSourcePropagation(
+SimTransientPropagation<FloatType, ImpulseResponse>::getRectangularSourcePropagation(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,
@@ -257,7 +257,7 @@ SimTransientPropagation<FloatType, ImpulseResponse>::getRectangularFlatSourcePro
 
 template<typename FloatType, typename ImpulseResponse>
 void
-SimTransientPropagation<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSourcesPropagation(
+SimTransientPropagation<FloatType, ImpulseResponse>::getArrayOfRectangularSourcesPropagation(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,

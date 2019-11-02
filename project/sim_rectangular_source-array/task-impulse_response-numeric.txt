@@ -1,5 +1,5 @@
 
-method = sim_impulse_response_array_of_rectangular_flat_sources
+method = sim_impulse_response_array_of_rectangular_sources
 
 main_config_file = config.txt
 array_config_file = config-array.txt

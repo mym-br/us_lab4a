@@ -1,5 +1,5 @@
 
-method = sim_radiation_pattern_array_of_rectangular_flat_sources_transient
+method = sim_radiation_pattern_array_of_rectangular_sources_transient
 
 main_config_file = config.txt
 array_config_file = config-array.txt

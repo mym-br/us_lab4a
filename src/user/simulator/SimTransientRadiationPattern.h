@@ -23,7 +23,7 @@
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/tbb.h>
 
-#include "ArrayOfRectangularFlatSourcesImpulseResponse.h"
+#include "ArrayOfRectangularSourcesImpulseResponse.h"
 #include "FFTWFilter2.h"
 #include "IterationCounter.h"
 #include "Log.h"
@@ -97,7 +97,7 @@ public:
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
-		ArrayOfRectangularFlatSourcesImpulseResponse<FloatType, ImpulseResponse> ir;
+		ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse> ir;
 		std::vector<std::complex<FloatType>> filterFreqCoeff;
 		std::vector<FloatType> h;
 		std::vector<FloatType> signal;
@@ -113,7 +113,7 @@ public:
 			const std::vector<XYZ<FloatType>>& inputData,
 			std::vector<FloatType>& radData);
 
-	void getRectangularFlatSourceRadiationPattern(
+	void getRectangularSourceRadiationPattern(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -123,7 +123,7 @@ public:
 			const Matrix<XYZ<FloatType>>& inputData,
 			Matrix<XYZValue<FloatType>>& gridData);
 
-	void getArrayOfRectangularFlatSourcesRadiationPattern(
+	void getArrayOfRectangularSourcesRadiationPattern(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -189,7 +189,7 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getCircularSourceRadia
 
 template<typename FloatType, typename ImpulseResponse>
 void
-SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSourceRadiationPattern(
+SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularSourceRadiationPattern(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,
@@ -236,7 +236,7 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSour
 #else
 	std::size_t hOffset;
 	std::vector<FloatType> h;
-	auto impResp = std::make_unique<NumericRectangularFlatSourceImpulseResponse<FloatType>>(
+	auto impResp = std::make_unique<NumericRectangularSourceImpulseResponse<FloatType>>(
 									samplingFreq,
 									propagationSpeed,
 									sourceWidth,
@@ -266,7 +266,7 @@ SimTransientRadiationPattern<FloatType, ImpulseResponse>::getRectangularFlatSour
 
 template<typename FloatType, typename ImpulseResponse>
 void
-SimTransientRadiationPattern<FloatType, ImpulseResponse>::getArrayOfRectangularFlatSourcesRadiationPattern(
+SimTransientRadiationPattern<FloatType, ImpulseResponse>::getArrayOfRectangularSourcesRadiationPattern(
 					FloatType samplingFreq,
 					FloatType propagationSpeed,
 					FloatType sourceWidth,

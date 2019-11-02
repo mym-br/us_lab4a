@@ -1,5 +1,5 @@
 
-method = sim_acoustic_field_rectangular_flat_source_transient
+method = sim_acoustic_field_rectangular_source_transient
 
 main_config_file = config.txt
 grid_config_file = config-grid.txt

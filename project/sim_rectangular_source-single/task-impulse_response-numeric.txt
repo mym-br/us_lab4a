@@ -1,5 +1,5 @@
 
-method = sim_impulse_response_rectangular_flat_source
+method = sim_impulse_response_rectangular_source
 
 main_config_file = config.txt
 single_source_config_file = config-single.txt
