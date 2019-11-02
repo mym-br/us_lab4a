@@ -1817,7 +1817,9 @@ OGLFigureWidget::paintGL()
 		painter.drawText(10, 120, QString("zoom  ") + QString::number(scale_));
 		painter.drawText(10, 140, QString("scale ") + QString::number(valueScale_));
 		painter.drawText(10, 160, QString("level ") + QString::number(maxAbsLevel_));
-		painter.drawText(10, 180, QString("   dB ") + QString::number(maxAbsLevelDecibels_));
+		painter.drawText(10, 180, QString("   dB ") + (std::abs(maxAbsLevelDecibels_) < 0.1f ?
+								"0.0" :
+								QString::number(maxAbsLevelDecibels_, 'f', 1)));
 		painter.drawText(10, 200, QString("size  %1 x %2").arg(oglGridData_.n1()).arg(oglGridData_.n2()));
 	}
 
