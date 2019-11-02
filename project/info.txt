@@ -13,16 +13,24 @@ Project types
 	Shows a single image.
 
 --------------------------------------------------------------------------------
+/sim_circular_source
+
+	Simulation of acoustic field produced by a circular flat source.
+	Rigid baffle.
+
+--------------------------------------------------------------------------------
 /sim_rectangular_flat_source-array
 
 	Simulation of acoustic field produced by an array of rectangular flat
 	sources.
+	Rigid baffle.
 
 --------------------------------------------------------------------------------
 /sim_rectangular_flat_source-single
 
 	Simulation of acoustic field produced by a single rectangular flat
 	source.
+	Rigid baffle.
 
 --------------------------------------------------------------------------------
 /simulated_3d_single_virtual_source

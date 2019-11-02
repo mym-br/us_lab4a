@@ -1,0 +1,10 @@
+
+# (m)
+propagation_min_distance = 1.0e-3
+propagation_max_distance = 120.0e-3
+propagation_distance_step = 1.0e-3
+
+#
+propagation_repetitions = 4
+# (ms)
+propagation_pause = 200
