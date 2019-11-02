@@ -21,12 +21,20 @@
 #include <cmath>
 #include <vector>
 
+#include "Exception.h"
 #include "Util.h"
 
 
 
 namespace Lab {
 namespace Waveform {
+
+// For types 2a, 2b and 2c, numPeriods doesn't significantly change the shape,
+// if increased it only gives more time for the fade-out
+// (reducing the discontinuity in the derivative at the end).
+template<typename FloatType> void get(const std::string& type,
+					FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods,
+					std::vector<FloatType>& v);
 
 template<typename FloatType> void getType1(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods,
 						std::vector<FloatType>& v);
@@ -42,7 +50,27 @@ template<typename FloatType> void getType2c(FloatType centerFreq, FloatType samp
 
 
 template<typename FloatType>
-void getType1(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
+void
+get(const std::string& type,
+	FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods,
+	std::vector<FloatType>& v)
+{
+	if (type == "1") {
+		getType1(centerFreq, samplingFreq, numPeriods, v);
+	} else if (type == "2a") {
+		getType2a(centerFreq, samplingFreq, numPeriods, v);
+	} else if (type == "2b") {
+		getType2b(centerFreq, samplingFreq, numPeriods, v);
+	} else if (type == "2c") {
+		getType2c(centerFreq, samplingFreq, numPeriods, v);
+	} else {
+		THROW_EXCEPTION(InvalidParameterException, "Invalid waveform type: " << type << '.');
+	}
+}
+
+template<typename FloatType>
+void
+getType1(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
 {
 	if (numPeriods <= 0.0) numPeriods = 3.0;
 
@@ -64,7 +92,8 @@ void getType1(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods
 // J. Acoust. Soc. Am., vol. 92, no. 2, pp. 651-662, 1992.
 // DOI: 10.1121/1.403990
 template<typename FloatType>
-void getType2(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, FloatType k, std::vector<FloatType>& v)
+void
+getType2(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, FloatType k, std::vector<FloatType>& v)
 {
 	const FloatType end = numPeriods / centerFreq;
 	const FloatType dt = 1.0 / samplingFreq;
@@ -83,14 +112,16 @@ void getType2(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods
 	}
 }
 template<typename FloatType>
-void getType2a(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
+void
+getType2a(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
 {
 	if (numPeriods <= 0.0) numPeriods = 3.25;
 
 	getType2(centerFreq, samplingFreq, numPeriods, FloatType(3.833), v);
 }
 template<typename FloatType>
-void getType2b(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
+void
+getType2b(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
 {
 	if (numPeriods <= 0.0) numPeriods = 8.25;
 
@@ -98,7 +129,8 @@ void getType2b(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriod
 }
 
 template<typename FloatType>
-void getType2c(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
+void
+getType2c(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
 {
 	if (numPeriods <= 0.0) numPeriods = 4.25;
 

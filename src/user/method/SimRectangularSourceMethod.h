@@ -194,15 +194,7 @@ SimRectangularSourceMethod<FloatType>::loadSimulationData(ParamMapPtr taskPM, co
 	simPM->getValue(simData.excitationType, "excitation_type");
 	simPM->getValue(simData.excNumPeriods , "excitation_num_periods", 0.0, 100.0);
 
-	if (simData.excitationType == "1") {
-		Waveform::getType1(data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
-	} else if (simData.excitationType == "2a") {
-		Waveform::getType2a(data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
-	} else if (simData.excitationType == "2b") {
-		Waveform::getType2b(data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid excitation type: " << simData.excitationType << '.');
-	}
+	Waveform::get(simData.excitationType, data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 
 	if (simData.irMethod == "numeric") {
 		simPM->getValue(simData.discretFactor, "sub_elem_size_factor", 0.0, 1.0e3);

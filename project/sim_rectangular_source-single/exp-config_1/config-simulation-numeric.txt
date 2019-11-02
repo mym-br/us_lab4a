@@ -4,7 +4,7 @@ impulse_response_method = numeric
 # sub_elem_size = propagation_speed / (nyquist_rate * sub_elem_size_factor)
 sub_elem_size_factor = 4.0
 
-# "1" / "2a" / "2b"
+#
 excitation_type = 2a
 # 0.0: Use default.
 excitation_num_periods = 0.0

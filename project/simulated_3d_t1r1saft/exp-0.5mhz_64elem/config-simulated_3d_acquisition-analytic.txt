@@ -18,7 +18,7 @@ reflectors_offset_y = 0.0
 #
 noise_amplitude = 0.0
 
-# "1" / "2a" / "2b"
+#
 excitation_type = 2a
 # 0.0: Use default.
 excitation_num_periods = 0.0
