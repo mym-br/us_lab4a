@@ -170,6 +170,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 		}
 
 		project_.saveImageToHDF5(gridData, acqOutputDir);
+		project_.saveXYZToHDF5(gridData, acqOutputDir);
 		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
@@ -178,8 +179,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 					config.valueScale != 0.0 ? 1.0 : 0.0);
 
 		if (coherenceFactorEnabled) {
-			LOG_DEBUG << "Saving the image factors...";
-			project_.saveHDF5(gridData, acqOutputDir + "/image_factor", "factor", Util::CopyFactorOp());
+			project_.saveFactorToHDF5(gridData, acqOutputDir, "image_factor", "factor");
 
 			// Apply the coherence factor method.
 			for (auto iter = gridData.begin(); iter != gridData.end(); ++iter) {
@@ -189,8 +189,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 			const FloatType maxAbsCFValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
 			if (maxAbsCFValue > cfValueLevel) cfValueLevel = maxAbsCFValue;
 
-			LOG_DEBUG << "Saving the CF image...";
-			project_.saveHDF5(gridData, acqOutputDir + "/image_cf", "cf", Util::CopyValueOp());
+			project_.saveImageToHDF5(gridData, acqOutputDir, "image_cf", "cf");
 
 			project_.showFigure3D(2, "Coherence factor image", &gridData, &pointList,
 						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS,

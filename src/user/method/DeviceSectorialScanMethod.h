@@ -119,6 +119,7 @@ DeviceSectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, config_.valueScale);
 
 	project_.saveImageToHDF5(imageData, outputDir);
+	project_.saveXYZToHDF5(imageData, outputDir);
 }
 
 template<typename FloatType>
@@ -130,7 +131,12 @@ DeviceSectorialScanMethod<FloatType>::showSavedImage()
 
 	Matrix<XYZValue<FloatType>> imageData;
 
-	project_.loadImageFromHDF5(outputDir, imageData);
+	project_.loadImageFromHDF5(outputDir, "image_value", "value", imageData);
+	project_.loadXYZFromHDF5(outputDir,
+					"image_x", "x",
+					"image_y", "y",
+					"image_z", "z",
+					imageData);
 
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
@@ -197,6 +203,7 @@ DeviceSectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 
 		project_.createDirectory(outputDir, true);
 		project_.saveImageToHDF5(imageData, outputDir);
+		project_.saveXYZToHDF5(imageData, outputDir);
 	}
 }
 

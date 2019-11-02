@@ -83,8 +83,7 @@ template<typename FloatType>
 void
 STA3DMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std::string& outputDir)
 {
-	LOG_DEBUG << "Saving the image factors...";
-	project_.saveHDF5(gridData_, outputDir + "/image_factor", "factor", Util::CopyFactorOp());
+	project_.saveFactorToHDF5(gridData_, outputDir, "image_factor", "factor");
 
 	// Applies the coherence factor method.
 	for (auto iter = gridData_.begin(); iter != gridData_.end(); ++iter) {
@@ -92,8 +91,7 @@ STA3DMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std::stri
 		iter->factor = 1.0;
 	}
 
-	LOG_DEBUG << "Saving the CF image...";
-	project_.saveHDF5(gridData_, outputDir + "/image_cf", "cf", Util::CopyValueOp());
+	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
@@ -109,6 +107,7 @@ STA3DMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>&
 	processor.process(gridData_);
 
 	project_.saveImageToHDF5(gridData_, outputDir);
+	project_.saveXYZToHDF5(gridData_, outputDir);
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);

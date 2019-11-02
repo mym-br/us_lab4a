@@ -90,8 +90,7 @@ template<typename FloatType>
 void
 STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnvelope, const std::string& outputDir)
 {
-	LOG_DEBUG << "Saving the image factors...";
-	project_.saveHDF5(gridData_, outputDir + "/image_factor", "factor", Util::CopyFactorOp());
+	project_.saveFactorToHDF5(gridData_, outputDir, "image_factor", "factor");
 
 	if (calculateEnvelope) {
 		ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData_);
@@ -103,8 +102,7 @@ STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnv
 		iter->factor = 1.0;
 	}
 
-	LOG_DEBUG << "Saving the CF image...";
-	project_.saveHDF5(gridData_, outputDir + "/image_cf", "cf", Util::CopyValueOp());
+	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
 				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
@@ -120,6 +118,7 @@ STAMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& p
 	processor.process(gridData_);
 
 	project_.saveImageToHDF5(gridData_, outputDir);
+	project_.saveXYZToHDF5(gridData_, outputDir);
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
 				true, visual_, Figure::COLORMAP_VIRIDIS, valueScale);

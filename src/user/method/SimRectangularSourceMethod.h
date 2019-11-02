@@ -350,6 +350,7 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 	project_.saveHDF5(dvdt       , mainData.outputDir + "/dvdt"           , "value");
 	project_.saveHDF5(tDvdt      , mainData.outputDir + "/dvdt_time"      , "value");
 	project_.saveImageToHDF5(gridData, mainData.outputDir);
+	project_.saveXYZToHDF5(gridData, mainData.outputDir);
 	project_.saveHDF5(thetaYList , mainData.outputDir + "/theta_y"        , "value");
 	project_.saveHDF5(patternTY  , mainData.outputDir + "/pattern_theta_y", "value");
 	project_.saveHDF5(thetaXList , mainData.outputDir + "/theta_x"        , "value");
@@ -426,6 +427,7 @@ SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsA
 	project_.saveHDF5(dvdt       , mainData.outputDir + "/dvdt"     , "value");
 	project_.saveHDF5(tDvdt      , mainData.outputDir + "/dvdt_time", "value");
 	project_.saveImageToHDF5(gridData, mainData.outputDir);
+	project_.saveXYZToHDF5(gridData, mainData.outputDir);
 }
 
 template<typename FloatType>
@@ -534,12 +536,7 @@ SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArr
 	project_.saveHDF5(tDvdt      , mainData.outputDir + "/dvdt_time", "value");
 
 	// Save images.
-	LOG_DEBUG << "Saving the X coordinates...";
-	project_.saveHDF5(gridData, mainData.outputDir + "/image_x", "x", Util::CopyXOp());
-	LOG_DEBUG << "Saving the Y coordinates...";
-	project_.saveHDF5(gridData, mainData.outputDir + "/image_y", "y", Util::CopyYOp());
-	LOG_DEBUG << "Saving the Z coordinates...";
-	project_.saveHDF5(gridData, mainData.outputDir + "/image_z", "z", Util::CopyZOp());
+	project_.saveXYZToHDF5(gridData, mainData.outputDir);
 	std::string imagePrefix = mainData.outputDir + "/image_value-propag-";
 	const unsigned int numDigits = Util::numberOfDigits(propagIndexList.size() - 1U);
 	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {

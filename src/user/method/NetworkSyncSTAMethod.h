@@ -174,6 +174,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		}
 
 		project_.saveImageToHDF5(gridData, acqOutputDir);
+		project_.saveXYZToHDF5(gridData, acqOutputDir);
 		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
@@ -182,8 +183,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 					config.valueScale != 0.0 ? 1.0 : 0.0);
 
 		if (coherenceFactorEnabled) {
-			LOG_DEBUG << "Saving the image factors...";
-			project_.saveHDF5(gridData, acqOutputDir + "/image_factor", "factor", Util::CopyFactorOp());
+			project_.saveFactorToHDF5(gridData, acqOutputDir, "image_factor", "factor");
 
 			if (!vectorialProcessingWithEnvelope) {
 				ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData);
@@ -195,8 +195,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 				iter->factor = 1.0;
 			}
 
-			LOG_DEBUG << "Saving the CF image...";
-			project_.saveHDF5(gridData, acqOutputDir + "/image_cf", "cf", Util::CopyValueOp());
+			project_.saveImageToHDF5(gridData, acqOutputDir, "image_cf", "cf");
 
 			project_.showFigure3D(2, "Coherence factor image", &gridData, &pointList,
 						true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS,

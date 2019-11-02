@@ -55,14 +55,12 @@ ShowImageMethod::execute()
 
 	Project::GridDataType projGridData;
 
-	LOG_DEBUG << "Loading the image...";
-	project_.loadHDF5(dataDir + '/' + imageFile, imageDataset, projGridData, Util::CopyToValueOp());
-	LOG_DEBUG << "Loading the X coordinates...";
-	project_.loadHDF5(dataDir + '/' + xFile, xDataset, projGridData, Util::CopyToXOp());
-	LOG_DEBUG << "Loading the Y coordinates...";
-	project_.loadHDF5(dataDir + '/' + yFile, yDataset, projGridData, Util::CopyToYOp());
-	LOG_DEBUG << "Loading the Z coordinates...";
-	project_.loadHDF5(dataDir + '/' + zFile, zDataset, projGridData, Util::CopyToZOp());
+	project_.loadImageFromHDF5(dataDir, imageFile, imageDataset, projGridData);
+	project_.loadXYZFromHDF5(dataDir,
+					xFile, xDataset,
+					yFile, yDataset,
+					zFile, zDataset,
+					projGridData);
 
 	if (taskPM->contains("points_x_file")) {
 		std::vector<Project::PointType> projPointList;
