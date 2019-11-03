@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # This file is in the public domain.
 
-import sys
-sys.path.append("../../../../python")
+# Converts propagation images generated in:
+# sim_circular_source
+# sim_rectangular_source-array
+# sim_rectangular_source-single
+
 from util import hdf5util
 import matplotlib.pyplot as plt
 
