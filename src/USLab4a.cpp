@@ -463,7 +463,8 @@ void
 USLab4a::closeEvent(QCloseEvent* event)
 {
 	if (controller_->processingEnabled()) {
-		project_.requestProcessingCancellation();
+		event->ignore();
+		return;
 	}
 
 	controller_->exit();
@@ -486,7 +487,6 @@ USLab4a::closeEvent(QCloseEvent* event)
 		settings.remove(SETTINGS_KEY_SELECTED_EXP);
 	}
 
-	event->ignore();
 	qApp->quit();
 }
 
