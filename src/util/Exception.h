@@ -23,8 +23,8 @@
 #include <string>
 
 // __func__ is defined in C99/C++11.
-// __PRETTY_FUNCTION__ is a gcc extension.
-#ifdef __PRETTY_FUNCTION__
+// __PRETTY_FUNCTION__ is a GCC extension.
+#ifdef __GNUG__
 # define EXCEPTION_FUNCTION_NAME __PRETTY_FUNCTION__
 #else
 # define EXCEPTION_FUNCTION_NAME __func__
