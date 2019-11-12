@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # http://matplotlib.org/examples/color/colormaps_reference.html
-cmaps = ['viridis', 'plasma', 'inferno', 'magma']
+cmaps = ['viridis', 'plasma', 'inferno', 'magma', 'cividis']
 
 gradient = np.linspace(0, 1, 256)
 gradient = np.vstack((gradient, gradient))

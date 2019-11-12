@@ -65,6 +65,8 @@ Figure3DWindow::Figure3DWindow(QWidget *parent)
 	ui_.colormapComboBox->addItem(tr("Inverted Inferno"));
 	ui_.colormapComboBox->addItem(tr("Magma"));
 	ui_.colormapComboBox->addItem(tr("Inverted Magma"));
+	ui_.colormapComboBox->addItem(tr("Cividis"));
+	ui_.colormapComboBox->addItem(tr("Inverted Cividis"));
 	ui_.colormapComboBox->addItem(tr("Red-white-blue"));
 	ui_.colormapComboBox->blockSignals(false);
 	ui_.colormapComboBox->setCurrentIndex(static_cast<int>(ui_.oglFigureWidget->colormap()));
