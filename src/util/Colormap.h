@@ -44,7 +44,7 @@ enum Gradient {
 	GRADIENT_DEFAULT // must be the last
 };
 
-extern const char* nameList[];
+extern const char* gradientNameList[];
 
 template<typename Colormap>
 struct TableColormap {

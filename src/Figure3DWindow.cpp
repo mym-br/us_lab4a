@@ -19,8 +19,6 @@
 
 #include <QCloseEvent>
 
-#include "Colormap.h"
-
 namespace {
 
 constexpr int MAX_MIN_DECIBELS = -1;
@@ -55,7 +53,7 @@ Figure3DWindow::Figure3DWindow(QWidget *parent)
 	}
 
 	ui_.colormapComboBox->blockSignals(true); // to avoid calling on_*ComboBox_currentIndexChanged
-	for (const char** name = Colormap::nameList; *name; ++name) {
+	for (const char** name = Colormap::gradientNameList; *name; ++name) {
 		ui_.colormapComboBox->addItem(tr(*name));
 	}
 	ui_.colormapComboBox->blockSignals(false);
