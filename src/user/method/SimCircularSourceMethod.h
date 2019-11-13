@@ -41,6 +41,7 @@
 #include "SimTransientRadiationPattern.h"
 #include "Timer.h"
 #include "Util.h"
+#include "Visualization.h"
 #include "Waveform.h"
 #include "XYZ.h"
 #include "XYZValue.h"
@@ -287,7 +288,7 @@ SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Acoustic field", &gridData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::VALUE_RECTIFIED_LINEAR, Colormap::GRADIENT_VIRIDIS);
 
 	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"        , "value");
 	project_.saveHDF5(tExc       , mainData.outputDir + "/v_time"   , "value");
@@ -377,7 +378,7 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 			}
 
 			project_.showFigure3D(1, "Propagation", &projGridData, &pointList,
-						true, Figure::VISUALIZATION_RAW_LINEAR, Colormap::GRADIENT_GRAY);
+						true, Visualization::VALUE_RAW_LINEAR, Colormap::GRADIENT_GRAY);
 
 			Util::sleepMs(propagPause);
 		}

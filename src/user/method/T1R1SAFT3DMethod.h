@@ -37,8 +37,9 @@
 #include "STAAcquisition.h"
 #include "SA3DConfiguration.h"
 #include "Timer.h"
-#include "Vectorial3DT1R1SAFTProcessor.h"
 #include "Util.h"
+#include "Vectorial3DT1R1SAFTProcessor.h"
+#include "Visualization.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
@@ -64,7 +65,7 @@ private:
 	Project& project_;
 	Matrix<XYZValueFactor<FloatType>> gridData_;
 	std::vector<XYZ<float>> pointList_;
-	Figure::Visualization visual_;
+	Visualization::Value visual_;
 };
 
 
@@ -73,7 +74,7 @@ template<typename FloatType>
 T1R1SAFT3DMethod<FloatType>::T1R1SAFT3DMethod(Project& project)
 		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
-		, visual_(Figure::VISUALIZATION_RECTIFIED_LOG)
+		, visual_(Visualization::VALUE_RECTIFIED_LOG)
 {
 }
 
@@ -93,7 +94,7 @@ T1R1SAFT3DMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std:
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename FloatType>

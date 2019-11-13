@@ -43,6 +43,7 @@
 #include "STAConfiguration.h"
 #include "Timer.h"
 #include "VectorialSTAProcessor.h"
+#include "Visualization.h"
 #include "Util.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
@@ -69,7 +70,7 @@ private:
 	Project& project_;
 	Matrix<XYZValueFactor<FloatType>> gridData_;
 	std::vector<XYZ<float>> pointList_;
-	Figure::Visualization visual_;
+	Visualization::Value visual_;
 };
 
 
@@ -78,7 +79,7 @@ template<typename FloatType>
 STAMethod<FloatType>::STAMethod(Project& project)
 		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
-		, visual_(Figure::VISUALIZATION_ENVELOPE_LOG)
+		, visual_(Visualization::VALUE_ENVELOPE_LOG)
 {
 }
 
@@ -102,7 +103,7 @@ STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnv
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename FloatType>
@@ -178,7 +179,7 @@ STAMethod<FloatType>::execute()
 	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
-	visual_ = Figure::VISUALIZATION_ENVELOPE_LOG;
+	visual_ = Visualization::VALUE_ENVELOPE_LOG;
 
 	switch (project_.method()) {
 	case MethodEnum::sta_simple_simulated: // falls through
@@ -195,7 +196,7 @@ STAMethod<FloatType>::execute()
 			const auto processingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
 			const auto upsamplingFactor       = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 			if (processingWithEnvelope) {
-				visual_ = Figure::VISUALIZATION_RECTIFIED_LOG;
+				visual_ = Visualization::VALUE_RECTIFIED_LOG;
 			}
 			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			std::vector<FloatType> txApod(config.numElements, 1.0);

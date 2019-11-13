@@ -33,6 +33,7 @@ SOURCES += \
     src/util/MinstdPseudorandomNumberGenerator.cpp \
     src/util/ParameterMap.cpp \
     src/util/Util.cpp \
+    src/util/Visualization.cpp \
     src/external/lzf/lzf_c.c \
     src/external/lzf/lzf_d.c \
     src/external/lzf/lzf_filter.c \
@@ -104,6 +105,7 @@ HEADERS += \
     src/util/Timer.h \
     src/util/Util.h \
     src/util/Value.h \
+    src/util/Visualization.h \
     src/util/Waveform.h \
     src/util/WavefrontObjFileWriter.h \
     src/util/WindowFunction.h \

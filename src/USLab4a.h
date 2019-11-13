@@ -31,6 +31,7 @@
 #include "global.h"
 #include "Project.h"
 #include "ui_USLab4a.h"
+#include "Visualization.h"
 
 
 
@@ -70,7 +71,7 @@ public:
 		const std::string& figureName,
 		Project::GridDataType* gridData=nullptr,
 		const std::vector<Project::PointType>* pointList=nullptr,
-		Figure::Visualization visualization=Figure::VISUALIZATION_DEFAULT,
+		Visualization::Value visualization=Visualization::VALUE_DEFAULT,
 		Colormap::Gradient colormap=Colormap::GRADIENT_DEFAULT,
 		double valueScale=0.0);
 	void showMultiLayer3D(

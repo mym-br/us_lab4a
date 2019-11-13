@@ -39,6 +39,7 @@
 #include "Timer.h"
 #include "Util.h"
 #include "Vectorial3DSTAProcessor.h"
+#include "Visualization.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 
@@ -91,7 +92,7 @@ STA3DMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std::stri
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename FloatType>
@@ -107,7 +108,7 @@ STA3DMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>&
 	project_.saveXYZToHDF5(gridData_, outputDir);
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 }

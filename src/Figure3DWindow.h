@@ -26,6 +26,7 @@
 
 #include "global.h"
 #include "Matrix.h"
+#include "Visualization.h"
 #include "XYZ.h"
 #include "XYZValue.h"
 
@@ -43,7 +44,7 @@ public:
 	void updateData(float valueScale,
 			Matrix<XYZValue<float>>* gridData=nullptr,
 			const std::vector<XYZ<float>>* pointList=nullptr);
-	void setVisualization(Figure::Visualization visualization);
+	void setVisualization(Visualization::Value visualization);
 	void setColormap(Colormap::Gradient colormap);
 protected:
 	virtual void closeEvent(QCloseEvent* event);

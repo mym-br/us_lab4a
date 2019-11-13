@@ -37,11 +37,9 @@ Figure3DWindow::Figure3DWindow(QWidget *parent)
 	ui_.setupUi(this);
 
 	ui_.visualizationComboBox->blockSignals(true); // to avoid calling on_*ComboBox_currentIndexChanged
-	ui_.visualizationComboBox->addItem(tr("Raw - linear"));
-	ui_.visualizationComboBox->addItem(tr("Rectified - linear"));
-	ui_.visualizationComboBox->addItem(tr("Rectified - dB"));
-	ui_.visualizationComboBox->addItem(tr("Envelope - linear"));
-	ui_.visualizationComboBox->addItem(tr("Envelope - dB"));
+	for (const char** name = Visualization::valueNameList; *name; ++name) {
+		ui_.visualizationComboBox->addItem(tr(*name));
+	}
 	ui_.visualizationComboBox->blockSignals(false);
 	ui_.visualizationComboBox->setCurrentIndex(static_cast<int>(ui_.oglFigureWidget->visualization()));
 
@@ -79,7 +77,7 @@ Figure3DWindow::updateData(float valueScale,
 void
 Figure3DWindow::on_visualizationComboBox_currentIndexChanged(int index)
 {
-	ui_.oglFigureWidget->setVisualization(static_cast<Figure::Visualization>(index));
+	ui_.oglFigureWidget->setVisualization(static_cast<Visualization::Value>(index));
 }
 
 void Figure3DWindow::on_visualizationComboBox_activated(int /*index*/)
@@ -118,11 +116,11 @@ Figure3DWindow::on_colormapComboBox_activated(int /*index*/)
 }
 
 void
-Figure3DWindow::setVisualization(Figure::Visualization visualization)
+Figure3DWindow::setVisualization(Visualization::Value visualization)
 {
 	if (ui_.oglFigureWidget->useManualSettings()) return;
 
-	if (visualization != Figure::VISUALIZATION_DEFAULT) {
+	if (visualization != Visualization::VALUE_DEFAULT) {
 		ui_.oglFigureWidget->setVisualization(visualization);
 		ui_.visualizationComboBox->setCurrentIndex(static_cast<int>(visualization));
 	}

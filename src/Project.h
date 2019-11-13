@@ -41,6 +41,7 @@
 #include "ParameterMap.h"
 #include "Util.h"
 #include "Value.h"
+#include "Visualization.h"
 #include "XYZ.h"
 #include "XYZValue.h"
 
@@ -141,7 +142,7 @@ public:
 						const T* gridData,
 						const U* pointList,
 						bool waitPending=true,
-						Figure::Visualization visualization=Figure::VISUALIZATION_DEFAULT,
+						Visualization::Value visualization=Visualization::VALUE_DEFAULT,
 						Colormap::Gradient colormap=Colormap::GRADIENT_DEFAULT,
 						double valueScale=0.0);
 
@@ -199,7 +200,7 @@ private:
 			, newGridData()
 			, newPointList()
 			, figureId()
-			, visualization(Figure::VISUALIZATION_DEFAULT)
+			, visualization(Visualization::VALUE_DEFAULT)
 			, colormap(Colormap::GRADIENT_DEFAULT)
 			, figureName("Figure")
 			, valueScale()
@@ -210,7 +211,7 @@ private:
 		bool newGridData;
 		bool newPointList;
 		int figureId;
-		Figure::Visualization visualization;
+		Visualization::Value visualization;
 		Colormap::Gradient colormap;
 		std::string figureName;
 		GridDataType gridData;
@@ -502,7 +503,7 @@ Project::showFigure3D(
 		const T* gridData,
 		const U* pointList,
 		bool waitPending,
-		Figure::Visualization visualization,
+		Visualization::Value visualization,
 		Colormap::Gradient colormap,
 		double valueScale)
 {

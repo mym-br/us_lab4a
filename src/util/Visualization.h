@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2019 Marcelo Y. Matuda                                       *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -14,19 +14,29 @@
  *  You should have received a copy of the GNU General Public License      *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+#ifndef VISUALIZATION_H
+#define VISUALIZATION_H
 
-#ifndef GLOBAL_H
-#define GLOBAL_H
+#define VISUALIZATION_VALUE_TABLE \
+VISUALIZATION_VALUE_ITEM(VALUE_RAW_LINEAR      , "Raw - linear"      ) \
+VISUALIZATION_VALUE_ITEM(VALUE_RECTIFIED_LINEAR, "Rectified - linear") \
+VISUALIZATION_VALUE_ITEM(VALUE_RECTIFIED_LOG   , "Rectified - dB"    ) \
+VISUALIZATION_VALUE_ITEM(VALUE_ENVELOPE_LINEAR , "Envelope - linear" ) \
+VISUALIZATION_VALUE_ITEM(VALUE_ENVELOPE_LOG    , "Envelope - dB"     ) \
 
-constexpr const char* NETWORK_AQUISITION_CONFIG_FILE = "config-network_acquisition.txt";
+namespace Lab {
+namespace Visualization {
 
-constexpr const char* SETTINGS_KEY_PROJECT_DIR             = "main/projectDir";
-constexpr const char* SETTINGS_KEY_LOGLEVEL_COMBOBOX_INDEX = "main/logLevelComboBoxIndex";
-constexpr const char* SETTINGS_KEY_SELECTED_TASK           = "main/selectedTask";
-constexpr const char* SETTINGS_KEY_SELECTED_EXP            = "main/selectedExp";
+enum Value {
+#define VISUALIZATION_VALUE_ITEM(A, B) A,
+	VISUALIZATION_VALUE_TABLE
+#undef VISUALIZATION_VALUE_ITEM
+	VALUE_DEFAULT // must be the last
+};
 
-constexpr const char* LOG_FILE_NAME = "log-us_lab4a.txt";
+extern const char* valueNameList[];
 
-constexpr unsigned int SCIENTIFIC_NOTATION_NUM_DIGITS_AFTER_DECIMAL_POINT = 7;
+} // Visualization
+} // Lab
 
-#endif // GLOBAL_H
+#endif // VISUALIZATION_H

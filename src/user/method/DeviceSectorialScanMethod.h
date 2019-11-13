@@ -33,6 +33,7 @@
 #include "Project.h"
 #include "Timer.h"
 #include "Util.h"
+#include "Visualization.h"
 #include "XYZ.h"
 #include "XYZValue.h"
 #include "XZValue.h"
@@ -117,7 +118,7 @@ DeviceSectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Image", &imageData, &pointList,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
+				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
 
 	project_.saveImageToHDF5(imageData, outputDir);
 	project_.saveXYZToHDF5(imageData, outputDir);
@@ -142,7 +143,7 @@ DeviceSectorialScanMethod<FloatType>::showSavedImage()
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Image", &imageData, &pointList,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
+				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
 }
 
 template<typename FloatType>
@@ -163,7 +164,7 @@ DeviceSectorialScanMethod<FloatType>::execContinuousNetworkImaging()
 		Util::copy(acqImageData, imageData);
 
 		project_.showFigure3D(1, "Image", &imageData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
+					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
 
 		if (++n == 10) {
 			LOG_INFO << 10.0 / t.getTime() << " image/s";
@@ -196,7 +197,7 @@ DeviceSectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 		Util::copy(acqImageData, imageData);
 
 		project_.showFigure3D(1, "Image", &imageData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
+					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
 
 		std::ostringstream out;
 		out << outputDirPrefix << triggerCount;

@@ -26,6 +26,7 @@
 #include "global.h"
 #include "Matrix.h"
 #include "OGL.h"
+#include "Visualization.h"
 #include "XYZ.h"
 #include "XYZValue.h"
 
@@ -41,8 +42,8 @@ public:
 	OGLFigureWidget(QWidget* parent=nullptr);
 	virtual ~OGLFigureWidget() {}
 
-	void setVisualization(Figure::Visualization visualization);
-	Figure::Visualization visualization() const { return visualization_; }
+	void setVisualization(Visualization::Value visualization);
+	Visualization::Value visualization() const { return visualization_; }
 	void setMinDecibels(float minDecibels);
 	float minDecibels() const { return minDecibels_; }
 	void setColormap(Colormap::Gradient colormap);
@@ -112,7 +113,7 @@ private:
 	bool dataChanged_;
 	bool useManualSettings_;
 	Colormap::Gradient colormap_;
-	Figure::Visualization visualization_;
+	Visualization::Value visualization_;
 	float minDecibels_;
 	float minValue_; // this variable is not used for linear scale
 	float scale_;

@@ -43,6 +43,7 @@
 #include "SimTransientRadiationPattern.h"
 #include "Timer.h"
 #include "Util.h"
+#include "Visualization.h"
 #include "Waveform.h"
 #include "WavefrontObjFileWriter.h"
 #include "XY.h"
@@ -318,7 +319,7 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Pattern", &gridData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
 
 	std::size_t sectionTYIndex = 0;
 	std::size_t sectionTXIndex = 0;
@@ -421,7 +422,7 @@ SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsA
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Acoustic field", &gridData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::VALUE_RECTIFIED_LINEAR, Colormap::GRADIENT_VIRIDIS);
 
 	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"        , "value");
 	project_.saveHDF5(tExc       , mainData.outputDir + "/v_time"   , "value");
@@ -525,7 +526,7 @@ SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArr
 			}
 
 			project_.showFigure3D(1, "Propagation", &projGridData, &pointList,
-						true, Figure::VISUALIZATION_RAW_LINEAR, Colormap::GRADIENT_GRAY);
+						true, Visualization::VALUE_RAW_LINEAR, Colormap::GRADIENT_GRAY);
 
 			Util::sleepMs(propagPause);
 		}

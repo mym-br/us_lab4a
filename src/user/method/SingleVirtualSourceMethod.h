@@ -42,6 +42,7 @@
 #include "TnRnConfiguration.h"
 #include "Util.h"
 #include "Vectorial3DTnRnProcessor.h"
+#include "Visualization.h"
 #include "XY.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
@@ -107,7 +108,7 @@ SingleVirtualSourceMethod<FloatType>::useCoherenceFactor(FloatType valueScale, c
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename FloatType>
@@ -126,7 +127,7 @@ SingleVirtualSourceMethod<FloatType>::process(FloatType valueScale, ArrayProcess
 	};
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 }
@@ -147,7 +148,7 @@ SingleVirtualSourceMethod<FloatType>::execContinuousNetworkImaging(FloatType val
 		}
 
 		project_.showFigure3D(1, "Image", &gridData_, &pointList_,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 
 		if (++n == 10) {
 			LOG_INFO << 10.0 / t.getTime() << " image/s";

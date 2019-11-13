@@ -26,6 +26,7 @@
 #include "ParameterMap.h"
 #include "Project.h"
 #include "Util.h"
+#include "Visualization.h"
 
 
 
@@ -75,10 +76,10 @@ ShowImageMethod::execute()
 		projPointList.resize(pointsX.size());
 		Util::copyXYZFromSimpleVectors(pointsX, pointsY, pointsZ, projPointList);
 		project_.showFigure3D(1, "Image", &projGridData, &projPointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
 	} else {
 		project_.showFigure3D(1, "Image", &projGridData, Project::emptyPointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
 	}
 }
 

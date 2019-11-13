@@ -38,8 +38,9 @@
 #include "STAConfiguration.h"
 #include "SyncServer.h"
 #include "Timer.h"
-#include "VectorialSTAProcessor.h"
 #include "Util.h"
+#include "VectorialSTAProcessor.h"
+#include "Visualization.h"
 #include "WindowFunction.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
@@ -134,11 +135,11 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(config, *acquisition,
 					upsamplingFactor, coherenceFactor, peakOffset,
 					vectorialProcessingWithEnvelope, txApod, rxApod);
-	Figure::Visualization visual;
+	Visualization::Value visual;
 	if (vectorialProcessingWithEnvelope) {
-		visual = Figure::VISUALIZATION_RECTIFIED_LOG;
+		visual = Visualization::VALUE_RECTIFIED_LOG;
 	} else {
-		visual = Figure::VISUALIZATION_ENVELOPE_LOG;
+		visual = Visualization::VALUE_ENVELOPE_LOG;
 	}
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	FloatType valueLevel = 0.0;
@@ -195,7 +196,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 			project_.saveImageToHDF5(gridData, acqOutputDir, "image_cf", "cf");
 
 			project_.showFigure3D(2, "Coherence factor image", &gridData, &pointList,
-						true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS,
+						true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS,
 						config.valueScale != 0.0 ? 1.0 : 0.0);
 		}
 	}
