@@ -576,7 +576,7 @@ USLab4a::showFigure3D(
 		Project::GridDataType* gridData,
 		const std::vector<Project::PointType>* pointList,
 		Figure::Visualization visualization,
-		Figure::Colormap colormap,
+		Colormap::Gradient colormap,
 		double valueScale)
 {
 	try {

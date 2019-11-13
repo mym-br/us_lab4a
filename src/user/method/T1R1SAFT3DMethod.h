@@ -25,6 +25,7 @@
 #include <vector>
 
 #include "CoherenceFactor.h"
+#include "Colormap.h"
 #include "Exception.h"
 #include "global.h"
 #include "ImageGrid.h"
@@ -92,7 +93,7 @@ T1R1SAFT3DMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std:
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
+				true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename FloatType>
@@ -108,7 +109,7 @@ T1R1SAFT3DMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatT
 	project_.saveXYZToHDF5(gridData_, outputDir);
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
-				true, visual_, Figure::COLORMAP_VIRIDIS, valueScale);
+				true, visual_, Colormap::GRADIENT_VIRIDIS, valueScale);
 
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 }

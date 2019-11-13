@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,6 +18,8 @@
 #include "Figure3DWindow.h"
 
 #include <QCloseEvent>
+
+#include "Colormap.h"
 
 namespace {
 
@@ -55,19 +57,9 @@ Figure3DWindow::Figure3DWindow(QWidget *parent)
 	}
 
 	ui_.colormapComboBox->blockSignals(true); // to avoid calling on_*ComboBox_currentIndexChanged
-	ui_.colormapComboBox->addItem(tr("Gray"));
-	ui_.colormapComboBox->addItem(tr("Inverted gray"));
-	ui_.colormapComboBox->addItem(tr("Viridis"));
-	ui_.colormapComboBox->addItem(tr("Inverted Viridis"));
-	ui_.colormapComboBox->addItem(tr("Plasma"));
-	ui_.colormapComboBox->addItem(tr("Inverted Plasma"));
-	ui_.colormapComboBox->addItem(tr("Inferno"));
-	ui_.colormapComboBox->addItem(tr("Inverted Inferno"));
-	ui_.colormapComboBox->addItem(tr("Magma"));
-	ui_.colormapComboBox->addItem(tr("Inverted Magma"));
-	ui_.colormapComboBox->addItem(tr("Cividis"));
-	ui_.colormapComboBox->addItem(tr("Inverted Cividis"));
-	ui_.colormapComboBox->addItem(tr("Red-white-blue"));
+	for (const char** name = Colormap::nameList; *name; ++name) {
+		ui_.colormapComboBox->addItem(tr(*name));
+	}
 	ui_.colormapComboBox->blockSignals(false);
 	ui_.colormapComboBox->setCurrentIndex(static_cast<int>(ui_.oglFigureWidget->colormap()));
 }
@@ -116,7 +108,7 @@ Figure3DWindow::on_minDecibelsComboBox_currentIndexChanged(const QString& text)
 void
 Figure3DWindow::on_colormapComboBox_currentIndexChanged(int index)
 {
-	ui_.oglFigureWidget->setColormap(static_cast<Figure::Colormap>(index));
+	ui_.oglFigureWidget->setColormap(static_cast<Colormap::Gradient>(index));
 }
 
 void
@@ -137,11 +129,11 @@ Figure3DWindow::setVisualization(Figure::Visualization visualization)
 }
 
 void
-Figure3DWindow::setColormap(Figure::Colormap colormap)
+Figure3DWindow::setColormap(Colormap::Gradient colormap)
 {
 	if (ui_.oglFigureWidget->useManualSettings()) return;
 
-	if (colormap != Figure::COLORMAP_DEFAULT) {
+	if (colormap != Colormap::GRADIENT_DEFAULT) {
 		ui_.oglFigureWidget->setColormap(colormap);
 		ui_.colormapComboBox->setCurrentIndex(static_cast<int>(colormap));
 	}

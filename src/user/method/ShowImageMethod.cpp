@@ -20,6 +20,7 @@
 #include <string>
 #include <vector>
 
+#include "Colormap.h"
 #include "Log.h"
 #include "Matrix.h"
 #include "ParameterMap.h"
@@ -74,10 +75,10 @@ ShowImageMethod::execute()
 		projPointList.resize(pointsX.size());
 		Util::copyXYZFromSimpleVectors(pointsX, pointsY, pointsZ, projPointList);
 		project_.showFigure3D(1, "Image", &projGridData, &projPointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
 	} else {
 		project_.showFigure3D(1, "Image", &projGridData, Project::emptyPointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS);
+					true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
 	}
 }
 

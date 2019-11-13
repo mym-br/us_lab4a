@@ -30,6 +30,7 @@
 #include <QString>
 #include <QWaitCondition>
 
+#include "Colormap.h"
 #include "Exception.h"
 #include "FileUtil.h"
 #include "global.h"
@@ -141,7 +142,7 @@ public:
 						const U* pointList,
 						bool waitPending=true,
 						Figure::Visualization visualization=Figure::VISUALIZATION_DEFAULT,
-						Figure::Colormap colormap=Figure::COLORMAP_DEFAULT,
+						Colormap::Gradient colormap=Colormap::GRADIENT_DEFAULT,
 						double valueScale=0.0);
 
 	// Called by the producer.
@@ -199,7 +200,7 @@ private:
 			, newPointList()
 			, figureId()
 			, visualization(Figure::VISUALIZATION_DEFAULT)
-			, colormap(Figure::COLORMAP_DEFAULT)
+			, colormap(Colormap::GRADIENT_DEFAULT)
 			, figureName("Figure")
 			, valueScale()
 		{ }
@@ -210,7 +211,7 @@ private:
 		bool newPointList;
 		int figureId;
 		Figure::Visualization visualization;
-		Figure::Colormap colormap;
+		Colormap::Gradient colormap;
 		std::string figureName;
 		GridDataType gridData;
 		std::vector<PointType> pointList;
@@ -502,7 +503,7 @@ Project::showFigure3D(
 		const U* pointList,
 		bool waitPending,
 		Figure::Visualization visualization,
-		Figure::Colormap colormap,
+		Colormap::Gradient colormap,
 		double valueScale)
 {
 	QMutexLocker locker(&figure3DData_.mutex);

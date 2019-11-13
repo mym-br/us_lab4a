@@ -25,6 +25,7 @@
 #include <QMainWindow>
 #include <QTimer>
 
+#include "Colormap.h"
 #include "Controller.h"
 #include "FigureWindowList.h"
 #include "global.h"
@@ -70,7 +71,7 @@ public:
 		Project::GridDataType* gridData=nullptr,
 		const std::vector<Project::PointType>* pointList=nullptr,
 		Figure::Visualization visualization=Figure::VISUALIZATION_DEFAULT,
-		Figure::Colormap colormap=Figure::COLORMAP_DEFAULT,
+		Colormap::Gradient colormap=Colormap::GRADIENT_DEFAULT,
 		double valueScale=0.0);
 	void showMultiLayer3D(
 		int id,

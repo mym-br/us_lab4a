@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "CoherenceFactor.h"
+#include "Colormap.h"
 #include "DefaultSTAProcessor.h"
 #include "Exception.h"
 #include "FileUtil.h"
@@ -101,7 +102,7 @@ STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnv
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
-				true, Figure::VISUALIZATION_RECTIFIED_LOG, Figure::COLORMAP_VIRIDIS, valueScale);
+				true, Figure::VISUALIZATION_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename FloatType>
@@ -117,7 +118,7 @@ STAMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& p
 	project_.saveXYZToHDF5(gridData_, outputDir);
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
-				true, visual_, Figure::COLORMAP_VIRIDIS, valueScale);
+				true, visual_, Colormap::GRADIENT_VIRIDIS, valueScale);
 
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 }

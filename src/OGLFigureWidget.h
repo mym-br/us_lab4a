@@ -22,6 +22,7 @@
 
 #include <QOpenGLWidget>
 
+#include "Colormap.h"
 #include "global.h"
 #include "Matrix.h"
 #include "OGL.h"
@@ -44,8 +45,8 @@ public:
 	Figure::Visualization visualization() const { return visualization_; }
 	void setMinDecibels(float minDecibels);
 	float minDecibels() const { return minDecibels_; }
-	void setColormap(Figure::Colormap colormap);
-	Figure::Colormap colormap() const { return colormap_; }
+	void setColormap(Colormap::Gradient colormap);
+	Colormap::Gradient colormap() const { return colormap_; }
 	// *gridData will contain old data after the call.
 	void updateData(float dataValueScale,
 			Matrix<XYZValue<float>>* gridData,
@@ -110,7 +111,7 @@ private:
 	bool showInfo_;
 	bool dataChanged_;
 	bool useManualSettings_;
-	Figure::Colormap colormap_;
+	Colormap::Gradient colormap_;
 	Figure::Visualization visualization_;
 	float minDecibels_;
 	float minValue_; // this variable is not used for linear scale

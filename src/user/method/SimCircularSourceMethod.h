@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "AnalyticCircularSourceImpulseResponse.h"
+#include "Colormap.h"
 #include "Exception.h"
 #include "FFTWFilter2.h"
 #include "ImageGrid.h"
@@ -286,7 +287,7 @@ SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Acoustic field", &gridData, &pointList,
-					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Figure::COLORMAP_VIRIDIS);
+					true, Figure::VISUALIZATION_RECTIFIED_LINEAR, Colormap::GRADIENT_VIRIDIS);
 
 	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"        , "value");
 	project_.saveHDF5(tExc       , mainData.outputDir + "/v_time"   , "value");
@@ -376,7 +377,7 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 			}
 
 			project_.showFigure3D(1, "Propagation", &projGridData, &pointList,
-						true, Figure::VISUALIZATION_RAW_LINEAR, Figure::COLORMAP_GRAY);
+						true, Figure::VISUALIZATION_RAW_LINEAR, Colormap::GRADIENT_GRAY);
 
 			Util::sleepMs(propagPause);
 		}

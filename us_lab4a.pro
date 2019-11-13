@@ -23,6 +23,7 @@ SOURCES += \
     src/network_acquisition/ArrayAcqClient.cpp \
     src/network_acquisition/PhasedArrayAcqClient.cpp \
     src/network_sync/SyncServer.cpp \
+    src/util/Colormap.cpp \
     src/util/FileUtil.cpp \
     src/util/HDF5Util.cpp \
     src/util/IterationCounter.cpp \
@@ -69,6 +70,7 @@ HEADERS += \
     src/util/ArrayGeometry.h \
     src/util/ArrayUtil.h \
     src/util/CoherenceFactor.h \
+    src/util/Colormap.h \
     src/util/ComplexToRealIFFT.h \
     src/util/ContainerDumper.h \
     src/util/Decimator.h \
