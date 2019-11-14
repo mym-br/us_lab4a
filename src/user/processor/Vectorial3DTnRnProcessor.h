@@ -212,6 +212,13 @@ Vectorial3DTnRnProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& 
 
 	IterationCounter::reset(gridData.n1());
 
+	// Delay of the first active element.
+	const FloatType d0 = txDelays_[0] * fsUp;
+
+	const XY<FloatType>& firstElem = config_.txElemPos[baseElement_];
+	// Travel time between the first active element and the focus.
+	const FloatType t0 = Geometry::distance3DZ0(firstElem.x, firstElem.y, focusX_, focusY_, focusZ_) * invCT;
+
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n1()),
 	[&, invCT, numRows](const tbb::blocked_range<std::size_t>& r) {
 		auto& local = tls.local();
@@ -230,13 +237,6 @@ Vectorial3DTnRnProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& 
 
 				// Calculate the delays.
 				{
-					// Delay of the first active element.
-					const FloatType d0 = txDelays_[0] * fsUp;
-
-					const XY<FloatType>& firstElem = config_.txElemPos[baseElement_];
-					// Travel time between the first active element and the focus.
-					const FloatType t0 = Geometry::distance3DZ0(firstElem.x, firstElem.y,
-											focusX_, focusY_, focusZ_) * invCT;
 					// Travel time between the focus and the point.
 					const FloatType t1 = Geometry::distance3D(focusX_, focusY_, focusZ_,
 											point.x, point.y, point.z) * invCT;
