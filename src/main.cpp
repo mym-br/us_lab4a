@@ -18,7 +18,6 @@
 #include "USLab4a.h"
 
 #include <cfenv> /* fesetround */
-#include <cstdlib>
 #include <fftw3.h>
 #include <iostream>
 
@@ -29,7 +28,6 @@
 
 #include "Log.h"
 #include "lzf_filter.h"
-#include "Method.h"
 
 namespace {
 
@@ -51,10 +49,8 @@ main(int argc, char* argv[])
 	fftwf_import_wisdom_from_filename(FFTW_WISDOM_FILE_NAME_SP);
 	fftw_import_wisdom_from_filename(FFTW_WISDOM_FILE_NAME_DP);
 
-	//tbb::task_scheduler_init init(2);
-	std::cout << "tbb::task_scheduler_init::default_num_threads() = " << tbb::task_scheduler_init::default_num_threads() << std::endl;
-
-	//QApplication::setGraphicsSystem("native"); // "raster" / "native" / "opengl" (experimental in Qt-4.8.4)
+	std::cout << "tbb::task_scheduler_init::default_num_threads() = "
+			<< tbb::task_scheduler_init::default_num_threads() << std::endl;
 
 	Lab::Log::setLevel(Lab::Log::LEVEL_DEBUG);
 
@@ -66,7 +62,6 @@ main(int argc, char* argv[])
 	QCoreApplication::setApplicationName("USLab4a");
 
 	Lab::USLab4a w;
-	//w.show();
 	int returnValue = a.exec();
 
 	fftw_export_wisdom_to_filename(FFTW_WISDOM_FILE_NAME_DP);
