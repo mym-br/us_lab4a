@@ -28,7 +28,6 @@
 #include "ContainerDumper.h"
 #include "Exception.h"
 #include "FileUtil.h"
-#include "global.h"
 #include "ImageGrid.h"
 #include "Log.h"
 #include "Matrix.h"

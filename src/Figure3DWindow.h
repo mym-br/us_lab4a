@@ -25,7 +25,6 @@
 #include "ui_Figure3DWindow.h"
 
 #include "Colormap.h"
-#include "global.h"
 #include "Matrix.h"
 #include "Visualization.h"
 #include "XYZ.h"

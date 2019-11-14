@@ -26,7 +26,7 @@
 
 #include "ArrayAcqClient.h"
 #include "Exception.h"
-#include "global.h"
+#include "NetworkAcquisition.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "TnRnAcquisition.h"

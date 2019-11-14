@@ -26,7 +26,7 @@
 
 #include "DeviceSectorialScanAcquisition.h"
 #include "DeviceSectorialScanConfiguration.h"
-#include "global.h"
+#include "NetworkAcquisition.h"
 #include "ParameterMap.h"
 #include "PhasedArrayAcqClient.h"
 #include "Project.h"

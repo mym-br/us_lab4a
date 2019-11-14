@@ -26,7 +26,6 @@
 #include "CoherenceFactor.h"
 #include "Colormap.h"
 #include "Exception.h"
-#include "global.h"
 #include "ImageGrid.h"
 #include "IterationCounter.h"
 #include "Log.h"

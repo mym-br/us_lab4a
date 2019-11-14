@@ -28,7 +28,6 @@
 #include "Colormap.h"
 #include "Controller.h"
 #include "FigureWindowList.h"
-#include "global.h"
 #include "Project.h"
 #include "ui_USLab4a.h"
 #include "Visualization.h"

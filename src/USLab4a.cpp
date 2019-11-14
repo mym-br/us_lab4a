@@ -57,6 +57,13 @@ constexpr const char* TASK_FILE_PREFIX = "task-";
 constexpr const char* TASK_FILE_SUFFIX = ".txt";
 constexpr const char* EXPERIMENT_DIR_PREFIX = "exp-";
 
+constexpr const char* SETTINGS_KEY_PROJECT_DIR             = "main/projectDir";
+constexpr const char* SETTINGS_KEY_LOGLEVEL_COMBOBOX_INDEX = "main/logLevelComboBoxIndex";
+constexpr const char* SETTINGS_KEY_SELECTED_TASK           = "main/selectedTask";
+constexpr const char* SETTINGS_KEY_SELECTED_EXP            = "main/selectedExp";
+
+constexpr const char* LOG_FILE_NAME = "log-us_lab4a.txt";
+
 }
 
 namespace Lab {

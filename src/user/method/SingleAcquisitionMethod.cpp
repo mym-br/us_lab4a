@@ -23,8 +23,8 @@
 #include <vector>
 
 #include "ArrayAcqClient.h"
-#include "global.h"
 #include "Log.h"
+#include "NetworkAcquisition.h"
 #include "ParameterMap.h"
 #include "Project.h"
 #include "Util.h"

@@ -33,7 +33,6 @@
 #include "Colormap.h"
 #include "Exception.h"
 #include "FileUtil.h"
-#include "global.h"
 #include "HDF5Util.h"
 #include "Log.h"
 #include "Matrix.h"

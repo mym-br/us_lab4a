@@ -23,7 +23,6 @@
 #include <QOpenGLWidget>
 
 #include "Colormap.h"
-#include "global.h"
 #include "Matrix.h"
 #include "OGL.h"
 #include "Visualization.h"

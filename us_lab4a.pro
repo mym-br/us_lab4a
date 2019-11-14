@@ -49,7 +49,6 @@ HEADERS += \
     src/Figure2DWindow.h \
     src/Figure3DWindow.h \
     src/FigureWindowList.h \
-    src/global.h \
     src/Method.h \
     src/MultiLayer3DWindow.h \
     src/OGLFigureWidget.h \
@@ -62,6 +61,7 @@ HEADERS += \
     src/fft/FFTW.h \
     src/network_acquisition/ArrayAcqClient.h \
     src/network_acquisition/ArrayAcqProtocol.h \
+    src/network_acquisition/NetworkAcquisition.h \
     src/network_acquisition/PhasedArrayAcqClient.h \
     src/network_acquisition/PhasedArrayAcqProtocol.h \
     src/network_acquisition/RawBuffer.h \
