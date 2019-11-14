@@ -358,10 +358,10 @@ OGLFigureWidget::updateDataVisualization()
 	if (gridData_.empty()) return;
 
 	switch (colormap_) {
-	case Colormap::GRADIENT_DEFAULT: // falls through
-#define COLORMAP_GRADIENT_ITEM(A, B, C) case Colormap::A: fillOGLGridData<C>(); break;
-	COLORMAP_GRADIENT_TABLE
-#undef COLORMAP_GRADIENT_ITEM
+	case Colormap::DEFAULT: // falls through
+#define COLORMAP_ITEM(A, B, C) case Colormap::A: fillOGLGridData<C>(); break;
+	COLORMAP_TABLE
+#undef COLORMAP_ITEM
 		break;
 	}
 }
@@ -375,7 +375,7 @@ OGLFigureWidget::setVisualization(Visualization::Value visualization)
 }
 
 void
-OGLFigureWidget::setColormap(Colormap::Gradient colormap)
+OGLFigureWidget::setColormap(Colormap::Id colormap)
 {
 	colormap_ = colormap;
 	updateDataVisualization();

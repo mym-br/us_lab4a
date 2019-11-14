@@ -20,10 +20,10 @@
 namespace Lab {
 namespace Colormap {
 
-const char* gradientNameList[] = {
-#define COLORMAP_GRADIENT_ITEM(A, B, C) B,
-	COLORMAP_GRADIENT_TABLE
-#undef COLORMAP_GRADIENT_ITEM
+const char* nameList[] = {
+#define COLORMAP_ITEM(A, B, C) B,
+	COLORMAP_TABLE
+#undef COLORMAP_ITEM
 	nullptr
 };
 

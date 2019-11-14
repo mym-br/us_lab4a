@@ -142,7 +142,7 @@ public:
 						const U* pointList,
 						bool waitPending=true,
 						Visualization::Value visualization=Visualization::VALUE_DEFAULT,
-						Colormap::Gradient colormap=Colormap::GRADIENT_DEFAULT,
+						Colormap::Id colormap=Colormap::DEFAULT,
 						double valueScale=0.0);
 
 	// Called by the producer.
@@ -200,7 +200,7 @@ private:
 			, newPointList()
 			, figureId()
 			, visualization(Visualization::VALUE_DEFAULT)
-			, colormap(Colormap::GRADIENT_DEFAULT)
+			, colormap(Colormap::DEFAULT)
 			, figureName("Figure")
 			, valueScale()
 		{ }
@@ -211,7 +211,7 @@ private:
 		bool newPointList;
 		int figureId;
 		Visualization::Value visualization;
-		Colormap::Gradient colormap;
+		Colormap::Id colormap;
 		std::string figureName;
 		GridDataType gridData;
 		std::vector<PointType> pointList;
@@ -503,7 +503,7 @@ Project::showFigure3D(
 		const U* pointList,
 		bool waitPending,
 		Visualization::Value visualization,
-		Colormap::Gradient colormap,
+		Colormap::Id colormap,
 		double valueScale)
 {
 	QMutexLocker locker(&figure3DData_.mutex);

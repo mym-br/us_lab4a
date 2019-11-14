@@ -19,32 +19,32 @@
 
 #include "Util.h"
 
-#define COLORMAP_GRADIENT_TABLE \
-COLORMAP_GRADIENT_ITEM(GRADIENT_GRAY            , "Gray"            , Colormap::GrayScale                    ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_INVERTED_GRAY   , "Inverted gray"   , Colormap::Inverted<Colormap::GrayScale>) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_VIRIDIS         , "Viridis"         , Colormap::Viridis                      ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_INVERTED_VIRIDIS, "Inverted Viridis", Colormap::Inverted<Colormap::Viridis>  ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_CIVIDIS         , "Cividis"         , Colormap::Cividis                      ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_INVERTED_CIVIDIS, "Inverted Cividis", Colormap::Inverted<Colormap::Cividis>  ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_PLASMA          , "Plasma"          , Colormap::Plasma                       ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_INVERTED_PLASMA , "Inverted Plasma" , Colormap::Inverted<Colormap::Plasma>   ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_INFERNO         , "Inferno"         , Colormap::Inferno                      ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_INVERTED_INFERNO, "Inverted Inferno", Colormap::Inverted<Colormap::Inferno>  ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_MAGMA           , "Magma"           , Colormap::Magma                        ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_INVERTED_MAGMA  , "Inverted Magma"  , Colormap::Inverted<Colormap::Magma>    ) \
-COLORMAP_GRADIENT_ITEM(GRADIENT_RED_WHITE_BLUE  , "Red-white-blue"  , Colormap::RedWhiteBlue                 )
+#define COLORMAP_TABLE \
+COLORMAP_ITEM(GRADIENT_GRAY            , "Gray"            , Colormap::GrayScale                    ) \
+COLORMAP_ITEM(GRADIENT_INVERTED_GRAY   , "Inverted gray"   , Colormap::Inverted<Colormap::GrayScale>) \
+COLORMAP_ITEM(GRADIENT_VIRIDIS         , "Viridis"         , Colormap::Viridis                      ) \
+COLORMAP_ITEM(GRADIENT_INVERTED_VIRIDIS, "Inverted Viridis", Colormap::Inverted<Colormap::Viridis>  ) \
+COLORMAP_ITEM(GRADIENT_CIVIDIS         , "Cividis"         , Colormap::Cividis                      ) \
+COLORMAP_ITEM(GRADIENT_INVERTED_CIVIDIS, "Inverted Cividis", Colormap::Inverted<Colormap::Cividis>  ) \
+COLORMAP_ITEM(GRADIENT_PLASMA          , "Plasma"          , Colormap::Plasma                       ) \
+COLORMAP_ITEM(GRADIENT_INVERTED_PLASMA , "Inverted Plasma" , Colormap::Inverted<Colormap::Plasma>   ) \
+COLORMAP_ITEM(GRADIENT_INFERNO         , "Inferno"         , Colormap::Inferno                      ) \
+COLORMAP_ITEM(GRADIENT_INVERTED_INFERNO, "Inverted Inferno", Colormap::Inverted<Colormap::Inferno>  ) \
+COLORMAP_ITEM(GRADIENT_MAGMA           , "Magma"           , Colormap::Magma                        ) \
+COLORMAP_ITEM(GRADIENT_INVERTED_MAGMA  , "Inverted Magma"  , Colormap::Inverted<Colormap::Magma>    ) \
+COLORMAP_ITEM(GRADIENT_RED_WHITE_BLUE  , "Red-white-blue"  , Colormap::RedWhiteBlue                 )
 
 namespace Lab {
 namespace Colormap {
 
-enum Gradient {
-#define COLORMAP_GRADIENT_ITEM(A, B, C) A,
-	COLORMAP_GRADIENT_TABLE
-#undef COLORMAP_GRADIENT_ITEM
-	GRADIENT_DEFAULT // must be the last
+enum Id {
+#define COLORMAP_ITEM(A, B, C) A,
+	COLORMAP_TABLE
+#undef COLORMAP_ITEM
+	DEFAULT // must be the last
 };
 
-extern const char* gradientNameList[];
+extern const char* nameList[];
 
 template<typename Colormap>
 struct TableColormap {

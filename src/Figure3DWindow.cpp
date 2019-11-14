@@ -53,7 +53,7 @@ Figure3DWindow::Figure3DWindow(QWidget *parent)
 	}
 
 	ui_.colormapComboBox->blockSignals(true); // to avoid calling on_*ComboBox_currentIndexChanged
-	for (const char** name = Colormap::gradientNameList; *name; ++name) {
+	for (const char** name = Colormap::nameList; *name; ++name) {
 		ui_.colormapComboBox->addItem(tr(*name));
 	}
 	ui_.colormapComboBox->blockSignals(false);
@@ -104,7 +104,7 @@ Figure3DWindow::on_minDecibelsComboBox_currentIndexChanged(const QString& text)
 void
 Figure3DWindow::on_colormapComboBox_currentIndexChanged(int index)
 {
-	ui_.oglFigureWidget->setColormap(static_cast<Colormap::Gradient>(index));
+	ui_.oglFigureWidget->setColormap(static_cast<Colormap::Id>(index));
 }
 
 void
@@ -125,11 +125,11 @@ Figure3DWindow::setVisualization(Visualization::Value visualization)
 }
 
 void
-Figure3DWindow::setColormap(Colormap::Gradient colormap)
+Figure3DWindow::setColormap(Colormap::Id colormap)
 {
 	if (ui_.oglFigureWidget->useManualSettings()) return;
 
-	if (colormap != Colormap::GRADIENT_DEFAULT) {
+	if (colormap != Colormap::DEFAULT) {
 		ui_.oglFigureWidget->setColormap(colormap);
 		ui_.colormapComboBox->setCurrentIndex(static_cast<int>(colormap));
 	}

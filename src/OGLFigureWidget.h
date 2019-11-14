@@ -45,8 +45,8 @@ public:
 	Visualization::Value visualization() const { return visualization_; }
 	void setMinDecibels(float minDecibels);
 	float minDecibels() const { return minDecibels_; }
-	void setColormap(Colormap::Gradient colormap);
-	Colormap::Gradient colormap() const { return colormap_; }
+	void setColormap(Colormap::Id colormap);
+	Colormap::Id colormap() const { return colormap_; }
 	// *gridData will contain old data after the call.
 	void updateData(float dataValueScale,
 			Matrix<XYZValue<float>>* gridData,
@@ -111,7 +111,7 @@ private:
 	bool showInfo_;
 	bool dataChanged_;
 	bool useManualSettings_;
-	Colormap::Gradient colormap_;
+	Colormap::Id colormap_;
 	Visualization::Value visualization_;
 	float minDecibels_;
 	float minValue_; // this variable is not used for linear scale

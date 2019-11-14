@@ -45,7 +45,7 @@ public:
 			Matrix<XYZValue<float>>* gridData=nullptr,
 			const std::vector<XYZ<float>>* pointList=nullptr);
 	void setVisualization(Visualization::Value visualization);
-	void setColormap(Colormap::Gradient colormap);
+	void setColormap(Colormap::Id colormap);
 protected:
 	virtual void closeEvent(QCloseEvent* event);
 private slots:
