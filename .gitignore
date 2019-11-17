@@ -11,3 +11,4 @@ fftw_wisdom*
 
 !data/**
 !test/*.h5
+!python/data/**
