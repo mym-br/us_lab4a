@@ -10,13 +10,13 @@ MAX_CHUNK_SIZE_2D = 64
 
 
 
-def calc_shape_size(shape):
+def _calc_shape_size(shape):
     size = 1
     for n in shape:
         size *= n
     return size
 
-def calc_chunk_shape(data_shape):
+def _calc_chunk_shape(data_shape):
     chunk_shape = list(data_shape)
     rank = len(data_shape)
     if rank == 1:
@@ -34,12 +34,12 @@ def calc_chunk_shape(data_shape):
             chunk_shape[1] = min(data_shape[1], MAX_CHUNK_SIZE_2D);
             return tuple(chunk_shape)
         else:
-            data_size = calc_shape_size(chunk_shape)
+            data_size = _calc_shape_size(chunk_shape)
             while data_size > MAX_CHUNK_SIZE_1D:
                 i = np.argmax(chunk_shape)
                 chunk_shape[i] /= 2
-                #print('2:', chunk_shape)
-                data_size = calc_shape_size(chunk_shape)
+                print('2:', chunk_shape)
+                data_size = _calc_shape_size(chunk_shape)
             return tuple(chunk_shape)
     else:
         raise ValueError('Invalid rank.', rank)
@@ -48,7 +48,7 @@ def read_to_ndarray(file_path, dataset_name, get_attributes=False):
     with h5py.File(file_path, 'r') as f:
         dataset = f[dataset_name]
 
-        # Converts to a numpy array.
+        # Convert to a numpy array.
         data = dataset[...]
 
         if get_attributes:
@@ -71,7 +71,7 @@ def write_ndarray(data, file_path, dataset_name, **attributes):
                 compress = True
 
         if compress:
-            chunk_shape = calc_chunk_shape(data.shape)
+            chunk_shape = _calc_chunk_shape(data.shape)
             dataset = f.create_dataset(dataset_name,
                                        data=data,
                                        chunks=chunk_shape,

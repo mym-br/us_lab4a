@@ -5,8 +5,8 @@ import numpy as np
 def normalize(a):
     return a * (1.0 / np.abs(a).max())
 
-def get_time_sequence(a, fs, offset):
-    return np.arange(len(a)) * (1.0 / fs) + offset
+def get_time_sequence(length, fs, time_offset=0.0):
+    return np.arange(length) * (1.0 / fs) + time_offset
 
 def central_diff_with_time(t, a, fs):
     ts = 1.0 / fs
