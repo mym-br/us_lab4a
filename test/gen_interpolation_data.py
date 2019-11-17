@@ -13,7 +13,7 @@ FS = 40e6
 
 ascan = hdf5util.read_to_ndarray(file_path='base48_tx15_rx15-calib_plane_40mm_avg1.h5', dataset_name='ascan')
 ascan = ascan.T[2000:3000].flatten()
-t = arrayutil.get_time_sequence(ascan, FS, offset=0)
+t = arrayutil.get_time_sequence(len(ascan), FS)
 
 hdf5util.write_ndarray(data=ascan, file_path='interp_source.h5', dataset_name='v')
 

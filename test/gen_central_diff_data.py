@@ -12,7 +12,7 @@ x = x.flatten()
 #x = np.array([0., 0, 1, 1, 1, 1])
 print(x.shape)
 
-t = arrayutil.get_time_sequence(x, FS, 0)
+t = arrayutil.get_time_sequence(len(x), FS, 0)
 t_d, x_d = arrayutil.central_diff_with_time(t, x, FS)
 
 print(t_d.shape)

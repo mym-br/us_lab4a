@@ -18,7 +18,7 @@ ascan = np.hstack((ascan, np.zeros(500)))
 ascan = np.hstack((ascan, np.ones(100)))
 ascan = np.hstack((ascan, np.zeros(500)))
 
-t = arrayutil.get_time_sequence(ascan, FS, offset=0)
+t = arrayutil.get_time_sequence(len(ascan), FS)
 
 hdf5util.write_ndarray(data=ascan, file_path='decimation_source.h5', dataset_name='v')
 
