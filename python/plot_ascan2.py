@@ -29,7 +29,7 @@ FREQ_RESP_PADDING = 32 * 1024
 fs = FS * UPSAMPLING_FACTOR
 
 ascan = hdf5util.read_to_ndarray(ASCAN_FILE_NAME, ASCAN_DATASET_NAME)
-t = arrayutil.get_time_sequence(ascan, FS, 0)
+t = arrayutil.get_time_sequence(len(ascan), FS, 0)
 
 plt.figure(figsize=(6, 3))
 plt.plot(t, ascan / np.abs(ascan).max(), 'k')
@@ -62,7 +62,7 @@ ascan_r, t_r = interpolation.interpolate(ascan,
                                          FS)
 env = np.abs(hilbert(np.r_[ascan_r, np.zeros((ENV_PADDING,))]))
 env = env[:-ENV_PADDING]
-t_env = arrayutil.get_time_sequence(env, fs, t_r[0])
+t_env = arrayutil.get_time_sequence(len(env), fs, t_r[0])
 
 plt.figure(figsize=(6, 3))
 plt.plot(t_r, ascan_r / env.max(), 'k', label='A-scan')

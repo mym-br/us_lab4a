@@ -42,7 +42,7 @@ plt.plot(t0, s1)
 s2 = s1 * s0
 s2 = np.r_[np.zeros((MARGIN,)), s2, np.zeros((MARGIN,))]
 print('s2.shape:', s2.shape)
-t2 = arrayutil.get_time_sequence(s2, FS, 0) * 1e6
+t2 = arrayutil.get_time_sequence(len(s2), FS, 0) * 1e6
 s2_env = calc_envelope(s2, 0.0)
 
 plt.figure(figsize=(6, 3))

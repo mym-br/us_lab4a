@@ -24,13 +24,13 @@ fs = FS
 pad_samples = int(PAD_TIME * fs)
 
 ascan = hdf5util.read_to_ndarray(ASCAN_FILE_NAME, ASCAN_DATASET_NAME)
-t = arrayutil.get_time_sequence(ascan, FS, PAD_TIME)
+t = arrayutil.get_time_sequence(len(ascan), FS, PAD_TIME)
 
 ascan2 = np.r_[np.zeros(pad_samples), ascan, np.zeros(pad_samples)]
-t2 = arrayutil.get_time_sequence(ascan2, fs, 0)
+t2 = arrayutil.get_time_sequence(len(ascan2), fs, 0)
 
 xc = correlate(ascan, ascan2, 'valid')
-t_xc = arrayutil.get_time_sequence(xc, fs, 0)
+t_xc = arrayutil.get_time_sequence(len(xc), fs, 0)
 
 plt.figure(figsize=(6, 3))
 plt.plot(t2[:-pad_samples//2], ascan2[:-pad_samples//2] / np.abs(ascan2[:-pad_samples//2]).max(), 'k')

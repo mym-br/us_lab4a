@@ -42,9 +42,9 @@ def filter_signal(signal, plot_signals):
     if plot_signals:
         plt.figure()
         plt.title("Comparison of signals")
-        plt.plot(get_time_sequence(signal    , fs, 0.0), signal    , "r-o", label="raw")
-        plt.plot(get_time_sequence(s2        , fs, 0.0), s2        , "g--", label="spikes filtered")
-        plt.plot(get_time_sequence(s_filtered, fs, 0.0), s_filtered, "b--", label="filtered")
+        plt.plot(get_time_sequence(len(signal)    , fs, 0.0), signal    , "r-o", label="raw")
+        plt.plot(get_time_sequence(len(s2)        , fs, 0.0), s2        , "g--", label="spikes filtered")
+        plt.plot(get_time_sequence(len(s_filtered), fs, 0.0), s_filtered, "b--", label="filtered")
         plt.legend(loc='upper right')
         plt.xlabel('t (s)')
         plt.grid(True)
