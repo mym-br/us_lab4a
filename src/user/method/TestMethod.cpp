@@ -22,6 +22,7 @@
 #include <complex>
 #include <cstddef> /* std::size_t */
 #include <fstream>
+#include <functional>
 #include <vector>
 
 #include "CoherenceFactor.h"
@@ -111,10 +112,12 @@ TestMethod::execute()
 	LOG_INFO << "Errors: " << errorCount_;
 }
 
+template<typename T>
 void
-TestMethod::call(std::function<void (TestMethod*)> f)
+TestMethod::call(T pmf)
 {
 	try {
+		auto f = std::mem_fn(pmf);
 		f(this);
 		LOG_INFO << "  [OK]";
 	} catch (std::exception& e) {

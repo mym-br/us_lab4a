@@ -18,8 +18,6 @@
 #ifndef TESTMETHOD_H_
 #define TESTMETHOD_H_
 
-#include <functional>
-
 #include "Exception.h"
 #include "Method.h"
 
@@ -39,7 +37,7 @@ public:
 	virtual void execute();
 
 private:
-	void call(std::function<void (TestMethod*)> f);
+	template<typename T> void call(T pmf);
 
 	void testAdd();
 	void testAddElements();
