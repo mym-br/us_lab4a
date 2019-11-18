@@ -321,8 +321,8 @@ TestMethod::testDirectFFTWFilter()
 	filter.filter(x, y);
 #ifdef TEST_DIRECT_FFTW_FILTER_SHOW_FIGURES
 	std::vector<double> t;
-	Util::fillSequenceWithSize(t, 0.0, static_cast<double>(y.size() - 1), y.size());
-	project_.showFigure2D(figureNumber++, "testDirectFFTWFilter: y", t, y);
+	Util::fillSequenceFromStartToEndWithSize(t, 0.0, static_cast<double>(y.size() - 1), y.size());
+	project_.showFigure2D(figureNumber_++, "testDirectFFTWFilter: y", t, y);
 #endif
 	if (y.size() != x.size() + b.size() - 1) {
 		THROW_EXCEPTION(TestException, "y.size() != x.size() + b.size() - 1 [y.size()=" << y.size() <<
@@ -350,7 +350,7 @@ TestMethod::testDirectFFTWFilter()
 		THROW_EXCEPTION(TestException, "y2.size() != y.size()");
 	}
 #ifdef TEST_DIRECT_FFTW_FILTER_SHOW_FIGURES
-	project_.showFigure2D(figureNumber++, "testDirectFFTWFilter: y2", t, y2);
+	project_.showFigure2D(figureNumber_++, "testDirectFFTWFilter: y2", t, y2);
 #endif
 	for (std::size_t i = 0; i < y2.size(); ++i) {
 		if (y2[i] != y[i]) {
@@ -497,8 +497,8 @@ TestMethod::testFFTWFilter()
 	filter.filter(x, y);
 #ifdef TEST_FFTW_FILTER_SHOW_FIGURES
 	std::vector<double> t;
-	Util::fillSequenceWithSize(t, 0.0, static_cast<double>(y.size() - 1), y.size());
-	project_.showFigure2D(figureNumber++, "testFFTWFilter: y", t, y);
+	Util::fillSequenceFromStartToEndWithSize(t, 0.0, static_cast<double>(y.size() - 1), y.size());
+	project_.showFigure2D(figureNumber_++, "testFFTWFilter: y", t, y);
 #endif
 	if (y.size() != x.size() + b.size() - 1) {
 		THROW_EXCEPTION(TestException, "y.size() != x.size() + b.size() - 1 [y.size()=" << y.size() <<
@@ -526,7 +526,7 @@ TestMethod::testFFTWFilter()
 		THROW_EXCEPTION(TestException, "y2.size() != y.size()");
 	}
 #ifdef TEST_FFTW_FILTER_SHOW_FIGURES
-	project_.showFigure2D(figureNumber++, "testFFTWFilter: y2", t, y2);
+	project_.showFigure2D(figureNumber_++, "testFFTWFilter: y2", t, y2);
 #endif
 	for (std::size_t i = 0; i < y2.size(); ++i) {
 		if (y2[i] != y[i]) {
@@ -714,10 +714,10 @@ TestMethod::testHilbertTransform()
 
 #ifdef TEST_HILBERT_TRANSFORM_SHOW_FIGURES
 	std::vector<double> idx;
-	Util::fillSequenceWithSize(idx, 0.0, x.size() - 1.0, x.size());
-	project_.showFigure2D(figureNumber++, "testHilbertTransform: ya", idx, ya);
+	Util::fillSequenceFromStartToEndWithSize(idx, 0.0, x.size() - 1.0, x.size());
+	project_.showFigure2D(figureNumber_++, "testHilbertTransform: ya", idx, ya);
 
-	project_.showFigure2D(figureNumber++, "testHilbertTransform: yaRef", idx, yaRef);
+	project_.showFigure2D(figureNumber_++, "testHilbertTransform: yaRef", idx, yaRef);
 #endif
 
 	if (ya.size() != yaRef.size()) {
@@ -782,8 +782,8 @@ TestMethod::testInterpolator()
 		project_.loadHDF5(fileName.str().c_str(), "v", yRef);
 #ifdef TEST_INTERPOLATOR_SHOW_FIGURES
 		std::vector<double> t;
-		Util::fillSequenceWithSize(t, 0.0, static_cast<double>(y.size() - 1), y.size());
-		project_.showFigure2D(figureNumber++, "testInterpolator: y", t, y);
+		Util::fillSequenceFromStartToEndWithSize(t, 0.0, static_cast<double>(y.size() - 1), y.size());
+		project_.showFigure2D(figureNumber_++, "testInterpolator: y", t, y);
 #endif
 		if (y.size() != yRef.size()) {
 			THROW_EXCEPTION(TestException, "Wrong size: " << y.size() <<
@@ -803,7 +803,7 @@ TestMethod::testInterpolator()
 		y2.resize(x.size() * upsampFactorList[i]);
 		interp2.interpolate(&x[0], x.size(), &y2[0]);
 #ifdef TEST_INTERPOLATOR_SHOW_FIGURES
-		project_.showFigure2D(figureNumber++, "testInterpolator: y2", t, y2);
+		project_.showFigure2D(figureNumber_++, "testInterpolator: y2", t, y2);
 #endif
 		for (unsigned int j = 0; j < y2.size(); ++j) {
 			if (y2[j] != y[j]) {
