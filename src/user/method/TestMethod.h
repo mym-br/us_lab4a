@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -17,6 +17,8 @@
 
 #ifndef TESTMETHOD_H_
 #define TESTMETHOD_H_
+
+#include <functional>
 
 #include "Exception.h"
 #include "Method.h"
@@ -37,7 +39,34 @@ public:
 	virtual void execute();
 
 private:
+	void call(std::function<void (TestMethod*)> f);
+
+	void testAdd();
+	void testAddElements();
+	void testAddElements2();
+	void testBessel();
+	void testCentralDiff();
+	void testDecimator();
+	void testDirectFFTWFilter();
+	void testFFT();
+	void testFFTWFilter();
+	void testFFTWFilter2();
+	void testFillSequence();
+	void testFillSequence2();
+	void testFillSequence3();
+	void testFillSequence4();
+	void testHilbertTransform();
+	void testInterpolator();
+	void testInterpolator4X();
+	void testKaiserWindow();
+	void testLinearInterpolator();
+	void testMultiplyBy();
+	void testSCF();
+	void testStatistics();
+
 	Project& project_;
+	unsigned int errorCount_;
+	unsigned int figureNumber_;
 };
 
 } // namespace Lab
