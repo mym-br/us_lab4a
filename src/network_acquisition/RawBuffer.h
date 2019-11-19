@@ -110,7 +110,7 @@ inline
 void
 RawBuffer::writeInt16(boost::int16_t value, std::vector<boost::uint8_t>& buffer, std::size_t& index)
 {
-	buffer[index++] = value >> 8U;
+	buffer[index++] = value >> 8;
 	buffer[index++] = value;
 }
 
@@ -125,7 +125,7 @@ RawBuffer::readInt16(const std::vector<boost::uint8_t>& buffer, std::size_t& ind
 		boost::int16_t i;
 		boost::uint16_t ui;
 	};
-	ui  = buffer[index++] << 8U;
+	ui  = buffer[index++] << 8;
 	ui += buffer[index++];
 	return i;
 }
@@ -137,7 +137,7 @@ inline
 void
 RawBuffer::writeUInt16(boost::uint16_t value, std::vector<boost::uint8_t>& buffer, std::size_t& index)
 {
-	buffer[index++] = value >> 8U;
+	buffer[index++] = value >> 8;
 	buffer[index++] = value;
 }
 
@@ -148,7 +148,7 @@ inline
 boost::uint16_t
 RawBuffer::readUInt16(const std::vector<boost::uint8_t>& buffer, std::size_t& index)
 {
-	boost::uint16_t value = buffer[index++] << 8U;
+	boost::uint16_t value = buffer[index++] << 8;
 	value                += buffer[index++];
 	return value;
 }
@@ -160,9 +160,9 @@ inline
 void
 RawBuffer::writeInt32(boost::int32_t value, std::vector<boost::uint8_t>& buffer, std::size_t& index)
 {
-	buffer[index++] = value >> 24U;
-	buffer[index++] = value >> 16U;
-	buffer[index++] = value >> 8U;
+	buffer[index++] = value >> 24;
+	buffer[index++] = value >> 16;
+	buffer[index++] = value >> 8;
 	buffer[index++] = value;
 }
 
@@ -177,9 +177,9 @@ RawBuffer::readInt32(const std::vector<boost::uint8_t>& buffer, std::size_t& ind
 		boost::int32_t i;
 		boost::uint32_t ui;
 	};
-	ui  = buffer[index++] << 24U;
-	ui += buffer[index++] << 16U;
-	ui += buffer[index++] << 8U;
+	ui  = buffer[index++] << 24;
+	ui += buffer[index++] << 16;
+	ui += buffer[index++] << 8;
 	ui += buffer[index++];
 	return i;
 }
@@ -191,9 +191,9 @@ inline
 void
 RawBuffer::writeUInt32(boost::uint32_t value, std::vector<boost::uint8_t>& buffer, std::size_t& index)
 {
-	buffer[index++] = value >> 24U;
-	buffer[index++] = value >> 16U;
-	buffer[index++] = value >> 8U;
+	buffer[index++] = value >> 24;
+	buffer[index++] = value >> 16;
+	buffer[index++] = value >> 8;
 	buffer[index++] = value;
 }
 
@@ -204,9 +204,9 @@ inline
 boost::uint32_t
 RawBuffer::readUInt32(const std::vector<boost::uint8_t>& buffer, std::size_t& index)
 {
-	boost::uint32_t value = buffer[index++] << 24U;
-	value                += buffer[index++] << 16U;
-	value                += buffer[index++] << 8U;
+	boost::uint32_t value = buffer[index++] << 24;
+	value                += buffer[index++] << 16;
+	value                += buffer[index++] << 8;
 	value                += buffer[index++];
 	return value;
 }
