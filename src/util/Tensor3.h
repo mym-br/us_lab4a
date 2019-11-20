@@ -161,6 +161,8 @@ public:
 	Iterator end() { return data_.end(); }
 	ConstIterator begin() const { return data_.begin(); }
 	ConstIterator end() const { return data_.end(); }
+	ConstIterator cbegin() const { return data_.cbegin(); }
+	ConstIterator cend() const { return data_.cend(); }
 private:
 	template<typename V>
 	friend std::ostream& operator<<(std::ostream& out, const Tensor3<V>& m);

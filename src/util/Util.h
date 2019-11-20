@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -387,7 +387,7 @@ max(const std::vector<T>& list)
 {
 	T max = minValue<T>();
 
-	for (typename std::vector<T>::const_iterator iter = list.begin(); iter != list.end(); ++iter) {
+	for (auto iter = list.cbegin(); iter != list.cend(); ++iter) {
 		if (max < *iter) {
 			max = *iter;
 		}
@@ -401,7 +401,7 @@ T
 maxAbsolute(const std::vector<T>& list)
 {
 	T max = 0;
-	for (typename std::vector<T>::const_iterator iter = list.begin(); iter != list.end(); ++iter) {
+	for (auto iter = list.cbegin(); iter != list.cend(); ++iter) {
 		const T a = std::abs(*iter);
 		if (max < a) max = a;
 	}
@@ -413,7 +413,7 @@ T
 maxAbsolute(const std::vector<std::complex<T>>& list)
 {
 	T max = 0;
-	for (typename std::vector<std::complex<T>>::const_iterator iter = list.begin(); iter != list.end(); ++iter) {
+	for (auto iter = list.cbegin(); iter != list.cend(); ++iter) {
 		const T a = std::abs(*iter);
 		if (max < a) max = a;
 	}
@@ -425,7 +425,7 @@ T
 maxAbsolute(const Matrix<T>& data)
 {
 	T max = 0;
-	for (typename Matrix<T>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) {
+	for (auto iter = data.cbegin(); iter != data.cend(); ++iter) {
 		const T a = std::abs(*iter);
 		if (max < a) max = a;
 	}
@@ -437,7 +437,7 @@ U
 maxValueField(const Matrix<T>& data)
 {
 	U max = minValue<U>();
-	for (typename Matrix<T>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) {
+	for (auto iter = data.cbegin(); iter != data.cend(); ++iter) {
 		const U v = iter->value;
 		if (v > max) max = v;
 	}
@@ -449,7 +449,7 @@ U
 maxAbsoluteValueField(const Matrix<T>& data)
 {
 	U max = 0;
-	for (typename Matrix<T>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) {
+	for (auto iter = data.cbegin(); iter != data.cend(); ++iter) {
 		const U a = std::abs(iter->value);
 		if (max < a) max = a;
 	}
@@ -461,7 +461,7 @@ T
 maxAbsoluteValueField(const Matrix<XYZValueArray<T>>& data)
 {
 	T max = 0;
-	for (typename Matrix<XYZValueArray<T>>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) {
+	for (auto iter = data.cbegin(); iter != data.cend(); ++iter) {
 		for (auto v : iter->values) {
 			const T a = std::abs(v);
 			if (max < a) max = a;
@@ -476,7 +476,7 @@ minMax(const std::vector<T>& list, T& min, T& max)
 {
 	min = std::numeric_limits<T>::max();
 	max = minValue<T>();
-	for (typename std::vector<T>::const_iterator iter = list.begin(); iter != list.end(); ++iter) {
+	for (auto iter = list.cbegin(); iter != list.cend(); ++iter) {
 		const T a = *iter;
 		if (max < a) max = a;
 		if (min > a) min = a;
@@ -489,7 +489,7 @@ minMaxValueField(const Matrix<T>& data, U& min, U& max)
 {
 	min = std::numeric_limits<U>::max();
 	max = minValue<U>();
-	for (typename Matrix<T>::ConstIterator iter = data.begin(); iter != data.end(); ++iter) {
+	for (auto iter = data.cbegin(); iter != data.cend(); ++iter) {
 		const U v = iter->value;
 		if (v > max) max = v;
 		if (v < min) min = v;
@@ -500,7 +500,7 @@ template<typename T>
 void
 multiply(std::vector<T>& list, T coefficient)
 {
-	for (typename std::vector<T>::iterator iter = list.begin(); iter != list.end(); ++iter) {
+	for (auto iter = list.begin(); iter != list.end(); ++iter) {
 		*iter *= coefficient;
 	}
 }
@@ -509,7 +509,7 @@ template<typename T>
 void
 multiply(Matrix<T>& data, T coefficient)
 {
-	for (typename Matrix<T>::Iterator iter = data.begin(); iter != data.end(); ++iter) {
+	for (auto iter = data.begin(); iter != data.end(); ++iter) {
 		*iter *= coefficient;
 	}
 }
@@ -521,9 +521,9 @@ multiply(const std::vector<T>& factorList, std::vector<U>& data)
 	if (factorList.size() != data.size()) {
 		THROW_EXCEPTION(InvalidParameterException, "The input vectors have different sizes.");
 	}
-	typename std::vector<T>::const_iterator factorIter = factorList.begin();
-	typename std::vector<T>::const_iterator factorEnd = factorList.end();
-	typename std::vector<U>::iterator dataIter = data.begin();
+	auto factorIter = factorList.cbegin();
+	auto factorEnd = factorList.cend();
+	auto dataIter = data.begin();
 	while (factorIter != factorEnd) {
 		*dataIter++ *= *factorIter++;
 	}
@@ -623,10 +623,10 @@ copyXYZToSimpleMatrices(const Matrix<T>& m, Matrix<U>& mX, Matrix<U>& mY, Matrix
 	mX.resize(m.n1(), m.n2());
 	mY.resize(m.n1(), m.n2());
 	mZ.resize(m.n1(), m.n2());
-	typename Matrix<T>::ConstIterator orig = m.begin();
-	typename Matrix<U>::Iterator destX = mX.begin();
-	typename Matrix<U>::Iterator destY = mY.begin();
-	typename Matrix<U>::Iterator destZ = mZ.begin();
+	auto orig = m.cbegin();
+	auto destX = mX.begin();
+	auto destY = mY.begin();
+	auto destZ = mZ.begin();
 	while (orig != m.end()) {
 		*destX++ = orig->x;
 		*destY++ = orig->y;
@@ -643,10 +643,10 @@ copyXYZFromSimpleMatrices(const Matrix<T>& mX, const Matrix<T>& mY, const Matrix
 			|| mX.n1() != m.n1() || mX.n2() != m.n2()) {
 		THROW_EXCEPTION(InvalidParameterException, "The input and output matrices must have the same sizes.");
 	}
-	typename Matrix<T>::ConstIterator origX = mX.begin();
-	typename Matrix<T>::ConstIterator origY = mY.begin();
-	typename Matrix<T>::ConstIterator origZ = mZ.begin();
-	typename Matrix<U>::Iterator dest = m.begin();
+	auto origX = mX.cbegin();
+	auto origY = mY.cbegin();
+	auto origZ = mZ.cbegin();
+	auto dest = m.begin();
 	for ( ; origX != mX.end(); ++origX, ++origY, ++origZ, ++dest) {
 		dest->x = *origX;
 		dest->y = *origY;
@@ -659,8 +659,8 @@ void
 copyValueToSimpleMatrix(const Matrix<T>& m, Matrix<U>& mV)
 {
 	mV.resize(m.n1(), m.n2());
-	typename Matrix<T>::ConstIterator orig = m.begin();
-	typename Matrix<U>::Iterator dest = mV.begin();
+	auto orig = m.cbegin();
+	auto dest = mV.begin();
 	while (orig != m.end()) {
 		*dest++ = (orig++)->value;
 	}
@@ -673,8 +673,8 @@ copyValueFromSimpleMatrix(const Matrix<T>& mV, Matrix<U>& m)
 	if (mV.n1() != m.n1() || mV.n2() != m.n2()) {
 		THROW_EXCEPTION(InvalidParameterException, "The input and output matrices must have the same sizes.");
 	}
-	typename Matrix<T>::ConstIterator orig = mV.begin();
-	typename Matrix<U>::Iterator dest = m.begin();
+	auto orig = mV.cbegin();
+	auto dest = m.begin();
 	while (orig != mV.end()) {
 		(dest++)->value = *orig++;
 	}
@@ -685,8 +685,8 @@ void
 copyFactorToSimpleMatrix(const Matrix<T>& m, Matrix<U>& mF)
 {
 	mF.resize(m.n1(), m.n2());
-	typename Matrix<T>::ConstIterator orig = m.begin();
-	typename Matrix<U>::Iterator dest = mF.begin();
+	auto orig = m.cbegin();
+	auto dest = mF.begin();
 	while (orig != m.end()) {
 		*dest++ = (orig++)->factor;
 	}
@@ -702,10 +702,10 @@ copyXYZToSimpleVectors(const std::vector<T>& v,
 	vX.resize(v.size());
 	vY.resize(v.size());
 	vZ.resize(v.size());
-	typename std::vector<T>::const_iterator orig = v.begin();
-	typename std::vector<U>::iterator destX = vX.begin();
-	typename std::vector<U>::iterator destY = vY.begin();
-	typename std::vector<U>::iterator destZ = vZ.begin();
+	auto orig = v.cbegin();
+	auto destX = vX.begin();
+	auto destY = vY.begin();
+	auto destZ = vZ.begin();
 	for ( ; orig != v.end(); ++orig) {
 		*destX++ = orig->x;
 		*destY++ = orig->y;
@@ -723,10 +723,10 @@ copyXYZFromSimpleVectors(const std::vector<T>& vX,
 	if (vX.size() != vY.size() || vX.size() != vZ.size() || vX.size() != v.size()) {
 		THROW_EXCEPTION(InvalidParameterException, "The input and output vectors must have the same sizes.");
 	}
-	typename std::vector<T>::const_iterator origX = vX.begin();
-	typename std::vector<T>::const_iterator origY = vY.begin();
-	typename std::vector<T>::const_iterator origZ = vZ.begin();
-	typename std::vector<U>::iterator dest = v.begin();
+	auto origX = vX.cbegin();
+	auto origY = vY.cbegin();
+	auto origZ = vZ.cbegin();
+	auto dest = v.begin();
 	for ( ; origX != vX.end(); ++origX, ++origY, ++origZ, ++dest) {
 		dest->x = *origX;
 		dest->y = *origY;
@@ -739,8 +739,8 @@ void
 copyXYZ(const Matrix<T>& orig, Matrix<U>& dest)
 {
 	dest.resize(orig.n1(), orig.n2());
-	typename Matrix<T>::ConstIterator origIter = orig.begin();
-	typename Matrix<U>::Iterator destIter = dest.begin();
+	auto origIter = orig.cbegin();
+	auto destIter = dest.begin();
 	while (origIter != orig.end()) {
 		destIter->x     = origIter->x;
 		destIter->y     = origIter->y;
@@ -755,8 +755,8 @@ void
 copyXYZValue(const Matrix<T>& orig, Matrix<U>& dest)
 {
 	dest.resize(orig.n1(), orig.n2());
-	typename Matrix<T>::ConstIterator origIter = orig.begin();
-	typename Matrix<U>::Iterator destIter = dest.begin();
+	auto origIter = orig.cbegin();
+	auto destIter = dest.begin();
 	while (origIter != orig.end()) {
 		destIter->x     = origIter->x;
 		destIter->y     = origIter->y;
@@ -772,8 +772,8 @@ void
 copyXYZFactor(const Matrix<T>& orig, Matrix<U>& dest)
 {
 	dest.resize(orig.n1(), orig.n2());
-	typename Matrix<T>::ConstIterator origIter = orig.begin();
-	typename Matrix<U>::Iterator destIter = dest.begin();
+	auto origIter = orig.cbegin();
+	auto destIter = dest.begin();
 	while (origIter != orig.end()) {
 		destIter->x     = origIter->x;
 		destIter->y     = origIter->y;
@@ -789,8 +789,8 @@ void
 copyXZ(const Matrix<T>& orig, Matrix<U>& dest)
 {
 	dest.resize(orig.n1(), orig.n2());
-	typename Matrix<T>::ConstIterator origIter = orig.begin();
-	typename Matrix<U>::Iterator destIter = dest.begin();
+	auto origIter = orig.cbegin();
+	auto destIter = dest.begin();
 	while (origIter != orig.end()) {
 		destIter->x     = origIter->x;
 		destIter->z     = origIter->z;
@@ -804,8 +804,8 @@ void
 copyXZ(const std::vector<T>& orig, std::vector<U>& dest)
 {
 	dest.resize(orig.size());
-	typename std::vector<T>::const_iterator origIter = orig.begin();
-	typename std::vector<U>::iterator destIter = dest.begin();
+	auto origIter = orig.cbegin();
+	auto destIter = dest.begin();
 	while (origIter != orig.end()) {
 		destIter->x = origIter->x;
 		destIter->z = origIter->z;
@@ -819,8 +819,8 @@ void
 copy(const Matrix<XZValue<T>>& orig, Matrix<XYZValue<U>>& dest)
 {
 	dest.resize(orig.n1(), orig.n2());
-	typename Matrix<XZValue<T>>::ConstIterator origIter = orig.begin();
-	typename Matrix<XYZValue<U>>::Iterator destIter = dest.begin();
+	auto origIter = orig.cbegin();
+	auto destIter = dest.begin();
 	while (origIter != orig.end()) {
 		destIter->x = origIter->x;
 		destIter->y = 0.0;
@@ -865,7 +865,7 @@ T
 multiplyElements(const std::vector<T>& v)
 {
 	T res = 1;
-	for (typename std::vector<T>::const_iterator iter = v.begin(); iter != v.end(); ++iter) {
+	for (auto iter = v.cbegin(); iter != v.cend(); ++iter) {
 		res *= *iter;
 	}
 	return res;
