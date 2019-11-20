@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -25,131 +25,39 @@
 
 #include <QMutex>
 
-#define LOG_ERROR Lab::ErrorLog()
-#define LOG_WARNING if(Lab::Log::isWarningEnabled())Lab::WarningLog()
-#define LOG_INFO if(Lab::Log::isInfoEnabled())Lab::InfoLog()
-#define LOG_DEBUG if(Lab::Log::isDebugEnabled())Lab::DebugLog()
+#define LOG_ERROR Lab::ErrorLogMessage()
+#define LOG_WARNING if(Lab::Log::isWarningEnabled())Lab::NormalLogMessage()
+#define LOG_INFO if(Lab::Log::isInfoEnabled())Lab::NormalLogMessage()
+#define LOG_DEBUG if(Lab::Log::isDebugEnabled())Lab::NormalLogMessage()
 
 constexpr const char* ERROR_LOG_PREFIX = "ERROR >>>";
 constexpr const char* ERROR_LOG_SUFFIX = "<<<";
 
 namespace Lab {
 
-/*******************************************************************************
- *
- */
-class ErrorLog {
+class ErrorLogMessage {
 public:
-	ErrorLog() { buffer_ << ERROR_LOG_PREFIX << '\n'; }
-	~ErrorLog();
-
-	template<typename T> ErrorLog& operator<<(const T& item);
+	ErrorLogMessage() { buffer_ << ERROR_LOG_PREFIX << '\n'; }
+	~ErrorLogMessage();
+	template<typename T> ErrorLogMessage& operator<<(const T& item) {
+		buffer_ << item;
+		return *this;
+	}
 private:
 	std::ostringstream buffer_;
 };
 
-/*******************************************************************************
- *
- */
-template<typename T>
-ErrorLog&
-ErrorLog::operator<<(const T& item)
-{
-	try {
-		buffer_ << item;
-	} catch (...) {
-		// Ignore.
-	}
-	return *this;
-}
-
-/*******************************************************************************
- *
- */
-class WarningLog {
+class NormalLogMessage {
 public:
-	WarningLog() {}
-	~WarningLog();
-
-	template<typename T> WarningLog& operator<<(const T& item);
+	~NormalLogMessage();
+	template<typename T> NormalLogMessage& operator<<(const T& item) {
+		buffer_ << item;
+		return *this;
+	}
 private:
 	std::ostringstream buffer_;
 };
 
-/*******************************************************************************
- *
- */
-template<typename T>
-WarningLog&
-WarningLog::operator<<(const T& item)
-{
-	try {
-		buffer_ << item;
-	} catch (...) {
-		// Ignore.
-	}
-	return *this;
-}
-
-/*******************************************************************************
- *
- */
-class InfoLog {
-public:
-	InfoLog() {}
-	~InfoLog();
-
-	template<typename T> InfoLog& operator<<(const T& item);
-private:
-	std::ostringstream buffer_;
-};
-
-/*******************************************************************************
- *
- */
-template<typename T>
-InfoLog&
-InfoLog::operator<<(const T& item)
-{
-	try {
-		buffer_ << item;
-	} catch (...) {
-		// Ignore.
-	}
-	return *this;
-}
-
-/*******************************************************************************
- *
- */
-class DebugLog {
-public:
-	DebugLog() {}
-	~DebugLog();
-
-	template<typename T> DebugLog& operator<<(const T& item);
-private:
-	std::ostringstream buffer_;
-};
-
-/*******************************************************************************
- *
- */
-template<typename T>
-DebugLog&
-DebugLog::operator<<(const T& item)
-{
-	try {
-		buffer_ << item;
-	} catch (...) {
-		// Ignore.
-	}
-	return *this;
-}
-
-/*******************************************************************************
- *
- */
 class Log {
 public:
 	enum Level {
@@ -170,23 +78,21 @@ private:
 	static std::ostringstream buffer_;
 	static QMutex logMutex_;
 
-	Log() {}
-	Log(const Log&);
-	Log& operator=(const Log&);
+	Log() = delete;
 };
 
 template<typename T>
 std::ostringstream&
 operator<<(std::ostringstream& out, const std::vector<T>& v)
 {
-	out << '(';
+	out << "{ ";
 	if (v.size() > 0) {
 		out << v[0];
 	}
 	for (std::size_t i = 1; i < v.size(); ++i) {
 		out << ", " << v[i];
 	}
-	out << ')';
+	out << " }";
 	return out;
 }
 

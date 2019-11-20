@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -17,6 +17,8 @@
 
 #include "Log.h"
 
+#include <iostream>
+
 #include <QMutexLocker>
 
 
@@ -24,62 +26,36 @@
 namespace Lab {
 
 /*******************************************************************************
- * Static members.
- */
-std::atomic<Log::Level> Log::level_;
-std::ostringstream Log::buffer_;
-QMutex Log::logMutex_;
-
-
-
-/*******************************************************************************
  * Destructor.
  */
-ErrorLog::~ErrorLog()
+ErrorLogMessage::~ErrorLogMessage()
 {
 	try {
 		buffer_ << '\n' << ERROR_LOG_SUFFIX;
 		Log::add(buffer_);
 	} catch (...) {
-		// Ignore.
+		std::cerr << "Error in ~ErrorLogMessage()." << std::endl;
 	}
 }
 
 /*******************************************************************************
  * Destructor.
  */
-WarningLog::~WarningLog()
+NormalLogMessage::~NormalLogMessage()
 {
 	try {
 		Log::add(buffer_);
 	} catch (...) {
-		// Ignore.
+		std::cerr << "Error in ~NormalLogMessage()." << std::endl;
 	}
 }
 
 /*******************************************************************************
- * Destructor.
+ * Static members.
  */
-InfoLog::~InfoLog()
-{
-	try {
-		Log::add(buffer_);
-	} catch (...) {
-		// Ignore.
-	}
-}
-
-/*******************************************************************************
- * Destructor.
- */
-DebugLog::~DebugLog()
-{
-	try {
-		Log::add(buffer_);
-	} catch (...) {
-		// Ignore.
-	}
-}
+std::atomic<Log::Level> Log::level_;
+std::ostringstream Log::buffer_;
+QMutex Log::logMutex_;
 
 /*******************************************************************************
  *
