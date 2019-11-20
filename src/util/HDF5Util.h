@@ -64,8 +64,8 @@ template<typename FloatType> void getSize(const std::vector<FloatType>& containe
 template<typename FloatType> void getSize(const std::vector<std::pair<FloatType, FloatType>>& container, hsize_t& n1, hsize_t& n2);
 template<typename FloatType> void getSize(const Matrix<FloatType>& container, hsize_t& n1, hsize_t& n2);
 
-template<typename T> void load2(const std::string& filePath, const std::string& dataSetName, T& container);
-template<typename T> void save2(const T& container, const std::string& filePath, const std::string& datasetName);
+template<typename T> void load(const std::string& filePath, const std::string& dataSetName, T& container);
+template<typename T> void save(const T& container, const std::string& filePath, const std::string& datasetName);
 
 template<typename T> PredType hdf5MemoryType();
 
@@ -180,7 +180,7 @@ getSize(const Matrix<FloatType>& m, hsize_t& n1, hsize_t& n2)
 
 template<typename T>
 void
-load2(const std::string& filePath, const std::string& dataSetName, T& container)
+load(const std::string& filePath, const std::string& dataSetName, T& container)
 {
 	try {
 		H5::Exception::dontPrint();
@@ -236,7 +236,7 @@ load2(const std::string& filePath, const std::string& dataSetName, T& container)
 
 template<typename T>
 void
-save2(const T& container, const std::string& filePath, const std::string& datasetName)
+save(const T& container, const std::string& filePath, const std::string& datasetName)
 {
 	const int rank = 2;
 	hsize_t n1, n2;
