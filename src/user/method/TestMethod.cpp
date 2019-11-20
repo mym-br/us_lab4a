@@ -48,6 +48,8 @@
 //#define TEST_FFTW_FILTER_SHOW_FIGURES 1
 //#define TEST_HILBERT_TRANSFORM_SHOW_FIGURES 1
 //#define TEST_INTERPOLATOR_SHOW_FIGURES 1
+//#define TEST_KAISER_WINDOW_SHOW_FIGURES 1
+//#define TEST_DEBUG 1
 
 namespace {
 
@@ -323,14 +325,18 @@ TestMethod::testDirectFFTWFilter()
 		if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
 	}
 	const double maxRelError = maxError / maxY;
-	//LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
+#ifdef TEST_DEBUG
+	LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
+#endif
 	if (maxRelError > FILTER_MAX_RELATIVE_ABS_ERROR) {
 		THROW_EXCEPTION(TestException, "The maximum relative error is > " << FILTER_MAX_RELATIVE_ABS_ERROR << '.');
 	}
-
+#if 1
 	DirectFFTWFilter<double> filter2(filter);
-//	DirectFFTWFilter<double> filter2;
-//	filter2 = filter;
+#else
+	DirectFFTWFilter<double> filter2;
+	filter2 = filter;
+#endif
 	std::vector<double> y2;
 	filter2.filter(x, y2);
 	if (y2.size() != y.size()) {
@@ -372,7 +378,9 @@ TestMethod::testFFT()
 
 	fft.calculate(&x1[0], x1.size(), &y1[0]);
 	double maxAbs = Util::maxAbsolute(y1);
-	//LOG_DEBUG << "maxAbs: " << maxAbs;
+#ifdef TEST_DEBUG
+	LOG_DEBUG << "maxAbs: " << maxAbs;
+#endif
 	for (unsigned int i = 0; i < x1.size(); ++i) {
 		const double error = std::max(std::abs(y1[i].real() - yr1Ref[i]), std::abs(y1[i].imag() - yi1Ref[i])) / maxAbs;
 		if (error > FFT_MAX_RELATIVE_ABS_ERROR) {
@@ -384,7 +392,9 @@ TestMethod::testFFT()
 	for (int t = 0; t < 3; ++t) {
 		fft.calculate(&x2[0], x2.size(), &y2[0]);
 		maxAbs = Util::maxAbsolute(y2);
-		//LOG_DEBUG << "maxAbs: " << maxAbs;
+#ifdef TEST_DEBUG
+		LOG_DEBUG << "maxAbs: " << maxAbs;
+#endif
 		for (unsigned int i = 0; i < x2.size(); ++i) {
 			const double error = std::max(std::abs(y2[i].real() - yr2Ref[i]), std::abs(y2[i].imag() - yi2Ref[i])) / maxAbs;
 			if (error > FFT_MAX_RELATIVE_ABS_ERROR) {
@@ -397,7 +407,9 @@ TestMethod::testFFT()
 	RealToComplexFFT<double> fft2;
 	fft2.calculate(&x3[0], x3.size(), &y3[0]);
 	maxAbs = Util::maxAbsolute(y3);
-	//LOG_DEBUG << "maxAbs: " << maxAbs;
+#ifdef TEST_DEBUG
+	LOG_DEBUG << "maxAbs: " << maxAbs;
+#endif
 	for (unsigned int i = 0; i < x3.size(); ++i) {
 		const double error = std::max(std::abs(y3[i].real() - yr3Ref[i]), std::abs(y3[i].imag() - yi3Ref[i])) / maxAbs;
 		if (error > FFT_MAX_RELATIVE_ABS_ERROR) {
@@ -421,7 +433,9 @@ TestMethod::testFFT()
 	for (int t = 0; t < 3; ++t) {
 		ifft.calculate(&yc1[0], yc1.size(), &x1i[0]);
 		maxAbs = Util::maxAbsolute(x1);
-		//LOG_DEBUG << "maxAbs: " << maxAbs;
+#ifdef TEST_DEBUG
+		LOG_DEBUG << "maxAbs: " << maxAbs;
+#endif
 		for (unsigned int i = 0; i < x1i.size(); ++i) {
 			const double error = std::abs(x1[i] - x1i[i]) / maxAbs;
 			if (error > IFFT_MAX_RELATIVE_ABS_ERROR) {
@@ -435,7 +449,9 @@ TestMethod::testFFT()
 
 	ifft2.calculate(&yc2[0], yc2.size(), &x2i[0]);
 	maxAbs = Util::maxAbsolute(x2);
-	//LOG_DEBUG << "maxAbs: "<< maxAbs;
+#ifdef TEST_DEBUG
+	LOG_DEBUG << "maxAbs: "<< maxAbs;
+#endif
 	for (unsigned int i = 0; i < x2i.size(); ++i) {
 		const double error = std::abs(x2[i] - x2i[i]) / maxAbs;
 		if (error > IFFT_MAX_RELATIVE_ABS_ERROR) {
@@ -446,7 +462,9 @@ TestMethod::testFFT()
 
 	ifft2.calculate(&yc3[0], yc3.size(), &x3i[0]);
 	maxAbs = Util::maxAbsolute(x3);
-	//LOG_DEBUG << "maxAbs: " << maxAbs;
+#ifdef TEST_DEBUG
+	LOG_DEBUG << "maxAbs: " << maxAbs;
+#endif
 	for (unsigned int i = 0; i < x3i.size(); ++i) {
 		const double error = std::abs(x3[i] - x3i[i]) / maxAbs;
 		if (error > IFFT_MAX_RELATIVE_ABS_ERROR) {
@@ -489,14 +507,18 @@ TestMethod::testFFTWFilter()
 		if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
 	}
 	const double maxRelError = maxError / maxY;
-	//LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
+#ifdef TEST_DEBUG
+	LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
+#endif
 	if (maxRelError > FILTER_MAX_RELATIVE_ABS_ERROR) {
 		THROW_EXCEPTION(TestException, "The maximum relative error is > " << FILTER_MAX_RELATIVE_ABS_ERROR << '.');
 	}
-
+#if 1
 	FFTWFilter<double> filter2(filter);
-//	FFTWFilter<double> filter2;
-//	filter2 = filter;
+#else
+	FFTWFilter<double> filter2;
+	filter2 = filter;
+#endif
 	std::vector<double> y2;
 	filter2.filter(x, y2);
 	if (y2.size() != y.size()) {
@@ -544,7 +566,9 @@ TestMethod::testFFTWFilter2()
 			if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
 		}
 		const double maxRelError = maxError / maxY;
-		//LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
+#ifdef TEST_DEBUG
+		LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
+#endif
 		if (maxRelError > FILTER_MAX_RELATIVE_ABS_ERROR) {
 			THROW_EXCEPTION(TestException, "The maximum relative error is > " << FILTER_MAX_RELATIVE_ABS_ERROR << '.');
 		}
@@ -570,7 +594,9 @@ TestMethod::testFFTWFilter2()
 			if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
 		}
 		const double maxRelError = maxError / maxY;
-		//LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
+#ifdef TEST_DEBUG
+		LOG_DEBUG << "maxError = " << maxError << " maxY = " << maxY << " maxRelError = " << maxRelError;
+#endif
 		if (maxRelError > FILTER_MAX_RELATIVE_ABS_ERROR) {
 			THROW_EXCEPTION(TestException, "The maximum relative error is > " << FILTER_MAX_RELATIVE_ABS_ERROR << '.');
 		}
@@ -584,9 +610,9 @@ TestMethod::testFillSequence()
 
 	std::vector<double> v;
 	Util::fillSequenceFromStartToEndWithMaximumStep(v, 1.0, 5.0, 0.99);
-//	for (std::size_t i = 0; i < v.size(); ++i) {
-//		LOG_DEBUG << "v " << v[i];
-//	}
+#ifdef TEST_DEBUG
+	LOG_DEBUG << "v = " << v;
+#endif
 	if (v.size() != 6) {
 		THROW_EXCEPTION(TestException, "Wrong size.");
 	}
@@ -607,9 +633,9 @@ TestMethod::testFillSequence2()
 
 	std::vector<double> v;
 	Util::fillSequenceFromStartToEndWithSize(v, 1.0, 5.0, 6);
-	//for (std::size_t i = 0; i < v.size(); ++i) {
-	//	LOG_DEBUG << "v " << v[i];
-	//}
+#ifdef TEST_DEBUG
+	LOG_DEBUG << "v = " << v;
+#endif
 	if (v.size() != 6) {
 		THROW_EXCEPTION(TestException, "Wrong size.");
 	}
@@ -813,7 +839,9 @@ TestMethod::testKaiserWindow()
 	std::vector<double> tol_dB, betaRef;
 	project_.loadHDF5("kaiser_tol_db", "v", tol_dB);
 	project_.loadHDF5("kaiser_beta"  , "v", betaRef);
-	//project_.showFigure2D(0, "Kaiser beta", tol_dB, betaRef);
+#ifdef TEST_KAISER_WINDOW_SHOW_FIGURES
+	project_.showFigure2D(figureNumber_++, "Kaiser beta", tol_dB, betaRef);
+#endif
 	for (unsigned int i = 0; i < tol_dB.size(); ++i) {
 		const double beta = KaiserWindow::getBeta(tol_dB[i]);
 		const double error = std::abs(beta - betaRef[i]) / betaRef[i];
@@ -858,8 +886,7 @@ TestMethod::testLinearInterpolator()
 			y[4]  != -1.0 || y[5]  != -0.75  || y[6]  != -0.5  || y[7]  != -0.25  ||
 			y[8]  !=  0.0 || y[9]  !=  0.125 || y[10] !=  0.25 || y[11] !=  0.375 ||
 			y[12] !=  0.5 || y[13] !=  0.375 || y[14] !=  0.25 || y[15] !=  0.125) {
-		//THROW_EXCEPTION(TestException, "Wrong values: " << y << '.');
-		THROW_EXCEPTION(TestException, "[testLinearInterpolator] Wrong values.");
+		THROW_EXCEPTION(TestException, "Wrong values: " << y << '.');
 	}
 }
 
