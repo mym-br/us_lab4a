@@ -59,7 +59,7 @@ CoherenceFactor<FloatType>::get(ParamMapPtr pm)
 	}
 	const auto coherenceFactorMethod = pm->value<std::string>("coherence_factor_method");
 	if (coherenceFactorMethod == "none") {
-		return 0;
+		return nullptr;
 	} else if (coherenceFactorMethod == "sign_coherence_factor") {
 		const auto p = pm->value<FloatType>("sign_coherence_factor_p", 0.0, 100.0);
 		return new SignCoherenceFactor<FloatType>(p);
@@ -128,7 +128,7 @@ AnalyticSignalCoherenceFactor<FloatType>::get(ParamMapPtr pm)
 	}
 	const auto coherenceFactorMethod = pm->value<std::string>("analytic_signal_coherence_factor_method");
 	if (coherenceFactorMethod == "none") {
-		return 0;
+		return nullptr;
 	} else if (coherenceFactorMethod == "phase_coherence_factor") {
 		const auto gamma = pm->value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
 		return new PhaseCoherenceFactor<FloatType>(gamma);
