@@ -40,7 +40,8 @@ template<typename FloatType> unsigned int getSize(FloatType tolerance_dB, FloatT
 
 
 template<typename FloatType>
-FloatType getBeta(FloatType tolerance_dB)
+FloatType
+getBeta(FloatType tolerance_dB)
 {
 	FloatType beta;
 	if (tolerance_dB > 50) {
@@ -56,7 +57,8 @@ FloatType getBeta(FloatType tolerance_dB)
 }
 
 template<typename FloatType>
-unsigned int getSize(FloatType tolerance_dB, FloatType transitionWidth)
+unsigned int
+getSize(FloatType tolerance_dB, FloatType transitionWidth)
 {
 	// Scipy and Matlab use 7.95.
 	// Oppenheim and Octave use 8.0.
@@ -68,7 +70,8 @@ unsigned int getSize(FloatType tolerance_dB, FloatType transitionWidth)
 }
 
 template<typename FloatType>
-void getWindow(unsigned int size, FloatType beta, std::vector<FloatType>& window)
+void
+getWindow(unsigned int size, FloatType beta, std::vector<FloatType>& window)
 {
 	if (size < 2) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid Kaiser window size: " << size << '.');

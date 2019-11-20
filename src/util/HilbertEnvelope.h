@@ -31,7 +31,7 @@
 
 namespace Lab {
 
-// Calculates the envelope using the Hilbert transform.
+// Calculate the envelope using the Hilbert transform.
 template<typename FloatType>
 class HilbertEnvelope {
 public:
@@ -209,12 +209,12 @@ HilbertEnvelope<FloatType>::calculate(ExternalElementType* data, unsigned int si
 		prepare(size);
 	}
 
-	// Fills the input vector.
+	// Fill the input vector.
 	Value::copySequenceWithPadding(data, data + numInputSamples_, inputTimeData_, fftSize_ - numInputSamples_);
 
 	process();
 
-	// Gets the output.
+	// Get the output.
 	const FloatType coef = 2 / static_cast<FloatType>(fftSize_); // The values will be divided by fftSize because FFTW produces unnormalized results
 	Value::transformSequence(outputTimeData_, outputTimeData_ + numInputSamples_, data, Value::ComplexToScaledAbsoluteOp<FloatType>(coef));
 }
@@ -237,12 +237,12 @@ HilbertEnvelope<FloatType>::getAnalyticSignal(InputElementType* origData, unsign
 		prepare(size);
 	}
 
-	// Fills the input vector.
+	// Fill the input vector.
 	Value::copySequenceWithPadding(origData, origData + numInputSamples_, inputTimeData_, fftSize_ - numInputSamples_);
 
 	process();
 
-	// Gets the output.
+	// Get the output.
 	const FloatType coef = 2 / static_cast<FloatType>(fftSize_); // The values will be divided by fftSize because FFTW produces unnormalized results
 	Value::transformSequence(outputTimeData_, outputTimeData_ + numInputSamples_, destData, Value::ScaleComplexOp<FloatType>(coef));
 }

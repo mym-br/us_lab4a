@@ -171,12 +171,12 @@ RealToComplexFFT<FloatType>::calculate(InputElementType* origData, unsigned int 
 		prepare(size);
 	}
 
-	// Fills the input vector.
+	// Fill the input vector.
 	Value::copySequence(origData, origData + fftSize_, timeData_);
 
 	process();
 
-	// Gets the output.
+	// Get the output.
 	Value::copySequence(frequencyData_, frequencyData_ + fftSize_, destData);
 }
 

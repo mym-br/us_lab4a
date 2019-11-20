@@ -85,12 +85,12 @@ template<typename T> void linearToDecibels(std::vector<T>& data, T minDecibels);
 template<typename T> T degreeToRadian(T d);
 template<typename T> T radianToDegree(T r);
 
-// Adds the values pointed by first1 to the elements pointed by first2.
+// Add the values pointed by first1 to the elements pointed by first2.
 template<typename InputIterator, typename InputOutputIterator>
 void addElements(InputIterator first1, InputOutputIterator first2, InputOutputIterator last2);
 
-// Adds the values pointed by first1 to the values pointed by first2
-// and sends the results to the elements pointed by first3.
+// Add the values pointed by first1 to the values pointed by first2
+// and send the results to the elements pointed by first3.
 template<typename InputIterator1, typename InputIterator2, typename OutputIterator>
 void addElements(InputIterator1 first1, InputIterator2 first2, OutputIterator first3, OutputIterator last3);
 

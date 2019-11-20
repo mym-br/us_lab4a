@@ -137,10 +137,4 @@ nextFastEvenSize(unsigned int n)
 } // namespace FFTUtil
 } // namescape Lab
 
-
-
-
-
-
-
 #endif // FFTUTIL_H

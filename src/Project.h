@@ -81,7 +81,6 @@ public:
 	MethodEnum method() const { return method_; }
 	void setMethod(MethodEnum method) { method_ = method; }
 
-	// The caller becomes the owner of the ParameterMap object.
 	ParamMapPtr loadParameterMap(const char* fileName) const;
 	ParamMapPtr loadChildParameterMap(ParamMapPtr pm, const char* fileNameKey) const;
 
@@ -168,7 +167,7 @@ public:
 	bool processingCancellationRequested();
 	void resetTrigger();
 	void trigger();
-	bool waitForTrigger(std::size_t* triggerCount=nullptr); // returns false if processing cancellation has been requested
+	bool waitForTrigger(std::size_t* triggerCount=nullptr); // return false if processing cancellation has been requested
 
 	static Matrix<XYZValue<float>>* const emptyGridData;
 	static std::vector<XYZ<float>>* const emptyPointList;

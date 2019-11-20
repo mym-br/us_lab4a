@@ -258,7 +258,7 @@ save2(const T& container, const std::string& filePath, const std::string& datase
 		dataDims.push_back(n1);
 		dataDims.push_back(n2);
 
-		// Checks if the filter is available.
+		// Check if the filter is available.
 		htri_t avail = H5Zfilter_avail(HDF5UTIL_FILTER);
 		if (avail == 1) {
 			unsigned int filterConfigFlags;

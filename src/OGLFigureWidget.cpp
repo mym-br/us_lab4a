@@ -148,11 +148,11 @@ OGLFigureWidget::fillIndexArray(unsigned int iA, unsigned int iB, std::vector<GL
 		if (j & 1U) {
 			indexArray.push_back(iB);
 			indexArray.push_back(iA);
-			indexArray.push_back(iB); // creates a degenerate triangle
+			indexArray.push_back(iB); // create a degenerate triangle
 		} else {
 			indexArray.push_back(iA);
 			indexArray.push_back(iB);
-			indexArray.push_back(iA); // creates a degenerate triangle
+			indexArray.push_back(iA); // create a degenerate triangle
 		}
 	}
 }

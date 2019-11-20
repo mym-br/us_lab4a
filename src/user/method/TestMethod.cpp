@@ -151,12 +151,7 @@ TestMethod::testAddElements()
 {
 	LOG_INFO << __func__;
 
-	std::vector<double> v1(5);
-	v1[0] = 10.0;
-	v1[1] = 11.0;
-	v1[2] = 12.0;
-	v1[3] = 13.0;
-	v1[4] = 14.0;
+	std::vector<double> v1 = { 10.0, 11.0, 12.0, 13.0, 14.0 };
 	std::vector<double> v2(4);
 	Util::addElements(v1.begin(), v2.begin(), v2.end());
 	if (v2[0] != 10.0 ||
@@ -172,16 +167,8 @@ TestMethod::testAddElements2()
 {
 	LOG_INFO << __func__;
 
-	std::vector<double> v1(4);
-	v1[0] = 100.0;
-	v1[1] = 101.0;
-	v1[2] = 102.0;
-	v1[3] = 103.0;
-	std::vector<double> v2(4);
-	v2[0] = 20.0;
-	v2[1] = 30.0;
-	v2[2] = 40.0;
-	v2[3] = 50.0;
+	std::vector<double> v1 = { 100.0, 101.0, 102.0, 103.0 };
+	std::vector<double> v2 = {  20.0,  30.0,  40.0,  50.0 };
 	std::vector<double> v3(3);
 	Util::addElements(v1.begin(), v2.begin(), v3.begin(), v3.end());
 	if (v3[0] != 120.0 ||
@@ -240,7 +227,7 @@ TestMethod::testDecimator()
 {
 	LOG_INFO << __func__;
 
-	const std::vector<unsigned int> downsampFactorList = {2, 5, 10};
+	const std::vector<unsigned int> downsampFactorList = { 2, 5, 10 };
 	std::vector<double> x, y, y2, yRef;
 	project_.loadHDF5("decimation_source", "v", x);
 
@@ -444,10 +431,6 @@ TestMethod::testFFT()
 		}
 	}
 
-	//std::vector<double> idx;
-	//Util::fillSequenceWithSize(idx, 0.0, x1i.size() - 1.0, x1i.size());
-	//project_.showFigure2D(0, "After IFFT / x1i", idx, x1i);
-
 	ComplexToRealIFFT<double> ifft2;
 
 	ifft2.calculate(&yc2[0], yc2.size(), &x2i[0]);
@@ -461,9 +444,6 @@ TestMethod::testFFT()
 		}
 	}
 
-	//Util::fillSequenceWithSize(idx, 0.0, x2i.size() - 1.0, x2i.size());
-	//project_.showFigure2D(1, "After IFFT / x2i", idx, x2i);
-
 	ifft2.calculate(&yc3[0], yc3.size(), &x3i[0]);
 	maxAbs = Util::maxAbsolute(x3);
 	//LOG_DEBUG << "maxAbs: " << maxAbs;
@@ -474,9 +454,6 @@ TestMethod::testFFT()
 					i << ": " << x3i[i] << " (error: " << error << ").");
 		}
 	}
-
-	//Util::fillSequenceWithSize(idx, 0.0, x3i.size() - 1.0, x3i.size());
-	//project_.showFigure2D(2, "After IFFT / x3i", idx, x3i);
 }
 
 void
@@ -654,7 +631,7 @@ TestMethod::testFillSequence3()
 	{
 		std::vector<int> v;
 
-		std::vector<int> vRef{2, 3, 4, 5, 6};
+		std::vector<int> vRef = { 2, 3, 4, 5, 6 };
 		Util::fillSequence(v, 2, 6, 1);
 		if (v != vRef) {
 			THROW_EXCEPTION(TestException, "[1] v != vRef.");
@@ -663,7 +640,7 @@ TestMethod::testFillSequence3()
 	{
 
 		std::vector<int> v;
-		std::vector<int> vRef{-2, -3, -4, -5};
+		std::vector<int> vRef = { -2, -3, -4, -5 };
 		Util::fillSequence(v, -2, -5, -1);
 		if (v != vRef) {
 			THROW_EXCEPTION(TestException, "[2] v != vRef.");
@@ -679,7 +656,7 @@ TestMethod::testFillSequence4()
 	{
 		std::vector<unsigned int> v;
 
-		std::vector<unsigned int> vRef{2, 3, 4, 5, 6, 7};
+		std::vector<unsigned int> vRef = { 2, 3, 4, 5, 6, 7 };
 		Util::fillSequence(v, 2U, 7U, 1);
 		if (v != vRef) {
 			THROW_EXCEPTION(TestException, "[1] v != vRef.");
@@ -688,7 +665,7 @@ TestMethod::testFillSequence4()
 	{
 		std::vector<unsigned int> v;
 
-		std::vector<unsigned int> vRef{10, 9 , 8, 7, 6};
+		std::vector<unsigned int> vRef = { 10, 9 , 8, 7, 6 };
 		Util::fillSequence(v, 10U, 6U, -1);
 		if (v != vRef) {
 			THROW_EXCEPTION(TestException, "[2] v != vRef.");
@@ -766,7 +743,7 @@ TestMethod::testInterpolator()
 {
 	LOG_INFO << __func__;
 
-	const std::vector<unsigned int> upsampFactorList = {2, 8, 64};
+	const std::vector<unsigned int> upsampFactorList = { 2, 8, 64 };
 	std::vector<double> x, y, y2, yRef;
 	project_.loadHDF5("interp_source", "v", x);
 
@@ -846,7 +823,7 @@ TestMethod::testKaiserWindow()
 		}
 	}
 
-	const std::vector<double> transWidthList = {0.05, 0.1, 0.5};
+	const std::vector<double> transWidthList = { 0.05, 0.1, 0.5 };
 	std::vector<double> sizeRef;
 	for (unsigned int i = 0; i < transWidthList.size(); ++i) {
 		const double transWidth = transWidthList[i];
@@ -872,11 +849,7 @@ TestMethod::testLinearInterpolator()
 
 	const unsigned int upsamplingFactor = 4;
 	LinearInterpolator<double, upsamplingFactor> interp;
-	std::vector<double> x;
-	x.push_back(1);
-	x.push_back(-1);
-	x.push_back(0);
-	x.push_back(0.5);
+	std::vector<double> x = { 1.0, -1.0, 0.0, 0.5 };
 	std::vector<double> y(x.size() * upsamplingFactor);
 	interp.interpolate(&x[0], 4, &y[0]);
 
@@ -915,13 +888,7 @@ TestMethod::testSCF()
 {
 	LOG_INFO << __func__;
 
-	std::vector<double> v1;
-	v1.push_back(1.0);
-	v1.push_back(0.0);
-	v1.push_back(-1.0);
-	v1.push_back(1.0);
-	v1.push_back(-1.0);
-	v1.push_back(1.0);
+	std::vector<double> v1 = { 1.0, 0.0, -1.0, 1.0, -1.0, 1.0 };
 
 	auto scf = std::make_unique<SignCoherenceFactor<double>>(2.0);
 
@@ -936,7 +903,7 @@ TestMethod::testStatistics()
 {
 	LOG_INFO << __func__;
 
-	const std::vector<double> a = {-1.0, 2.0, 4.0, 7.0};
+	const std::vector<double> a = { -1.0, 2.0, 4.0, 7.0 };
 
 	const double stdDev = Statistics::standardDeviation(a.data(), a.size());
 	if (std::abs(stdDev - 2.9154759474) > 1e-10) {

@@ -27,7 +27,7 @@ public:
 	MinstdPseudorandomNumberGenerator(long seed);
 	~MinstdPseudorandomNumberGenerator();
 
-	// Returns one value of the pseudorandom sequence ]0.0,1.0[.
+	// Return one value of the pseudorandom sequence in ]0.0,1.0[.
 	double get();
 private:
 	static constexpr double a = 16807.0;

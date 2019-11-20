@@ -123,7 +123,7 @@ Interpolator<FloatType>::interpolate(const FloatType* input, std::size_t inputLe
 {
 	if (upsamplingFactor_ == 0) THROW_EXCEPTION(InvalidStateException, "The interpolator has not been initialized.");
 
-	// Upsamples.
+	// Upsample.
 	inputVector_.resize(inputLength * upsamplingFactor_);
 	for (std::size_t i = 0, j = 0; i < inputLength; ++i, j += upsamplingFactor_) {
 		inputVector_[j] = input[i];
@@ -132,10 +132,10 @@ Interpolator<FloatType>::interpolate(const FloatType* input, std::size_t inputLe
 		}
 	}
 
-	// Applies the anti-aliasing filter.
+	// Apply the anti-aliasing filter.
 	filter_.filter(inputVector_, outputVector_);
 
-	// Copies to the output, compensating for the FIR filter delay. The signal is truncated at both ends.
+	// Copy to the output, compensating for the FIR filter delay. The signal is truncated at both ends.
 	const std::size_t offset = (lowPassFIRFilter_.size() - 1) / 2;
 //	for (std::size_t i = 0; i < inputLength * UPSAMPLING_FACTOR; ++i) {
 //		output[i] = outputVector_[i + offset];

@@ -25,7 +25,7 @@
 # include "Log.h"
 # include "MeasurementList.h"
 # include "Timer.h"
-// Shows information from a MeasurementList object.
+// Show information from a MeasurementList object.
 # define EXECUTION_TIME_MEASUREMENT_LOG_TIMES(NAME, OBJ) \
 	LOG_INFO << std::setprecision(15) << "TIME " NAME " mean=" << OBJ.arithmeticMean() << \
 	" std=" << OBJ.standardDeviation() << \
@@ -33,7 +33,7 @@
 	" max=" << OBJ.maximum() << \
 	" std/mean=" << OBJ.standardDeviation() / OBJ.arithmeticMean()
 
-// Shows information from a MeasurementList object.
+// Show information from a MeasurementList object.
 # define EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N(NAME, OBJ, N) \
 	LOG_INFO << std::setprecision(15) << "TIME " NAME " mean=" << (OBJ.arithmeticMean() * (N)) << \
 	" std=" << (OBJ.standardDeviation() * (N)) << \

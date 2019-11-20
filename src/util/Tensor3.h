@@ -233,7 +233,7 @@ Tensor3<T, Alloc>::validateSize(SizeType n1, SizeType n2, SizeType n3)
 	if (n3 == 0) THROW_EXCEPTION(InvalidValueException, "n3 must be >= 1.");
 
 	SizeType n[] = { n1, n2, n3 };
-	// Sorts the array.
+	// Sort the array.
 	if (n[1] > n[2]) std::swap(n[1], n[2]);
 	if (n[0] > n[1]) std::swap(n[0], n[1]);
 	if (n[1] > n[2]) std::swap(n[1], n[2]);

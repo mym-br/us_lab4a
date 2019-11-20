@@ -151,14 +151,14 @@ ComplexToRealIFFT<FloatType>::calculate(InputElementType* origData, unsigned int
 		prepare(size);
 	}
 
-	// Fills the input vector.
+	// Fill the input vector.
 	// fftw_plan_idft_c2r_1d uses only floor(N/2)+1 complex values.
 	Value::copySequence(origData, origData + freqDataSize_, frequencyData_);
 
 	// Frequency --> time.
 	FFTW::execute(ifftPlan_);
 
-	// Gets the output.
+	// Get the output.
 	const FloatType coef = 1 / static_cast<FloatType>(fftSize_); // The values will be divided by fftSize because FFTW produces unnormalized results
 	Value::transformSequence(timeData_, timeData_ + fftSize_, destData, Value::ScaleOp<FloatType>(coef));
 }

@@ -46,11 +46,11 @@ void
 Controller::connectProcessingNode(const ProcessingNode* node)
 {
 	connect(this, SIGNAL(processingRequested()),
-	        node, SLOT(process()));
+		node, SLOT(process()));
 	connect(node, SIGNAL(processingComplete()),
-	        this, SLOT(execAfterProcessing()));
+		this, SLOT(execAfterProcessing()));
 	connect(node, SIGNAL(error()),
-	        this, SLOT(execAfterError()));
+		this, SLOT(execAfterError()));
 }
 
 void

@@ -254,9 +254,9 @@ OGLMultiLayerWidget::paintGL()
 	painter.setBackground(QBrush{Qt::white});
 	painter.setBackgroundMode(Qt::OpaqueMode);
 
-	painter.drawText(10,  20, QString("rot x ") + QString::number(rotX_));
-	painter.drawText(10,  40, QString("rot y ") + QString::number(rotY_));
-	painter.drawText(10,  60, QString("zoom  ") + QString::number(scale_));
+	painter.drawText(10, 20, QString("rot x ") + QString::number(rotX_));
+	painter.drawText(10, 40, QString("rot y ") + QString::number(rotY_));
+	painter.drawText(10, 60, QString("zoom  ") + QString::number(scale_));
 }
 
 void

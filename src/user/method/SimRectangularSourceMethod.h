@@ -98,11 +98,10 @@ private:
 	void prepareExcitation(FloatType dt, const SimulationData& simData, std::vector<FloatType>& tExc,
 				std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt);
 
+	void execImpulseResponse(bool sourceIsArray); // calculate p/(c*density)
 	void execTransientRadiationPattern(bool sourceIsArray);
 	void execTransientAcousticField(bool sourceIsArray);
 	void execTransientPropagation(bool sourceIsArray);
-	// Returns p/(c*density).
-	void execImpulseResponse(bool sourceIsArray);
 
 	Project& project_;
 };

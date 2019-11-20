@@ -36,7 +36,8 @@ template<typename FloatType> FloatType distance3DZ0(FloatType x0, FloatType y0,
 //==============================================================================
 
 template<typename FloatType>
-FloatType distance2D(FloatType x0, FloatType y0, FloatType x1, FloatType y1)
+FloatType
+distance2D(FloatType x0, FloatType y0, FloatType x1, FloatType y1)
 {
 	const FloatType dx = x1 - x0;
 	const FloatType dy = y1 - y0;
@@ -44,14 +45,16 @@ FloatType distance2D(FloatType x0, FloatType y0, FloatType x1, FloatType y1)
 }
 
 template<typename FloatType>
-FloatType distance2DY0(FloatType x0, FloatType x1, FloatType y1)
+FloatType
+distance2DY0(FloatType x0, FloatType x1, FloatType y1)
 {
 	const FloatType dx = x1 - x0;
 	return std::sqrt(dx * dx + y1 * y1);
 }
 
 template<typename FloatType>
-FloatType distance3D(FloatType x0, FloatType y0, FloatType z0, FloatType x1, FloatType y1, FloatType z1)
+FloatType
+distance3D(FloatType x0, FloatType y0, FloatType z0, FloatType x1, FloatType y1, FloatType z1)
 {
 	const FloatType dx = x1 - x0;
 	const FloatType dy = y1 - y0;
@@ -60,7 +63,8 @@ FloatType distance3D(FloatType x0, FloatType y0, FloatType z0, FloatType x1, Flo
 }
 
 template<typename FloatType>
-FloatType distance3DZ0(FloatType x0, FloatType y0, FloatType x1, FloatType y1, FloatType z1)
+FloatType
+distance3DZ0(FloatType x0, FloatType y0, FloatType x1, FloatType y1, FloatType z1)
 {
 	const FloatType dx = x1 - x0;
 	const FloatType dy = y1 - y0;
