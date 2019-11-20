@@ -22,7 +22,7 @@
 #include <memory>
 #include <string>
 
-#include "MinstdPseudorandomNumberGenerator.h"
+#include "PseudorandomNumberGenerator.h"
 #include "ParameterMap.h"
 #include "Statistics.h"
 #include "Util.h"
@@ -300,8 +300,7 @@ template<typename FloatType>
 class PRNGPhaseCoherenceFactor : public AnalyticSignalCoherenceFactor<FloatType> {
 public:
 	PRNGPhaseCoherenceFactor(FloatType gamma)
-		: prng_(1)
-		, gamma_(gamma)
+		: gamma_(gamma)
 		, sigma0_(pi / std::sqrt(3.0))
 		, factor_(gamma / sigma0_) { }
 	virtual ~PRNGPhaseCoherenceFactor() { }
@@ -314,7 +313,6 @@ public:
 private:
 	PRNGPhaseCoherenceFactor(const PRNGPhaseCoherenceFactor& o)
 		: AnalyticSignalCoherenceFactor<FloatType>()
-		, prng_(  o.prng_)
 		, gamma_( o.gamma_)
 		, sigma0_(o.sigma0_)
 		, factor_(o.factor_)
@@ -322,7 +320,6 @@ private:
 		, phiAux_(o.phiAux_) { }
 	PRNGPhaseCoherenceFactor& operator=(const PRNGPhaseCoherenceFactor& o) {
 		if (&o != this) {
-			prng_   = o.prng_;
 			gamma_  = o.gamma_;
 			sigma0_ = o.sigma0_;
 			factor_ = o.factor_;
@@ -331,7 +328,7 @@ private:
 		}
 	}
 
-	MinstdPseudorandomNumberGenerator prng_;
+	PseudorandomNumberGenerator prng_;
 	const FloatType gamma_;
 	const FloatType sigma0_;
 	const FloatType factor_;

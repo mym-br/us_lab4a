@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2019 Marcelo Y. Matuda                                       *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -15,28 +15,27 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef MINSTDPSEUDORANDOMNUMBERGENERATOR_H_
-#define MINSTDPSEUDORANDOMNUMBERGENERATOR_H_
+#ifndef PSEUDORANDOMNUMBERGENERATOR_H_
+#define PSEUDORANDOMNUMBERGENERATOR_H_
+
+#include <random>
 
 
 
 namespace Lab {
 
-class MinstdPseudorandomNumberGenerator {
+class PseudorandomNumberGenerator {
 public:
-	MinstdPseudorandomNumberGenerator(long seed);
-	~MinstdPseudorandomNumberGenerator();
+	PseudorandomNumberGenerator();
+	~PseudorandomNumberGenerator();
 
-	// Return one value of the pseudorandom sequence in ]0.0,1.0[.
+	// Return one value of the pseudorandom sequence in [0.0,1.0).
 	double get();
 private:
-	static constexpr double a = 16807.0;
-	static constexpr double m = 2147483647.0;
-	static constexpr double invM = 1.0 / m;
-
-	double x_;
+	std::mt19937 engine_;
+	std::uniform_real_distribution<double> dist_;
 };
 
 } // namespace Lab
 
-#endif /* MINSTDPSEUDORANDOMNUMBERGENERATOR_H_ */
+#endif /* PSEUDORANDOMNUMBERGENERATOR_H_ */

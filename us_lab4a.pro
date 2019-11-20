@@ -30,8 +30,8 @@ SOURCES += \
     src/util/KeyValueFileReader.cpp \
     src/util/Log.cpp \
     src/util/LogSyntaxHighlighter.cpp \
-    src/util/MinstdPseudorandomNumberGenerator.cpp \
     src/util/ParameterMap.cpp \
+    src/util/PseudorandomNumberGenerator.cpp \
     src/util/Util.cpp \
     src/util/Visualization.cpp \
     src/external/lzf/lzf_c.c \
@@ -96,9 +96,9 @@ HEADERS += \
     src/util/LogSyntaxHighlighter.h \
     src/util/Matrix.h \
     src/util/MeasurementList.h \
-    src/util/MinstdPseudorandomNumberGenerator.h \
     src/util/OGL.h \
     src/util/ParameterMap.h \
+    src/util/PseudorandomNumberGenerator.h \
     src/util/RealToComplexFFT.h \
     src/util/Statistics.h \
     src/util/Tensor3.h \

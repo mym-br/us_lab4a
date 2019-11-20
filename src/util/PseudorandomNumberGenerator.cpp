@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2019 Marcelo Y. Matuda                                       *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -15,33 +15,26 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#include "MinstdPseudorandomNumberGenerator.h"
-
-#include <cmath>
-
-#include "Exception.h"
+#include "PseudorandomNumberGenerator.h"
 
 
 
 namespace Lab {
 
-MinstdPseudorandomNumberGenerator::MinstdPseudorandomNumberGenerator(long seed) : x_(seed)
+PseudorandomNumberGenerator::PseudorandomNumberGenerator()
 {
-	if (seed < 1 || seed >= m) {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid seed: " << seed << " (1 <= seed < " << static_cast<long>(m) << ").");
-	}
+	std::random_device rd;
+	engine_.seed(rd());
 }
 
-MinstdPseudorandomNumberGenerator::~MinstdPseudorandomNumberGenerator()
+PseudorandomNumberGenerator::~PseudorandomNumberGenerator()
 {
 }
 
 double
-MinstdPseudorandomNumberGenerator::get()
+PseudorandomNumberGenerator::get()
 {
-	const double ax = a * x_;
-	x_ = ax - m * std::floor(ax * invM);
-	return x_ * invM;
+	return dist_(engine_);
 }
 
 } // namespace Lab

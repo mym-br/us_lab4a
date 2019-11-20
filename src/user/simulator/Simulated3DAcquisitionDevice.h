@@ -35,7 +35,7 @@
 #include "Exception.h"
 #include "FFTWFilter2.h"
 #include "Log.h"
-#include "MinstdPseudorandomNumberGenerator.h"
+#include "PseudorandomNumberGenerator.h"
 #include "NumericRectangularSourceImpulseResponse.h"
 #include "ParameterMap.h"
 #include "Util.h"
@@ -105,7 +105,6 @@ public:
 	void setGain(FloatType gain /* dB */);
 
 private:
-	static constexpr long pseudorandomNumberGeneratorSeed = 1;
 	// Fraction of the destination bandwidth.
 	static constexpr FloatType decimatorLPFilterTransitionWidth = 0.3;
 	static constexpr FloatType maxSignalLength = std::numeric_limits<unsigned int>::max() / sizeof(FloatType);
@@ -141,7 +140,7 @@ private:
 	FloatType reflectorsOffsetX_;
 	FloatType reflectorsOffsetY_;
 	FloatType signalCoeff_;
-	MinstdPseudorandomNumberGenerator prng_;
+	PseudorandomNumberGenerator prng_;
 	std::vector<std::complex<FloatType>> dadtFilterFreqCoeff_;
 	std::vector<FloatType> convDadtHTx_;
 	std::vector<std::complex<FloatType>> convDadtHTxFilterFreqCoeff_;
@@ -178,7 +177,6 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 			, reflectorsOffsetX_()
 			, reflectorsOffsetY_()
 			, signalCoeff_(1.0)
-			, prng_(pseudorandomNumberGeneratorSeed)
 {
 	arrayPM.getValue(txElemWidth_ , "tx_element_width" , 1.0e-6, 1000.0e-3);
 	arrayPM.getValue(txElemHeight_, "tx_element_height", 1.0e-6, 1000.0e-3);
