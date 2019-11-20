@@ -25,6 +25,8 @@
 
 #include <QMutex>
 
+#include "Stream.h"
+
 #define LOG_ERROR Lab::ErrorLogMessage()
 #define LOG_WARNING if(Lab::Log::isWarningEnabled())Lab::NormalLogMessage()
 #define LOG_INFO if(Lab::Log::isInfoEnabled())Lab::NormalLogMessage()
@@ -80,21 +82,6 @@ private:
 
 	Log() = delete;
 };
-
-template<typename T>
-std::ostringstream&
-operator<<(std::ostringstream& out, const std::vector<T>& v)
-{
-	out << "{ ";
-	if (v.size() > 0) {
-		out << v[0];
-	}
-	for (std::size_t i = 1; i < v.size(); ++i) {
-		out << ", " << v[i];
-	}
-	out << " }";
-	return out;
-}
 
 } // namespace Lab
 

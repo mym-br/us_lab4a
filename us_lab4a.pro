@@ -101,6 +101,7 @@ HEADERS += \
     src/util/PseudorandomNumberGenerator.h \
     src/util/RealToComplexFFT.h \
     src/util/Statistics.h \
+    src/util/Stream.h \
     src/util/Tensor3.h \
     src/util/Timer.h \
     src/util/Util.h \

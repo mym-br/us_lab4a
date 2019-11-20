@@ -32,7 +32,9 @@
 
 namespace Lab {
 
-struct ArrayNetworkConnectionException : public virtual Exception {};
+struct ArrayNetworkConnectionException : std::runtime_error {
+	using std::runtime_error::runtime_error;
+};
 
 class ArrayAcqClient : private ArrayAcqProtocol {
 public:

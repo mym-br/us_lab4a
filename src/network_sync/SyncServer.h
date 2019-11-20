@@ -27,7 +27,9 @@
 
 namespace Lab {
 
-struct SyncBindException : public virtual Exception {};
+struct SyncBindException : std::runtime_error {
+	using std::runtime_error::runtime_error;
+};
 
 /*******************************************************************************
  *

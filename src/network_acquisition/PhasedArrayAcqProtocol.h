@@ -30,9 +30,15 @@
 
 namespace Lab {
 
-struct InvalidPhasedArrayNetworkMessageTypeException : public virtual Exception {};
-struct InvalidPhasedArrayNetworkRequestException : public virtual Exception {};
-struct PhasedArrayNetworkServerException : public virtual Exception {};
+struct InvalidPhasedArrayNetworkMessageTypeException : std::runtime_error {
+	using std::runtime_error::runtime_error;
+};
+struct InvalidPhasedArrayNetworkRequestException : std::runtime_error {
+	using std::runtime_error::runtime_error;
+};
+struct PhasedArrayNetworkServerException : std::runtime_error {
+	using std::runtime_error::runtime_error;
+};
 
 /*******************************************************************************
  *

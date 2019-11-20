@@ -40,7 +40,7 @@ PhasedArrayAcqClient::PhasedArrayAcqClient(const char* serverAddress, unsigned s
 
 		connect();
 	} catch (std::exception& e) {
-		THROW_EXCEPTION(PhasedArrayNetworkConnectionException, "Could not connect to the server. Cause: " << e);
+		THROW_EXCEPTION(PhasedArrayNetworkConnectionException, "Could not connect to the server. Cause: " << e.what());
 	}
 }
 

@@ -40,7 +40,7 @@ ArrayAcqClient::ArrayAcqClient(const char* serverAddress, unsigned short portNum
 
 		connect();
 	} catch (std::exception& e) {
-		THROW_EXCEPTION(ArrayNetworkConnectionException, "Could not connect to the server. Cause: " << e);
+		THROW_EXCEPTION(ArrayNetworkConnectionException, "Could not connect to the server. Cause: " << e.what());
 	}
 }
 

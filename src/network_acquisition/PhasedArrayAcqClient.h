@@ -31,7 +31,9 @@
 
 namespace Lab {
 
-struct PhasedArrayNetworkConnectionException : public virtual Exception {};
+struct PhasedArrayNetworkConnectionException : std::runtime_error {
+	using std::runtime_error::runtime_error;
+};
 
 class PhasedArrayAcqClient : private PhasedArrayAcqProtocol {
 public:

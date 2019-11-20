@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
+ *  Copyright 2019 Marcelo Y. Matuda                                       *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -15,60 +15,31 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef TESTMETHOD_H_
-#define TESTMETHOD_H_
+#ifndef STREAM_H
+#define STREAM_H
 
-#include "Exception.h"
-#include "Method.h"
-
-
+#include <ostream>
+#include <vector>
 
 namespace Lab {
 
-struct TestException : std::runtime_error {
-	using std::runtime_error::runtime_error;
-};
+template<typename T> std::ostream& operator<<(std::ostream& out, const std::vector<T>& v);
 
-class Project;
-
-class TestMethod : public Method {
-public:
-	TestMethod(Project& project);
-	virtual ~TestMethod();
-
-	virtual void execute();
-
-private:
-	template<typename T> void call(T pmf);
-
-	void testAdd();
-	void testAddElements();
-	void testAddElements2();
-	void testBessel();
-	void testCentralDiff();
-	void testDecimator();
-	void testDirectFFTWFilter();
-	void testFFT();
-	void testFFTWFilter();
-	void testFFTWFilter2();
-	void testFillSequence();
-	void testFillSequence2();
-	void testFillSequence3();
-	void testFillSequence4();
-	void testHilbertTransform();
-	void testInterpolator();
-	void testInterpolator4X();
-	void testKaiserWindow();
-	void testLinearInterpolator();
-	void testMultiplyBy();
-	void testSCF();
-	void testStatistics();
-
-	Project& project_;
-	unsigned int errorCount_;
-	unsigned int figureNumber_;
-};
+template<typename T>
+std::ostream&
+operator<<(std::ostream& out, const std::vector<T>& v)
+{
+	out << "{ ";
+	if (v.size() > 0) {
+		out << v[0];
+	}
+	for (std::size_t i = 1; i < v.size(); ++i) {
+		out << ", " << v[i];
+	}
+	out << " }";
+	return out;
+}
 
 } // namespace Lab
 
-#endif /* TESTMETHOD_H_ */
+#endif // STREAM_H
