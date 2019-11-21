@@ -67,7 +67,6 @@ HEADERS += \
     src/network_acquisition/RawBuffer.h \
     src/network_sync/SyncServer.h \
     src/parallel/ParallelHilbertEnvelope.h \
-    src/util/Array.h \
     src/util/ArrayGeometry.h \
     src/util/ArrayUtil.h \
     src/util/CoherenceFactor.h \
