@@ -36,8 +36,8 @@ namespace Lab {
 template<typename FloatType, typename ImpulseResponse>
 class SimTransientAcousticField {
 public:
-	SimTransientAcousticField();
-	~SimTransientAcousticField() {}
+	SimTransientAcousticField() = default;
+	~SimTransientAcousticField() = default;
 
 	struct CircularSourceThreadData {
 		CircularSourceThreadData(
@@ -128,16 +128,13 @@ public:
 private:
 	SimTransientAcousticField(const SimTransientAcousticField&) = delete;
 	SimTransientAcousticField& operator=(const SimTransientAcousticField&) = delete;
+	SimTransientAcousticField(SimTransientAcousticField&&) = delete;
+	SimTransientAcousticField& operator=(SimTransientAcousticField&&) = delete;
 
 	FFTWFilter2<FloatType> filter_;
 };
 
 
-
-template<typename FloatType, typename ImpulseResponse>
-SimTransientAcousticField<FloatType, ImpulseResponse>::SimTransientAcousticField()
-{
-}
 
 template<typename FloatType, typename ImpulseResponse>
 void

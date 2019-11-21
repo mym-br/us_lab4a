@@ -45,7 +45,7 @@ public:
 	FFTWFilter(const FFTWFilter& o);
 	~FFTWFilter();
 
-	FFTWFilter& operator=(const FFTWFilter&);
+	FFTWFilter& operator=(const FFTWFilter& o);
 
 	void setCoefficients(const std::vector<FloatType>& filterCoeff);
 
@@ -53,6 +53,9 @@ public:
 	void filter(const std::vector<FloatType>& x, std::vector<FloatType>& y);
 private:
 	static constexpr unsigned int minFFTSize = 512;
+
+	FFTWFilter(FFTWFilter&&) = delete;
+	FFTWFilter& operator=(FFTWFilter&&) = delete;
 
 	void clean();
 	void copyInput(const std::vector<FloatType>& v, long offset);

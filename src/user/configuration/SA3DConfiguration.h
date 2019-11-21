@@ -35,9 +35,7 @@ namespace Lab {
 // Configuration for 3D Synthetic Aperture - one medium.
 template<typename FloatType>
 struct SA3DConfiguration {
-	SA3DConfiguration() { }
-	~SA3DConfiguration() { }
-
+	SA3DConfiguration() = default;
 	SA3DConfiguration(ParamMapPtr saPM, ParamMapPtr arrayPM) { load(saPM, arrayPM); }
 
 	unsigned int numElementsMux;

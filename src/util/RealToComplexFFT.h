@@ -38,13 +38,16 @@ public:
 	RealToComplexFFT(const RealToComplexFFT& o);
 	~RealToComplexFFT();
 
-	RealToComplexFFT& operator=(const RealToComplexFFT&);
+	RealToComplexFFT& operator=(const RealToComplexFFT& o);
 
 	// destData must point to an allocated sequence of complex numbers, with `size` elements.
 	template<typename InputElementType, typename OutputElementType>
 		void calculate(InputElementType* origData, unsigned int size, OutputElementType* destData);
 private:
 	static constexpr unsigned int maxInputSize = 1 << 20; // arbitrary
+
+	RealToComplexFFT(RealToComplexFFT&&) = delete;
+	RealToComplexFFT& operator=(RealToComplexFFT&&) = delete;
 
 	void clean();
 	void prepare(unsigned int numInputSamples);

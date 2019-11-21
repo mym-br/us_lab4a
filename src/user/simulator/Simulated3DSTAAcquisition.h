@@ -40,7 +40,7 @@ template<typename FloatType>
 class Simulated3DSTAAcquisition : public STAAcquisition<FloatType> {
 public:
 	Simulated3DSTAAcquisition(Project& project, const SA3DConfiguration<FloatType>& config);
-	virtual ~Simulated3DSTAAcquisition();
+	virtual ~Simulated3DSTAAcquisition() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void execute(unsigned int txElement,
@@ -50,6 +50,8 @@ public:
 private:
 	Simulated3DSTAAcquisition(const Simulated3DSTAAcquisition&) = delete;
 	Simulated3DSTAAcquisition& operator=(const Simulated3DSTAAcquisition&) = delete;
+	Simulated3DSTAAcquisition(Simulated3DSTAAcquisition&&) = delete;
+	Simulated3DSTAAcquisition& operator=(Simulated3DSTAAcquisition&&) = delete;
 
 	Project& project_;
 	const SA3DConfiguration<FloatType>& config_;
@@ -106,11 +108,6 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 	acqDevice_->setReflectorList(reflectorList_);
 	acqDevice_->setReflectorOffset(reflectorsOffsetX_, reflectorsOffsetY_);
 	acqDevice_->setGain(config_.minGain);
-}
-
-template<typename FloatType>
-Simulated3DSTAAcquisition<FloatType>::~Simulated3DSTAAcquisition()
-{
 }
 
 template<typename FloatType>

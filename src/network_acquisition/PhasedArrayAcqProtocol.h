@@ -84,8 +84,8 @@ protected:
 		EXEC_POST_LOOP_CONFIGURATION_REQUEST
 	};
 
-	PhasedArrayAcqProtocol() {}
-	~PhasedArrayAcqProtocol() {}
+	PhasedArrayAcqProtocol() = default;
+	~PhasedArrayAcqProtocol() = default;
 
 	void prepareMessage(MessageType type);
 	void sendMessage(boost::asio::ip::tcp::socket& socket);
@@ -94,8 +94,10 @@ protected:
 	RawBuffer headerRawBuffer_;
 	RawBuffer dataRawBuffer_;
 private:
-	PhasedArrayAcqProtocol(const PhasedArrayAcqProtocol&);
-	PhasedArrayAcqProtocol& operator=(const PhasedArrayAcqProtocol&);
+	PhasedArrayAcqProtocol(const PhasedArrayAcqProtocol&) = delete;
+	PhasedArrayAcqProtocol& operator=(const PhasedArrayAcqProtocol&) = delete;
+	PhasedArrayAcqProtocol(PhasedArrayAcqProtocol&&) = delete;
+	PhasedArrayAcqProtocol& operator=(PhasedArrayAcqProtocol&&) = delete;
 };
 
 /*******************************************************************************

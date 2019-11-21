@@ -40,7 +40,6 @@ public:
 					FloatType propagationSpeed,
 					FloatType sourceRadius,
 					FloatType numSubElemInRadius);
-	~NumericCircularSourceImpulseResponse() {}
 
 	// Return h/c.
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z,

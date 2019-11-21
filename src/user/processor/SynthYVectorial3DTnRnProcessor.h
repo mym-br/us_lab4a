@@ -57,7 +57,7 @@ public:
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
 			FloatType peakOffset,
 			const std::vector<FloatType>& rxApod);
-	virtual ~SynthYVectorial3DTnRnProcessor() {}
+	virtual ~SynthYVectorial3DTnRnProcessor() = default;
 
 	void setTxDelays(FloatType focusX, FloatType focusY, FloatType focusZ /* can be negative */,
 				const std::vector<FloatType>& txDelays);
@@ -65,7 +65,6 @@ public:
 	void getAcqData(FloatType y);
 	void process(unsigned int firstAcq, unsigned int lastAcq,
 			Matrix<XYZValueFactor<FloatType>>& gridData);
-
 private:
 	// Depends on the signal.
 	// 1.0 --> pi radian / sample at the original sampling rate.
@@ -83,6 +82,8 @@ private:
 
 	SynthYVectorial3DTnRnProcessor(const SynthYVectorial3DTnRnProcessor&) = delete;
 	SynthYVectorial3DTnRnProcessor& operator=(const SynthYVectorial3DTnRnProcessor&) = delete;
+	SynthYVectorial3DTnRnProcessor(SynthYVectorial3DTnRnProcessor&&) = delete;
+	SynthYVectorial3DTnRnProcessor& operator=(SynthYVectorial3DTnRnProcessor&&) = delete;
 
 	const TnRnConfiguration<FloatType>& config_;
 	unsigned int deadZoneSamplesUp_;

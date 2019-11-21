@@ -54,16 +54,17 @@ template<typename FloatType>
 class SingleVirtualSourceMethod : public Method {
 public:
 	SingleVirtualSourceMethod(Project& project);
-	virtual ~SingleVirtualSourceMethod();
+	virtual ~SingleVirtualSourceMethod() = default;
 
 	virtual void execute();
-
 private:
 	static constexpr const char* timeFile    = "/time";
 	static constexpr const char* timeDataset = "time";
 
 	SingleVirtualSourceMethod(const SingleVirtualSourceMethod&) = delete;
 	SingleVirtualSourceMethod& operator=(const SingleVirtualSourceMethod&) = delete;
+	SingleVirtualSourceMethod(SingleVirtualSourceMethod&&) = delete;
+	SingleVirtualSourceMethod& operator=(SingleVirtualSourceMethod&&) = delete;
 
 	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement,
 			bool saveCoordinates, const std::string& outputDir);
@@ -88,11 +89,6 @@ template<typename FloatType>
 SingleVirtualSourceMethod<FloatType>::SingleVirtualSourceMethod(Project& project)
 		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
-{
-}
-
-template<typename FloatType>
-SingleVirtualSourceMethod<FloatType>::~SingleVirtualSourceMethod()
 {
 }
 

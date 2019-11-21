@@ -41,8 +41,8 @@ namespace Lab {
 template<typename FloatType, typename ImpulseResponse>
 class SimTransientRadiationPattern {
 public:
-	SimTransientRadiationPattern();
-	~SimTransientRadiationPattern() {}
+	SimTransientRadiationPattern() = default;
+	~SimTransientRadiationPattern() = default;
 
 	struct CircularSourceThreadData {
 		CircularSourceThreadData(
@@ -137,16 +137,13 @@ public:
 private:
 	SimTransientRadiationPattern(const SimTransientRadiationPattern&) = delete;
 	SimTransientRadiationPattern& operator=(const SimTransientRadiationPattern&) = delete;
+	SimTransientRadiationPattern(SimTransientRadiationPattern&&) = delete;
+	SimTransientRadiationPattern& operator=(SimTransientRadiationPattern&&) = delete;
 
 	FFTWFilter2<FloatType> filter_;
 };
 
 
-
-template<typename FloatType, typename ImpulseResponse>
-SimTransientRadiationPattern<FloatType, ImpulseResponse>::SimTransientRadiationPattern()
-{
-}
 
 template<typename FloatType, typename ImpulseResponse>
 void

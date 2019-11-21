@@ -38,16 +38,18 @@ template<typename FloatType> class PRNGPhaseCoherenceFactor;
 template<typename FloatType>
 class CoherenceFactor {
 public:
-	CoherenceFactor() { }
-	virtual ~CoherenceFactor() { }
+	CoherenceFactor() = default;
+	virtual ~CoherenceFactor() = default;
 
 	virtual CoherenceFactor<FloatType>* clone() const = 0;
 	virtual FloatType calculate(const FloatType* data, unsigned int size) = 0;
 
 	static CoherenceFactor<FloatType>* get(ParamMapPtr pm);
 private:
-	CoherenceFactor(const CoherenceFactor&);
-	CoherenceFactor& operator=(const CoherenceFactor&);
+	CoherenceFactor(const CoherenceFactor&) = delete;
+	CoherenceFactor& operator=(const CoherenceFactor&) = delete;
+	CoherenceFactor(CoherenceFactor&&) = delete;
+	CoherenceFactor& operator=(CoherenceFactor&&) = delete;
 };
 
 template<typename FloatType>
@@ -75,11 +77,10 @@ CoherenceFactor<FloatType>::get(ParamMapPtr pm)
 template<typename FloatType>
 class CoherenceFactorProcessor {
 public:
-	CoherenceFactorProcessor() : cf_() { }
+	CoherenceFactorProcessor() = default;
 	CoherenceFactorProcessor(ParamMapPtr pm)
 			: cf_(CoherenceFactor<FloatType>::get(pm)) {
 	}
-	~CoherenceFactorProcessor() { }
 	CoherenceFactorProcessor(const CoherenceFactorProcessor& o)
 			: cf_(o.cf_ ? o.cf_->clone() : 0) {
 	}
@@ -89,6 +90,8 @@ public:
 		}
 		return *this;
 	}
+	~CoherenceFactorProcessor() = default;
+
 	FloatType calculate(const FloatType* data, unsigned int size) {
 		if (cf_) {
 			return cf_->calculate(data, size);
@@ -98,6 +101,9 @@ public:
 	}
 	bool enabled() { return cf_.get() != nullptr; }
 private:
+	CoherenceFactorProcessor(CoherenceFactorProcessor&&) = delete;
+	CoherenceFactorProcessor& operator=(CoherenceFactorProcessor&&) = delete;
+
 	std::unique_ptr<CoherenceFactor<FloatType>> cf_;
 };
 
@@ -106,8 +112,8 @@ private:
 template<typename FloatType>
 class AnalyticSignalCoherenceFactor {
 public:
-	AnalyticSignalCoherenceFactor() { }
-	virtual ~AnalyticSignalCoherenceFactor() { }
+	AnalyticSignalCoherenceFactor() = default;
+	virtual ~AnalyticSignalCoherenceFactor() = default;
 
 	virtual AnalyticSignalCoherenceFactor<FloatType>* clone() const = 0;
 	virtual FloatType calculate(const std::complex<FloatType>* data, unsigned int size) = 0;
@@ -115,8 +121,10 @@ public:
 
 	static AnalyticSignalCoherenceFactor<FloatType>* get(ParamMapPtr pm);
 private:
-	AnalyticSignalCoherenceFactor(const AnalyticSignalCoherenceFactor&);
-	AnalyticSignalCoherenceFactor& operator=(const AnalyticSignalCoherenceFactor&);
+	AnalyticSignalCoherenceFactor(const AnalyticSignalCoherenceFactor&) = delete;
+	AnalyticSignalCoherenceFactor& operator=(const AnalyticSignalCoherenceFactor&) = delete;
+	AnalyticSignalCoherenceFactor(AnalyticSignalCoherenceFactor&&) = delete;
+	AnalyticSignalCoherenceFactor& operator=(AnalyticSignalCoherenceFactor&&) = delete;
 };
 
 template<typename FloatType>
@@ -147,11 +155,10 @@ AnalyticSignalCoherenceFactor<FloatType>::get(ParamMapPtr pm)
 template<typename FloatType>
 class AnalyticSignalCoherenceFactorProcessor {
 public:
-	AnalyticSignalCoherenceFactorProcessor() : cf_() { }
+	AnalyticSignalCoherenceFactorProcessor() = default;
 	AnalyticSignalCoherenceFactorProcessor(ParamMapPtr pm)
 			: cf_(AnalyticSignalCoherenceFactor<FloatType>::get(pm)) {
 	}
-	~AnalyticSignalCoherenceFactorProcessor() { }
 	AnalyticSignalCoherenceFactorProcessor(const AnalyticSignalCoherenceFactorProcessor& o)
 			: cf_(o.cf_ ? o.cf_->clone() : 0) {
 	}
@@ -161,6 +168,8 @@ public:
 		}
 		return *this;
 	}
+	~AnalyticSignalCoherenceFactorProcessor() = default;
+
 	FloatType calculate(const std::complex<FloatType>* data, unsigned int size) {
 		if (cf_) {
 			return cf_->calculate(data, size);
@@ -171,6 +180,9 @@ public:
 	bool enabled() { return cf_.get() != nullptr; }
 	const AnalyticSignalCoherenceFactor<FloatType>& implementation() const { return *cf_; }
 private:
+	AnalyticSignalCoherenceFactorProcessor(AnalyticSignalCoherenceFactorProcessor&&) = delete;
+	AnalyticSignalCoherenceFactorProcessor& operator=(AnalyticSignalCoherenceFactorProcessor&&) = delete;
+
 	std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>> cf_;
 };
 
@@ -180,7 +192,7 @@ template<typename FloatType>
 class SignCoherenceFactor : public CoherenceFactor<FloatType> {
 public:
 	SignCoherenceFactor(FloatType p) : p_(p) { }
-	virtual ~SignCoherenceFactor() { }
+	virtual ~SignCoherenceFactor() = default;
 
 	virtual CoherenceFactor<FloatType>* clone() const {
 		return new SignCoherenceFactor(*this);
@@ -190,11 +202,9 @@ private:
 	SignCoherenceFactor(const SignCoherenceFactor& o)
 		: CoherenceFactor<FloatType>()
 		, p_(o.p_) { }
-	SignCoherenceFactor& operator=(const SignCoherenceFactor& o) {
-		if (&o != this) {
-			p_ = o.p_;
-		}
-	}
+	SignCoherenceFactor& operator=(const SignCoherenceFactor&) = delete;
+	SignCoherenceFactor(SignCoherenceFactor&&) = delete;
+	SignCoherenceFactor& operator=(SignCoherenceFactor&&) = delete;
 
 	FloatType p_;
 };
@@ -229,7 +239,7 @@ public:
 		: gamma_(gamma)
 		, sigma0_(pi / std::sqrt(3.0))
 		, factor_(gamma / sigma0_) { }
-	virtual ~PhaseCoherenceFactor() { }
+	virtual ~PhaseCoherenceFactor() = default;
 
 	virtual AnalyticSignalCoherenceFactor<FloatType>* clone() const {
 		return new PhaseCoherenceFactor(*this);
@@ -244,15 +254,9 @@ private:
 		, factor_(o.factor_)
 		, phi_(   o.phi_)
 		, phiAux_(o.phiAux_) { }
-	PhaseCoherenceFactor& operator=(const PhaseCoherenceFactor& o) {
-		if (&o != this) {
-			gamma_  = o.gamma_;
-			sigma0_ = o.sigma0_;
-			factor_ = o.factor_;
-			phi_    = o.phi_;
-			phiAux_ = o.phiAux_;
-		}
-	}
+	PhaseCoherenceFactor& operator=(const PhaseCoherenceFactor&) = delete;
+	PhaseCoherenceFactor(PhaseCoherenceFactor&&) = delete;
+	PhaseCoherenceFactor& operator=(PhaseCoherenceFactor&&) = delete;
 
 	const FloatType gamma_;
 	const FloatType sigma0_;
@@ -303,7 +307,7 @@ public:
 		: gamma_(gamma)
 		, sigma0_(pi / std::sqrt(3.0))
 		, factor_(gamma / sigma0_) { }
-	virtual ~PRNGPhaseCoherenceFactor() { }
+	virtual ~PRNGPhaseCoherenceFactor() = default;
 
 	virtual AnalyticSignalCoherenceFactor<FloatType>* clone() const {
 		return new PRNGPhaseCoherenceFactor(*this);
@@ -318,15 +322,9 @@ private:
 		, factor_(o.factor_)
 		, phi_(   o.phi_)
 		, phiAux_(o.phiAux_) { }
-	PRNGPhaseCoherenceFactor& operator=(const PRNGPhaseCoherenceFactor& o) {
-		if (&o != this) {
-			gamma_  = o.gamma_;
-			sigma0_ = o.sigma0_;
-			factor_ = o.factor_;
-			phi_    = o.phi_;
-			phiAux_ = o.phiAux_;
-		}
-	}
+	PRNGPhaseCoherenceFactor& operator=(const PRNGPhaseCoherenceFactor&) = default;
+	PRNGPhaseCoherenceFactor(PRNGPhaseCoherenceFactor&&) = default;
+	PRNGPhaseCoherenceFactor& operator=(PRNGPhaseCoherenceFactor&&) = default;
 
 	PseudorandomNumberGenerator prng_;
 	const FloatType gamma_;

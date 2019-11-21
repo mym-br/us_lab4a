@@ -46,8 +46,7 @@ public:
 	template<typename T, typename U>
 		static void getAnalyticSignalDim2(const Matrix<T>& origData, Matrix<U>& destData);
 private:
-	ParallelHilbertEnvelope();
-	~ParallelHilbertEnvelope();
+	ParallelHilbertEnvelope() = delete;
 };
 
 

@@ -38,13 +38,16 @@ public:
 	ComplexToRealIFFT(const ComplexToRealIFFT& o);
 	~ComplexToRealIFFT();
 
-	ComplexToRealIFFT& operator=(const ComplexToRealIFFT&);
+	ComplexToRealIFFT& operator=(const ComplexToRealIFFT& o);
 
 	// destData must point to an allocated sequence, with `size` elements.
 	template<typename InputElementType, typename OutputElementType>
 		void calculate(InputElementType* origData, unsigned int size, OutputElementType* destData);
 private:
 	static constexpr unsigned int maxInputSize = 1 << 20; // arbitrary
+
+	ComplexToRealIFFT(ComplexToRealIFFT&&) = delete;
+	ComplexToRealIFFT& operator=(ComplexToRealIFFT&&) = delete;
 
 	void clean();
 	void prepare(unsigned int numInputSamples);

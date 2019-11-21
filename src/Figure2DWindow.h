@@ -28,7 +28,6 @@ class Figure2DWindow : public QWidget {
 	Q_OBJECT
 public:
 	Figure2DWindow(QWidget* parent=nullptr);
-	~Figure2DWindow();
 
 	void updateData(const std::vector<double>& xList, const std::vector<double>& yList, bool markPoints);
 private:

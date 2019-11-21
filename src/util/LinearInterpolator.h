@@ -27,24 +27,10 @@ namespace Lab {
 template<typename FloatType, unsigned int UpsamplingFactor>
 class LinearInterpolator {
 public:
-	LinearInterpolator();
-	~LinearInterpolator();
-
-	void interpolate(const FloatType* input, std::size_t inputLength, FloatType* output);
+	static void interpolate(const FloatType* input, std::size_t inputLength, FloatType* output);
 private:
-	LinearInterpolator(const LinearInterpolator&);
-	LinearInterpolator& operator=(const LinearInterpolator&);
+	LinearInterpolator() = delete;
 };
-
-template<typename FloatType, unsigned int UpsamplingFactor>
-LinearInterpolator<FloatType, UpsamplingFactor>::LinearInterpolator()
-{
-}
-
-template<typename FloatType, unsigned int UpsamplingFactor>
-LinearInterpolator<FloatType, UpsamplingFactor>::~LinearInterpolator()
-{
-}
 
 // The argument "ouput" must point to an array of size inputLength * upsamplingFactor_.
 template<typename FloatType, unsigned int UpsamplingFactor>

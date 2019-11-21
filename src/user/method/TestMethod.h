@@ -34,11 +34,15 @@ class Project;
 class TestMethod : public Method {
 public:
 	TestMethod(Project& project);
-	virtual ~TestMethod();
+	virtual ~TestMethod() = default;
 
 	virtual void execute();
-
 private:
+	TestMethod(const TestMethod&) = delete;
+	TestMethod& operator=(const TestMethod&) = delete;
+	TestMethod(TestMethod&&) = delete;
+	TestMethod& operator=(TestMethod&&) = delete;
+
 	template<typename T> void call(T pmf);
 
 	void testAdd();

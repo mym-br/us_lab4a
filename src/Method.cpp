@@ -30,10 +30,6 @@ MethodNameMap::MethodNameMap()
 #undef METHOD_ITEM
 }
 
-MethodNameMap::~MethodNameMap()
-{
-}
-
 MethodEnum
 MethodNameMap::findByName(const std::string& name)
 {
@@ -42,11 +38,6 @@ MethodNameMap::findByName(const std::string& name)
 		THROW_EXCEPTION(InvalidParameterException, "Could not find a method with name \"" << name << "\".");
 	}
 	return iter->second;
-}
-
-void
-Method::execute()
-{
 }
 
 Method*

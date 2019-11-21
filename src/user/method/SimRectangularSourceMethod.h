@@ -57,7 +57,7 @@ template<typename FloatType>
 class SimRectangularSourceMethod : public Method {
 public:
 	SimRectangularSourceMethod(Project& project);
-	virtual ~SimRectangularSourceMethod();
+	virtual ~SimRectangularSourceMethod() = default;
 
 	virtual void execute();
 private:
@@ -91,6 +91,8 @@ private:
 
 	SimRectangularSourceMethod(const SimRectangularSourceMethod&) = delete;
 	SimRectangularSourceMethod& operator=(const SimRectangularSourceMethod&) = delete;
+	SimRectangularSourceMethod(SimRectangularSourceMethod&&) = delete;
+	SimRectangularSourceMethod& operator=(SimRectangularSourceMethod&&) = delete;
 
 	void loadData(ParamMapPtr taskPM, MainData& data, SimulationData& simData);
 	void loadSourceData(ParamMapPtr taskPM, MainData& data, bool sourceIsArray, SourceData& srcData);
@@ -109,11 +111,6 @@ private:
 template<typename FloatType>
 SimRectangularSourceMethod<FloatType>::SimRectangularSourceMethod(Project& project)
 		: project_(project)
-{
-}
-
-template<typename FloatType>
-SimRectangularSourceMethod<FloatType>::~SimRectangularSourceMethod()
 {
 }
 

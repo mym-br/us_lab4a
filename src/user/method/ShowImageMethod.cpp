@@ -37,10 +37,6 @@ ShowImageMethod::ShowImageMethod(Project& project)
 {
 }
 
-ShowImageMethod::~ShowImageMethod()
-{
-}
-
 void
 ShowImageMethod::execute()
 {

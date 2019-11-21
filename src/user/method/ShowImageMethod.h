@@ -29,11 +29,15 @@ class Project;
 class ShowImageMethod : public Method {
 public:
 	ShowImageMethod(Project& project);
-	virtual ~ShowImageMethod();
+	virtual ~ShowImageMethod() = default;
 
 	virtual void execute();
-
 private:
+	ShowImageMethod(const ShowImageMethod&) = delete;
+	ShowImageMethod& operator=(const ShowImageMethod&) = delete;
+	ShowImageMethod(ShowImageMethod&&) = delete;
+	ShowImageMethod& operator=(ShowImageMethod&&) = delete;
+
 	Project& project_;
 };
 

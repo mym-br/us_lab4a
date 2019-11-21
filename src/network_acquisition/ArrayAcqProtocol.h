@@ -83,8 +83,8 @@ protected:
 		EXEC_POST_LOOP_CONFIGURATION_REQUEST
 	};
 
-	ArrayAcqProtocol() {}
-	~ArrayAcqProtocol() {}
+	ArrayAcqProtocol() = default;
+	~ArrayAcqProtocol() = default;
 
 	void prepareMessage(MessageType type);
 	void sendMessage(boost::asio::ip::tcp::socket& socket);
@@ -93,8 +93,10 @@ protected:
 	RawBuffer headerRawBuffer_;
 	RawBuffer dataRawBuffer_;
 private:
-	ArrayAcqProtocol(const ArrayAcqProtocol&);
-	ArrayAcqProtocol& operator=(const ArrayAcqProtocol&);
+	ArrayAcqProtocol(const ArrayAcqProtocol&) = delete;
+	ArrayAcqProtocol& operator=(const ArrayAcqProtocol&) = delete;
+	ArrayAcqProtocol(ArrayAcqProtocol&&) = delete;
+	ArrayAcqProtocol& operator=(ArrayAcqProtocol&&) = delete;
 };
 
 /*******************************************************************************

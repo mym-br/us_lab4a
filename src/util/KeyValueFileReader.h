@@ -28,12 +28,14 @@ namespace Lab {
 class KeyValueFileReader {
 public:
 	KeyValueFileReader(const QString& filePath);
-	~KeyValueFileReader();
+	~KeyValueFileReader() = default;
 
 	const QHash<QString, QString>& map() const { return map_; }
 private:
-	KeyValueFileReader(const KeyValueFileReader&);
-	KeyValueFileReader& operator=(const KeyValueFileReader&);
+	KeyValueFileReader(const KeyValueFileReader&) = delete;
+	KeyValueFileReader& operator=(const KeyValueFileReader&) = delete;
+	KeyValueFileReader(KeyValueFileReader&&) = delete;
+	KeyValueFileReader& operator=(KeyValueFileReader&&) = delete;
 
 	QHash<QString, QString> map_;
 };

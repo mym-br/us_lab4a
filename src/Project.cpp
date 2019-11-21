@@ -39,10 +39,6 @@ Project::Project(USLab4a& mainWindow)
 {
 }
 
-Project::~Project()
-{
-}
-
 void
 Project::loadTaskParameters(const std::string& taskFileName)
 {

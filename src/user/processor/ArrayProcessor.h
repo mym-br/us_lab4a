@@ -28,11 +28,16 @@ namespace Lab {
 template<typename FloatType>
 class ArrayProcessor {
 public:
-	ArrayProcessor() {}
-	virtual ~ArrayProcessor() {}
+	ArrayProcessor() = default;
+	virtual ~ArrayProcessor() = default;
 
 	virtual void prepare(unsigned int /*baseElement*/) {}
 	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData) = 0;
+private:
+	ArrayProcessor(const ArrayProcessor&) = delete;
+	ArrayProcessor& operator=(const ArrayProcessor&) = delete;
+	ArrayProcessor(ArrayProcessor&&) = delete;
+	ArrayProcessor& operator=(ArrayProcessor&&) = delete;
 };
 
 } // namespace Lab

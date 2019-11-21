@@ -78,10 +78,6 @@ TestMethod::TestMethod(Project& project)
 {
 }
 
-TestMethod::~TestMethod()
-{
-}
-
 void
 TestMethod::execute()
 {
@@ -876,10 +872,9 @@ TestMethod::testLinearInterpolator()
 	LOG_INFO << __func__;
 
 	const unsigned int upsamplingFactor = 4;
-	LinearInterpolator<double, upsamplingFactor> interp;
 	std::vector<double> x = { 1.0, -1.0, 0.0, 0.5 };
 	std::vector<double> y(x.size() * upsamplingFactor);
-	interp.interpolate(&x[0], 4, &y[0]);
+	LinearInterpolator<double, upsamplingFactor>::interpolate(&x[0], 4, &y[0]);
 
 	if (
 			y[0]  !=  1.0 || y[1]  !=  0.5   || y[2]  !=  0.0  || y[3]  != -0.5   ||

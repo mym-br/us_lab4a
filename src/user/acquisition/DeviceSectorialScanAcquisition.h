@@ -31,10 +31,15 @@ class DeviceSectorialScanAcquisition {
 public:
 	typedef Matrix<XZValue<FloatType>> AcquisitionDataType;
 
-	DeviceSectorialScanAcquisition() {}
-	virtual ~DeviceSectorialScanAcquisition() {}
+	DeviceSectorialScanAcquisition() = default;
+	virtual ~DeviceSectorialScanAcquisition() = default;
 
 	virtual void execute(AcquisitionDataType& acqData) = 0;
+private:
+	DeviceSectorialScanAcquisition(const DeviceSectorialScanAcquisition&) = delete;
+	DeviceSectorialScanAcquisition& operator=(const DeviceSectorialScanAcquisition&) = delete;
+	DeviceSectorialScanAcquisition(DeviceSectorialScanAcquisition&&) = delete;
+	DeviceSectorialScanAcquisition& operator=(DeviceSectorialScanAcquisition&&) = delete;
 };
 
 } // namespace Lab

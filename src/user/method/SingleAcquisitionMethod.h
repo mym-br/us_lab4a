@@ -48,13 +48,14 @@ struct SingleAcquisitionMethodConfiguration {
 class SingleAcquisitionMethod : public Method {
 public:
 	SingleAcquisitionMethod(Project& project);
-	virtual ~SingleAcquisitionMethod();
+	virtual ~SingleAcquisitionMethod() = default;
 
 	virtual void execute();
-
 private:
-	SingleAcquisitionMethod(const SingleAcquisitionMethod&);
-	SingleAcquisitionMethod& operator=(const SingleAcquisitionMethod&);
+	SingleAcquisitionMethod(const SingleAcquisitionMethod&) = delete;
+	SingleAcquisitionMethod& operator=(const SingleAcquisitionMethod&) = delete;
+	SingleAcquisitionMethod(SingleAcquisitionMethod&&) = delete;
+	SingleAcquisitionMethod& operator=(SingleAcquisitionMethod&&) = delete;
 
 	void fillConfiguration();
 

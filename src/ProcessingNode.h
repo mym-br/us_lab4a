@@ -32,7 +32,6 @@ class ProcessingNode : public QObject {
 	Q_OBJECT
 public:
 	ProcessingNode(Controller& controller, Project& project);
-	virtual ~ProcessingNode();
 private:
 	Project& project_;
 signals:

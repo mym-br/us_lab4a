@@ -59,7 +59,7 @@ public:
 	typedef XYZ<float> PointType;
 
 	Project(USLab4a& mainWindow);
-	~Project();
+	~Project() = default;
 
 	const std::string directory() const { return directory_.toStdString(); }
 	void setDirectory(const std::string& dirPath) { directory_ = dirPath.c_str(); }
@@ -247,6 +247,8 @@ private:
 
 	Project(const Project&) = delete;
 	Project& operator=(const Project&) = delete;
+	Project(Project&&) = delete;
+	Project& operator=(Project&&) = delete;
 
 	MethodEnum method_;
 	USLab4a& mainWindow_;

@@ -32,9 +32,7 @@ namespace Lab {
 // Configuration for imaging using all the active group elements in transmission and reception - one medium.
 template<typename FloatType>
 struct TnRnConfiguration {
-	TnRnConfiguration() { }
-	~TnRnConfiguration() { }
-
+	TnRnConfiguration() = default;
 	TnRnConfiguration(ParamMapPtr imgPM, ParamMapPtr arrayPM) { load(imgPM, arrayPM); }
 
 	unsigned int numElements;

@@ -89,10 +89,6 @@ SingleAcquisitionMethod::SingleAcquisitionMethod(Project& project)
 #endif
 }
 
-SingleAcquisitionMethod::~SingleAcquisitionMethod()
-{
-}
-
 void
 SingleAcquisitionMethod::execute()
 {

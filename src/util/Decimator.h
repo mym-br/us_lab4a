@@ -37,7 +37,7 @@ template<typename FloatType>
 class Decimator {
 public:
 	Decimator();
-	~Decimator();
+	~Decimator() = default;
 
 	// lpFilterTransitionWidth:
 	//     half the total transition width
@@ -67,11 +67,6 @@ private:
 template<typename FloatType>
 Decimator<FloatType>::Decimator()
 		: downsamplingFactor_()
-{
-}
-
-template<typename FloatType>
-Decimator<FloatType>::~Decimator()
 {
 }
 

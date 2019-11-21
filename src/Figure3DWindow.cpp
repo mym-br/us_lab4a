@@ -60,10 +60,6 @@ Figure3DWindow::Figure3DWindow(QWidget *parent)
 	ui_.colormapComboBox->setCurrentIndex(static_cast<int>(ui_.oglFigureWidget->colormap()));
 }
 
-Figure3DWindow::~Figure3DWindow()
-{
-}
-
 void
 Figure3DWindow::updateData(float valueScale,
 				Matrix<XYZValue<float>>* gridData,

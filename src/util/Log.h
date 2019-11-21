@@ -76,11 +76,11 @@ public:
 	static void add(const std::ostringstream& inputBuffer);
 	static void transferTo(std::string& out);
 private:
+	Log() = delete;
+
 	static std::atomic<Level> level_;
 	static std::ostringstream buffer_;
 	static QMutex logMutex_;
-
-	Log() = delete;
 };
 
 } // namespace Lab

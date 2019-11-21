@@ -63,8 +63,10 @@ public:
 	void execPreLoopConfiguration();
 	void execPostLoopConfiguration();
 private:
-	ArrayAcqClient(const ArrayAcqClient&);
-	ArrayAcqClient& operator=(const ArrayAcqClient&);
+	ArrayAcqClient(const ArrayAcqClient&) = delete;
+	ArrayAcqClient& operator=(const ArrayAcqClient&) = delete;
+	ArrayAcqClient(ArrayAcqClient&&) = delete;
+	ArrayAcqClient& operator=(ArrayAcqClient&&) = delete;
 
 	void connect();
 	void disconnect();

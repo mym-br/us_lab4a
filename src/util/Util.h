@@ -166,7 +166,7 @@ struct Add {
 
 template<typename T>
 struct ValueFieldAbsOp {
-	explicit ValueFieldAbsOp() {}
+	ValueFieldAbsOp() = default;
 	void operator()(T& o) { o.value = std::abs(o.value); }
 };
 

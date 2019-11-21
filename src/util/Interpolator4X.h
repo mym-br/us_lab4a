@@ -34,7 +34,6 @@ template<typename FloatType>
 class Interpolator4X {
 public:
 	Interpolator4X();
-	~Interpolator4X();
 
 	// The argument "ouput" must point to an array of size inputLength * upsamplingFactor.
 	void interpolate(const FloatType* input, std::size_t inputLength, FloatType* output);
@@ -151,11 +150,6 @@ Interpolator4X<FloatType>::Interpolator4X()
 		-1.12987833807950e-03,
 		-1.43105366198583e-18
 	};
-}
-
-template<typename FloatType>
-Interpolator4X<FloatType>::~Interpolator4X()
-{
 }
 
 template<typename FloatType>

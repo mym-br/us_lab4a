@@ -56,11 +56,10 @@ public:
 			STAAcquisition<FloatType>& acquisition,
 			CoherenceFactorProcessor<FloatType>& coherenceFactor,
 			FloatType peakOffset);
-	virtual ~DefaultSTAProcessor() {}
+	virtual ~DefaultSTAProcessor() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
-
 private:
 	// Do not change.
 	static constexpr unsigned int upsamplingFactor = 4;
@@ -73,6 +72,8 @@ private:
 
 	DefaultSTAProcessor(const DefaultSTAProcessor&) = delete;
 	DefaultSTAProcessor& operator=(const DefaultSTAProcessor&) = delete;
+	DefaultSTAProcessor(DefaultSTAProcessor&&) = delete;
+	DefaultSTAProcessor& operator=(DefaultSTAProcessor&&) = delete;
 
 	const STAConfiguration<FloatType>& config_;
 	bool initialized_;

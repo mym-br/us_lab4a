@@ -66,8 +66,10 @@ public:
 	void execPostLoopConfiguration();
 
 private:
-	PhasedArrayAcqClient(const PhasedArrayAcqClient&);
-	PhasedArrayAcqClient& operator=(const PhasedArrayAcqClient&);
+	PhasedArrayAcqClient(const PhasedArrayAcqClient&) = delete;
+	PhasedArrayAcqClient& operator=(const PhasedArrayAcqClient&) = delete;
+	PhasedArrayAcqClient(PhasedArrayAcqClient&&) = delete;
+	PhasedArrayAcqClient& operator=(PhasedArrayAcqClient&&) = delete;
 
 	void connect();
 	void disconnect();

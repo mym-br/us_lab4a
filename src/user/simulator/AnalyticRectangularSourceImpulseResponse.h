@@ -50,7 +50,6 @@ public:
 					FloatType sourceWidth,
 					FloatType sourceHeight,
 					FloatType minEdgeDivisor);
-	~AnalyticRectangularSourceImpulseResponse() {}
 
 	// Return h/c.
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z,

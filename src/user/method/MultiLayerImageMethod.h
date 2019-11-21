@@ -29,11 +29,15 @@ class Project;
 class MultiLayerImageMethod : public Method {
 public:
 	MultiLayerImageMethod(Project& project);
-	virtual ~MultiLayerImageMethod();
+	virtual ~MultiLayerImageMethod() = default;
 
 	virtual void execute();
-
 private:
+	MultiLayerImageMethod(const MultiLayerImageMethod&) = delete;
+	MultiLayerImageMethod& operator=(const MultiLayerImageMethod&) = delete;
+	MultiLayerImageMethod(MultiLayerImageMethod&&) = delete;
+	MultiLayerImageMethod& operator=(MultiLayerImageMethod&&) = delete;
+
 	Project& project_;
 };
 

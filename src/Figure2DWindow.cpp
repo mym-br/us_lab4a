@@ -27,10 +27,6 @@ Figure2DWindow::Figure2DWindow(QWidget* parent)
 	ui_.setupUi(this);
 }
 
-Figure2DWindow::~Figure2DWindow()
-{
-}
-
 void
 Figure2DWindow::updateData(const std::vector<double>& xList, const std::vector<double>& yList, bool markPoints)
 {

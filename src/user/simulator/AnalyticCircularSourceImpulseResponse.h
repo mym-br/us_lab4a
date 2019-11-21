@@ -47,7 +47,6 @@ public:
 					FloatType propagationSpeed,
 					FloatType sourceRadius,
 					FloatType discretization=0.0 /* not used */);
-	~AnalyticCircularSourceImpulseResponse() {}
 
 	// Return h/c.
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z,

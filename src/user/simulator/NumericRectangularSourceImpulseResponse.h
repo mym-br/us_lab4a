@@ -38,7 +38,6 @@ public:
 					FloatType sourceWidth,
 					FloatType sourceHeight,
 					FloatType subElemSize);
-	~NumericRectangularSourceImpulseResponse() {}
 
 	// Return h/c.
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z,

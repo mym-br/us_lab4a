@@ -40,7 +40,7 @@ template<typename FloatType>
 class Simulated3DT1R1SAFTAcquisition : public STAAcquisition<FloatType> {
 public:
 	Simulated3DT1R1SAFTAcquisition(Project& project, const SA3DConfiguration<FloatType>& config);
-	virtual ~Simulated3DT1R1SAFTAcquisition();
+	virtual ~Simulated3DT1R1SAFTAcquisition() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void execute(unsigned int txElement,
@@ -50,6 +50,8 @@ public:
 private:
 	Simulated3DT1R1SAFTAcquisition(const Simulated3DT1R1SAFTAcquisition&) = delete;
 	Simulated3DT1R1SAFTAcquisition& operator=(const Simulated3DT1R1SAFTAcquisition&) = delete;
+	Simulated3DT1R1SAFTAcquisition(Simulated3DT1R1SAFTAcquisition&&) = delete;
+	Simulated3DT1R1SAFTAcquisition& operator=(Simulated3DT1R1SAFTAcquisition&&) = delete;
 
 	Project& project_;
 	const SA3DConfiguration<FloatType>& config_;
@@ -106,11 +108,6 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::Simulated3DT1R1SAFTAcquisition(Projec
 	acqDevice_->setReflectorList(reflectorList_);
 	acqDevice_->setReflectorOffset(reflectorsOffsetX_, reflectorsOffsetY_);
 	acqDevice_->setGain(config_.minGain);
-}
-
-template<typename FloatType>
-Simulated3DT1R1SAFTAcquisition<FloatType>::~Simulated3DT1R1SAFTAcquisition()
-{
 }
 
 template<typename FloatType>

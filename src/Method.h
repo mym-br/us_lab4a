@@ -37,7 +37,6 @@ class Project;
 class MethodNameMap {
 public:
 	MethodNameMap();
-	~MethodNameMap();
 
 	MethodEnum findByName(const std::string& name);
 private:
@@ -48,14 +47,19 @@ private:
 
 class Method {
 public:
-	Method() {}
-	virtual ~Method() {}
+	Method() = default;
+	virtual ~Method() = default;
 
-	virtual void execute();
+	virtual void execute() = 0;
 
 	static MethodEnum findByName(const std::string& name) { return nameMap_.findByName(name); }
 	static Method* get(Project& project);
 private:
+	Method(const Method&) = delete;
+	Method& operator=(const Method&) = delete;
+	Method(Method&&) = delete;
+	Method& operator=(Method&&) = delete;
+
 	static MethodNameMap nameMap_;
 };
 

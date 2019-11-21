@@ -46,13 +46,14 @@ template<typename FloatType>
 class DeviceSectorialScanMethod : public Method {
 public:
 	DeviceSectorialScanMethod(Project& project);
-	virtual ~DeviceSectorialScanMethod();
+	virtual ~DeviceSectorialScanMethod() = default;
 
 	virtual void execute();
-
 private:
-	DeviceSectorialScanMethod(const DeviceSectorialScanMethod&);
-	DeviceSectorialScanMethod& operator=(const DeviceSectorialScanMethod&);
+	DeviceSectorialScanMethod(const DeviceSectorialScanMethod&) = delete;
+	DeviceSectorialScanMethod& operator=(const DeviceSectorialScanMethod&) = delete;
+	DeviceSectorialScanMethod(DeviceSectorialScanMethod&&) = delete;
+	DeviceSectorialScanMethod& operator=(DeviceSectorialScanMethod&&) = delete;
 
 	void getSingleImageFromNetwork();
 	void showSavedImage();
@@ -70,11 +71,6 @@ DeviceSectorialScanMethod<FloatType>::DeviceSectorialScanMethod(Project& project
 		: project_(project)
 {
 	config_.load(project_.loadParameterMap("config-device_sectorial_scan_method.txt"));
-}
-
-template<typename FloatType>
-DeviceSectorialScanMethod<FloatType>::~DeviceSectorialScanMethod()
-{
 }
 
 template<typename FloatType>

@@ -37,7 +37,6 @@ template<typename FloatType>
 class Interpolator {
 public:
 	Interpolator();
-	~Interpolator();
 
 	// lpFilterTransitionWidth:
 	//     half the total transition width
@@ -59,11 +58,6 @@ private:
 template<typename FloatType>
 Interpolator<FloatType>::Interpolator()
 		: upsamplingFactor_()
-{
-}
-
-template<typename FloatType>
-Interpolator<FloatType>::~Interpolator()
 {
 }
 

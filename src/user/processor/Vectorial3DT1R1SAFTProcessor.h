@@ -56,11 +56,10 @@ public:
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
 			FloatType peakOffset);
-	virtual ~Vectorial3DT1R1SAFTProcessor() {}
+	virtual ~Vectorial3DT1R1SAFTProcessor() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
-
 private:
 	// Depends on the signal.
 	// 1.0 --> pi radian / sample at the original sampling rate.
@@ -75,6 +74,8 @@ private:
 
 	Vectorial3DT1R1SAFTProcessor(const Vectorial3DT1R1SAFTProcessor&) = delete;
 	Vectorial3DT1R1SAFTProcessor& operator=(const Vectorial3DT1R1SAFTProcessor&) = delete;
+	Vectorial3DT1R1SAFTProcessor(Vectorial3DT1R1SAFTProcessor&&) = delete;
+	Vectorial3DT1R1SAFTProcessor& operator=(Vectorial3DT1R1SAFTProcessor&&) = delete;
 
 	const SA3DConfiguration<FloatType>& config_;
 	unsigned int deadZoneSamplesUp_;

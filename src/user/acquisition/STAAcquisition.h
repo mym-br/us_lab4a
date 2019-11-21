@@ -29,11 +29,16 @@ class STAAcquisition {
 public:
 	typedef Matrix<FloatType> AcquisitionDataType;
 
-	STAAcquisition() {}
-	virtual ~STAAcquisition() {}
+	STAAcquisition() = default;
+	virtual ~STAAcquisition() = default;
 
 	virtual void prepare(unsigned int /*baseElement*/) {}
 	virtual void execute(unsigned int txElement /* relative to baseElement */, AcquisitionDataType& acqData) = 0;
+private:
+	STAAcquisition(const STAAcquisition&) = delete;
+	STAAcquisition& operator=(const STAAcquisition&) = delete;
+	STAAcquisition(STAAcquisition&&) = delete;
+	STAAcquisition& operator=(STAAcquisition&&) = delete;
 };
 
 } // namespace Lab

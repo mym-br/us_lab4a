@@ -27,8 +27,7 @@ namespace Lab {
 // Configuration for Synthetic Transmit Aperture - one medium.
 template<typename FloatType>
 struct STAConfiguration {
-	STAConfiguration() { }
-	~STAConfiguration() { }
+	STAConfiguration() = default;
 	STAConfiguration(ParamMapPtr pm) { load(pm); }
 
 	unsigned int numElements;

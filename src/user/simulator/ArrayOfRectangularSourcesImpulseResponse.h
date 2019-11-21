@@ -39,7 +39,6 @@ public:
 					FloatType discretization,
 					const std::vector<XY<FloatType>>& elemPos,
 					const std::vector<FloatType>& focusDelay);
-	~ArrayOfRectangularSourcesImpulseResponse() {}
 
 	void getImpulseResponse(FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
 				std::vector<unsigned int>* activeElemList=nullptr);

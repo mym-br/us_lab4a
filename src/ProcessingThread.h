@@ -29,7 +29,6 @@ class ProcessingThread : public QThread {
 	Q_OBJECT
 public:
 	ProcessingThread(Controller& controller, Project& sharedData);
-	virtual ~ProcessingThread();
 protected:
 	virtual void run();
 private:

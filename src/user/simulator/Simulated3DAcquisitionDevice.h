@@ -75,7 +75,7 @@ public:
 	Simulated3DAcquisitionDevice(const ParameterMap& pm, const ParameterMap& arrayPM,
 					FloatType outputSamplingFreq, FloatType propagationSpeed, FloatType maxFrequency,
 					const std::string& expDirectory);
-	~Simulated3DAcquisitionDevice();
+	~Simulated3DAcquisitionDevice() = default;
 
 	void setAcquisitionTime(FloatType acqTime);
 
@@ -111,6 +111,8 @@ private:
 
 	Simulated3DAcquisitionDevice(const Simulated3DAcquisitionDevice&) = delete;
 	Simulated3DAcquisitionDevice& operator=(const Simulated3DAcquisitionDevice&) = delete;
+	Simulated3DAcquisitionDevice(Simulated3DAcquisitionDevice&&) = delete;
+	Simulated3DAcquisitionDevice& operator=(Simulated3DAcquisitionDevice&&) = delete;
 
 	void prepareExcitationDadt(const std::vector<FloatType>& vExc);
 	template<typename ImpulseResponse> void processReflector(const XYZValue<FloatType>& reflector,
@@ -248,11 +250,6 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 		}
 		fw.write();
 	}
-}
-
-template<typename FloatType>
-Simulated3DAcquisitionDevice<FloatType>::~Simulated3DAcquisitionDevice()
-{
 }
 
 template<typename FloatType>

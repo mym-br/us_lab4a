@@ -45,13 +45,15 @@ public:
 	NetworkTnRnAcquisition(
 		const Project& project,
 		const TnRnConfiguration<FloatType>& config);
-	virtual ~NetworkTnRnAcquisition();
+	virtual ~NetworkTnRnAcquisition() = default;
 
 	virtual void prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays);
 	virtual void execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
 	NetworkTnRnAcquisition(const NetworkTnRnAcquisition&) = delete;
 	NetworkTnRnAcquisition& operator=(const NetworkTnRnAcquisition&) = delete;
+	NetworkTnRnAcquisition(NetworkTnRnAcquisition&&) = delete;
+	NetworkTnRnAcquisition& operator=(NetworkTnRnAcquisition&&) = delete;
 
 	void setTxDelays(const std::vector<float>& txDelays);
 	void setTxDelays(const std::vector<double>& txDelays);
@@ -97,11 +99,6 @@ NetworkTnRnAcquisition<FloatType>::NetworkTnRnAcquisition(const Project& project
 	acq_->setAcquisitionTime(config_.acquisitionTime);
 
 	acq_->execPostConfiguration();
-}
-
-template<typename FloatType>
-NetworkTnRnAcquisition<FloatType>::~NetworkTnRnAcquisition()
-{
 }
 
 template<typename FloatType>

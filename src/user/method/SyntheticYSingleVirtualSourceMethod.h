@@ -49,16 +49,17 @@ template<typename FloatType>
 class SyntheticYSingleVirtualSourceMethod : public Method {
 public:
 	SyntheticYSingleVirtualSourceMethod(Project& project);
-	virtual ~SyntheticYSingleVirtualSourceMethod();
+	virtual ~SyntheticYSingleVirtualSourceMethod() = default;
 
 	virtual void execute();
-
 private:
 	static constexpr const char* yFile    = "/y";
 	static constexpr const char* yDataset = "y";
 
 	SyntheticYSingleVirtualSourceMethod(const SyntheticYSingleVirtualSourceMethod&) = delete;
 	SyntheticYSingleVirtualSourceMethod& operator=(const SyntheticYSingleVirtualSourceMethod&) = delete;
+	SyntheticYSingleVirtualSourceMethod(SyntheticYSingleVirtualSourceMethod&&) = delete;
+	SyntheticYSingleVirtualSourceMethod& operator=(SyntheticYSingleVirtualSourceMethod&&) = delete;
 
 	Project& project_;
 };
@@ -68,11 +69,6 @@ private:
 template<typename FloatType>
 SyntheticYSingleVirtualSourceMethod<FloatType>::SyntheticYSingleVirtualSourceMethod(Project& project)
 		: project_(project)
-{
-}
-
-template<typename FloatType>
-SyntheticYSingleVirtualSourceMethod<FloatType>::~SyntheticYSingleVirtualSourceMethod()
 {
 }
 

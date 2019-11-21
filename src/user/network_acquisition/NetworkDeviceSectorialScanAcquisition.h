@@ -42,12 +42,14 @@ public:
 	NetworkDeviceSectorialScanAcquisition(
 		const Project& project,
 		const DeviceSectorialScanConfiguration<FloatType>& config);
-	virtual ~NetworkDeviceSectorialScanAcquisition();
+	virtual ~NetworkDeviceSectorialScanAcquisition() = default;
 
 	virtual void execute(typename DeviceSectorialScanAcquisition<FloatType>::AcquisitionDataType& acqData);
 private:
-	NetworkDeviceSectorialScanAcquisition(const NetworkDeviceSectorialScanAcquisition&);
-	NetworkDeviceSectorialScanAcquisition& operator=(const NetworkDeviceSectorialScanAcquisition&);
+	NetworkDeviceSectorialScanAcquisition(const NetworkDeviceSectorialScanAcquisition&) = delete;
+	NetworkDeviceSectorialScanAcquisition& operator=(const NetworkDeviceSectorialScanAcquisition&) = delete;
+	NetworkDeviceSectorialScanAcquisition(NetworkDeviceSectorialScanAcquisition&&) = delete;
+	NetworkDeviceSectorialScanAcquisition& operator=(NetworkDeviceSectorialScanAcquisition&&) = delete;
 
 	const Project& project_;
 	const DeviceSectorialScanConfiguration<FloatType>& config_;
@@ -90,11 +92,6 @@ NetworkDeviceSectorialScanAcquisition<FloatType>::NetworkDeviceSectorialScanAcqu
 	LOG_DEBUG << "[NetworkSectorialScanAcquisition] sampling frequency: " << acq_->getSamplingFrequency();
 
 	acq_->execPostConfiguration();
-}
-
-template<typename FloatType>
-NetworkDeviceSectorialScanAcquisition<FloatType>::~NetworkDeviceSectorialScanAcquisition()
-{
 }
 
 template<typename FloatType>

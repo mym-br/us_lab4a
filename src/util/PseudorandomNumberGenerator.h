@@ -27,7 +27,6 @@ namespace Lab {
 class PseudorandomNumberGenerator {
 public:
 	PseudorandomNumberGenerator();
-	~PseudorandomNumberGenerator();
 
 	// Return one value of the pseudorandom sequence in [0.0,1.0).
 	double get();

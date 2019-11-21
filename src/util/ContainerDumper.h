@@ -28,7 +28,7 @@ class ContainerDumper {
 public:
 	template<typename InputIterator> static void save(const char* fileName, InputIterator first, InputIterator last);
 private:
-	ContainerDumper();
+	ContainerDumper() = delete;
 };
 
 template<typename InputIterator>

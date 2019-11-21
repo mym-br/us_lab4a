@@ -43,7 +43,7 @@ public:
 	RawBuffer() : readIndex_() {
 		buffer_.reserve(8192);
 	}
-	~RawBuffer() {}
+	~RawBuffer() = default;
 
 	void reset();
 	void reserve(std::size_t size);
@@ -86,8 +86,10 @@ public:
 		return buffer_.size();
 	}
 private:
-	RawBuffer(const RawBuffer&);
-	RawBuffer& operator=(const RawBuffer&);
+	RawBuffer(const RawBuffer&) = delete;
+	RawBuffer& operator=(const RawBuffer&) = delete;
+	RawBuffer(RawBuffer&&) = delete;
+	RawBuffer& operator=(RawBuffer&&) = delete;
 
 	static void writeInt16(boost::int16_t value, std::vector<boost::uint8_t>& buffer, std::size_t& index);
 	static boost::int16_t readInt16(const std::vector<boost::uint8_t>& buffer, std::size_t& index);

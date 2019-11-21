@@ -41,7 +41,7 @@ template<typename FloatType>
 class Simulated3DTnRnAcquisition : public TnRnAcquisition<FloatType> {
 public:
 	Simulated3DTnRnAcquisition(Project& project, const TnRnConfiguration<FloatType>& config);
-	virtual ~Simulated3DTnRnAcquisition() {}
+	virtual ~Simulated3DTnRnAcquisition() = default;
 
 	virtual void prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays);
 	virtual void execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData);
@@ -50,6 +50,8 @@ public:
 private:
 	Simulated3DTnRnAcquisition(const Simulated3DTnRnAcquisition&) = delete;
 	Simulated3DTnRnAcquisition& operator=(const Simulated3DTnRnAcquisition&) = delete;
+	Simulated3DTnRnAcquisition(Simulated3DTnRnAcquisition&&) = delete;
+	Simulated3DTnRnAcquisition& operator=(Simulated3DTnRnAcquisition&&) = delete;
 
 	Project& project_;
 	const TnRnConfiguration<FloatType>& config_;

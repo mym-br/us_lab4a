@@ -52,10 +52,6 @@ VTKFileMultiImageMethod::VTKFileMultiImageMethod(Project& project)
 {
 }
 
-VTKFileMultiImageMethod::~VTKFileMultiImageMethod()
-{
-}
-
 void
 VTKFileMultiImageMethod::execute()
 {

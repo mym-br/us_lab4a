@@ -50,13 +50,15 @@ template<typename FloatType>
 class STA3DMethod : public Method {
 public:
 	STA3DMethod(Project& project);
-	virtual ~STA3DMethod();
+	virtual ~STA3DMethod() = default;
 
 	virtual void execute();
 
 private:
 	STA3DMethod(const STA3DMethod&) = delete;
 	STA3DMethod& operator=(const STA3DMethod&) = delete;
+	STA3DMethod(STA3DMethod&&) = delete;
+	STA3DMethod& operator=(STA3DMethod&&) = delete;
 
 	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
 	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
@@ -72,11 +74,6 @@ template<typename FloatType>
 STA3DMethod<FloatType>::STA3DMethod(Project& project)
 		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
-{
-}
-
-template<typename FloatType>
-STA3DMethod<FloatType>::~STA3DMethod()
 {
 }
 

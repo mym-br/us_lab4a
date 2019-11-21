@@ -41,7 +41,7 @@ template<typename FloatType>
 class SimulatedSTAAcquisition : public STAAcquisition<FloatType> {
 public:
 	SimulatedSTAAcquisition(Project& project, const STAConfiguration<FloatType>& config);
-	virtual ~SimulatedSTAAcquisition();
+	virtual ~SimulatedSTAAcquisition() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void execute(unsigned int txElement,
@@ -49,6 +49,8 @@ public:
 private:
 	SimulatedSTAAcquisition(const SimulatedSTAAcquisition&) = delete;
 	SimulatedSTAAcquisition& operator=(const SimulatedSTAAcquisition&) = delete;
+	SimulatedSTAAcquisition(SimulatedSTAAcquisition&&) = delete;
+	SimulatedSTAAcquisition& operator=(SimulatedSTAAcquisition&&) = delete;
 
 	Project& project_;
 	const STAConfiguration<FloatType>& config_;
@@ -102,11 +104,6 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 	acqDevice_->setReflectorList(reflectorList_);
 	acqDevice_->setReflectorOffset(reflectorsOffsetX, 0.0);
 	acqDevice_->setGain(config_.minGain);
-}
-
-template<typename FloatType>
-SimulatedSTAAcquisition<FloatType>::~SimulatedSTAAcquisition()
-{
 }
 
 template<typename FloatType>

@@ -34,6 +34,7 @@ namespace Lab {
 class ParameterMap {
 public:
 	ParameterMap(const QString& filePath);
+	~ParameterMap() = default;
 
 	bool contains(const char* key) const;
 	template<typename T> T value(const char* key) const;
@@ -70,8 +71,10 @@ public:
 		dest = value<std::string>(key);
 	}
 private:
-	ParameterMap(const ParameterMap&);
-	ParameterMap& operator=(const ParameterMap&);
+	ParameterMap(const ParameterMap&) = delete;
+	ParameterMap& operator=(const ParameterMap&) = delete;
+	ParameterMap(ParameterMap&&) = delete;
+	ParameterMap& operator=(ParameterMap&&) = delete;
 
 	template<typename T> T convertValue(const QString s) const;
 

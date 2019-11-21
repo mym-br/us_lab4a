@@ -39,7 +39,7 @@ public:
 	HilbertEnvelope(const HilbertEnvelope& o);
 	~HilbertEnvelope();
 
-	HilbertEnvelope& operator=(const HilbertEnvelope&);
+	HilbertEnvelope& operator=(const HilbertEnvelope& o);
 
 	template<typename ExternalElementType>
 		void calculate(ExternalElementType* data, unsigned int size);
@@ -51,6 +51,9 @@ private:
 	// Must be a power of two.
 	static constexpr unsigned int minPadding = 1024; /* reduces the aliasing to around -60 dB */
 	static constexpr unsigned int maxInputSize = 1 << 20; // arbitrary
+
+	HilbertEnvelope(HilbertEnvelope&&) = delete;
+	HilbertEnvelope& operator=(HilbertEnvelope&&) = delete;
 
 	void clean();
 	void prepare(unsigned int numInputSamples);

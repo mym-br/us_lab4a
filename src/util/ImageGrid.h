@@ -38,8 +38,7 @@ public:
 private:
 	static constexpr FloatType minLambda = 1.0e-6;
 
-	ImageGrid();
-	~ImageGrid();
+	ImageGrid() = delete;
 
 	template<typename T>
 		static void getRectangularGrid(ParamMapPtr pm, FloatType lambda, T& grid);

@@ -52,10 +52,9 @@ template<typename FloatType>
 class NetworkSyncSingleVirtualSourceMethod : public Method {
 public:
 	NetworkSyncSingleVirtualSourceMethod(Project& project);
-	virtual ~NetworkSyncSingleVirtualSourceMethod();
+	virtual ~NetworkSyncSingleVirtualSourceMethod() = default;
 
 	virtual void execute();
-
 private:
 	static constexpr unsigned int maxSteps = 10000;
 	static constexpr const char* timeFile    = "/time";
@@ -65,6 +64,8 @@ private:
 
 	NetworkSyncSingleVirtualSourceMethod(const NetworkSyncSingleVirtualSourceMethod&) = delete;
 	NetworkSyncSingleVirtualSourceMethod& operator=(const NetworkSyncSingleVirtualSourceMethod&) = delete;
+	NetworkSyncSingleVirtualSourceMethod(NetworkSyncSingleVirtualSourceMethod&&) = delete;
+	NetworkSyncSingleVirtualSourceMethod& operator=(NetworkSyncSingleVirtualSourceMethod&&) = delete;
 
 	void saveSignals(ParamMapPtr taskPM, TnRnAcquisition<FloatType>& acq,
 				unsigned int baseElement, const std::vector<FloatType>& txDelays,
@@ -78,11 +79,6 @@ private:
 template<typename FloatType>
 NetworkSyncSingleVirtualSourceMethod<FloatType>::NetworkSyncSingleVirtualSourceMethod(Project& project)
 		: project_(project)
-{
-}
-
-template<typename FloatType>
-NetworkSyncSingleVirtualSourceMethod<FloatType>::~NetworkSyncSingleVirtualSourceMethod()
 {
 }
 

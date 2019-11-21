@@ -32,10 +32,6 @@ ProcessingThread::ProcessingThread(Controller& controller, Project& project)
 {
 }
 
-ProcessingThread::~ProcessingThread()
-{
-}
-
 void
 ProcessingThread::run()
 {

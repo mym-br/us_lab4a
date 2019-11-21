@@ -34,7 +34,6 @@ class MultiLayer3DWindow : public QWidget {
 	Q_OBJECT
 public:
 	MultiLayer3DWindow(QWidget* parent=nullptr);
-	~MultiLayer3DWindow();
 
 	void updateData(const std::vector<XYZValue<float>>& pointArray, const std::vector<unsigned int>& indexArray);
 private:

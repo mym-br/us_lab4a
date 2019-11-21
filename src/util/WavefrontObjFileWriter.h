@@ -30,7 +30,6 @@ template<typename FloatType>
 class WavefrontObjFileWriter {
 public:
 	WavefrontObjFileWriter(const char* filePath);
-	~WavefrontObjFileWriter() {}
 
 	void addPoint(FloatType x, FloatType y, FloatType z);
 	void adjustPointIndex(int& i);

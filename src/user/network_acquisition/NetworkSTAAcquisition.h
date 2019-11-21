@@ -43,7 +43,7 @@ public:
 	NetworkSTAAcquisition(
 		const Project& project,
 		const STAConfiguration<FloatType>& config);
-	virtual ~NetworkSTAAcquisition();
+	virtual ~NetworkSTAAcquisition() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void execute(unsigned int txElement,
@@ -51,6 +51,8 @@ public:
 private:
 	NetworkSTAAcquisition(const NetworkSTAAcquisition&) = delete;
 	NetworkSTAAcquisition& operator=(const NetworkSTAAcquisition&) = delete;
+	NetworkSTAAcquisition(NetworkSTAAcquisition&&) = delete;
+	NetworkSTAAcquisition& operator=(NetworkSTAAcquisition&&) = delete;
 
 	const Project& project_;
 	const STAConfiguration<FloatType>& config_;
@@ -88,11 +90,6 @@ NetworkSTAAcquisition<FloatType>::NetworkSTAAcquisition(const Project& project, 
 	acq_->setAcquisitionTime(config_.acquisitionTime);
 
 	acq_->execPostConfiguration();
-}
-
-template<typename FloatType>
-NetworkSTAAcquisition<FloatType>::~NetworkSTAAcquisition()
-{
 }
 
 template<typename FloatType>

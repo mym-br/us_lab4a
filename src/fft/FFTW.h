@@ -47,14 +47,15 @@ struct FFTWPlan {
 		TYPE_FLOAT   = 1,
 		TYPE_DOUBLE  = 2
 	};
-	FFTWPlan() : type(TYPE_INVALID) {
-		plan = nullptr;
-	}
 	Type type;
 	union {
 		fftwf_plan planF;
 		fftw_plan plan;
 	};
+
+	FFTWPlan() : type(TYPE_INVALID) {
+		plan = nullptr;
+	}
 	void reset() {
 		type = TYPE_INVALID;
 		plan = nullptr;

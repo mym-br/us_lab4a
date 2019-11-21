@@ -152,6 +152,8 @@ USLab4a::USLab4a(QWidget* parent)
 
 USLab4a::~USLab4a()
 {
+	// Not using inline destructor due to forward declaration of FigureWindowList
+	// template parameters ("incomplete type" error).
 }
 
 

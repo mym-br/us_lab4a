@@ -29,11 +29,15 @@ class Project;
 class VTKFileMultiImageMethod : public Method {
 public:
 	VTKFileMultiImageMethod(Project& project);
-	virtual ~VTKFileMultiImageMethod();
+	virtual ~VTKFileMultiImageMethod() = default;
 
 	virtual void execute();
-
 private:
+	VTKFileMultiImageMethod(const VTKFileMultiImageMethod&) = delete;
+	VTKFileMultiImageMethod& operator=(const VTKFileMultiImageMethod&) = delete;
+	VTKFileMultiImageMethod(VTKFileMultiImageMethod&&) = delete;
+	VTKFileMultiImageMethod& operator=(VTKFileMultiImageMethod&&) = delete;
+
 	Project& project_;
 };
 

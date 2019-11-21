@@ -39,7 +39,6 @@ class OGLFigureWidget : public QOpenGLWidget {
 	Q_OBJECT
 public:
 	OGLFigureWidget(QWidget* parent=nullptr);
-	virtual ~OGLFigureWidget() {}
 
 	void setVisualization(Visualization::Value visualization);
 	Visualization::Value visualization() const { return visualization_; }

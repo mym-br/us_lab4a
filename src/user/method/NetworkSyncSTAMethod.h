@@ -53,10 +53,9 @@ template<typename FloatType>
 class NetworkSyncSTAMethod : public Method {
 public:
 	NetworkSyncSTAMethod(Project& project);
-	virtual ~NetworkSyncSTAMethod();
+	virtual ~NetworkSyncSTAMethod() = default;
 
 	virtual void execute();
-
 private:
 	static constexpr unsigned int maxSteps = 10000;
 	static constexpr const char* timeFile    = "/time";
@@ -66,6 +65,8 @@ private:
 
 	NetworkSyncSTAMethod(const NetworkSyncSTAMethod&) = delete;
 	NetworkSyncSTAMethod& operator=(const NetworkSyncSTAMethod&) = delete;
+	NetworkSyncSTAMethod(NetworkSyncSTAMethod&&) = delete;
+	NetworkSyncSTAMethod& operator=(NetworkSyncSTAMethod&&) = delete;
 
 	void saveSignals(ParamMapPtr taskPM, const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
 				unsigned int baseElement, const std::string& dataDir);
@@ -78,11 +79,6 @@ private:
 template<typename FloatType>
 NetworkSyncSTAMethod<FloatType>::NetworkSyncSTAMethod(Project& project)
 		: project_(project)
-{
-}
-
-template<typename FloatType>
-NetworkSyncSTAMethod<FloatType>::~NetworkSyncSTAMethod()
 {
 }
 

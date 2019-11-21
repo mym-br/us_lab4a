@@ -34,10 +34,6 @@ ProcessingNode::ProcessingNode(Controller& controller, Project& project)
 	controller.connectProcessingNode(this);
 }
 
-ProcessingNode::~ProcessingNode()
-{
-}
-
 void
 ProcessingNode::process()
 {

@@ -68,8 +68,4 @@ KeyValueFileReader::KeyValueFileReader(const QString& filePath)
 	}
 }
 
-KeyValueFileReader::~KeyValueFileReader()
-{
-}
-
 } // namespace Lab

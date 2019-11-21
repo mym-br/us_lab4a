@@ -28,20 +28,21 @@ namespace Lab {
 template<typename W>
 class FigureWindowList {
 public:
-	FigureWindowList() { }
-	~FigureWindowList() { }
+	FigureWindowList() = default;
+	~FigureWindowList() = default;
 
 	W& get(int id);
 	void clear();
-
 private:
 	struct FigureWindowData {
 		int id;
 		std::unique_ptr<W> figure;
 	};
 
-	FigureWindowList(const FigureWindowList&);
-	FigureWindowList& operator=(const FigureWindowList&);
+	FigureWindowList(const FigureWindowList&) = delete;
+	FigureWindowList& operator=(const FigureWindowList&) = delete;
+	FigureWindowList(FigureWindowList&&) = delete;
+	FigureWindowList& operator=(FigureWindowList&&) = delete;
 
 	std::vector<FigureWindowData> list_;
 };

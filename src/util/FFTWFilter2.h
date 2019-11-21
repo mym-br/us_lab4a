@@ -46,7 +46,7 @@ public:
 	FFTWFilter2(const FFTWFilter2& o);
 	~FFTWFilter2();
 
-	FFTWFilter2& operator=(const FFTWFilter2&);
+	FFTWFilter2& operator=(const FFTWFilter2& o);
 
 	void setCoefficients(const std::vector<FloatType>& filterCoeff, std::vector<std::complex<FloatType>>& filterFreqCoeff);
 
@@ -54,6 +54,9 @@ public:
 	void filter(const std::vector<std::complex<FloatType>>& filterFreqCoeff, const std::vector<FloatType>& x, std::vector<FloatType>& y);
 private:
 	static constexpr int fftSize = 512; // must be a power of two
+
+	FFTWFilter2(FFTWFilter2&&) = delete;
+	FFTWFilter2& operator=(FFTWFilter2&&) = delete;
 
 	void clean();
 	void copyInput(const std::vector<FloatType>& v, long offset);

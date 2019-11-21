@@ -37,13 +37,15 @@ struct SyncBindException : std::runtime_error {
 class SyncServer {
 public:
 	SyncServer(unsigned short portNumber);
-	~SyncServer();
+	~SyncServer() = default;
 
 	bool waitForTrigger();
 	void freeTrigger();
 private:
 	SyncServer(const SyncServer&) = delete;
 	SyncServer& operator=(const SyncServer&) = delete;
+	SyncServer(SyncServer&&) = delete;
+	SyncServer& operator=(SyncServer&&) = delete;
 
 	boost::asio::io_service ioService_;
 	boost::asio::ip::tcp::acceptor acceptor_;

@@ -63,11 +63,10 @@ public:
 			bool calculateEnvelope,
 			const std::vector<FloatType>& txApod,
 			const std::vector<FloatType>& rxApod);
-	virtual ~VectorialSTAProcessor() {}
+	virtual ~VectorialSTAProcessor() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
-
 private:
 	// Depends on the signal.
 	// 1.0 --> pi radian / sample at the original sampling rate.
@@ -81,6 +80,8 @@ private:
 
 	VectorialSTAProcessor(const VectorialSTAProcessor&) = delete;
 	VectorialSTAProcessor& operator=(const VectorialSTAProcessor&) = delete;
+	VectorialSTAProcessor(VectorialSTAProcessor&&) = delete;
+	VectorialSTAProcessor& operator=(VectorialSTAProcessor&&) = delete;
 
 	const STAConfiguration<FloatType>& config_;
 	unsigned int deadZoneSamplesUp_;

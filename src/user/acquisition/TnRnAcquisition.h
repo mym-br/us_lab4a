@@ -31,11 +31,16 @@ class TnRnAcquisition {
 public:
 	typedef Matrix<FloatType> AcquisitionDataType;
 
-	TnRnAcquisition() {}
-	virtual ~TnRnAcquisition() {}
+	TnRnAcquisition() = default;
+	virtual ~TnRnAcquisition() = default;
 
 	virtual void prepare(unsigned int /*baseElement*/, const std::vector<FloatType>& /*txDelays*/) {}
 	virtual void execute(AcquisitionDataType& acqData) = 0;
+private:
+	TnRnAcquisition(const TnRnAcquisition&) = delete;
+	TnRnAcquisition& operator=(const TnRnAcquisition&) = delete;
+	TnRnAcquisition(TnRnAcquisition&&) = delete;
+	TnRnAcquisition& operator=(TnRnAcquisition&&) = delete;
 };
 
 } // namespace Lab

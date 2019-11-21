@@ -57,12 +57,17 @@ public:
 			}
 			return *this;
 		}
+		~Dim1Iterator() = default;
+
 		bool operator==(const Dim1Iterator& iter) const { return !(valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_); }
 		bool operator!=(const Dim1Iterator& iter) const { return valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_; }
 		Dim1Iterator& operator++() { valuePtr_ += increment_; return *this; }
 		Dim1Iterator operator++(int) { Dim1Iterator iter{*this}; valuePtr_ += increment_; return iter; }
 		typename Tensor3<T, Alloc>::Reference operator*() { return *valuePtr_; }
 	private:
+		Dim1Iterator(Dim1Iterator&&) = delete;
+		Dim1Iterator& operator=(Dim1Iterator&&) = delete;
+
 		typename Tensor3<T, Alloc>::Pointer valuePtr_;
 		const typename Tensor3<T, Alloc>::SizeType increment_;
 	};
@@ -84,12 +89,17 @@ public:
 			}
 			return *this;
 		}
+		~ConstDim1Iterator() = default;
+
 		bool operator==(const ConstDim1Iterator& iter) const { return !(valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_); }
 		bool operator!=(const ConstDim1Iterator& iter) const { return valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_; }
 		ConstDim1Iterator& operator++() { valuePtr_ += increment_; return *this; }
 		ConstDim1Iterator operator++(int) { ConstDim1Iterator iter{*this}; valuePtr_ += increment_; return iter; }
 		typename Tensor3<T, Alloc>::ConstReference operator*() { return *valuePtr_; }
 	private:
+		ConstDim1Iterator(ConstDim1Iterator&&) = delete;
+		ConstDim1Iterator& operator=(ConstDim1Iterator&&) = delete;
+
 		typename Tensor3<T, Alloc>::ConstPointer valuePtr_;
 		const typename Tensor3<T, Alloc>::SizeType increment_;
 	};

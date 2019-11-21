@@ -35,7 +35,7 @@ public:
 	SavedSTAAcquisition(const Project& project,
 				unsigned int numRxElements,
 				const std::string& dataDir);
-	virtual ~SavedSTAAcquisition();
+	virtual ~SavedSTAAcquisition() = default;
 
 	void setDataDir(const std::string& dataDir) { dataDir_ = dataDir; }
 
@@ -45,6 +45,8 @@ public:
 private:
 	SavedSTAAcquisition(const SavedSTAAcquisition&) = delete;
 	SavedSTAAcquisition& operator=(const SavedSTAAcquisition&) = delete;
+	SavedSTAAcquisition(SavedSTAAcquisition&&) = delete;
+	SavedSTAAcquisition& operator=(SavedSTAAcquisition&&) = delete;
 
 	const Project& project_;
 	const unsigned int numRxElements_;
@@ -63,11 +65,6 @@ SavedSTAAcquisition<FloatType>::SavedSTAAcquisition(
 		, numRxElements_(numRxElements)
 		, baseElement_()
 		, dataDir_(dataDir)
-{
-}
-
-template<typename FloatType>
-SavedSTAAcquisition<FloatType>::~SavedSTAAcquisition()
 {
 }
 

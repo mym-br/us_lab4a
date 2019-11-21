@@ -27,10 +27,6 @@ PseudorandomNumberGenerator::PseudorandomNumberGenerator()
 	engine_.seed(rd());
 }
 
-PseudorandomNumberGenerator::~PseudorandomNumberGenerator()
-{
-}
-
 double
 PseudorandomNumberGenerator::get()
 {

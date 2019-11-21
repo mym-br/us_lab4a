@@ -53,7 +53,7 @@ template<typename FloatType>
 class SimCircularSourceMethod : public Method {
 public:
 	SimCircularSourceMethod(Project& project);
-	virtual ~SimCircularSourceMethod();
+	virtual ~SimCircularSourceMethod() = default;
 
 	virtual void execute();
 private:
@@ -78,6 +78,8 @@ private:
 
 	SimCircularSourceMethod(const SimCircularSourceMethod&) = delete;
 	SimCircularSourceMethod& operator=(const SimCircularSourceMethod&) = delete;
+	SimCircularSourceMethod(SimCircularSourceMethod&&) = delete;
+	SimCircularSourceMethod& operator=(SimCircularSourceMethod&&) = delete;
 
 	void loadData(ParamMapPtr taskPM, MainData& data, SimulationData& simData);
 	void loadSourceData(ParamMapPtr taskPM, SourceData& srcData);
@@ -96,11 +98,6 @@ private:
 template<typename FloatType>
 SimCircularSourceMethod<FloatType>::SimCircularSourceMethod(Project& project)
 		: project_(project)
-{
-}
-
-template<typename FloatType>
-SimCircularSourceMethod<FloatType>::~SimCircularSourceMethod()
 {
 }
 

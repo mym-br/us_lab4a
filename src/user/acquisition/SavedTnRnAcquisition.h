@@ -36,7 +36,7 @@ public:
 	SavedTnRnAcquisition(const Project& project,
 				unsigned int numRxElements,
 				const std::string& dataDir);
-	virtual ~SavedTnRnAcquisition();
+	virtual ~SavedTnRnAcquisition() = default;
 
 	void setDataDir(const std::string& dataDir) { dataDir_ = dataDir; }
 
@@ -45,6 +45,8 @@ public:
 private:
 	SavedTnRnAcquisition(const SavedTnRnAcquisition&) = delete;
 	SavedTnRnAcquisition& operator=(const SavedTnRnAcquisition&) = delete;
+	SavedTnRnAcquisition(SavedTnRnAcquisition&&) = delete;
+	SavedTnRnAcquisition& operator=(SavedTnRnAcquisition&&) = delete;
 
 	const Project& project_;
 	const unsigned int numRxElements_;
@@ -63,11 +65,6 @@ SavedTnRnAcquisition<FloatType>::SavedTnRnAcquisition(
 		, numRxElements_(numRxElements)
 		, baseElement_()
 		, dataDir_(dataDir)
-{
-}
-
-template<typename FloatType>
-SavedTnRnAcquisition<FloatType>::~SavedTnRnAcquisition()
 {
 }
 

@@ -55,13 +55,14 @@ template<typename FloatType>
 class STAMethod : public Method {
 public:
 	STAMethod(Project& project);
-	virtual ~STAMethod();
+	virtual ~STAMethod() = default;
 
 	virtual void execute();
-
 private:
 	STAMethod(const STAMethod&) = delete;
 	STAMethod& operator=(const STAMethod&) = delete;
+	STAMethod(STAMethod&&) = delete;
+	STAMethod& operator=(STAMethod&&) = delete;
 
 	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
 	void useCoherenceFactor(FloatType valueScale, bool calculateEnvelope, const std::string& outputDir);
@@ -79,11 +80,6 @@ STAMethod<FloatType>::STAMethod(Project& project)
 		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
 		, visual_(Visualization::VALUE_ENVELOPE_LOG)
-{
-}
-
-template<typename FloatType>
-STAMethod<FloatType>::~STAMethod()
 {
 }
 

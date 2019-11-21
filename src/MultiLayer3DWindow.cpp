@@ -27,10 +27,6 @@ MultiLayer3DWindow::MultiLayer3DWindow(QWidget* parent)
 	ui_.setupUi(this);
 }
 
-MultiLayer3DWindow::~MultiLayer3DWindow()
-{
-}
-
 void
 MultiLayer3DWindow::updateData(const std::vector<XYZValue<float>>& pointArray, const std::vector<unsigned int>& indexArray)
 {

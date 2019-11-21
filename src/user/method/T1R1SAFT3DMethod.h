@@ -50,13 +50,14 @@ template<typename FloatType>
 class T1R1SAFT3DMethod : public Method {
 public:
 	T1R1SAFT3DMethod(Project& project);
-	virtual ~T1R1SAFT3DMethod();
+	virtual ~T1R1SAFT3DMethod() = default;
 
 	virtual void execute();
-
 private:
 	T1R1SAFT3DMethod(const T1R1SAFT3DMethod&) = delete;
 	T1R1SAFT3DMethod& operator=(const T1R1SAFT3DMethod&) = delete;
+	T1R1SAFT3DMethod(T1R1SAFT3DMethod&&) = delete;
+	T1R1SAFT3DMethod& operator=(T1R1SAFT3DMethod&&) = delete;
 
 	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
 	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
@@ -74,11 +75,6 @@ T1R1SAFT3DMethod<FloatType>::T1R1SAFT3DMethod(Project& project)
 		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
 		, visual_(Visualization::VALUE_RECTIFIED_LOG)
-{
-}
-
-template<typename FloatType>
-T1R1SAFT3DMethod<FloatType>::~T1R1SAFT3DMethod()
 {
 }
 

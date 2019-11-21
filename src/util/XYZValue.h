@@ -23,7 +23,7 @@ template<typename FloatType>
 struct XYZValue {
 	typedef FloatType ValueType;
 
-	XYZValue() {}
+	XYZValue() = default;
 	XYZValue(FloatType x, FloatType y, FloatType z, FloatType value) : x(x), y(y), z(z), value(value) {}
 
 	FloatType x;

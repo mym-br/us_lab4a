@@ -37,10 +37,6 @@ MultiLayerImageMethod::MultiLayerImageMethod(Project& project)
 {
 }
 
-MultiLayerImageMethod::~MultiLayerImageMethod()
-{
-}
-
 void
 MultiLayerImageMethod::execute()
 {

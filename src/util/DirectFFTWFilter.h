@@ -44,7 +44,7 @@ public:
 	DirectFFTWFilter(const DirectFFTWFilter& o);
 	~DirectFFTWFilter();
 
-	DirectFFTWFilter& operator=(const DirectFFTWFilter&);
+	DirectFFTWFilter& operator=(const DirectFFTWFilter& o);
 
 	void setCoefficients(const std::vector<FloatType>& filterCoeff);
 
@@ -52,6 +52,9 @@ public:
 	void filter(const std::vector<FloatType>& x, std::vector<FloatType>& y);
 private:
 	static constexpr unsigned int maxDataSize = 1000000; // arbitrary
+
+	DirectFFTWFilter(DirectFFTWFilter&&) = delete;
+	DirectFFTWFilter& operator=(DirectFFTWFilter&&) = delete;
 
 	void clean();
 	void prepare();

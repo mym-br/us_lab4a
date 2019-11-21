@@ -58,11 +58,10 @@ public:
 			FloatType peakOffset,
 			const std::vector<FloatType>& txApod,
 			const std::vector<FloatType>& rxApod);
-	virtual ~Vectorial3DSTAProcessor() {}
+	virtual ~Vectorial3DSTAProcessor() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
-
 private:
 	// Depends on the signal.
 	// 1.0 --> pi radian / sample at the original sampling rate.
@@ -77,6 +76,8 @@ private:
 
 	Vectorial3DSTAProcessor(const Vectorial3DSTAProcessor&) = delete;
 	Vectorial3DSTAProcessor& operator=(const Vectorial3DSTAProcessor&) = delete;
+	Vectorial3DSTAProcessor(Vectorial3DSTAProcessor&&) = delete;
+	Vectorial3DSTAProcessor& operator=(Vectorial3DSTAProcessor&&) = delete;
 
 	const SA3DConfiguration<FloatType>& config_;
 	unsigned int deadZoneSamplesUp_;
