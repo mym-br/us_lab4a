@@ -170,8 +170,7 @@ STAMethod<FloatType>::execute()
 	ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto peakOffset = imagPM->value<FloatType>("peak_offset", 0.0, 50.0);
 
-	const FloatType nyquistRate = 2.0 * config.maxFrequency;
-	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
+	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
 	visual_ = Visualization::VALUE_ENVELOPE_LOG;

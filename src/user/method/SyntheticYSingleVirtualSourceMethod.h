@@ -113,8 +113,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 
 	Matrix<XYZValueFactor<FloatType>> gridData;
 
-	const FloatType nyquistRate = 2.0 * config.maxFrequency;
-	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
+	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));

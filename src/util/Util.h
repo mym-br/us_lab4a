@@ -43,6 +43,12 @@ constexpr double pi = M_PI;
 namespace Lab {
 namespace Util {
 
+template<typename T> T wavelength(T speed, T frequency);
+// The minimum sampling rate without aliasing.
+template<typename T> T nyquistRate(T maxFrequency);
+// Wavelength at Nyquist rate.
+template<typename T> T nyquistLambda(T speed, T maxFrequency);
+
 void fillSequence(std::vector<unsigned int>& v, unsigned int startValue, unsigned int endValue, int step = 1);
 void fillSequence(std::vector<int>& v, int startValue, int endValue, int step = 1);
 
@@ -170,7 +176,26 @@ struct ValueFieldAbsOp {
 	void operator()(T& o) { o.value = std::abs(o.value); }
 };
 
+template<typename T>
+T
+wavelength(T speed, T frequency)
+{
+	return speed / frequency;
+}
 
+template<typename T>
+T
+nyquistRate(T maxFrequency)
+{
+	return 2 * maxFrequency;
+}
+
+template<typename T>
+T
+nyquistLambda(T speed, T maxFrequency)
+{
+	return wavelength(speed, nyquistRate(maxFrequency));
+}
 
 template<typename T>
 void

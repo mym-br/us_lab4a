@@ -289,8 +289,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 		return;
 	}
 
-	const FloatType nyquistRate = 2.0 * config.maxFrequency;
-	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
+	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
 	if (project_.method() == MethodEnum::single_virtual_source_3d_vectorial_simulated ||

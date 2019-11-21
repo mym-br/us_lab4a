@@ -171,8 +171,7 @@ STA3DMethod<FloatType>::execute()
 	const auto outputDir = taskPM->value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
-	const FloatType nyquistRate = 2.0 * config.maxFrequency;
-	const FloatType nyquistLambda = config.propagationSpeed / nyquistRate;
+	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
 	if (project_.method() == MethodEnum::sta_3d_vectorial_simulated) {

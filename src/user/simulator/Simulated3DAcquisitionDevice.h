@@ -190,7 +190,7 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 	pm.getValue(excNumPeriods_ , "excitation_num_periods", 0.0, 100.0);
 
 	const auto irMethod = pm.value<std::string>("impulse_response_method");
-	const FloatType nyquistRate = 2.0 * maxFrequency;
+	const FloatType nyquistRate = Util::nyquistRate(maxFrequency);
 	if (irMethod == "numeric") {
 		useNumericMethod_ = true;
 		const FloatType txSubElemSize = propagationSpeed /

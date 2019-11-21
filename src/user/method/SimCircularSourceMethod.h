@@ -110,7 +110,7 @@ SimCircularSourceMethod<FloatType>::loadData(ParamMapPtr taskPM, MainData& data,
 	mainPM->getValue(data.propagationSpeed, "propagation_speed", 0.0, 100000.0);
 	mainPM->getValue(data.centerFreq      , "center_frequency" , 0.0,  100.0e6);
 	mainPM->getValue(data.maxFreq         , "max_frequency"    , 0.0,  200.0e6);
-	data.nyquistRate = 2.0 * data.maxFreq;
+	data.nyquistRate = Util::nyquistRate(data.maxFreq);
 	taskPM->getValue(data.outputDir, "output_dir");
 
 	loadSimulationData(taskPM, data, simData);
@@ -201,7 +201,7 @@ SimCircularSourceMethod<FloatType>::execTransientRadiationPattern()
 	}
 
 	if (simData.irMethod == "numeric") {
-		const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
+		const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
 		const FloatType numSubElemPerLambda = simData.discretFactor;
 		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
 		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericCircularSourceImpulseResponse<FloatType>>>();
@@ -253,7 +253,7 @@ SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 
 	Matrix<XYZValue<FloatType>> gridData;
 
-	const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
+	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
@@ -327,7 +327,7 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 
 	Matrix<XYZValueArray<FloatType>> gridData;
 
-	const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
+	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
@@ -424,7 +424,7 @@ SimCircularSourceMethod<FloatType>::execImpulseResponse()
 	std::size_t hOffset;
 	std::vector<FloatType> h;
 	if (simData.irMethod == "numeric") {
-		const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
+		const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
 		const FloatType numSubElemPerLambda = simData.discretFactor;
 		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
 		auto impResp = std::make_unique<NumericCircularSourceImpulseResponse<FloatType>>(

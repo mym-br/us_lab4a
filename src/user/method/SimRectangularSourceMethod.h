@@ -123,7 +123,7 @@ SimRectangularSourceMethod<FloatType>::loadData(ParamMapPtr taskPM, MainData& da
 	mainPM->getValue(data.propagationSpeed, "propagation_speed", 0.0, 100000.0);
 	mainPM->getValue(data.centerFreq      , "center_frequency" , 0.0,  100.0e6);
 	mainPM->getValue(data.maxFreq         , "max_frequency"    , 0.0,  200.0e6);
-	data.nyquistRate = 2.0 * data.maxFreq;
+	data.nyquistRate = Util::nyquistRate(data.maxFreq);
 	taskPM->getValue(data.outputDir, "output_dir");
 
 	loadSimulationData(taskPM, data, simData);
@@ -374,7 +374,7 @@ SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsA
 
 	Matrix<XYZValue<FloatType>> gridData;
 
-	const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
+	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
@@ -462,7 +462,7 @@ SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArr
 
 	Matrix<XYZValueArray<FloatType>> gridData;
 
-	const FloatType nyquistLambda = mainData.propagationSpeed / mainData.nyquistRate;
+	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
 	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
