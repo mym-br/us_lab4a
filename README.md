@@ -34,6 +34,8 @@ Non-goals
 Status
 ------
 
+Version 0.1
+
 - Some methods are stable, while others are experimental.
 - The structure and names in configuration files may change at any moment.
 - The documentation is very limited. In many cases the C++ code must be
