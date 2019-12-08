@@ -18,6 +18,7 @@
 #ifndef METHOD_H_
 #define METHOD_H_
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -53,7 +54,7 @@ public:
 	virtual void execute() = 0;
 
 	static MethodEnum findByName(const std::string& name) { return nameMap_.findByName(name); }
-	static Method* get(Project& project);
+	static std::unique_ptr<Method> get(Project& project);
 private:
 	Method(const Method&) = delete;
 	Method& operator=(const Method&) = delete;

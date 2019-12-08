@@ -17,8 +17,6 @@
 
 #include "ProcessingNode.h"
 
-#include <memory>
-
 #include "Controller.h"
 #include "Log.h"
 #include "Method.h"
@@ -40,7 +38,7 @@ ProcessingNode::process()
 	LOG_INFO << "========== Processing started.";
 
 	try {
-		std::unique_ptr<Method> method(Method::get(project_));
+		auto method = Method::get(project_);
 
 		Timer procTimer;
 		method->execute();

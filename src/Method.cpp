@@ -40,11 +40,11 @@ MethodNameMap::findByName(const std::string& name)
 	return iter->second;
 }
 
-Method*
+std::unique_ptr<Method>
 Method::get(Project& project)
 {
 	switch (project.method()) {
-#define METHOD_ITEM(A, B) case MethodEnum::B: return new A(project);
+#define METHOD_ITEM(A, B) case MethodEnum::B: return std::make_unique<A>(project);
 	METHOD_TABLE
 #undef METHOD_ITEM
 	default:
