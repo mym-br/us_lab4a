@@ -290,8 +290,6 @@ PhaseCoherenceFactor<FloatType>::calculate(const std::complex<FloatType>* data, 
 	for (unsigned int i = 0; i < size; ++i) {
 		const std::complex<FloatType> c = data[i];
 		phi_[i] = std::atan2(c.imag(), c.real());
-	}
-	for (unsigned int i = 0; i < size; ++i) {
 		phiAux_[i] = phi_[i] + ((phi_[i] < 0) ? FloatType(pi) : -FloatType(pi));
 	}
 
@@ -346,11 +344,7 @@ PRNGPhaseCoherenceFactor<FloatType>::calculate(const std::complex<FloatType>* da
 		} else {
 			phi_[i] = std::atan2(c.imag(), c.real());
 		}
-		if (phi_[i] < 0) {
-			phiAux_[i] = phi_[i] + FloatType(pi);
-		} else {
-			phiAux_[i] = phi_[i] - FloatType(pi);
-		}
+		phiAux_[i] = phi_[i] + ((phi_[i] < 0) ? FloatType(pi) : -FloatType(pi));
 	}
 
 	const FloatType sf = std::min(
