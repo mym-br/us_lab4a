@@ -27,7 +27,23 @@
 #include "Statistics.h"
 #include "Util.h"
 
-
+// SignCoherenceFactor
+// PhaseCoherenceFactor
+//
+// Implementations of the coherence factors in:
+// Camacho, J.
+// Parrilla, M.
+// Fritsch, C.
+// Phase Coherence Imaging.
+// IEEE Transactions on Ultrasonics, Ferroelectrics, and Frequency Control,
+// vol. 56, no. 5, pp. 958-974, 2009.
+// DOI: 10.1109/TUFFC.2009.1128
+//
+// PRNGPhaseCoherenceFactor
+//
+// Similar to PhaseCoherenceFactor, but sets a pseudorandom phase when
+// the signal is zero.
+// Used when the signal has no noise, like in simulated data.
 
 namespace Lab {
 
