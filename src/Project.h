@@ -73,7 +73,7 @@ public:
 	}
 
 	void loadTaskParameters(const std::string& taskFile);
-	const ParameterMap& taskParameterMap() const {
+	const ParameterMap& taskParamMap() const {
 		if (!taskParameterMap_) THROW_EXCEPTION(InvalidStateException, "The task parameter map has not been loaded.");
 		return *taskParameterMap_;
 	}
@@ -81,10 +81,10 @@ public:
 	MethodEnum method() const { return method_; }
 	void setMethod(MethodEnum method) { method_ = method; }
 
-	ParamMapPtr loadParameterMap(const char* fileName) const;
-	ParamMapPtr loadChildParameterMap(const ParameterMap& pm, const char* fileNameKey) const;
-	// Uses taskParameterMap() to obtain the parent ParameterMap.
-	ParamMapPtr loadChildParameterMap(const char* fileNameKey) const;
+	ParamMapPtr getParamMap(const char* fileName) const;
+	ParamMapPtr getSubParamMap(const ParameterMap& pm, const char* fileNameKey) const;
+	// Uses taskParamMap() to obtain the fileNameKey.
+	ParamMapPtr getSubParamMap(const char* fileNameKey) const;
 
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<FloatType>& container) const;
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const;

@@ -160,7 +160,7 @@ SingleVirtualSourceMethod<FloatType>::saveSignalSequence(const ParameterMap& tas
 								TnRnAcquisition<FloatType>& acquisition)
 {
 	const auto dataDir = taskPM.value<std::string>("data_dir");
-	const ParamMapPtr seqPM = project_.loadChildParameterMap("seq_config_file");
+	const ParamMapPtr seqPM = project_.getSubParamMap("seq_config_file");
 	const auto acqTime = seqPM->value<double>("acquisition_time", 1.0, 60.0);
 
 	std::vector<typename TnRnAcquisition<FloatType>::AcquisitionDataType> acqDataList;
@@ -229,9 +229,9 @@ template<typename FloatType>
 void
 SingleVirtualSourceMethod<FloatType>::execute()
 {
-	const ParameterMap& taskPM = project_.taskParameterMap();
-	const ParamMapPtr svsPM   = project_.loadChildParameterMap("svs_config_file");
-	const ParamMapPtr arrayPM = project_.loadChildParameterMap("array_config_file");
+	const ParameterMap& taskPM = project_.taskParamMap();
+	const ParamMapPtr svsPM   = project_.getSubParamMap("svs_config_file");
+	const ParamMapPtr arrayPM = project_.getSubParamMap("array_config_file");
 	const TnRnConfiguration<FloatType> config(*svsPM, *arrayPM);
 	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
 	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
@@ -290,7 +290,7 @@ SingleVirtualSourceMethod<FloatType>::execute()
 	}
 
 	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(*project_.loadChildParameterMap("grid_config_file"), nyquistLambda, gridData_);
+	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData_);
 
 	if (project_.method() == MethodEnum::single_virtual_source_3d_vectorial_simulated ||
 			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_dp_network ||
@@ -298,14 +298,14 @@ SingleVirtualSourceMethod<FloatType>::execute()
 			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_dp_saved_sequence ||
 			project_.method() == MethodEnum::single_virtual_source_3d_vectorial_sp_network_continuous) {
 
-		const ParamMapPtr imagPM = project_.loadChildParameterMap("imag_config_file");
+		const ParamMapPtr imagPM = project_.getSubParamMap("imag_config_file");
 		const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
 		const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 		const auto rxApodFile       = imagPM->value<std::string>( "rx_apodization_file");
 		std::vector<FloatType> rxApod;
 		project_.loadHDF5(rxApodFile, "apod", rxApod);
 
-		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap("coherence_factor_config_file"));
+		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 		auto processor = std::make_unique<Vectorial3DTnRnProcessor<FloatType>>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset,

@@ -40,7 +40,7 @@ ShowImageMethod::ShowImageMethod(Project& project)
 void
 ShowImageMethod::execute()
 {
-	const ParameterMap& taskPM = project_.taskParameterMap();
+	const ParameterMap& taskPM = project_.taskParamMap();
 	const auto dataDir      = taskPM.value<std::string>("data_dir");
 	const auto xFile        = taskPM.value<std::string>("x_file");
 	const auto xDataset     = taskPM.value<std::string>("x_dataset");

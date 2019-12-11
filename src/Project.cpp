@@ -51,14 +51,14 @@ Project::loadTaskParameters(const std::string& taskFileName)
 }
 
 ParamMapPtr
-Project::loadParameterMap(const char* fileName) const
+Project::getParamMap(const char* fileName) const
 {
 	QString filePath = expDirectory_ + '/' + fileName;
 	return std::make_unique<const ParameterMap>(filePath);
 }
 
 ParamMapPtr
-Project::loadChildParameterMap(const ParameterMap& pm, const char* fileNameKey) const
+Project::getSubParamMap(const ParameterMap& pm, const char* fileNameKey) const
 {
 	const auto fileName = pm.value<std::string>(fileNameKey);
 	QString filePath = expDirectory_ + '/' + fileName.c_str();
@@ -66,9 +66,9 @@ Project::loadChildParameterMap(const ParameterMap& pm, const char* fileNameKey) 
 }
 
 ParamMapPtr
-Project::loadChildParameterMap(const char* fileNameKey) const
+Project::getSubParamMap(const char* fileNameKey) const
 {
-	const auto fileName = taskParameterMap().value<std::string>(fileNameKey);
+	const auto fileName = taskParamMap().value<std::string>(fileNameKey);
 	QString filePath = expDirectory_ + '/' + fileName.c_str();
 	return std::make_unique<const ParameterMap>(filePath);
 }

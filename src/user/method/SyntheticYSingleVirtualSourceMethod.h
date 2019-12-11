@@ -76,9 +76,9 @@ template<typename FloatType>
 void
 SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 {
-	const ParameterMap& taskPM = project_.taskParameterMap();
-	const ParamMapPtr svsPM   = project_.loadChildParameterMap("svs_config_file");
-	const ParamMapPtr arrayPM = project_.loadChildParameterMap("array_config_file");
+	const ParameterMap& taskPM = project_.taskParamMap();
+	const ParamMapPtr svsPM   = project_.getSubParamMap("svs_config_file");
+	const ParamMapPtr arrayPM = project_.getSubParamMap("array_config_file");
 	const TnRnConfiguration<FloatType> config(*svsPM, *arrayPM);
 	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
@@ -101,7 +101,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 						config.txElemPos, baseElement, config.numElements, txDelays);
 
 	const auto outputDir = taskPM.value<std::string>("output_dir");
-	const ParamMapPtr imagPM = project_.loadChildParameterMap("imag_config_file");
+	const ParamMapPtr imagPM = project_.getSubParamMap("imag_config_file");
 	const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
 	const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 
@@ -114,9 +114,9 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	Matrix<XYZValueFactor<FloatType>> gridData;
 
 	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(*project_.loadChildParameterMap("grid_config_file"), nyquistLambda, gridData);
+	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
 
-	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap("coherence_factor_config_file"));
+	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 	bool coherenceFactorEnabled = coherenceFactor.enabled();
 	auto acquisition = std::make_unique<SavedTnRnAcquisition<FloatType>>(project_, config.numElements, "");
 	auto processor = std::make_unique<SynthYVectorial3DTnRnProcessor<FloatType>>(config, *acquisition,

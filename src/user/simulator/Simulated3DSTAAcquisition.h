@@ -72,8 +72,8 @@ Simulated3DSTAAcquisition<FloatType>::Simulated3DSTAAcquisition(Project& project
 		, maxAbsValue_()
 		, baseElement_()
 {
-	const ParamMapPtr pm      = project_.loadChildParameterMap("simulated_3d_acquisition_config_file");
-	const ParamMapPtr arrayPM = project_.loadChildParameterMap("array_config_file");
+	const ParamMapPtr pm      = project_.getSubParamMap("simulated_3d_acquisition_config_file");
+	const ParamMapPtr arrayPM = project_.getSubParamMap("array_config_file");
 
 	const auto reflectorsFileName = pm->value<std::string>("reflectors_file");
 	pm->getValue(reflectorsOffsetX_, "reflectors_offset_x", -10000.0, 10000.0);

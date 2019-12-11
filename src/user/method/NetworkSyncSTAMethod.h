@@ -86,8 +86,8 @@ template<typename FloatType>
 void
 NetworkSyncSTAMethod<FloatType>::execute()
 {
-	const ParameterMap& taskPM = project_.taskParameterMap();
-	const ParamMapPtr staPM = project_.loadChildParameterMap("sta_config_file");
+	const ParameterMap& taskPM = project_.taskParamMap();
+	const ParamMapPtr staPM = project_.getSubParamMap("sta_config_file");
 	const STAConfiguration<FloatType> config(*staPM);
 	const auto baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 	const auto dataDir = taskPM.value<std::string>("data_dir");
@@ -100,7 +100,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	}
 
 	const auto outputDir = taskPM.value<std::string>("output_dir");
-	const ParamMapPtr imagPM = project_.loadChildParameterMap("imag_config_file");
+	const ParamMapPtr imagPM = project_.getSubParamMap("imag_config_file");
 	const auto peakOffset                      = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
 	const auto vectorialProcessingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
 	const auto upsamplingFactor                = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
@@ -122,9 +122,9 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	Matrix<XYZValueFactor<FloatType>> gridData;
 
 	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(*project_.loadChildParameterMap("grid_config_file"), nyquistLambda, gridData);
+	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
 
-	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap("coherence_factor_config_file"));
+	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 	bool coherenceFactorEnabled = coherenceFactor.enabled();
 	auto acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(project_, config.numElements, "");
 	auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(config, *acquisition,
@@ -206,7 +206,7 @@ void
 NetworkSyncSTAMethod<FloatType>::saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
 						unsigned int baseElement, const std::string& dataDir)
 {
-	const ParamMapPtr scanPM = project_.loadChildParameterMap("scan_config_file");
+	const ParamMapPtr scanPM = project_.getSubParamMap("scan_config_file");
 	const auto serverPort = scanPM->value<unsigned int>("sync_server_port",     1024,   65535);
 	const auto minY       = scanPM->value<FloatType>(   "min_y"           , -10000.0, 10000.0);
 	const auto yStep      = scanPM->value<FloatType>(   "y_step"          ,   1.0e-6,  1000.0);

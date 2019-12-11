@@ -225,7 +225,7 @@ USLab4a::processBatchEntry()
 			project_.setExpDirectory(experiment.isEmpty() ? "" : (QString(EXPERIMENT_DIR_PREFIX) + experiment).toStdString());
 			project_.loadTaskParameters((QString(TASK_FILE_PREFIX) + task + TASK_FILE_SUFFIX).toStdString());
 
-			const ParameterMap& pm = project_.taskParameterMap();
+			const ParameterMap& pm = project_.taskParamMap();
 			const auto methodName = pm.value<std::string>("method");
 			ui_.methodLineEdit->setText(methodName.c_str());
 
@@ -388,7 +388,7 @@ USLab4a::on_enableTaskButton_clicked()
 	try {
 		project_.loadTaskParameters((QString(TASK_FILE_PREFIX) + selectedTasks.first()->text() + TASK_FILE_SUFFIX).toStdString());
 
-		const ParameterMap& pm = project_.taskParameterMap();
+		const ParameterMap& pm = project_.taskParamMap();
 		const auto methodName = pm.value<std::string>("method");
 		ui_.methodLineEdit->setText(methodName.c_str());
 
