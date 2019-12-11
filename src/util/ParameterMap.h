@@ -82,8 +82,6 @@ private:
 	std::unique_ptr<const KeyValueFileReader> reader_;
 };
 
-typedef std::shared_ptr<const ParameterMap> ParamMapPtr;
-
 
 
 template<typename T>

@@ -49,37 +49,37 @@ struct DeviceSectorialScanConfiguration {
 
 	bool enableFocusing;
 
-	void load(ParamMapPtr pm);
+	void load(const ParameterMap& pm);
 };
 
 
 
 template<typename FloatType>
 void
-DeviceSectorialScanConfiguration<FloatType>::load(ParamMapPtr pm)
+DeviceSectorialScanConfiguration<FloatType>::load(const ParameterMap& pm)
 {
-	pm->getValue(numElementsMux        , "num_elements_mux"        ,       8,      1024);
-	pm->getValue(numElements           , "num_elements"            ,       8, numElementsMux);
-	pm->getValue(baseElement           , "base_element"            ,       0, numElementsMux - numElements);
-	pm->getValue(signalMode            , "signal_mode"             ,       0,         1);
-	pm->getValue(pitch                 , "pitch"                   , 0.01e-3,   10.0e-3);
-	pm->getValue(centerFrequency       , "center_frequency"        ,   100.0,   100.0e6);
-	pm->getValue(gain                  , "gain"                    ,     0.0,     100.0);
-	pm->getValue(propagationSpeed      , "propagation_speed"       ,   100.0,   10000.0);
-	pm->getValue(acquisitionDelay      , "acquisition_delay"       ,     0.0,       1.0);
-	pm->getValue(samplingFrequency     , "sampling_frequency"      ,   100.0,   200.0e6);
-	pm->getValue(focalEmissionDistance , "focus_emission_distance" ,  1.0e-3, 1000.0e-3);
-	pm->getValue(focalReceptionDistance, "focus_reception_distance",  1.0e-3, 1000.0e-3);
-	pm->getValue(valueScale            , "value_scale"             ,     0.0,    1.0e10);
+	pm.getValue(numElementsMux        , "num_elements_mux"        ,       8,      1024);
+	pm.getValue(numElements           , "num_elements"            ,       8, numElementsMux);
+	pm.getValue(baseElement           , "base_element"            ,       0, numElementsMux - numElements);
+	pm.getValue(signalMode            , "signal_mode"             ,       0,         1);
+	pm.getValue(pitch                 , "pitch"                   , 0.01e-3,   10.0e-3);
+	pm.getValue(centerFrequency       , "center_frequency"        ,   100.0,   100.0e6);
+	pm.getValue(gain                  , "gain"                    ,     0.0,     100.0);
+	pm.getValue(propagationSpeed      , "propagation_speed"       ,   100.0,   10000.0);
+	pm.getValue(acquisitionDelay      , "acquisition_delay"       ,     0.0,       1.0);
+	pm.getValue(samplingFrequency     , "sampling_frequency"      ,   100.0,   200.0e6);
+	pm.getValue(focalEmissionDistance , "focus_emission_distance" ,  1.0e-3, 1000.0e-3);
+	pm.getValue(focalReceptionDistance, "focus_reception_distance",  1.0e-3, 1000.0e-3);
+	pm.getValue(valueScale            , "value_scale"             ,     0.0,    1.0e10);
 
 	// Sectorial scan grid.
-	pm->getValue(rangeStart            , "range_start"             ,              1.0e-3,  99.0);
-	pm->getValue(rangeEnd              , "range_end"               , rangeStart + 1.0e-2, 100.0);
-	pm->getValue(startAngle            , "start_angle"             ,               -90.0,  89.0);
-	pm->getValue(endAngle              , "end_angle"               ,    startAngle + 1.0,  90.0);
-	pm->getValue(angleStep             , "angle_step"              ,              1.0e-3,  10.0);
+	pm.getValue(rangeStart            , "range_start"             ,              1.0e-3,  99.0);
+	pm.getValue(rangeEnd              , "range_end"               , rangeStart + 1.0e-2, 100.0);
+	pm.getValue(startAngle            , "start_angle"             ,               -90.0,  89.0);
+	pm.getValue(endAngle              , "end_angle"               ,    startAngle + 1.0,  90.0);
+	pm.getValue(angleStep             , "angle_step"              ,              1.0e-3,  10.0);
 
-	pm->getValue(enableFocusing        , "enable_focusing");
+	pm.getValue(enableFocusing        , "enable_focusing");
 
 	if (numElementsMux & 0x01) {
 		THROW_EXCEPTION(InvalidParameterException, "The value of num_elements_mux is not even.");

@@ -81,9 +81,9 @@ private:
 	SimCircularSourceMethod(SimCircularSourceMethod&&) = delete;
 	SimCircularSourceMethod& operator=(SimCircularSourceMethod&&) = delete;
 
-	void loadData(ParamMapPtr taskPM, MainData& data, SimulationData& simData);
-	void loadSourceData(ParamMapPtr taskPM, SourceData& srcData);
-	void loadSimulationData(ParamMapPtr taskPM, const MainData& data, SimulationData& simData);
+	void loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData);
+	void loadSourceData(const ParameterMap& taskPM, SourceData& srcData);
+	void loadSimulationData(const ParameterMap& taskPM, const MainData& data, SimulationData& simData);
 	void prepareExcitation(FloatType dt, const SimulationData& simData, std::vector<FloatType>& tExc,
 				std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt);
 
@@ -103,32 +103,32 @@ SimCircularSourceMethod<FloatType>::SimCircularSourceMethod(Project& project)
 
 template<typename FloatType>
 void
-SimCircularSourceMethod<FloatType>::loadData(ParamMapPtr taskPM, MainData& data, SimulationData& simData)
+SimCircularSourceMethod<FloatType>::loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData)
 {
-	ParamMapPtr mainPM = project_.loadChildParameterMap(taskPM, "main_config_file");
+	const auto mainPM = project_.loadChildParameterMap(taskPM, "main_config_file");
 	//mainPM->getValue(data.density         , "density"          , 0.0, 100000.0);
 	mainPM->getValue(data.propagationSpeed, "propagation_speed", 0.0, 100000.0);
 	mainPM->getValue(data.centerFreq      , "center_frequency" , 0.0,  100.0e6);
 	mainPM->getValue(data.maxFreq         , "max_frequency"    , 0.0,  200.0e6);
 	data.nyquistRate = Util::nyquistRate(data.maxFreq);
-	taskPM->getValue(data.outputDir, "output_dir");
+	taskPM.getValue(data.outputDir, "output_dir");
 
 	loadSimulationData(taskPM, data, simData);
 }
 
 template<typename FloatType>
 void
-SimCircularSourceMethod<FloatType>::loadSourceData(ParamMapPtr taskPM, SourceData& srcData)
+SimCircularSourceMethod<FloatType>::loadSourceData(const ParameterMap& taskPM, SourceData& srcData)
 {
-	ParamMapPtr singlePM = project_.loadChildParameterMap(taskPM, "source_config_file");
+	const auto singlePM = project_.loadChildParameterMap(taskPM, "source_config_file");
 	singlePM->getValue(srcData.sourceRadius, "source_radius" , 0.0, 10.0);
 }
 
 template<typename FloatType>
 void
-SimCircularSourceMethod<FloatType>::loadSimulationData(ParamMapPtr taskPM, const MainData& data, SimulationData& simData)
+SimCircularSourceMethod<FloatType>::loadSimulationData(const ParameterMap& taskPM, const MainData& data, SimulationData& simData)
 {
-	ParamMapPtr simPM = project_.loadChildParameterMap(taskPM, "simulation_config_file");
+	const auto simPM = project_.loadChildParameterMap(taskPM, "simulation_config_file");
 	simData.samplingFreq = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
 	simPM->getValue(simData.irMethod      , "impulse_response_method");
 	simPM->getValue(simData.excitationType, "excitation_type");
@@ -164,7 +164,7 @@ template<typename FloatType>
 void
 SimCircularSourceMethod<FloatType>::execTransientRadiationPattern()
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
+	const auto& taskPM = project_.taskParameterMap();
 	MainData mainData;
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
@@ -173,7 +173,7 @@ SimCircularSourceMethod<FloatType>::execTransientRadiationPattern()
 
 	project_.createDirectory(mainData.outputDir, false);
 
-	ParamMapPtr radPM = project_.loadChildParameterMap(taskPM, "rad_config_file");
+	const auto radPM = project_.loadChildParameterMap(taskPM, "rad_config_file");
 	const auto distance   = radPM->value<FloatType>("distance", 0.0, 100.0);
 	const auto thetaYStep = radPM->value<FloatType>("theta_y_step", 0.0, 10.0);
 	const auto thetaYMin  = FloatType(0);
@@ -238,7 +238,7 @@ template<typename FloatType>
 void
 SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
+	const auto& taskPM = project_.taskParameterMap();
 	MainData mainData;
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
@@ -254,7 +254,7 @@ SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 	Matrix<XYZValue<FloatType>> gridData;
 
 	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
+	ImageGrid<FloatType>::get(*project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
 		const FloatType numSubElemPerLambda = simData.discretFactor;
@@ -297,7 +297,7 @@ template<typename FloatType>
 void
 SimCircularSourceMethod<FloatType>::execTransientPropagation()
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
+	const auto& taskPM = project_.taskParameterMap();
 	MainData mainData;
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
@@ -306,7 +306,7 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 
 	project_.createDirectory(mainData.outputDir, false);
 
-	ParamMapPtr propagPM = project_.loadChildParameterMap(taskPM, "propag_config_file");
+	const auto propagPM = project_.loadChildParameterMap(taskPM, "propag_config_file");
 	const auto propagDistanceStep = propagPM->value<FloatType>("propagation_distance_step", 1.0e-6, 100.0);
 	const auto propagMinDistance  = propagPM->value<FloatType>("propagation_min_distance", 0.0, 100.0);
 	const auto propagMaxDistance  = propagPM->value<FloatType>("propagation_max_distance", propagMinDistance + propagDistanceStep, 100.0);
@@ -328,7 +328,7 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 	Matrix<XYZValueArray<FloatType>> gridData;
 
 	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
+	ImageGrid<FloatType>::get(*project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
 		const FloatType numSubElemPerLambda = simData.discretFactor;
@@ -404,7 +404,7 @@ template<typename FloatType>
 void
 SimCircularSourceMethod<FloatType>::execImpulseResponse()
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
+	const auto& taskPM = project_.taskParameterMap();
 	MainData mainData;
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
@@ -413,7 +413,7 @@ SimCircularSourceMethod<FloatType>::execImpulseResponse()
 
 	project_.createDirectory(mainData.outputDir, false);
 
-	ParamMapPtr irPM = project_.loadChildParameterMap(taskPM, "ir_config_file");
+	const auto irPM = project_.loadChildParameterMap(taskPM, "ir_config_file");
 	const auto pointX = irPM->value<FloatType>("point_x", 0.0, 10000.0);
 	const auto pointZ = irPM->value<FloatType>("point_z", 0.0, 10000.0);
 

@@ -123,9 +123,9 @@ template<typename FloatType>
 void
 STAMethod<FloatType>::execute()
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
-	ParamMapPtr staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
-	const STAConfiguration<FloatType> config(staPM);
+	const auto& taskPM = project_.taskParameterMap();
+	const auto staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	const STAConfiguration<FloatType> config(*staPM);
 	const auto baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
@@ -147,14 +147,14 @@ STAMethod<FloatType>::execute()
 	case MethodEnum::sta_vectorial_sp_saved:
 		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(
 					project_, config.numElements,
-					FileUtil::path(taskPM->value<std::string>("data_dir"), "/", 0));
+					FileUtil::path(taskPM.value<std::string>("data_dir"), "/", 0));
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
 
 	if (project_.method() == MethodEnum::sta_save_signals) {
-		const auto dataDir = taskPM->value<std::string>("data_dir");
+		const auto dataDir = taskPM.value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		acquisition->prepare(baseElement);
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
@@ -164,14 +164,14 @@ STAMethod<FloatType>::execute()
 		return;
 	}
 
-	const auto outputDir = taskPM->value<std::string>("output_dir");
+	const auto outputDir = taskPM.value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
-	ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto peakOffset = imagPM->value<FloatType>("peak_offset", 0.0, 50.0);
 
 	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
+	ImageGrid<FloatType>::get(*project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
 	visual_ = Visualization::VALUE_ENVELOPE_LOG;
 
@@ -192,7 +192,7 @@ STAMethod<FloatType>::execute()
 			if (processingWithEnvelope) {
 				visual_ = Visualization::VALUE_RECTIFIED_LOG;
 			}
-			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
+			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			std::vector<FloatType> txApod(config.numElements, 1.0);
 			std::vector<FloatType> rxApod(config.numElements, 1.0);
 			auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(
@@ -206,7 +206,7 @@ STAMethod<FloatType>::execute()
 		break;
 	default:
 		{
-			CoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
+			CoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 			auto processor = std::make_unique<DefaultSTAProcessor<FloatType>>(config, *acquisition,
 												coherenceFactor, peakOffset);
 			process(config.valueScale, *processor, baseElement, outputDir);

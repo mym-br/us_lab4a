@@ -60,7 +60,7 @@ public:
 	virtual std::unique_ptr<CoherenceFactor<FloatType>> clone() const = 0;
 	virtual FloatType calculate(const FloatType* data, unsigned int size) = 0;
 
-	static std::unique_ptr<CoherenceFactor<FloatType>> get(ParamMapPtr pm);
+	static std::unique_ptr<CoherenceFactor<FloatType>> get(const ParameterMap& pm);
 private:
 	CoherenceFactor(const CoherenceFactor&) = delete;
 	CoherenceFactor& operator=(const CoherenceFactor&) = delete;
@@ -70,16 +70,13 @@ private:
 
 template<typename FloatType>
 std::unique_ptr<CoherenceFactor<FloatType>>
-CoherenceFactor<FloatType>::get(ParamMapPtr pm)
+CoherenceFactor<FloatType>::get(const ParameterMap& pm)
 {
-	if (!pm) {
-		THROW_EXCEPTION(InvalidParameterException, "The parameter map has not been initialized.");
-	}
-	const auto coherenceFactorMethod = pm->value<std::string>("coherence_factor_method");
+	const auto coherenceFactorMethod = pm.value<std::string>("coherence_factor_method");
 	if (coherenceFactorMethod == "none") {
 		return nullptr;
 	} else if (coherenceFactorMethod == "sign_coherence_factor") {
-		const auto p = pm->value<FloatType>("sign_coherence_factor_p", 0.0, 100.0);
+		const auto p = pm.value<FloatType>("sign_coherence_factor_p", 0.0, 100.0);
 		return std::make_unique<SignCoherenceFactor<FloatType>>(p);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid coherence factor method: " << coherenceFactorMethod << '.');
@@ -94,7 +91,7 @@ template<typename FloatType>
 class CoherenceFactorProcessor {
 public:
 	CoherenceFactorProcessor() = default;
-	CoherenceFactorProcessor(ParamMapPtr pm)
+	CoherenceFactorProcessor(const ParameterMap& pm)
 			: cf_(CoherenceFactor<FloatType>::get(pm)) {
 	}
 	CoherenceFactorProcessor(const CoherenceFactorProcessor& o)
@@ -138,7 +135,7 @@ public:
 	virtual std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>> clone() const = 0;
 	virtual FloatType calculate(const std::complex<FloatType>* data, unsigned int size) = 0;
 
-	static std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>> get(ParamMapPtr pm);
+	static std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>> get(const ParameterMap& pm);
 private:
 	AnalyticSignalCoherenceFactor(const AnalyticSignalCoherenceFactor&) = delete;
 	AnalyticSignalCoherenceFactor& operator=(const AnalyticSignalCoherenceFactor&) = delete;
@@ -148,19 +145,16 @@ private:
 
 template<typename FloatType>
 std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>>
-AnalyticSignalCoherenceFactor<FloatType>::get(ParamMapPtr pm)
+AnalyticSignalCoherenceFactor<FloatType>::get(const ParameterMap& pm)
 {
-	if (!pm) {
-		THROW_EXCEPTION(InvalidParameterException, "The parameter map has not been initialized.");
-	}
-	const auto coherenceFactorMethod = pm->value<std::string>("analytic_signal_coherence_factor_method");
+	const auto coherenceFactorMethod = pm.value<std::string>("analytic_signal_coherence_factor_method");
 	if (coherenceFactorMethod == "none") {
 		return nullptr;
 	} else if (coherenceFactorMethod == "phase_coherence_factor") {
-		const auto gamma = pm->value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
+		const auto gamma = pm.value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
 		return std::make_unique<PhaseCoherenceFactor<FloatType>>(gamma);
 	} else if (coherenceFactorMethod == "prng_phase_coherence_factor") {
-		const auto gamma = pm->value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
+		const auto gamma = pm.value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
 		return std::make_unique<PRNGPhaseCoherenceFactor<FloatType>>(gamma);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid coherence factor method: " << coherenceFactorMethod << '.');
@@ -175,7 +169,7 @@ template<typename FloatType>
 class AnalyticSignalCoherenceFactorProcessor {
 public:
 	AnalyticSignalCoherenceFactorProcessor() = default;
-	AnalyticSignalCoherenceFactorProcessor(ParamMapPtr pm)
+	AnalyticSignalCoherenceFactorProcessor(const ParameterMap& pm)
 			: cf_(AnalyticSignalCoherenceFactor<FloatType>::get(pm)) {
 	}
 	AnalyticSignalCoherenceFactorProcessor(const AnalyticSignalCoherenceFactorProcessor& o)

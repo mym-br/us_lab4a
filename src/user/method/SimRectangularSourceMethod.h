@@ -94,9 +94,9 @@ private:
 	SimRectangularSourceMethod(SimRectangularSourceMethod&&) = delete;
 	SimRectangularSourceMethod& operator=(SimRectangularSourceMethod&&) = delete;
 
-	void loadData(ParamMapPtr taskPM, MainData& data, SimulationData& simData);
-	void loadSourceData(ParamMapPtr taskPM, MainData& data, bool sourceIsArray, SourceData& srcData);
-	void loadSimulationData(ParamMapPtr taskPM, const MainData& data, SimulationData& simData);
+	void loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData);
+	void loadSourceData(const ParameterMap& taskPM, MainData& data, bool sourceIsArray, SourceData& srcData);
+	void loadSimulationData(const ParameterMap& taskPM, const MainData& data, SimulationData& simData);
 	void prepareExcitation(FloatType dt, const SimulationData& simData, std::vector<FloatType>& tExc,
 				std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt);
 
@@ -116,27 +116,27 @@ SimRectangularSourceMethod<FloatType>::SimRectangularSourceMethod(Project& proje
 
 template<typename FloatType>
 void
-SimRectangularSourceMethod<FloatType>::loadData(ParamMapPtr taskPM, MainData& data, SimulationData& simData)
+SimRectangularSourceMethod<FloatType>::loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData)
 {
-	ParamMapPtr mainPM = project_.loadChildParameterMap(taskPM, "main_config_file");
+	const auto mainPM = project_.loadChildParameterMap(taskPM, "main_config_file");
 	//mainPM->getValue(data.density         , "density"          , 0.0, 100000.0);
 	mainPM->getValue(data.propagationSpeed, "propagation_speed", 0.0, 100000.0);
 	mainPM->getValue(data.centerFreq      , "center_frequency" , 0.0,  100.0e6);
 	mainPM->getValue(data.maxFreq         , "max_frequency"    , 0.0,  200.0e6);
 	data.nyquistRate = Util::nyquistRate(data.maxFreq);
-	taskPM->getValue(data.outputDir, "output_dir");
+	taskPM.getValue(data.outputDir, "output_dir");
 
 	loadSimulationData(taskPM, data, simData);
 }
 
 template<typename FloatType>
 void
-SimRectangularSourceMethod<FloatType>::loadSourceData(ParamMapPtr taskPM, MainData& data, bool sourceIsArray, SourceData& srcData)
+SimRectangularSourceMethod<FloatType>::loadSourceData(const ParameterMap& taskPM, MainData& data, bool sourceIsArray, SourceData& srcData)
 {
 	WavefrontObjFileWriter<FloatType> fw((project_.expDirectory() + "/source_geometry.obj").c_str());
 
 	if (sourceIsArray) {
-		ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+		const auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 		ArrayUtil::calculateTxElementPositions(*arrayPM, srcData.elemPos);
 		arrayPM->getValue(srcData.sourceWidth , "element_width" , 0.0, 10.0);
 		arrayPM->getValue(srcData.sourceHeight, "element_height", 0.0, 10.0);
@@ -164,7 +164,7 @@ SimRectangularSourceMethod<FloatType>::loadSourceData(ParamMapPtr taskPM, MainDa
 		}
 		fw.write();
 	} else {
-		ParamMapPtr singlePM = project_.loadChildParameterMap(taskPM, "single_source_config_file");
+		const auto singlePM = project_.loadChildParameterMap(taskPM, "single_source_config_file");
 		singlePM->getValue(srcData.sourceWidth , "source_width" , 0.0, 10.0);
 		singlePM->getValue(srcData.sourceHeight, "source_height", 0.0, 10.0);
 
@@ -184,9 +184,9 @@ SimRectangularSourceMethod<FloatType>::loadSourceData(ParamMapPtr taskPM, MainDa
 
 template<typename FloatType>
 void
-SimRectangularSourceMethod<FloatType>::loadSimulationData(ParamMapPtr taskPM, const MainData& data, SimulationData& simData)
+SimRectangularSourceMethod<FloatType>::loadSimulationData(const ParameterMap& taskPM, const MainData& data, SimulationData& simData)
 {
-	ParamMapPtr simPM = project_.loadChildParameterMap(taskPM, "simulation_config_file");
+	const auto simPM = project_.loadChildParameterMap(taskPM, "simulation_config_file");
 	simData.samplingFreq = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
 	simPM->getValue(simData.irMethod      , "impulse_response_method");
 	simPM->getValue(simData.excitationType, "excitation_type");
@@ -222,7 +222,7 @@ template<typename FloatType>
 void
 SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool sourceIsArray)
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
+	const auto& taskPM = project_.taskParameterMap();
 	MainData mainData;
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
@@ -231,7 +231,7 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 
 	project_.createDirectory(mainData.outputDir, false);
 
-	ParamMapPtr radPM = project_.loadChildParameterMap(taskPM, "rad_config_file");
+	const auto radPM = project_.loadChildParameterMap(taskPM, "rad_config_file");
 	const auto distance   = radPM->value<FloatType>("distance", 0.0, 100.0);
 	const auto thetaYStep = radPM->value<FloatType>("theta_y_step", 0.0, 10.0);
 	const auto thetaYMin  = sourceIsArray ? radPM->value<FloatType>("theta_y_min" , -90.0, 90.0) : FloatType(0);
@@ -359,7 +359,7 @@ template<typename FloatType>
 void
 SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsArray)
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
+	const auto& taskPM = project_.taskParameterMap();
 	MainData mainData;
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
@@ -375,7 +375,7 @@ SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsA
 	Matrix<XYZValue<FloatType>> gridData;
 
 	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
+	ImageGrid<FloatType>::get(*project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
 		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
@@ -432,7 +432,7 @@ template<typename FloatType>
 void
 SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArray)
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
+	const auto& taskPM = project_.taskParameterMap();
 	MainData mainData;
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
@@ -441,7 +441,7 @@ SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArr
 
 	project_.createDirectory(mainData.outputDir, false);
 
-	ParamMapPtr propagPM = project_.loadChildParameterMap(taskPM, "propag_config_file");
+	const auto propagPM = project_.loadChildParameterMap(taskPM, "propag_config_file");
 	const auto propagDistanceStep = propagPM->value<FloatType>("propagation_distance_step", 1.0e-6, 100.0);
 	const auto propagMinDistance  = propagPM->value<FloatType>("propagation_min_distance", 0.0, 100.0);
 	const auto propagMaxDistance  = propagPM->value<FloatType>("propagation_max_distance", propagMinDistance + propagDistanceStep, 100.0);
@@ -463,7 +463,7 @@ SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArr
 	Matrix<XYZValueArray<FloatType>> gridData;
 
 	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
+	ImageGrid<FloatType>::get(*project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
 		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
@@ -553,7 +553,7 @@ template<typename FloatType>
 void
 SimRectangularSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArray)
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
+	const auto& taskPM = project_.taskParameterMap();
 	MainData mainData;
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
@@ -562,7 +562,7 @@ SimRectangularSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArray)
 
 	project_.createDirectory(mainData.outputDir, false);
 
-	ParamMapPtr irPM = project_.loadChildParameterMap(taskPM, "ir_config_file");
+	const auto irPM = project_.loadChildParameterMap(taskPM, "ir_config_file");
 	const auto pointX = irPM->value<FloatType>("point_x", sourceIsArray ? -10000.0 : 0.0, 10000.0);
 	const auto pointY = irPM->value<FloatType>("point_y", sourceIsArray ? -10000.0 : 0.0, 10000.0);
 	const auto pointZ = irPM->value<FloatType>("point_z", 0.0, 10000.0);

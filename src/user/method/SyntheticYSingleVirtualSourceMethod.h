@@ -76,13 +76,13 @@ template<typename FloatType>
 void
 SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
-	ParamMapPtr svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
-	ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	const TnRnConfiguration<FloatType> config(svsPM, arrayPM);
+	const auto& taskPM = project_.taskParameterMap();
+	const auto svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
+	const auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	const TnRnConfiguration<FloatType> config(*svsPM, *arrayPM);
 	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
-	const auto dataDir = taskPM->value<std::string>("data_dir");
+	const auto dataDir = taskPM.value<std::string>("data_dir");
 
 	FloatType focusX = 0, focusY = 0;
 	// Set the focus at the mean x, y.
@@ -100,8 +100,8 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	ArrayUtil::calculateTx3DFocusDelay(focusX, focusY, focusZ, config.propagationSpeed,
 						config.txElemPos, baseElement, config.numElements, txDelays);
 
-	const auto outputDir = taskPM->value<std::string>("output_dir");
-	ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const auto outputDir = taskPM.value<std::string>("output_dir");
+	const auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
 	const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 
@@ -114,9 +114,9 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 	Matrix<XYZValueFactor<FloatType>> gridData;
 
 	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
+	ImageGrid<FloatType>::get(*project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
-	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
+	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 	bool coherenceFactorEnabled = coherenceFactor.enabled();
 	auto acquisition = std::make_unique<SavedTnRnAcquisition<FloatType>>(project_, config.numElements, "");
 	auto processor = std::make_unique<SynthYVectorial3DTnRnProcessor<FloatType>>(config, *acquisition,

@@ -73,16 +73,16 @@ public:
 	}
 
 	void loadTaskParameters(const std::string& taskFile);
-	ParamMapPtr taskParameterMap() const {
+	const ParameterMap& taskParameterMap() const {
 		if (!taskParameterMap_) THROW_EXCEPTION(InvalidStateException, "The task parameter map has not been loaded.");
-		return taskParameterMap_;
+		return *taskParameterMap_;
 	}
 
 	MethodEnum method() const { return method_; }
 	void setMethod(MethodEnum method) { method_ = method; }
 
-	ParamMapPtr loadParameterMap(const char* fileName) const;
-	ParamMapPtr loadChildParameterMap(ParamMapPtr pm, const char* fileNameKey) const;
+	std::unique_ptr<const ParameterMap> loadParameterMap(const char* fileName) const;
+	std::unique_ptr<const ParameterMap> loadChildParameterMap(const ParameterMap& pm, const char* fileNameKey) const;
 
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<FloatType>& container) const;
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const;
@@ -252,7 +252,7 @@ private:
 
 	MethodEnum method_;
 	USLab4a& mainWindow_;
-	ParamMapPtr taskParameterMap_;
+	std::unique_ptr<const ParameterMap> taskParameterMap_;
 	QString directory_;
 	QString expDirectory_;
 	Figure2DData figure2DData_;

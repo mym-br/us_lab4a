@@ -70,7 +70,7 @@ template<typename FloatType>
 DeviceSectorialScanMethod<FloatType>::DeviceSectorialScanMethod(Project& project)
 		: project_(project)
 {
-	config_.load(project_.loadParameterMap("config-device_sectorial_scan_method.txt"));
+	config_.load(*project_.loadParameterMap("config-device_sectorial_scan_method.txt"));
 }
 
 template<typename FloatType>
@@ -99,8 +99,8 @@ template<typename FloatType>
 void
 DeviceSectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 {
-	ParamMapPtr pm = project_.taskParameterMap();
-	const auto outputDir = pm->value<std::string>("output_dir");
+	const auto& pm = project_.taskParameterMap();
+	const auto outputDir = pm.value<std::string>("output_dir");
 
 	project_.createDirectory(outputDir, false);
 
@@ -124,8 +124,8 @@ template<typename FloatType>
 void
 DeviceSectorialScanMethod<FloatType>::showSavedImage()
 {
-	ParamMapPtr pm = project_.taskParameterMap();
-	const auto outputDir = pm->value<std::string>("output_dir");
+	const auto& pm = project_.taskParameterMap();
+	const auto outputDir = pm.value<std::string>("output_dir");
 
 	Matrix<XYZValue<FloatType>> imageData;
 
@@ -176,8 +176,8 @@ DeviceSectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 {
 	project_.resetTrigger();
 
-	ParamMapPtr pm = project_.taskParameterMap();
-	const auto outputDirPrefix = pm->value<std::string>("output_dir_prefix");
+	const auto& pm = project_.taskParameterMap();
+	const auto outputDirPrefix = pm.value<std::string>("output_dir_prefix");
 
 	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
 	Matrix<XZValue<FloatType>> acqImageData;

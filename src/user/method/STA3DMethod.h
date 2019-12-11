@@ -113,10 +113,10 @@ template<typename FloatType>
 void
 STA3DMethod<FloatType>::execute()
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
-	ParamMapPtr saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
-	ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	const SA3DConfiguration<FloatType> config(saPM, arrayPM);
+	const auto& taskPM = project_.taskParameterMap();
+	const auto saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
+	const auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	const SA3DConfiguration<FloatType> config(*saPM, *arrayPM);
 
 	const auto baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
 
@@ -133,7 +133,7 @@ STA3DMethod<FloatType>::execute()
 	}
 
 	if (project_.method() == MethodEnum::sta_3d_simulated_save_signals) {
-		const auto dataDir = taskPM->value<std::string>("data_dir");
+		const auto dataDir = taskPM.value<std::string>("data_dir");
 		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
 		IterationCounter::reset(config.activeTxElem.size());
 		acquisition->prepare(baseElement);
@@ -144,8 +144,8 @@ STA3DMethod<FloatType>::execute()
 		}
 		return;
 	} else if (project_.method() == MethodEnum::sta_3d_simulated_seq_y_save_signals) {
-		const auto dataDir = taskPM->value<std::string>("data_dir");
-		ParamMapPtr seqYCylPM = project_.loadChildParameterMap(taskPM, "seq_y_cyl_config_file");
+		const auto dataDir = taskPM.value<std::string>("data_dir");
+		const auto seqYCylPM = project_.loadChildParameterMap(taskPM, "seq_y_cyl_config_file");
 		const auto yStep = seqYCylPM->value<FloatType>("y_step",          0.0,   100.0);
 		const auto minY  = seqYCylPM->value<FloatType>("min_y" ,     -10000.0, 10000.0);
 		const auto maxY  = seqYCylPM->value<FloatType>("max_y" , minY + yStep, 10000.0);
@@ -168,14 +168,14 @@ STA3DMethod<FloatType>::execute()
 		return;
 	}
 
-	const auto outputDir = taskPM->value<std::string>("output_dir");
+	const auto outputDir = taskPM.value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
 	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
+	ImageGrid<FloatType>::get(*project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
 	if (project_.method() == MethodEnum::sta_3d_vectorial_simulated) {
-		ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+		const auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 		const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 		const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
 
@@ -191,7 +191,7 @@ STA3DMethod<FloatType>::execute()
 		const auto rxApodFile = imagPM->value<std::string>("rx_apodization_file");
 		project_.loadHDF5(rxApodFile, "apod", rxApod);
 
-		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
+		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 		auto processor = std::make_unique<Vectorial3DSTAProcessor<FloatType>>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset,

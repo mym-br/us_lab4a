@@ -67,7 +67,7 @@ private:
 	NetworkSyncSingleVirtualSourceMethod(NetworkSyncSingleVirtualSourceMethod&&) = delete;
 	NetworkSyncSingleVirtualSourceMethod& operator=(NetworkSyncSingleVirtualSourceMethod&&) = delete;
 
-	void saveSignals(ParamMapPtr taskPM, TnRnAcquisition<FloatType>& acq,
+	void saveSignals(const ParameterMap& taskPM, TnRnAcquisition<FloatType>& acq,
 				unsigned int baseElement, const std::vector<FloatType>& txDelays,
 				const std::string& dataDir);
 
@@ -86,13 +86,13 @@ template<typename FloatType>
 void
 NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 {
-	ParamMapPtr taskPM = project_.taskParameterMap();
-	ParamMapPtr svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
-	ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
-	const TnRnConfiguration<FloatType> config(svsPM, arrayPM);
+	const auto& taskPM = project_.taskParameterMap();
+	const auto svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
+	const auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	const TnRnConfiguration<FloatType> config(*svsPM, *arrayPM);
 	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
-	const auto dataDir = taskPM->value<std::string>("data_dir");
+	const auto dataDir = taskPM.value<std::string>("data_dir");
 
 	FloatType focusX = 0, focusY = 0;
 	// Set the focus at the mean x, y.
@@ -117,8 +117,8 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 		return;
 	}
 
-	const auto outputDir = taskPM->value<std::string>("output_dir");
-	ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const auto outputDir = taskPM.value<std::string>("output_dir");
+	const auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
 	const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 
@@ -131,9 +131,9 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 	Matrix<XYZValueFactor<FloatType>> gridData;
 
 	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
+	ImageGrid<FloatType>::get(*project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData);
 
-	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
+	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
 	bool coherenceFactorEnabled = coherenceFactor.enabled();
 	auto acquisition = std::make_unique<SavedTnRnAcquisition<FloatType>>(project_, config.numElements, "");
 	auto processor = std::make_unique<Vectorial3DTnRnProcessor<FloatType>>(config, *acquisition,
@@ -213,11 +213,11 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 
 template<typename FloatType>
 void
-NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(ParamMapPtr taskPM, TnRnAcquisition<FloatType>& acq,
+NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(const ParameterMap& taskPM, TnRnAcquisition<FloatType>& acq,
 								unsigned int baseElement, const std::vector<FloatType>& txDelays,
 								const std::string& dataDir)
 {
-	ParamMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
+	const auto scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
 	const auto serverPort = scanPM->value<unsigned int>("sync_server_port", 1024, 65535);
 	const auto asyncAcq   = scanPM->value<bool>(        "async_acquisition");
 	const auto minY       = scanPM->value<FloatType>(   "min_y", -10000.0, 10000.0);

@@ -36,7 +36,7 @@ namespace Lab {
 template<typename FloatType>
 struct SA3DConfiguration {
 	SA3DConfiguration() = default;
-	SA3DConfiguration(ParamMapPtr saPM, ParamMapPtr arrayPM) { load(saPM, arrayPM); }
+	SA3DConfiguration(const ParameterMap& saPM, const ParameterMap& arrayPM) { load(saPM, arrayPM); }
 
 	unsigned int numElementsMux;
 	unsigned int numPulses;
@@ -56,7 +56,7 @@ struct SA3DConfiguration {
 	std::vector<XY<FloatType>> txElemPos; // m
 	std::vector<XY<FloatType>> rxElemPos; // m
 
-	void load(ParamMapPtr saPM, ParamMapPtr arrayPM);
+	void load(const ParameterMap& saPM, const ParameterMap& arrayPM);
 
 private:
 	void fillActiveElem(const std::string& listStr, unsigned int maxElem, std::vector<unsigned int>& activeElem);
@@ -107,31 +107,31 @@ SA3DConfiguration<FloatType>::fillActiveElem(const std::string& listStr, unsigne
 
 template<typename FloatType>
 void
-SA3DConfiguration<FloatType>::load(ParamMapPtr saPM, ParamMapPtr arrayPM)
+SA3DConfiguration<FloatType>::load(const ParameterMap& saPM, const ParameterMap& arrayPM)
 {
-	saPM->getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
-	saPM->getValue(numPulses        , "num_pulses"         ,       1,     100);
-	saPM->getValue(centerFrequency  , "center_frequency"   ,   100.0, 100.0e6);
-	saPM->getValue(maxFrequency     , "max_frequency"      ,   100.0, 100.0e6);
-	saPM->getValue(acquisitionTime  , "acquisition_time"   ,  1.0e-6,     1.0);
-	saPM->getValue(minGain          , "min_gain"           , -2000.0,  2000.0);
-	saPM->getValue(maxGain          , "max_gain"           , minGain,  2000.0);
-	saPM->getValue(propagationSpeed , "propagation_speed_1",   100.0, 10000.0);
-	saPM->getValue(acquisitionDelay , "acquisition_delay"  ,     0.0,     1.0);
-	saPM->getValue(samplingFrequency, "sampling_frequency" ,   100.0, 200.0e6);
-	saPM->getValue(deadZoneM        , "dead_zone_m"        ,     0.0, 50.0e-3);
-	saPM->getValue(valueScale       , "value_scale"        ,     0.0,  1.0e30);
+	saPM.getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
+	saPM.getValue(numPulses        , "num_pulses"         ,       1,     100);
+	saPM.getValue(centerFrequency  , "center_frequency"   ,   100.0, 100.0e6);
+	saPM.getValue(maxFrequency     , "max_frequency"      ,   100.0, 100.0e6);
+	saPM.getValue(acquisitionTime  , "acquisition_time"   ,  1.0e-6,     1.0);
+	saPM.getValue(minGain          , "min_gain"           , -2000.0,  2000.0);
+	saPM.getValue(maxGain          , "max_gain"           , minGain,  2000.0);
+	saPM.getValue(propagationSpeed , "propagation_speed_1",   100.0, 10000.0);
+	saPM.getValue(acquisitionDelay , "acquisition_delay"  ,     0.0,     1.0);
+	saPM.getValue(samplingFrequency, "sampling_frequency" ,   100.0, 200.0e6);
+	saPM.getValue(deadZoneM        , "dead_zone_m"        ,     0.0, 50.0e-3);
+	saPM.getValue(valueScale       , "value_scale"        ,     0.0,  1.0e30);
 
-	ArrayUtil::calculateTxElementPositions(*arrayPM, txElemPos);
-	ArrayUtil::calculateRxElementPositions(*arrayPM, rxElemPos);
+	ArrayUtil::calculateTxElementPositions(arrayPM, txElemPos);
+	ArrayUtil::calculateRxElementPositions(arrayPM, rxElemPos);
 	if (txElemPos.size() > numElementsMux || rxElemPos.size() > numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Error: numElementsMux is less than the number of array elements.");
 	}
 
 	LOG_DEBUG << "Active tx elements:";
-	fillActiveElem(saPM->value<std::string>("active_tx_elem"), txElemPos.size() - 1U, activeTxElem);
+	fillActiveElem(saPM.value<std::string>("active_tx_elem"), txElemPos.size() - 1U, activeTxElem);
 	LOG_DEBUG << "Active rx elements:";
-	fillActiveElem(saPM->value<std::string>("active_rx_elem"), rxElemPos.size() - 1U, activeRxElem);
+	fillActiveElem(saPM.value<std::string>("active_rx_elem"), rxElemPos.size() - 1U, activeRxElem);
 }
 
 } // namespace Lab

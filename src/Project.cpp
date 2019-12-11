@@ -44,25 +44,25 @@ Project::loadTaskParameters(const std::string& taskFileName)
 {
 	QFile taskFile(directory_ + '/' + taskFileName.c_str());
 	if (taskFile.exists()) {
-		taskParameterMap_ = std::make_shared<const ParameterMap>(taskFile.fileName());
+		taskParameterMap_ = std::make_unique<const ParameterMap>(taskFile.fileName());
 	} else {
 		THROW_EXCEPTION(InvalidFileException, "The file \"" << taskFile.fileName().toStdString() << "\" could not be opened.");
 	}
 }
 
-ParamMapPtr
+std::unique_ptr<const ParameterMap>
 Project::loadParameterMap(const char* fileName) const
 {
 	QString filePath = expDirectory_ + '/' + fileName;
-	return std::make_shared<const ParameterMap>(filePath);
+	return std::make_unique<const ParameterMap>(filePath);
 }
 
-ParamMapPtr
-Project::loadChildParameterMap(ParamMapPtr pm, const char* fileNameKey) const
+std::unique_ptr<const ParameterMap>
+Project::loadChildParameterMap(const ParameterMap& pm, const char* fileNameKey) const
 {
-	const auto fileName = pm->value<std::string>(fileNameKey);
+	const auto fileName = pm.value<std::string>(fileNameKey);
 	QString filePath = expDirectory_ + '/' + fileName.c_str();
-	return std::make_shared<const ParameterMap>(filePath);
+	return std::make_unique<const ParameterMap>(filePath);
 }
 
 void
