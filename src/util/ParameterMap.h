@@ -76,10 +76,10 @@ private:
 	ParameterMap(ParameterMap&&) = delete;
 	ParameterMap& operator=(ParameterMap&&) = delete;
 
-	template<typename T> T convertValue(const QString s) const;
+	template<typename T> static T convertValue(const QString s);
 
 	const QString filePath_;
-	std::unique_ptr<const KeyValueFileReader> reader_;
+	const KeyValueFileReader reader_;
 };
 
 typedef std::unique_ptr<const ParameterMap> ParamMapPtr;
@@ -88,7 +88,7 @@ template<typename T>
 T
 ParameterMap::value(const char* key) const
 {
-	const QHash<QString, QString>& map = reader_->map();
+	const auto& map = reader_.map();
 
 	if (!map.contains(key)) {
 		THROW_EXCEPTION(InvalidValueException, "Key '" << key << "' not found in file " << filePath_.toStdString() << '.');
