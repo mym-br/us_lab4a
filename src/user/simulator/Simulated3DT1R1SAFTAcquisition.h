@@ -72,7 +72,6 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::Simulated3DT1R1SAFTAcquisition(Projec
 		, maxAbsValue_()
 		, baseElement_()
 {
-	const ParameterMap& taskPM  = project_.taskParameterMap();
 	const ParamMapPtr pm      = project_.loadChildParameterMap("simulated_3d_acquisition_config_file");
 	const ParamMapPtr arrayPM = project_.loadChildParameterMap("array_config_file");
 

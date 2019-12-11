@@ -95,8 +95,8 @@ private:
 	SimRectangularSourceMethod& operator=(SimRectangularSourceMethod&&) = delete;
 
 	void loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData);
-	void loadSourceData(const ParameterMap& taskPM, MainData& data, bool sourceIsArray, SourceData& srcData);
-	void loadSimulationData(const ParameterMap& taskPM, const MainData& data, SimulationData& simData);
+	void loadSourceData(MainData& data, bool sourceIsArray, SourceData& srcData);
+	void loadSimulationData(const MainData& data, SimulationData& simData);
 	void prepareExcitation(FloatType dt, const SimulationData& simData, std::vector<FloatType>& tExc,
 				std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt);
 
@@ -126,12 +126,12 @@ SimRectangularSourceMethod<FloatType>::loadData(const ParameterMap& taskPM, Main
 	data.nyquistRate = Util::nyquistRate(data.maxFreq);
 	taskPM.getValue(data.outputDir, "output_dir");
 
-	loadSimulationData(taskPM, data, simData);
+	loadSimulationData(data, simData);
 }
 
 template<typename FloatType>
 void
-SimRectangularSourceMethod<FloatType>::loadSourceData(const ParameterMap& taskPM, MainData& data, bool sourceIsArray, SourceData& srcData)
+SimRectangularSourceMethod<FloatType>::loadSourceData(MainData& data, bool sourceIsArray, SourceData& srcData)
 {
 	WavefrontObjFileWriter<FloatType> fw((project_.expDirectory() + "/source_geometry.obj").c_str());
 
@@ -184,7 +184,7 @@ SimRectangularSourceMethod<FloatType>::loadSourceData(const ParameterMap& taskPM
 
 template<typename FloatType>
 void
-SimRectangularSourceMethod<FloatType>::loadSimulationData(const ParameterMap& taskPM, const MainData& data, SimulationData& simData)
+SimRectangularSourceMethod<FloatType>::loadSimulationData(const MainData& data, SimulationData& simData)
 {
 	const ParamMapPtr simPM = project_.loadChildParameterMap("simulation_config_file");
 	simData.samplingFreq = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
@@ -227,7 +227,7 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
 	SourceData srcData;
-	loadSourceData(taskPM, mainData, sourceIsArray, srcData);
+	loadSourceData(mainData, sourceIsArray, srcData);
 
 	project_.createDirectory(mainData.outputDir, false);
 
@@ -364,7 +364,7 @@ SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsA
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
 	SourceData srcData;
-	loadSourceData(taskPM, mainData, sourceIsArray, srcData);
+	loadSourceData(mainData, sourceIsArray, srcData);
 
 	project_.createDirectory(mainData.outputDir, false);
 
@@ -437,7 +437,7 @@ SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArr
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
 	SourceData srcData;
-	loadSourceData(taskPM, mainData, sourceIsArray, srcData);
+	loadSourceData(mainData, sourceIsArray, srcData);
 
 	project_.createDirectory(mainData.outputDir, false);
 
@@ -558,7 +558,7 @@ SimRectangularSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArray)
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
 	SourceData srcData;
-	loadSourceData(taskPM, mainData, sourceIsArray, srcData);
+	loadSourceData(mainData, sourceIsArray, srcData);
 
 	project_.createDirectory(mainData.outputDir, false);
 

@@ -68,7 +68,7 @@ private:
 	NetworkSyncSTAMethod(NetworkSyncSTAMethod&&) = delete;
 	NetworkSyncSTAMethod& operator=(NetworkSyncSTAMethod&&) = delete;
 
-	void saveSignals(const ParameterMap& taskPM, const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
+	void saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
 				unsigned int baseElement, const std::string& dataDir);
 
 	Project& project_;
@@ -95,7 +95,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	if (project_.method() == MethodEnum::sta_network_sync_save_signals) {
 		project_.createDirectory(dataDir, true);
 		auto acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
-		saveSignals(taskPM, config, *acquisition, baseElement, dataDir);
+		saveSignals(config, *acquisition, baseElement, dataDir);
 		return;
 	}
 
@@ -203,7 +203,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 template<typename FloatType>
 void
-NetworkSyncSTAMethod<FloatType>::saveSignals(const ParameterMap& taskPM, const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
+NetworkSyncSTAMethod<FloatType>::saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
 						unsigned int baseElement, const std::string& dataDir)
 {
 	const ParamMapPtr scanPM = project_.loadChildParameterMap("scan_config_file");

@@ -82,8 +82,8 @@ private:
 	SimCircularSourceMethod& operator=(SimCircularSourceMethod&&) = delete;
 
 	void loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData);
-	void loadSourceData(const ParameterMap& taskPM, SourceData& srcData);
-	void loadSimulationData(const ParameterMap& taskPM, const MainData& data, SimulationData& simData);
+	void loadSourceData(SourceData& srcData);
+	void loadSimulationData(const MainData& data, SimulationData& simData);
 	void prepareExcitation(FloatType dt, const SimulationData& simData, std::vector<FloatType>& tExc,
 				std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt);
 
@@ -113,12 +113,12 @@ SimCircularSourceMethod<FloatType>::loadData(const ParameterMap& taskPM, MainDat
 	data.nyquistRate = Util::nyquistRate(data.maxFreq);
 	taskPM.getValue(data.outputDir, "output_dir");
 
-	loadSimulationData(taskPM, data, simData);
+	loadSimulationData(data, simData);
 }
 
 template<typename FloatType>
 void
-SimCircularSourceMethod<FloatType>::loadSourceData(const ParameterMap& taskPM, SourceData& srcData)
+SimCircularSourceMethod<FloatType>::loadSourceData(SourceData& srcData)
 {
 	const auto singlePM = project_.loadChildParameterMap("source_config_file");
 	singlePM->getValue(srcData.sourceRadius, "source_radius" , 0.0, 10.0);
@@ -126,7 +126,7 @@ SimCircularSourceMethod<FloatType>::loadSourceData(const ParameterMap& taskPM, S
 
 template<typename FloatType>
 void
-SimCircularSourceMethod<FloatType>::loadSimulationData(const ParameterMap& taskPM, const MainData& data, SimulationData& simData)
+SimCircularSourceMethod<FloatType>::loadSimulationData(const MainData& data, SimulationData& simData)
 {
 	const ParamMapPtr simPM = project_.loadChildParameterMap("simulation_config_file");
 	simData.samplingFreq = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
@@ -169,7 +169,7 @@ SimCircularSourceMethod<FloatType>::execTransientRadiationPattern()
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
 	SourceData srcData;
-	loadSourceData(taskPM, srcData);
+	loadSourceData(srcData);
 
 	project_.createDirectory(mainData.outputDir, false);
 
@@ -243,7 +243,7 @@ SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
 	SourceData srcData;
-	loadSourceData(taskPM, srcData);
+	loadSourceData(srcData);
 
 	project_.createDirectory(mainData.outputDir, false);
 
@@ -302,7 +302,7 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
 	SourceData srcData;
-	loadSourceData(taskPM, srcData);
+	loadSourceData(srcData);
 
 	project_.createDirectory(mainData.outputDir, false);
 
@@ -409,7 +409,7 @@ SimCircularSourceMethod<FloatType>::execImpulseResponse()
 	SimulationData simData;
 	loadData(taskPM, mainData, simData);
 	SourceData srcData;
-	loadSourceData(taskPM, srcData);
+	loadSourceData(srcData);
 
 	project_.createDirectory(mainData.outputDir, false);
 

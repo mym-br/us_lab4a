@@ -67,7 +67,7 @@ private:
 	NetworkSyncSingleVirtualSourceMethod(NetworkSyncSingleVirtualSourceMethod&&) = delete;
 	NetworkSyncSingleVirtualSourceMethod& operator=(NetworkSyncSingleVirtualSourceMethod&&) = delete;
 
-	void saveSignals(const ParameterMap& taskPM, TnRnAcquisition<FloatType>& acq,
+	void saveSignals(TnRnAcquisition<FloatType>& acq,
 				unsigned int baseElement, const std::vector<FloatType>& txDelays,
 				const std::string& dataDir);
 
@@ -113,7 +113,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 	if (project_.method() == MethodEnum::single_virtual_source_network_sync_save_signals) {
 		project_.createDirectory(dataDir, true);
 		auto acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
-		saveSignals(taskPM, *acquisition, baseElement, txDelays, dataDir);
+		saveSignals(*acquisition, baseElement, txDelays, dataDir);
 		return;
 	}
 
@@ -213,7 +213,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 
 template<typename FloatType>
 void
-NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(const ParameterMap& taskPM, TnRnAcquisition<FloatType>& acq,
+NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(TnRnAcquisition<FloatType>& acq,
 								unsigned int baseElement, const std::vector<FloatType>& txDelays,
 								const std::string& dataDir)
 {

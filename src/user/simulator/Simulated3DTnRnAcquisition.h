@@ -70,7 +70,6 @@ Simulated3DTnRnAcquisition<FloatType>::Simulated3DTnRnAcquisition(Project& proje
 		, config_(config)
 		, maxAbsValue_()
 {
-	const ParameterMap& taskPM  = project_.taskParameterMap();
 	const ParamMapPtr pm      = project_.loadChildParameterMap("simulated_3d_acquisition_config_file");
 	const ParamMapPtr arrayPM = project_.loadChildParameterMap("array_config_file");
 
