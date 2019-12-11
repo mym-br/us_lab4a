@@ -124,7 +124,7 @@ void
 STAMethod<FloatType>::execute()
 {
 	const ParameterMap& taskPM = project_.taskParameterMap();
-	const ParamMapPtr staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	const ParamMapPtr staPM = project_.loadChildParameterMap("sta_config_file");
 	const STAConfiguration<FloatType> config(*staPM);
 	const auto baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 
@@ -167,11 +167,11 @@ STAMethod<FloatType>::execute()
 	const auto outputDir = taskPM.value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
-	const ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const ParamMapPtr imagPM = project_.loadChildParameterMap("imag_config_file");
 	const auto peakOffset = imagPM->value<FloatType>("peak_offset", 0.0, 50.0);
 
 	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(*project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
+	ImageGrid<FloatType>::get(*project_.loadChildParameterMap("grid_config_file"), nyquistLambda, gridData_);
 
 	visual_ = Visualization::VALUE_ENVELOPE_LOG;
 
@@ -192,7 +192,7 @@ STAMethod<FloatType>::execute()
 			if (processingWithEnvelope) {
 				visual_ = Visualization::VALUE_RECTIFIED_LOG;
 			}
-			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
+			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap("coherence_factor_config_file"));
 			std::vector<FloatType> txApod(config.numElements, 1.0);
 			std::vector<FloatType> rxApod(config.numElements, 1.0);
 			auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(
@@ -206,7 +206,7 @@ STAMethod<FloatType>::execute()
 		break;
 	default:
 		{
-			CoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap(taskPM, "coherence_factor_config_file"));
+			CoherenceFactorProcessor<FloatType> coherenceFactor(*project_.loadChildParameterMap("coherence_factor_config_file"));
 			auto processor = std::make_unique<DefaultSTAProcessor<FloatType>>(config, *acquisition,
 												coherenceFactor, peakOffset);
 			process(config.valueScale, *processor, baseElement, outputDir);

@@ -41,7 +41,7 @@ SingleAcquisitionMethod::fillConfiguration()
 	const ParameterMap& taskPM = project_.taskParameterMap();
 	taskPM.getValue(config_.savedAcqDir, "saved_acquisition_dir");
 
-	const auto acqPM = project_.loadChildParameterMap(taskPM, "acq_config_file");
+	const auto acqPM = project_.loadChildParameterMap("acq_config_file");
 	acqPM->getValue(config_.samplingFrequency, "sampling_frequency",  100.0, 200.0e6);
 	acqPM->getValue(config_.centerFrequency  , "center_frequency"  ,  100.0, 100.0e6);
 	acqPM->getValue(config_.acquisitionTime  , "acquisition_time"  , 1.0e-6,     1.0);

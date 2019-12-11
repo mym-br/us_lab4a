@@ -71,8 +71,8 @@ Simulated3DTnRnAcquisition<FloatType>::Simulated3DTnRnAcquisition(Project& proje
 		, maxAbsValue_()
 {
 	const ParameterMap& taskPM  = project_.taskParameterMap();
-	const ParamMapPtr pm      = project_.loadChildParameterMap(taskPM, "simulated_3d_acquisition_config_file");
-	const ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	const ParamMapPtr pm      = project_.loadChildParameterMap("simulated_3d_acquisition_config_file");
+	const ParamMapPtr arrayPM = project_.loadChildParameterMap("array_config_file");
 
 	const auto reflectorsFileName = pm->value<std::string>("reflectors_file");
 	pm->getValue(reflectorsOffsetX_, "reflectors_offset_x", -10000.0, 10000.0);

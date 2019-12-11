@@ -81,8 +81,10 @@ public:
 	MethodEnum method() const { return method_; }
 	void setMethod(MethodEnum method) { method_ = method; }
 
-	std::unique_ptr<const ParameterMap> loadParameterMap(const char* fileName) const;
-	std::unique_ptr<const ParameterMap> loadChildParameterMap(const ParameterMap& pm, const char* fileNameKey) const;
+	ParamMapPtr loadParameterMap(const char* fileName) const;
+	ParamMapPtr loadChildParameterMap(const ParameterMap& pm, const char* fileNameKey) const;
+	// Uses taskParameterMap() to obtain the parent ParameterMap.
+	ParamMapPtr loadChildParameterMap(const char* fileNameKey) const;
 
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<FloatType>& container) const;
 	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const;
@@ -252,7 +254,7 @@ private:
 
 	MethodEnum method_;
 	USLab4a& mainWindow_;
-	std::unique_ptr<const ParameterMap> taskParameterMap_;
+	ParamMapPtr taskParameterMap_;
 	QString directory_;
 	QString expDirectory_;
 	Figure2DData figure2DData_;
