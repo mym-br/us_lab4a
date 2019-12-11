@@ -86,9 +86,9 @@ template<typename FloatType>
 void
 NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 {
-	const auto& taskPM = project_.taskParameterMap();
-	const auto svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
-	const auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	const ParameterMap& taskPM = project_.taskParameterMap();
+	const ParamMapPtr svsPM   = project_.loadChildParameterMap(taskPM, "svs_config_file");
+	const ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const TnRnConfiguration<FloatType> config(*svsPM, *arrayPM);
 	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
@@ -118,7 +118,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 	}
 
 	const auto outputDir = taskPM.value<std::string>("output_dir");
-	const auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
 	const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 
@@ -217,7 +217,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(const ParameterMap&
 								unsigned int baseElement, const std::vector<FloatType>& txDelays,
 								const std::string& dataDir)
 {
-	const auto scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
+	const ParamMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
 	const auto serverPort = scanPM->value<unsigned int>("sync_server_port", 1024, 65535);
 	const auto asyncAcq   = scanPM->value<bool>(        "async_acquisition");
 	const auto minY       = scanPM->value<FloatType>(   "min_y", -10000.0, 10000.0);

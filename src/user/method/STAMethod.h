@@ -123,8 +123,8 @@ template<typename FloatType>
 void
 STAMethod<FloatType>::execute()
 {
-	const auto& taskPM = project_.taskParameterMap();
-	const auto staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	const ParameterMap& taskPM = project_.taskParameterMap();
+	const ParamMapPtr staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
 	const STAConfiguration<FloatType> config(*staPM);
 	const auto baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 
@@ -167,7 +167,7 @@ STAMethod<FloatType>::execute()
 	const auto outputDir = taskPM.value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
-	const auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto peakOffset = imagPM->value<FloatType>("peak_offset", 0.0, 50.0);
 
 	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);

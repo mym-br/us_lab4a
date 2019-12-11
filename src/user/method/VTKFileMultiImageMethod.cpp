@@ -55,7 +55,7 @@ VTKFileMultiImageMethod::VTKFileMultiImageMethod(Project& project)
 void
 VTKFileMultiImageMethod::execute()
 {
-	const auto& taskPM = project_.taskParameterMap();
+	const ParameterMap& taskPM = project_.taskParameterMap();
 	const auto imageBaseDir = taskPM.value<std::string>("image_dir");
 	const auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto xFile        = imagPM->value<std::string>("x_file");

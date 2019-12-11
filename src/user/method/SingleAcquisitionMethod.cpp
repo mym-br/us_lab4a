@@ -38,7 +38,7 @@ namespace Lab {
 void
 SingleAcquisitionMethod::fillConfiguration()
 {
-	const auto& taskPM = project_.taskParameterMap();
+	const ParameterMap& taskPM = project_.taskParameterMap();
 	taskPM.getValue(config_.savedAcqDir, "saved_acquisition_dir");
 
 	const auto acqPM = project_.loadChildParameterMap(taskPM, "acq_config_file");

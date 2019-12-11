@@ -113,9 +113,9 @@ template<typename FloatType>
 void
 STA3DMethod<FloatType>::execute()
 {
-	const auto& taskPM = project_.taskParameterMap();
-	const auto saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
-	const auto arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
+	const ParameterMap& taskPM = project_.taskParameterMap();
+	const ParamMapPtr saPM    = project_.loadChildParameterMap(taskPM, "sa_config_file");
+	const ParamMapPtr arrayPM = project_.loadChildParameterMap(taskPM, "array_config_file");
 	const SA3DConfiguration<FloatType> config(*saPM, *arrayPM);
 
 	const auto baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
@@ -145,7 +145,7 @@ STA3DMethod<FloatType>::execute()
 		return;
 	} else if (project_.method() == MethodEnum::sta_3d_simulated_seq_y_save_signals) {
 		const auto dataDir = taskPM.value<std::string>("data_dir");
-		const auto seqYCylPM = project_.loadChildParameterMap(taskPM, "seq_y_cyl_config_file");
+		const ParamMapPtr seqYCylPM = project_.loadChildParameterMap(taskPM, "seq_y_cyl_config_file");
 		const auto yStep = seqYCylPM->value<FloatType>("y_step",          0.0,   100.0);
 		const auto minY  = seqYCylPM->value<FloatType>("min_y" ,     -10000.0, 10000.0);
 		const auto maxY  = seqYCylPM->value<FloatType>("max_y" , minY + yStep, 10000.0);
@@ -175,7 +175,7 @@ STA3DMethod<FloatType>::execute()
 	ImageGrid<FloatType>::get(*project_.loadChildParameterMap(taskPM, "grid_config_file"), nyquistLambda, gridData_);
 
 	if (project_.method() == MethodEnum::sta_3d_vectorial_simulated) {
-		const auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+		const ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 		const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 		const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
 

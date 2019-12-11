@@ -99,7 +99,7 @@ template<typename FloatType>
 void
 DeviceSectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 {
-	const auto& pm = project_.taskParameterMap();
+	const ParameterMap& pm = project_.taskParameterMap();
 	const auto outputDir = pm.value<std::string>("output_dir");
 
 	project_.createDirectory(outputDir, false);
@@ -124,7 +124,7 @@ template<typename FloatType>
 void
 DeviceSectorialScanMethod<FloatType>::showSavedImage()
 {
-	const auto& pm = project_.taskParameterMap();
+	const ParameterMap& pm = project_.taskParameterMap();
 	const auto outputDir = pm.value<std::string>("output_dir");
 
 	Matrix<XYZValue<FloatType>> imageData;
@@ -176,7 +176,7 @@ DeviceSectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
 {
 	project_.resetTrigger();
 
-	const auto& pm = project_.taskParameterMap();
+	const ParameterMap& pm = project_.taskParameterMap();
 	const auto outputDirPrefix = pm.value<std::string>("output_dir_prefix");
 
 	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);

@@ -86,8 +86,8 @@ template<typename FloatType>
 void
 NetworkSyncSTAMethod<FloatType>::execute()
 {
-	const auto& taskPM = project_.taskParameterMap();
-	const auto staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
+	const ParameterMap& taskPM = project_.taskParameterMap();
+	const ParamMapPtr staPM = project_.loadChildParameterMap(taskPM, "sta_config_file");
 	const STAConfiguration<FloatType> config(*staPM);
 	const auto baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 	const auto dataDir = taskPM.value<std::string>("data_dir");
@@ -100,7 +100,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	}
 
 	const auto outputDir = taskPM.value<std::string>("output_dir");
-	const auto imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
+	const ParamMapPtr imagPM = project_.loadChildParameterMap(taskPM, "imag_config_file");
 	const auto peakOffset                      = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
 	const auto vectorialProcessingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
 	const auto upsamplingFactor                = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
@@ -206,7 +206,7 @@ void
 NetworkSyncSTAMethod<FloatType>::saveSignals(const ParameterMap& taskPM, const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
 						unsigned int baseElement, const std::string& dataDir)
 {
-	const auto scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
+	const ParamMapPtr scanPM = project_.loadChildParameterMap(taskPM, "scan_config_file");
 	const auto serverPort = scanPM->value<unsigned int>("sync_server_port",     1024,   65535);
 	const auto minY       = scanPM->value<FloatType>(   "min_y"           , -10000.0, 10000.0);
 	const auto yStep      = scanPM->value<FloatType>(   "y_step"          ,   1.0e-6,  1000.0);

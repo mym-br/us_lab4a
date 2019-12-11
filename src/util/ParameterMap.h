@@ -82,7 +82,7 @@ private:
 	std::unique_ptr<const KeyValueFileReader> reader_;
 };
 
-
+typedef std::unique_ptr<const ParameterMap> ParamMapPtr;
 
 template<typename T>
 T
