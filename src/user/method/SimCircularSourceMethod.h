@@ -105,7 +105,7 @@ template<typename FloatType>
 void
 SimCircularSourceMethod<FloatType>::loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData)
 {
-	const auto mainPM = project_.loadChildParameterMap("main_config_file");
+	const ParamMapPtr mainPM = project_.loadChildParameterMap("main_config_file");
 	//mainPM->getValue(data.density         , "density"          , 0.0, 100000.0);
 	mainPM->getValue(data.propagationSpeed, "propagation_speed", 0.0, 100000.0);
 	mainPM->getValue(data.centerFreq      , "center_frequency" , 0.0,  100.0e6);
@@ -120,7 +120,7 @@ template<typename FloatType>
 void
 SimCircularSourceMethod<FloatType>::loadSourceData(SourceData& srcData)
 {
-	const auto singlePM = project_.loadChildParameterMap("source_config_file");
+	const ParamMapPtr singlePM = project_.loadChildParameterMap("source_config_file");
 	singlePM->getValue(srcData.sourceRadius, "source_radius" , 0.0, 10.0);
 }
 
