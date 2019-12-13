@@ -362,7 +362,6 @@ OGLFigureWidget::updateDataVisualization()
 #define COLORMAP_ITEM(A, B, C) case Colormap::A: fillOGLGridData<C>(); break;
 	COLORMAP_TABLE
 #undef COLORMAP_ITEM
-		break;
 	}
 }
 
