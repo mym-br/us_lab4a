@@ -64,6 +64,7 @@ private:
 	void testInterpolator4X();
 	void testKaiserWindow();
 	void testLinearInterpolator();
+	void testMatrix();
 	void testMultiplyBy();
 	void testSCF();
 	void testStatistics();

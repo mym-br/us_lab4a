@@ -105,6 +105,7 @@ TestMethod::execute()
 	EXEC(testInterpolator4X)
 	EXEC(testKaiserWindow)
 	EXEC(testLinearInterpolator)
+	EXEC(testMatrix)
 	EXEC(testMultiplyBy)
 	EXEC(testSCF)
 	EXEC(testStatistics)
@@ -856,6 +857,71 @@ TestMethod::testLinearInterpolator()
 	if (y != yRef) {
 		THROW_EXCEPTION(TestException, "Wrong values: " << y << '.');
 	}
+}
+
+void
+TestMethod::testMatrix()
+{
+	{
+		Matrix<double> m = {
+			{  2.0,  3.0,  4.0,  5.0 },
+			{  6.0,  7.0,  8.0,  9.0 },
+			{ 10.0, 11.0, 12.0, 13.0 }
+		};
+		auto range = m.range1(1);
+		for (auto it = range.begin(); it != range.end(); ++it) {
+			*it *= 2.0;
+		}
+		const Matrix<double> mRef = {
+			{  2.0,  6.0,  4.0,  5.0 },
+			{  6.0, 14.0,  8.0,  9.0 },
+			{ 10.0, 22.0, 12.0, 13.0 }
+		};
+		if (m != mRef) {
+			THROW_EXCEPTION(TestException, "Wrong results.");
+		}
+	}
+	{
+		Matrix<double> m = {
+			{  2.0,  3.0,  4.0,  5.0 },
+			{  6.0,  7.0,  8.0,  9.0 },
+			{ 10.0, 11.0, 12.0, 13.0 }
+		};
+		auto range = m.range2(1);
+		for (auto it = range.begin(); it != range.end(); ++it) {
+			*it *= 2.0;
+		}
+		const Matrix<double> mRef = {
+			{  2.0,  3.0,  4.0,  5.0 },
+			{ 12.0, 14.0, 16.0, 18.0 },
+			{ 10.0, 11.0, 12.0, 13.0 }
+		};
+		if (m != mRef) {
+			THROW_EXCEPTION(TestException, "Wrong results.");
+		}
+	}
+//	{
+//		const Matrix<double> m = {
+//			{  2.0,  3.0,  4.0,  5.0 },
+//			{  6.0,  7.0,  8.0,  9.0 },
+//			{ 10.0, 11.0, 12.0, 13.0 }
+//		};
+//		auto range = m.range1(1);
+//		for (auto it = range.begin(); it != range.end(); ++it) {
+//			*it *= 2.0; // error
+//		}
+//	}
+//	{
+//		const Matrix<double> m = {
+//			{  2.0,  3.0,  4.0,  5.0 },
+//			{  6.0,  7.0,  8.0,  9.0 },
+//			{ 10.0, 11.0, 12.0, 13.0 }
+//		};
+//		auto range = m.range2(1);
+//		for (auto it = range.begin(); it != range.end(); ++it) {
+//			*it *= 2.0; // error
+//		}
+//	}
 }
 
 void
