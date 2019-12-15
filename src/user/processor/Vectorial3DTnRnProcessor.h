@@ -192,8 +192,8 @@ Vectorial3DTnRnProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& 
 			if (upsamplingFactor_ > 1) {
 				interpolator_.interpolate(&acqData_(iRxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
 			} else {
-				typename Matrix<FloatType>::Dim2Interval interval = acqData_.dim2Interval(iRxElem);
-				std::copy(interval.first, interval.second, tempSignal_.begin());
+				auto range = acqData_.range2(iRxElem);
+				std::copy(range.begin(), range.end(), tempSignal_.begin());
 			}
 
 			Util::removeDC(&tempSignal_[0], tempSignal_.size(), deadZoneSamplesUp_);

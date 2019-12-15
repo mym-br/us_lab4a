@@ -138,9 +138,9 @@ TestMethod::testAdd()
 		{ 1.0, 1.5, 2.0, 18.0 },
 		{ 0.0, 0.0, 0.0,  0.0 }
 	};
-	auto interval = m.dim2Interval(1);
-	std::for_each(interval.first, interval.second, Util::Add<double>(-10.0));
-	Matrix<double> mRef = {
+	auto range = m.range2(1);
+	std::for_each(range.begin(), range.end(), Util::Add<double>(-10.0));
+	const Matrix<double> mRef = {
 		{  0.0,  0.0,  0.0, 0.0 },
 		{ -9.0, -8.5, -8.0, 8.0 },
 		{  0.0,  0.0,  0.0, 0.0 }
@@ -156,7 +156,7 @@ TestMethod::testAddElements()
 	std::vector<double> v1 = { 10.0, 11.0, 12.0, 13.0, 14.0 };
 	std::vector<double> v2(4);
 	Util::addElements(v1.begin(), v2.begin(), v2.end());
-	std::vector<double> v2Ref = { 10.0, 11.0, 12.0, 13.0 };
+	const std::vector<double> v2Ref = { 10.0, 11.0, 12.0, 13.0 };
 	if (v2 != v2Ref) {
 		THROW_EXCEPTION(TestException, "Wrong results.");
 	}
@@ -169,7 +169,7 @@ TestMethod::testAddElements2()
 	std::vector<double> v2 = {  20.0,  30.0,  40.0,  50.0 };
 	std::vector<double> v3(3);
 	Util::addElements(v1.begin(), v2.begin(), v3.begin(), v3.end());
-	std::vector<double> v3Ref = { 120.0, 131.0, 142.0 };
+	const std::vector<double> v3Ref = { 120.0, 131.0, 142.0 };
 	if (v3 != v3Ref) {
 		THROW_EXCEPTION(TestException, "Wrong results.");
 	}
@@ -637,8 +637,8 @@ TestMethod::testFillSequence3()
 {
 	{
 		std::vector<int> v;
-		std::vector<int> vRef = { 2, 3, 4, 5, 6 };
 		Util::fillSequence(v, 2, 6, 1);
+		const std::vector<int> vRef = { 2, 3, 4, 5, 6 };
 		if (v != vRef) {
 			THROW_EXCEPTION(TestException, "[1] v != vRef.");
 		}
@@ -646,8 +646,8 @@ TestMethod::testFillSequence3()
 	{
 
 		std::vector<int> v;
-		std::vector<int> vRef = { -2, -3, -4, -5 };
 		Util::fillSequence(v, -2, -5, -1);
+		const std::vector<int> vRef = { -2, -3, -4, -5 };
 		if (v != vRef) {
 			THROW_EXCEPTION(TestException, "[2] v != vRef.");
 		}
@@ -659,16 +659,16 @@ TestMethod::testFillSequence4()
 {
 	{
 		std::vector<unsigned int> v;
-		std::vector<unsigned int> vRef = { 2, 3, 4, 5, 6, 7 };
 		Util::fillSequence(v, 2U, 7U, 1);
+		const std::vector<unsigned int> vRef = { 2, 3, 4, 5, 6, 7 };
 		if (v != vRef) {
 			THROW_EXCEPTION(TestException, "[1] v != vRef.");
 		}
 	}
 	{
 		std::vector<unsigned int> v;
-		std::vector<unsigned int> vRef = { 10, 9 , 8, 7, 6 };
 		Util::fillSequence(v, 10U, 6U, -1);
+		const std::vector<unsigned int> vRef = { 10, 9 , 8, 7, 6 };
 		if (v != vRef) {
 			THROW_EXCEPTION(TestException, "[2] v != vRef.");
 		}
@@ -847,7 +847,7 @@ TestMethod::testLinearInterpolator()
 	std::vector<double> x = { 1.0, -1.0, 0.0, 0.5 };
 	std::vector<double> y(x.size() * upsamplingFactor);
 	LinearInterpolator<double, upsamplingFactor>::interpolate(&x[0], 4, &y[0]);
-	std::vector<double> yRef = {
+	const std::vector<double> yRef = {
 		1.0, 0.5, 0.0, -0.5,
 		-1.0, -0.75, -0.5, -0.25,
 		0.0, 0.125, 0.25, 0.375,
@@ -866,9 +866,9 @@ TestMethod::testMultiplyBy()
 		{ 1.0, 1.5, 2.0, 8.0 },
 		{ 0.0, 0.0, 0.0, 0.0 }
 	};
-	auto interval = m.dim2Interval(1);
-	std::for_each(interval.first, interval.second, Util::MultiplyBy<double>(-0.5));
-	Matrix<double> mRef = {
+	auto range = m.range2(1);
+	std::for_each(range.begin(), range.end(), Util::MultiplyBy<double>(-0.5));
+	const Matrix<double> mRef = {
 		{  0.0,   0.0,  0.0,  0.0 },
 		{ -0.5, -0.75, -1.0, -4.0 },
 		{  0.0,   0.0,  0.0,  0.0 }

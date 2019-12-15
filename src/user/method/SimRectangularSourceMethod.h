@@ -332,14 +332,14 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 	}
 
 	std::vector<FloatType> patternTY(gridData.n2());
-	auto tyInterval = gridData.dim2Interval(sectionTXIndex);
-	Util::copyUsingOperator(tyInterval.first, tyInterval.second, patternTY.begin(), Util::CopyValueOp{});
+	auto tyRange = gridData.range2(sectionTXIndex);
+	Util::copyUsingOperator(tyRange.begin(), tyRange.end(), patternTY.begin(), Util::CopyValueOp{});
 	Util::linearToDecibels(patternTY, -100.0);
 	project_.showFigure2D(3, "Pattern theta-y", thetaYList, patternTY);
 
 	std::vector<FloatType> patternTX(gridData.n1());
-	auto txInterval = gridData.dim1Interval(sectionTYIndex);
-	Util::copyUsingOperator(txInterval.first, txInterval.second, patternTX.begin(), Util::CopyValueOp{});
+	auto txRange = gridData.range1(sectionTYIndex);
+	Util::copyUsingOperator(txRange.begin(), txRange.end(), patternTX.begin(), Util::CopyValueOp{});
 	Util::linearToDecibels(patternTX, -100.0);
 	project_.showFigure2D(4, "Pattern theta-x", thetaXList, patternTX);
 

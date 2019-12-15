@@ -190,8 +190,8 @@ SynthYVectorial3DTnRnProcessor<FloatType>::getAcqData(FloatType y)
 		if (upsamplingFactor_ > 1) {
 			interpolator_.interpolate(&singleAcqData_(iRxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
 		} else {
-			typename Matrix<FloatType>::Dim2Interval interval = singleAcqData_.dim2Interval(iRxElem);
-			std::copy(interval.first, interval.second, tempSignal_.begin());
+			auto range = singleAcqData_.range2(iRxElem);
+			std::copy(range.begin(), range.end(), tempSignal_.begin());
 		}
 
 		Util::removeDC(&tempSignal_[0], tempSignal_.size(), deadZoneSamplesUp_);

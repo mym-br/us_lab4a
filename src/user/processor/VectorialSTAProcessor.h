@@ -175,8 +175,8 @@ VectorialSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gri
 			if (upsamplingFactor_ > 1) {
 				interpolator_.interpolate(&acqData_(rxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
 			} else {
-				typename Matrix<FloatType>::Dim2Interval interval = acqData_.dim2Interval(rxElem);
-				std::copy(interval.first, interval.second, tempSignal_.begin());
+				auto range = acqData_.range2(rxElem);
+				std::copy(range.begin(), range.end(), tempSignal_.begin());
 			}
 
 			Util::removeDC(&tempSignal_[0], tempSignal_.size(), deadZoneSamplesUp_);
