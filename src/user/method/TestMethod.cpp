@@ -133,17 +133,19 @@ TestMethod::call(T pmf)
 void
 TestMethod::testAdd()
 {
-	Matrix<double> m(3, 4);
-	m(1, 0) = 1.0;
-	m(1, 1) = 1.5;
-	m(1, 2) = 2.0;
-	m(1, 3) = 18.0;
+	Matrix<double> m = {
+		{ 0.0, 0.0, 0.0,  0.0 },
+		{ 1.0, 1.5, 2.0, 18.0 },
+		{ 0.0, 0.0, 0.0,  0.0 }
+	};
 	auto interval = m.dim2Interval(1);
 	std::for_each(interval.first, interval.second, Util::Add<double>(-10.0));
-	if (m(1, 0) != -9.0 ||
-			m(1, 1) != -8.5 ||
-			m(1, 2) != -8 ||
-			m(1, 3) != 8.0) {
+	Matrix<double> mRef = {
+		{  0.0,  0.0,  0.0, 0.0 },
+		{ -9.0, -8.5, -8.0, 8.0 },
+		{  0.0,  0.0,  0.0, 0.0 }
+	};
+	if (m != mRef) {
 		THROW_EXCEPTION(TestException, "Wrong results.");
 	}
 }
@@ -859,17 +861,19 @@ TestMethod::testLinearInterpolator()
 void
 TestMethod::testMultiplyBy()
 {
-	Matrix<double> m(3, 4);
-	m(1, 0) = 1.0;
-	m(1, 1) = 1.5;
-	m(1, 2) = 2.0;
-	m(1, 3) = 8.0;
+	Matrix<double> m = {
+		{ 0.0, 0.0, 0.0, 0.0 },
+		{ 1.0, 1.5, 2.0, 8.0 },
+		{ 0.0, 0.0, 0.0, 0.0 }
+	};
 	auto interval = m.dim2Interval(1);
 	std::for_each(interval.first, interval.second, Util::MultiplyBy<double>(-0.5));
-	if (m(1, 0) != -0.5 ||
-			m(1, 1) != -0.75 ||
-			m(1, 2) != -1.0 ||
-			m(1, 3) != -4.0) {
+	Matrix<double> mRef = {
+		{  0.0,   0.0,  0.0,  0.0 },
+		{ -0.5, -0.75, -1.0, -4.0 },
+		{  0.0,   0.0,  0.0,  0.0 }
+	};
+	if (m != mRef) {
 		THROW_EXCEPTION(TestException, "Wrong results.");
 	}
 }

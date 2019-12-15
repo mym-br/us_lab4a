@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -19,6 +19,7 @@
 #define MATRIX_H_
 
 #include <algorithm> /* swap */
+#include <initializer_list>
 #include <limits>
 #include <ostream>
 #include <vector>
@@ -115,6 +116,7 @@ public:
 
 	Matrix();
 	Matrix(SizeType n1, SizeType n2);
+	Matrix(std::initializer_list<std::vector<T>> il);
 
 	SizeType size() const { return data_.size(); }
 	SizeType n1() const { return n1_; }
@@ -155,6 +157,13 @@ public:
 	ConstIterator end() const { return data_.end(); }
 	ConstIterator cbegin() const { return data_.cbegin(); }
 	ConstIterator cend() const { return data_.cend(); }
+
+	bool operator==(const Matrix<T, Alloc>& m) const {
+		return n1_ == m.n1_ && n2_ == m.n2_ && data_ == m.data_;
+	}
+	bool operator!=(const Matrix<T, Alloc>& m) const {
+		return !(*this == m);
+	}
 private:
 	template<typename V>
 	friend std::ostream& operator<<(std::ostream& out, const Matrix<V>& m);
@@ -177,6 +186,23 @@ Matrix<T, Alloc>::Matrix(SizeType n1, SizeType n2) : n1_(n1), n2_(n2)
 	validateSize(n1, n2);
 
 	data_.resize(n1 * n2);
+}
+
+template<typename T, typename Alloc>
+Matrix<T, Alloc>::Matrix(std::initializer_list<std::vector<T>> il)
+{
+	n1_ = il.size();
+	if (n1_ == 0) {
+		n2_ = 0;
+		return;
+	}
+	n2_ = il.begin()->size();
+	if (n2_ == 0) THROW_EXCEPTION(InvalidValueException, "Empty row.");
+	validateSize(n1_, n2_);
+	for (auto p = il.begin(); p != il.end(); ++p) {
+		if (p->size() != n2_) THROW_EXCEPTION(InvalidValueException, "Inconsistent row size.");
+		data_.insert(data_.end(), p->begin(), p->end());
+	}
 }
 
 template<typename T, typename Alloc>
