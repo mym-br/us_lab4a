@@ -109,7 +109,11 @@ TestMethod::execute()
 	EXEC(testSCF)
 	EXEC(testStatistics)
 
-	LOG_INFO << "Errors: " << errorCount_;
+	if (errorCount_ > 0) {
+		LOG_ERROR << "Number of errors: " << errorCount_;
+	} else {
+		LOG_INFO << "No errors.";
+	}
 }
 
 template<typename T>
