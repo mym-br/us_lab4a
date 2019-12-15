@@ -154,10 +154,8 @@ TestMethod::testAddElements()
 	std::vector<double> v1 = { 10.0, 11.0, 12.0, 13.0, 14.0 };
 	std::vector<double> v2(4);
 	Util::addElements(v1.begin(), v2.begin(), v2.end());
-	if (v2[0] != 10.0 ||
-			v2[1] != 11.0 ||
-			v2[2] != 12.0 ||
-			v2[3] != 13.0) {
+	std::vector<double> v2Ref = { 10.0, 11.0, 12.0, 13.0 };
+	if (v2 != v2Ref) {
 		THROW_EXCEPTION(TestException, "Wrong results.");
 	}
 }
@@ -169,9 +167,8 @@ TestMethod::testAddElements2()
 	std::vector<double> v2 = {  20.0,  30.0,  40.0,  50.0 };
 	std::vector<double> v3(3);
 	Util::addElements(v1.begin(), v2.begin(), v3.begin(), v3.end());
-	if (v3[0] != 120.0 ||
-			v3[1] != 131.0 ||
-			v3[2] != 142.0) {
+	std::vector<double> v3Ref = { 120.0, 131.0, 142.0 };
+	if (v3 != v3Ref) {
 		THROW_EXCEPTION(TestException, "Wrong results.");
 	}
 }
@@ -848,12 +845,13 @@ TestMethod::testLinearInterpolator()
 	std::vector<double> x = { 1.0, -1.0, 0.0, 0.5 };
 	std::vector<double> y(x.size() * upsamplingFactor);
 	LinearInterpolator<double, upsamplingFactor>::interpolate(&x[0], 4, &y[0]);
-
-	if (
-			y[0]  !=  1.0 || y[1]  !=  0.5   || y[2]  !=  0.0  || y[3]  != -0.5   ||
-			y[4]  != -1.0 || y[5]  != -0.75  || y[6]  != -0.5  || y[7]  != -0.25  ||
-			y[8]  !=  0.0 || y[9]  !=  0.125 || y[10] !=  0.25 || y[11] !=  0.375 ||
-			y[12] !=  0.5 || y[13] !=  0.375 || y[14] !=  0.25 || y[15] !=  0.125) {
+	std::vector<double> yRef = {
+		1.0, 0.5, 0.0, -0.5,
+		-1.0, -0.75, -0.5, -0.25,
+		0.0, 0.125, 0.25, 0.375,
+		0.5, 0.375, 0.25, 0.125
+	};
+	if (y != yRef) {
 		THROW_EXCEPTION(TestException, "Wrong values: " << y << '.');
 	}
 }
