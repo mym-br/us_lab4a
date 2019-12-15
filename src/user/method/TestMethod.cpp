@@ -51,6 +51,8 @@
 //#define TEST_KAISER_WINDOW_SHOW_FIGURES 1
 //#define TEST_DEBUG 1
 
+#define EXEC(A) LOG_INFO << #A; call(&TestMethod::A);
+
 namespace {
 
 constexpr double BESSEL_I_MAX_RELATIVE_ABS_ERROR = 1.0e-14;
@@ -84,28 +86,28 @@ TestMethod::execute()
 	errorCount_ = 0;
 	figureNumber_ = 0;
 
-	call(&TestMethod::testAdd);
-	call(&TestMethod::testAddElements);
-	call(&TestMethod::testAddElements2);
-	call(&TestMethod::testBessel);
-	call(&TestMethod::testCentralDiff);
-	call(&TestMethod::testDecimator);
-	call(&TestMethod::testDirectFFTWFilter);
-	call(&TestMethod::testFFT);
-	call(&TestMethod::testFFTWFilter);
-	call(&TestMethod::testFFTWFilter2);
-	call(&TestMethod::testFillSequence);
-	call(&TestMethod::testFillSequence2);
-	call(&TestMethod::testFillSequence3);
-	call(&TestMethod::testFillSequence4);
-	call(&TestMethod::testHilbertTransform);
-	call(&TestMethod::testInterpolator);
-	call(&TestMethod::testInterpolator4X);
-	call(&TestMethod::testKaiserWindow);
-	call(&TestMethod::testLinearInterpolator);
-	call(&TestMethod::testMultiplyBy);
-	call(&TestMethod::testSCF);
-	call(&TestMethod::testStatistics);
+	EXEC(testAdd)
+	EXEC(testAddElements)
+	EXEC(testAddElements2)
+	EXEC(testBessel)
+	EXEC(testCentralDiff)
+	EXEC(testDecimator)
+	EXEC(testDirectFFTWFilter)
+	EXEC(testFFT)
+	EXEC(testFFTWFilter)
+	EXEC(testFFTWFilter2)
+	EXEC(testFillSequence)
+	EXEC(testFillSequence2)
+	EXEC(testFillSequence3)
+	EXEC(testFillSequence4)
+	EXEC(testHilbertTransform)
+	EXEC(testInterpolator)
+	EXEC(testInterpolator4X)
+	EXEC(testKaiserWindow)
+	EXEC(testLinearInterpolator)
+	EXEC(testMultiplyBy)
+	EXEC(testSCF)
+	EXEC(testStatistics)
 
 	LOG_INFO << "Errors: " << errorCount_;
 }
@@ -127,8 +129,6 @@ TestMethod::call(T pmf)
 void
 TestMethod::testAdd()
 {
-	LOG_INFO << __func__;
-
 	Matrix<double> m(3, 4);
 	m(1, 0) = 1.0;
 	m(1, 1) = 1.5;
@@ -147,8 +147,6 @@ TestMethod::testAdd()
 void
 TestMethod::testAddElements()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> v1 = { 10.0, 11.0, 12.0, 13.0, 14.0 };
 	std::vector<double> v2(4);
 	Util::addElements(v1.begin(), v2.begin(), v2.end());
@@ -163,8 +161,6 @@ TestMethod::testAddElements()
 void
 TestMethod::testAddElements2()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> v1 = { 100.0, 101.0, 102.0, 103.0 };
 	std::vector<double> v2 = {  20.0,  30.0,  40.0,  50.0 };
 	std::vector<double> v3(3);
@@ -179,8 +175,6 @@ TestMethod::testAddElements2()
 void
 TestMethod::testBessel()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> xBesselI0, besselI0;
 	project_.loadHDF5("bessel_i0_x", "v", xBesselI0);
 	project_.loadHDF5("bessel_i0"  , "v", besselI0);
@@ -198,8 +192,6 @@ TestMethod::testBessel()
 void
 TestMethod::testCentralDiff()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> x, y, yRef;
 	project_.loadHDF5("central_diff_x", "v", x);
 	project_.loadHDF5("central_diff_y", "v", yRef);
@@ -223,8 +215,6 @@ TestMethod::testCentralDiff()
 void
 TestMethod::testDecimator()
 {
-	LOG_INFO << __func__;
-
 	const std::vector<unsigned int> downsampFactorList = { 2, 5, 10 };
 	std::vector<double> x, y, y2, yRef;
 	project_.loadHDF5("decimation_source", "v", x);
@@ -291,8 +281,6 @@ TestMethod::testDecimator()
 void
 TestMethod::testDirectFFTWFilter()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> x;
 	project_.loadHDF5("filter_x", "x", x);
 	std::vector<double> b;
@@ -351,8 +339,6 @@ TestMethod::testDirectFFTWFilter()
 void
 TestMethod::testFFT()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> x1, x2, x3;
 	std::vector<std::complex<double>> y1, y2, y3;
 	std::vector<double> yr1Ref, yi1Ref, yr2Ref, yi2Ref, yr3Ref, yi3Ref;
@@ -473,8 +459,6 @@ TestMethod::testFFT()
 void
 TestMethod::testFFTWFilter()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> x;
 	project_.loadHDF5("filter_x", "x", x);
 	std::vector<double> b;
@@ -533,8 +517,6 @@ TestMethod::testFFTWFilter()
 void
 TestMethod::testFFTWFilter2()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> x;
 	project_.loadHDF5("filter_x", "x", x);
 	std::vector<double> b;
@@ -602,8 +584,6 @@ TestMethod::testFFTWFilter2()
 void
 TestMethod::testFillSequence()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> v;
 	Util::fillSequenceFromStartToEndWithMaximumStep(v, 1.0, 5.0, 0.99);
 #ifdef TEST_DEBUG
@@ -625,8 +605,6 @@ TestMethod::testFillSequence()
 void
 TestMethod::testFillSequence2()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> v;
 	Util::fillSequenceFromStartToEndWithSize(v, 1.0, 5.0, 6);
 #ifdef TEST_DEBUG
@@ -648,8 +626,6 @@ TestMethod::testFillSequence2()
 void
 TestMethod::testFillSequence3()
 {
-	LOG_INFO << __func__;
-
 	{
 		std::vector<int> v;
 
@@ -673,8 +649,6 @@ TestMethod::testFillSequence3()
 void
 TestMethod::testFillSequence4()
 {
-	LOG_INFO << __func__;
-
 	{
 		std::vector<unsigned int> v;
 
@@ -698,8 +672,6 @@ TestMethod::testFillSequence4()
 void
 TestMethod::testHilbertTransform()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> x, yaRef, yrRef, yiRef;
 	project_.loadHDF5("hilbert_x", "v", x);
 	project_.loadHDF5("hilbert_ya", "v", yaRef);
@@ -763,8 +735,6 @@ TestMethod::testHilbertTransform()
 void
 TestMethod::testInterpolator()
 {
-	LOG_INFO << __func__;
-
 	const std::vector<unsigned int> upsampFactorList = { 2, 8, 64 };
 	std::vector<double> x, y, y2, yRef;
 	project_.loadHDF5("interp_source", "v", x);
@@ -815,8 +785,6 @@ TestMethod::testInterpolator()
 void
 TestMethod::testInterpolator4X()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> x;
 	project_.loadHDF5("interp_x", "x", x);
 
@@ -830,8 +798,6 @@ TestMethod::testInterpolator4X()
 void
 TestMethod::testKaiserWindow()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> tol_dB, betaRef;
 	project_.loadHDF5("kaiser_tol_db", "v", tol_dB);
 	project_.loadHDF5("kaiser_beta"  , "v", betaRef);
@@ -869,8 +835,6 @@ TestMethod::testKaiserWindow()
 void
 TestMethod::testLinearInterpolator()
 {
-	LOG_INFO << __func__;
-
 	const unsigned int upsamplingFactor = 4;
 	std::vector<double> x = { 1.0, -1.0, 0.0, 0.5 };
 	std::vector<double> y(x.size() * upsamplingFactor);
@@ -888,8 +852,6 @@ TestMethod::testLinearInterpolator()
 void
 TestMethod::testMultiplyBy()
 {
-	LOG_INFO << __func__;
-
 	Matrix<double> m(3, 4);
 	m(1, 0) = 1.0;
 	m(1, 1) = 1.5;
@@ -908,8 +870,6 @@ TestMethod::testMultiplyBy()
 void
 TestMethod::testSCF()
 {
-	LOG_INFO << __func__;
-
 	std::vector<double> v1 = { 1.0, 0.0, -1.0, 1.0, -1.0, 1.0 };
 
 	auto scf = std::make_unique<SignCoherenceFactor<double>>(2.0);
@@ -923,8 +883,6 @@ TestMethod::testSCF()
 void
 TestMethod::testStatistics()
 {
-	LOG_INFO << __func__;
-
 	const std::vector<double> a = { -1.0, 2.0, 4.0, 7.0 };
 
 	const double stdDev = Statistics::standardDeviation(a.data(), a.size());
