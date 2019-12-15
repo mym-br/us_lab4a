@@ -138,7 +138,7 @@ TestMethod::testAdd()
 	m(1, 1) = 1.5;
 	m(1, 2) = 2.0;
 	m(1, 3) = 18.0;
-	Matrix<double>::Dim2Interval interval = m.dim2Interval(1);
+	auto interval = m.dim2Interval(1);
 	std::for_each(interval.first, interval.second, Util::Add<double>(-10.0));
 	if (m(1, 0) != -9.0 ||
 			m(1, 1) != -8.5 ||
@@ -307,7 +307,7 @@ TestMethod::testDirectFFTWFilter()
 			" b.size()=" << b.size() << "].");
 	}
 	double maxError = 0.0, maxY = 0.0;
-	for (std::vector<double>::iterator iter1 = yRef.begin(), iter2 = y.begin(); iter1 != yRef.end(); ++iter1, ++iter2) {
+	for (auto iter1 = yRef.cbegin(), iter2 = y.cbegin(); iter1 != yRef.cend(); ++iter1, ++iter2) {
 		const double error = std::abs(*iter1 - *iter2);
 		if (error > maxError) maxError = error;
 		if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
@@ -368,7 +368,9 @@ TestMethod::testFFT()
 	LOG_DEBUG << "maxAbs: " << maxAbs;
 #endif
 	for (unsigned int i = 0; i < x1.size(); ++i) {
-		const double error = std::max(std::abs(y1[i].real() - yr1Ref[i]), std::abs(y1[i].imag() - yi1Ref[i])) / maxAbs;
+		const double error = std::max(
+					std::abs(y1[i].real() - yr1Ref[i]),
+					std::abs(y1[i].imag() - yi1Ref[i])) / maxAbs;
 		if (error > FFT_MAX_RELATIVE_ABS_ERROR) {
 			THROW_EXCEPTION(TestException, "Wrong value for index = " <<
 					i << ": (" << y1[i].real() << ", " << y1[i].imag() << ") (error: " << error << ").");
@@ -382,7 +384,9 @@ TestMethod::testFFT()
 		LOG_DEBUG << "maxAbs: " << maxAbs;
 #endif
 		for (unsigned int i = 0; i < x2.size(); ++i) {
-			const double error = std::max(std::abs(y2[i].real() - yr2Ref[i]), std::abs(y2[i].imag() - yi2Ref[i])) / maxAbs;
+			const double error = std::max(
+						std::abs(y2[i].real() - yr2Ref[i]),
+						std::abs(y2[i].imag() - yi2Ref[i])) / maxAbs;
 			if (error > FFT_MAX_RELATIVE_ABS_ERROR) {
 				THROW_EXCEPTION(TestException, "Wrong value for index = " <<
 						i << ": (" << y2[i].real() << ", " << y2[i].imag() << ") (error: " << error << ").");
@@ -397,7 +401,9 @@ TestMethod::testFFT()
 	LOG_DEBUG << "maxAbs: " << maxAbs;
 #endif
 	for (unsigned int i = 0; i < x3.size(); ++i) {
-		const double error = std::max(std::abs(y3[i].real() - yr3Ref[i]), std::abs(y3[i].imag() - yi3Ref[i])) / maxAbs;
+		const double error = std::max(
+					std::abs(y3[i].real() - yr3Ref[i]),
+					std::abs(y3[i].imag() - yi3Ref[i])) / maxAbs;
 		if (error > FFT_MAX_RELATIVE_ABS_ERROR) {
 			THROW_EXCEPTION(TestException, "Wrong value for index = " <<
 					i << ": (" << y3[i].real() << ", " << y3[i].imag() << ") (error: " << error << ").");
@@ -485,7 +491,7 @@ TestMethod::testFFTWFilter()
 			" b.size()=" << b.size() << "].");
 	}
 	double maxError = 0.0, maxY = 0.0;
-	for (std::vector<double>::iterator iter1 = yRef.begin(), iter2 = y.begin(); iter1 != yRef.end(); ++iter1, ++iter2) {
+	for (auto iter1 = yRef.cbegin(), iter2 = y.cbegin(); iter1 != yRef.cend(); ++iter1, ++iter2) {
 		const double error = std::abs(*iter1 - *iter2);
 		if (error > maxError) maxError = error;
 		if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
@@ -542,7 +548,7 @@ TestMethod::testFFTWFilter2()
 				" b.size()=" << b.size() << "].");
 		}
 		double maxError = 0.0, maxY = 0.0;
-		for (std::vector<double>::iterator iter1 = yRef.begin(), iter2 = y.begin(); iter1 != yRef.end(); ++iter1, ++iter2) {
+		for (auto iter1 = yRef.cbegin(), iter2 = y.cbegin(); iter1 != yRef.cend(); ++iter1, ++iter2) {
 			const double error = std::abs(*iter1 - *iter2);
 			if (error > maxError) maxError = error;
 			if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
@@ -570,7 +576,7 @@ TestMethod::testFFTWFilter2()
 				" y.size()=" << y.size() << "].");
 		}
 		double maxError = 0.0, maxY = 0.0;
-		for (std::vector<double>::iterator iter1 = y2Ref.begin(), iter2 = y2.begin(); iter1 != y2Ref.end(); ++iter1, ++iter2) {
+		for (auto iter1 = y2Ref.cbegin(), iter2 = y2.cbegin(); iter1 != y2Ref.cend(); ++iter1, ++iter2) {
 			const double error = std::abs(*iter1 - *iter2);
 			if (error > maxError) maxError = error;
 			if (std::abs(*iter1) > maxY) maxY = std::abs(*iter1);
@@ -632,7 +638,6 @@ TestMethod::testFillSequence3()
 {
 	{
 		std::vector<int> v;
-
 		std::vector<int> vRef = { 2, 3, 4, 5, 6 };
 		Util::fillSequence(v, 2, 6, 1);
 		if (v != vRef) {
@@ -655,7 +660,6 @@ TestMethod::testFillSequence4()
 {
 	{
 		std::vector<unsigned int> v;
-
 		std::vector<unsigned int> vRef = { 2, 3, 4, 5, 6, 7 };
 		Util::fillSequence(v, 2U, 7U, 1);
 		if (v != vRef) {
@@ -664,7 +668,6 @@ TestMethod::testFillSequence4()
 	}
 	{
 		std::vector<unsigned int> v;
-
 		std::vector<unsigned int> vRef = { 10, 9 , 8, 7, 6 };
 		Util::fillSequence(v, 10U, 6U, -1);
 		if (v != vRef) {
@@ -712,7 +715,9 @@ TestMethod::testHilbertTransform()
 	}
 	maxAbs = Util::maxAbsolute(yc);
 	for (unsigned int i = 0; i < yc.size(); ++i) {
-		const double error = std::max(std::abs(yc[i].real() - yrRef[i]), std::abs(yc[i].imag() - yiRef[i])) / maxAbs;
+		const double error = std::max(
+					std::abs(yc[i].real() - yrRef[i]),
+					std::abs(yc[i].imag() - yiRef[i])) / maxAbs;
 		if (error > HILBERT_MAX_RELATIVE_ABS_ERROR) {
 			THROW_EXCEPTION(TestException, "Wrong value for i = " << i << ": " << yc[i] << " (error: " << error << ").");
 		}
@@ -861,7 +866,7 @@ TestMethod::testMultiplyBy()
 	m(1, 1) = 1.5;
 	m(1, 2) = 2.0;
 	m(1, 3) = 8.0;
-	Matrix<double>::Dim2Interval interval = m.dim2Interval(1);
+	auto interval = m.dim2Interval(1);
 	std::for_each(interval.first, interval.second, Util::MultiplyBy<double>(-0.5));
 	if (m(1, 0) != -0.5 ||
 			m(1, 1) != -0.75 ||
