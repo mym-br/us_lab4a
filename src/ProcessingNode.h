@@ -32,13 +32,13 @@ class ProcessingNode : public QObject {
 	Q_OBJECT
 public:
 	ProcessingNode(Controller& controller, Project& project);
-private:
-	Project& project_;
 signals:
 	void processingComplete();
 	void error();
 public slots:
 	void process();
+private:
+	Project& project_;
 };
 
 } // namespace Lab
