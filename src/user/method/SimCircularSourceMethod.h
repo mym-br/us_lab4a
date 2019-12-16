@@ -204,14 +204,16 @@ SimCircularSourceMethod<FloatType>::execTransientRadiationPattern()
 		const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
 		const FloatType numSubElemPerLambda = simData.discretFactor;
 		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
-		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericCircularSourceImpulseResponse<FloatType>>>();
-		radPat->getCircularSourceRadiationPattern(
+		SimTransientRadiationPattern<
+			FloatType,
+			NumericCircularSourceImpulseResponse<FloatType>>::getCircularSourceRadiationPattern(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, inputData, radData);
 	} else if (simData.irMethod == "analytic") {
-		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, AnalyticCircularSourceImpulseResponse<FloatType>>>();
-		radPat->getCircularSourceRadiationPattern(
+		SimTransientRadiationPattern<
+			FloatType,
+			AnalyticCircularSourceImpulseResponse<FloatType>>::getCircularSourceRadiationPattern(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					0.0,
 					dvdt, inputData, radData);
@@ -259,14 +261,16 @@ SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 	if (simData.irMethod == "numeric") {
 		const FloatType numSubElemPerLambda = simData.discretFactor;
 		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
-		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericCircularSourceImpulseResponse<FloatType>>>();
-		acField->getCircularSourceAcousticField(
+		SimTransientAcousticField<
+			FloatType,
+			NumericCircularSourceImpulseResponse<FloatType>>::getCircularSourceAcousticField(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, gridData);
 	} else if (simData.irMethod == "analytic") {
-		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticCircularSourceImpulseResponse<FloatType>>>();
-		acField->getCircularSourceAcousticField(
+		SimTransientAcousticField<
+			FloatType,
+			AnalyticCircularSourceImpulseResponse<FloatType>>::getCircularSourceAcousticField(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					0.0,
 					dvdt, gridData);
@@ -333,14 +337,16 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 	if (simData.irMethod == "numeric") {
 		const FloatType numSubElemPerLambda = simData.discretFactor;
 		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
-		auto propag = std::make_unique<SimTransientPropagation<FloatType, NumericCircularSourceImpulseResponse<FloatType>>>();
-		propag->getCircularSourcePropagation(
+		SimTransientPropagation<
+			FloatType,
+			NumericCircularSourceImpulseResponse<FloatType>>::getCircularSourcePropagation(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, propagIndexList, gridData);
 	} else if (simData.irMethod == "analytic") {
-		auto propag = std::make_unique<SimTransientPropagation<FloatType, AnalyticCircularSourceImpulseResponse<FloatType>>>();
-		propag->getCircularSourcePropagation(
+		SimTransientPropagation<
+			FloatType,
+			AnalyticCircularSourceImpulseResponse<FloatType>>::getCircularSourcePropagation(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					0.0,
 					dvdt, propagIndexList, gridData);

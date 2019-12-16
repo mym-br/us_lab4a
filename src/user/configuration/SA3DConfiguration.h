@@ -59,7 +59,7 @@ struct SA3DConfiguration {
 	void load(const ParameterMap& saPM, const ParameterMap& arrayPM);
 
 private:
-	void fillActiveElem(const std::string& listStr, unsigned int maxElem, std::vector<unsigned int>& activeElem);
+	static void fillActiveElem(const std::string& listStr, unsigned int maxElem, std::vector<unsigned int>& activeElem);
 };
 
 template<typename FloatType>

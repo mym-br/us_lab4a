@@ -36,9 +36,6 @@ namespace Lab {
 template<typename FloatType, typename ImpulseResponse>
 class SimTransientAcousticField {
 public:
-	SimTransientAcousticField() = default;
-	~SimTransientAcousticField() = default;
-
 	struct CircularSourceThreadData {
 		CircularSourceThreadData(
 			FloatType samplingFreq,
@@ -98,7 +95,7 @@ public:
 		FFTWFilter2<FloatType> filter;
 	};
 
-	void getCircularSourceAcousticField(
+	static void getCircularSourceAcousticField(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceRadius,
@@ -106,7 +103,7 @@ public:
 			const std::vector<FloatType>& dvdt,
 			Matrix<XYZValue<FloatType>>& gridData);
 
-	void getRectangularSourceAcousticField(
+	static void getRectangularSourceAcousticField(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -115,7 +112,7 @@ public:
 			const std::vector<FloatType>& dvdt,
 			Matrix<XYZValue<FloatType>>& gridData);
 
-	void getArrayOfRectangularSourcesAcousticField(
+	static void getArrayOfRectangularSourcesAcousticField(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -126,12 +123,7 @@ public:
 			const std::vector<FloatType>& focusDelay /* s */,
 			Matrix<XYZValue<FloatType>>& gridData);
 private:
-	SimTransientAcousticField(const SimTransientAcousticField&) = delete;
-	SimTransientAcousticField& operator=(const SimTransientAcousticField&) = delete;
-	SimTransientAcousticField(SimTransientAcousticField&&) = delete;
-	SimTransientAcousticField& operator=(SimTransientAcousticField&&) = delete;
-
-	FFTWFilter2<FloatType> filter_;
+	SimTransientAcousticField() = delete;
 };
 
 

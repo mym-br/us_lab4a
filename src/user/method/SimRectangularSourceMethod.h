@@ -276,29 +276,39 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 
 	if (simData.irMethod == "numeric") {
 		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, NumericRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			radPat->getArrayOfRectangularSourcesRadiationPattern(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientRadiationPattern<
+				FloatType,
+				NumericRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesRadiationPattern(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
 		} else {
-			radPat->getRectangularSourceRadiationPattern(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientRadiationPattern<
+				FloatType,
+				NumericRectangularSourceImpulseResponse<FloatType>>::getRectangularSourceRadiationPattern(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, inputData, gridData);
 		}
 	} else if (simData.irMethod == "analytic") {
 		const FloatType minEdgeDivisor = simData.discretFactor;
-		auto radPat = std::make_unique<SimTransientRadiationPattern<FloatType, AnalyticRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			radPat->getArrayOfRectangularSourcesRadiationPattern(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientRadiationPattern<
+				FloatType,
+				AnalyticRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesRadiationPattern(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
 		} else {
-			radPat->getRectangularSourceRadiationPattern(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientRadiationPattern<
+				FloatType,
+				AnalyticRectangularSourceImpulseResponse<FloatType>>::getRectangularSourceRadiationPattern(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, inputData, gridData);
 		}
@@ -379,29 +389,39 @@ SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsA
 
 	if (simData.irMethod == "numeric") {
 		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-		auto acField = std::make_unique<SimTransientAcousticField<FloatType, NumericRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			acField->getArrayOfRectangularSourcesAcousticField(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientAcousticField<
+				FloatType,
+				NumericRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesAcousticField(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
-			acField->getRectangularSourceAcousticField(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientAcousticField<
+				FloatType,
+				NumericRectangularSourceImpulseResponse<FloatType>>::getRectangularSourceAcousticField(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, gridData);
 		}
 	} else if (simData.irMethod == "analytic") {
 		const FloatType minEdgeDivisor = simData.discretFactor;
-		auto acField = std::make_unique<SimTransientAcousticField<FloatType, AnalyticRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			acField->getArrayOfRectangularSourcesAcousticField(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientAcousticField<
+				FloatType,
+				AnalyticRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesAcousticField(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
-			acField->getRectangularSourceAcousticField(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientAcousticField<
+				FloatType,
+				AnalyticRectangularSourceImpulseResponse<FloatType>>::getRectangularSourceAcousticField(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, gridData);
 		}
@@ -467,29 +487,39 @@ SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArr
 
 	if (simData.irMethod == "numeric") {
 		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-		auto propag = std::make_unique<SimTransientPropagation<FloatType, NumericRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			propag->getArrayOfRectangularSourcesPropagation(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientPropagation<
+				FloatType,
+				NumericRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesPropagation(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
 		} else {
-			propag->getRectangularSourcePropagation(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientPropagation<
+				FloatType,
+				NumericRectangularSourceImpulseResponse<FloatType>>::getRectangularSourcePropagation(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, propagIndexList, gridData);
 		}
 	} else if (simData.irMethod == "analytic") {
 		const FloatType minEdgeDivisor = simData.discretFactor;
-		auto propag = std::make_unique<SimTransientPropagation<FloatType, AnalyticRectangularSourceImpulseResponse<FloatType>>>();
 		if (sourceIsArray) {
-			propag->getArrayOfRectangularSourcesPropagation(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientPropagation<
+				FloatType,
+				AnalyticRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesPropagation(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
 		} else {
-			propag->getRectangularSourcePropagation(
-						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+			SimTransientPropagation<
+				FloatType,
+				AnalyticRectangularSourceImpulseResponse<FloatType>>::getRectangularSourcePropagation(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, propagIndexList, gridData);
 		}

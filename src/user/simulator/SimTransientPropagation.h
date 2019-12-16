@@ -35,9 +35,6 @@ namespace Lab {
 template<typename FloatType, typename ImpulseResponse>
 class SimTransientPropagation {
 public:
-	SimTransientPropagation() = default;
-	~SimTransientPropagation() = default;
-
 	struct CircularSourceThreadData {
 		CircularSourceThreadData(
 			FloatType samplingFreq,
@@ -97,7 +94,7 @@ public:
 		FFTWFilter2<FloatType> filter;
 	};
 
-	void getCircularSourcePropagation(
+	static void getCircularSourcePropagation(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceRadius,
@@ -106,7 +103,7 @@ public:
 			const std::vector<unsigned int>& propagIndexList,
 			Matrix<XYZValueArray<FloatType>>& gridData);
 
-	void getRectangularSourcePropagation(
+	static void getRectangularSourcePropagation(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -116,7 +113,7 @@ public:
 			const std::vector<unsigned int>& propagIndexList,
 			Matrix<XYZValueArray<FloatType>>& gridData);
 
-	void getArrayOfRectangularSourcesPropagation(
+	static void getArrayOfRectangularSourcesPropagation(
 			FloatType samplingFreq,
 			FloatType propagationSpeed,
 			FloatType sourceWidth,
@@ -128,12 +125,7 @@ public:
 			const std::vector<unsigned int>& propagIndexList,
 			Matrix<XYZValueArray<FloatType>>& gridData);
 private:
-	SimTransientPropagation(const SimTransientPropagation&) = delete;
-	SimTransientPropagation& operator=(const SimTransientPropagation&) = delete;
-	SimTransientPropagation(SimTransientPropagation&&) = delete;
-	SimTransientPropagation& operator=(SimTransientPropagation&&) = delete;
-
-	FFTWFilter2<FloatType> filter_;
+	SimTransientPropagation() = delete;
 };
 
 

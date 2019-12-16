@@ -100,7 +100,7 @@ private:
 #ifdef OGLFIGUREWIDGET_USE_VERTEX_ARRAY
 	void fillIndexArray(unsigned int iA, unsigned int iB, std::vector<GLuint>& indexArray);
 #else
-	void createVertex(const OGLPoint3D& point);
+	static void createVertex(const OGLPoint3D& point);
 #endif
 
 	bool valuesInDecibel_;
