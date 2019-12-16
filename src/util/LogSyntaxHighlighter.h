@@ -1,3 +1,5 @@
+// This file is in the public domain.
+
 #ifndef LOGSYNTAXHIGHLIGHTER_H_
 #define LOGSYNTAXHIGHLIGHTER_H_
 

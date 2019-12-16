@@ -1,4 +1,5 @@
 // Adapted from the QSyntaxHighlighter documentation in Qt Assistant.
+// This file is in the public domain.
 
 #include "LogSyntaxHighlighter.h"
 
