@@ -37,6 +37,8 @@ template<typename FloatType> FloatType getBeta(FloatType tolerance_dB);
 // transition_width: 1.0 --> fs/2
 template<typename FloatType> unsigned int getSize(FloatType tolerance_dB, FloatType transitionWidth);
 
+template<typename FloatType> void getWindow(unsigned int size, FloatType beta, std::vector<FloatType>& window);
+
 
 
 template<typename FloatType>
