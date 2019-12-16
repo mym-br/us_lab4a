@@ -22,8 +22,6 @@ namespace Lab {
 
 template<typename FloatType>
 struct XZValue {
-	typedef FloatType ValueType;
-
 	XZValue() = default;
 	XZValue(FloatType x, FloatType z, FloatType value) : x(x), z(z), value(value) {}
 

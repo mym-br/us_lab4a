@@ -22,8 +22,6 @@ namespace Lab {
 
 template<typename FloatType>
 struct XYZValueFactor {
-	typedef FloatType ValueType;
-
 	FloatType x;
 	FloatType y;
 	FloatType z;

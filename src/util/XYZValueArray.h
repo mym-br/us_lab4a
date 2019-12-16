@@ -24,8 +24,6 @@ namespace Lab {
 
 template<typename FloatType>
 struct XYZValueArray {
-	typedef FloatType ValueType;
-
 	FloatType x;
 	FloatType y;
 	FloatType z;

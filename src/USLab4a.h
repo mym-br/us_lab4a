@@ -96,8 +96,6 @@ private:
 
 	virtual void closeEvent(QCloseEvent* event);
 	void fillTaskAndExpListWidget();
-	void startAcquisition();
-	void stopAcquisition();
 	void processBatchEntry();
 	void resetBatchData();
 
@@ -110,7 +108,6 @@ private:
 	QTimer infoTimer_;
 	Ui::USLab4aClass ui_;
 	QFile logFile_;
-
 	QList<BatchEntry> batchEntryList_;
 	unsigned int nextBatchEntry_;
 };
