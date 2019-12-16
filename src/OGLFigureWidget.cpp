@@ -506,19 +506,14 @@ OGLFigureWidget::paintGL()
 			glNewList(oglDisplayList_, GL_COMPILE);
 
 			for (unsigned int i = 0; i < oglGridData_.n1() - 1; ++i) {
-				Matrix<OGLPoint3D>::ConstDim2Interval intervalA, intervalB;
-				if (i & 1U) {
-					intervalA = oglGridData_.dim2Interval(i + 1);
-					intervalB = oglGridData_.dim2Interval(i);
-				} else {
-					intervalA = oglGridData_.dim2Interval(i);
-					intervalB = oglGridData_.dim2Interval(i + 1);
-				}
+				const bool odd = i & 1U;
+				auto rangeA = oglGridData_.range2(odd ? i + 1 : i    );
+				auto rangeB = oglGridData_.range2(odd ? i     : i + 1);
 
 				glBegin(GL_TRIANGLE_STRIP);
-				Matrix<OGLPoint3D>::ConstDim2Iterator iterA = intervalA.first;
-				Matrix<OGLPoint3D>::ConstDim2Iterator iterB = intervalB.first;
-				if (iterA != intervalA.second) {
+				auto iterA = rangeA.begin();
+				auto iterB = rangeB.begin();
+				if (iterA != rangeA.end()) {
 					const OGLPoint3D pA = *iterA;
 					createVertex(pA);
 
@@ -526,7 +521,7 @@ OGLFigureWidget::paintGL()
 					createVertex(pB);
 
 					++iterA; ++iterB;
-					for (unsigned int j = 0; iterA != intervalA.second; ++iterA, ++iterB, ++j) {
+					for (unsigned int j = 0; iterA != rangeA.end(); ++iterA, ++iterB, ++j) {
 						const OGLPoint3D pA = *iterA;
 						const OGLPoint3D pB = *iterB;
 						if (j & 1U) {
