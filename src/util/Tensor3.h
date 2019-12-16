@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -40,82 +40,67 @@ public:
 	typedef const T& ConstReference;
 	typedef T ValueType;
 
-	class Dim1Iterator {
+	template<typename U>
+	class Range {
 	public:
-		Dim1Iterator(typename Tensor3<T, Alloc>::Pointer baseValuePtr, typename Tensor3<T, Alloc>::SizeType increment)
+		Range(U begin, U end) : begin_(begin), end_(end) {}
+		U& begin() { return begin_; }
+		U& end() { return end_; }
+		U& begin() const { return begin_; }
+		U& end() const { return end_; }
+	private:
+		U begin_;
+		U end_;
+	};
+
+	template<typename U>
+	class Dim12Iterator {
+	public:
+		Dim12Iterator(U* baseValuePtr, typename Tensor3<T, Alloc>::SizeType increment)
 			: valuePtr_(baseValuePtr)
 			, increment_(increment) {
 		}
-		Dim1Iterator(const Dim1Iterator& iter)
+		Dim12Iterator(const Dim12Iterator<U>& iter)
 			: valuePtr_(iter.valuePtr_)
 			, increment_(iter.increment_) {
 		}
-		Dim1Iterator& operator=(const Dim1Iterator& iter) {
+		Dim12Iterator& operator=(const Dim12Iterator<U>& iter) {
 			if (&iter != this) {
 				valuePtr_ = iter.valuePtr_;
 				increment_ = iter.increment_;
 			}
 			return *this;
 		}
-		~Dim1Iterator() = default;
+		~Dim12Iterator() = default;
 
-		bool operator==(const Dim1Iterator& iter) const { return !(valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_); }
-		bool operator!=(const Dim1Iterator& iter) const { return valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_; }
-		Dim1Iterator& operator++() { valuePtr_ += increment_; return *this; }
-		Dim1Iterator operator++(int) { Dim1Iterator iter{*this}; valuePtr_ += increment_; return iter; }
-		typename Tensor3<T, Alloc>::Reference operator*() { return *valuePtr_; }
-	private:
-		Dim1Iterator(Dim1Iterator&&) = delete;
-		Dim1Iterator& operator=(Dim1Iterator&&) = delete;
-
-		typename Tensor3<T, Alloc>::Pointer valuePtr_;
-		const typename Tensor3<T, Alloc>::SizeType increment_;
-	};
-
-	class ConstDim1Iterator {
-	public:
-		ConstDim1Iterator(typename Tensor3<T, Alloc>::ConstPointer baseValuePtr, typename Tensor3<T, Alloc>::SizeType increment)
-			: valuePtr_(baseValuePtr)
-			, increment_(increment) {
+		bool operator==(const Dim12Iterator<U>& iter) const {
+			return valuePtr_ == iter.valuePtr_ && increment_ == iter.increment_;
 		}
-		ConstDim1Iterator(const ConstDim1Iterator& iter)
-			: valuePtr_(iter.valuePtr_)
-			, increment_(iter.increment_) {
+		bool operator!=(const Dim12Iterator<U>& iter) const {
+			return !(*this == iter);
 		}
-		ConstDim1Iterator& operator=(const ConstDim1Iterator& iter) {
-			if (&iter != this) {
-				valuePtr_ = iter.valuePtr_;
-				increment_ = iter.increment_;
-			}
+		Dim12Iterator& operator++() {
+			valuePtr_ += increment_;
 			return *this;
 		}
-		~ConstDim1Iterator() = default;
-
-		bool operator==(const ConstDim1Iterator& iter) const { return !(valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_); }
-		bool operator!=(const ConstDim1Iterator& iter) const { return valuePtr_ != iter.valuePtr_ || increment_ != iter.increment_; }
-		ConstDim1Iterator& operator++() { valuePtr_ += increment_; return *this; }
-		ConstDim1Iterator operator++(int) { ConstDim1Iterator iter{*this}; valuePtr_ += increment_; return iter; }
-		typename Tensor3<T, Alloc>::ConstReference operator*() { return *valuePtr_; }
+		Dim12Iterator operator++(int) {
+			Dim12Iterator<U> iter{*this};
+			valuePtr_ += increment_;
+			return iter;
+		}
+		U& operator*() const {
+			return *valuePtr_;
+		}
 	private:
-		ConstDim1Iterator(ConstDim1Iterator&&) = delete;
-		ConstDim1Iterator& operator=(ConstDim1Iterator&&) = delete;
+		Dim12Iterator(Dim12Iterator<U>&&) = delete;
+		Dim12Iterator& operator=(Dim12Iterator<U>&&) = delete;
 
-		typename Tensor3<T, Alloc>::ConstPointer valuePtr_;
+		U* valuePtr_;
 		const typename Tensor3<T, Alloc>::SizeType increment_;
 	};
-
-	typedef std::pair<Dim1Iterator, Dim1Iterator> Dim1Interval;
-	typedef std::pair<ConstDim1Iterator, ConstDim1Iterator> ConstDim1Interval;
-
-	typedef Dim1Iterator Dim2Iterator;
-	typedef ConstDim1Iterator ConstDim2Iterator;
-	typedef std::pair<Dim2Iterator, Dim2Iterator> Dim2Interval;
-	typedef std::pair<ConstDim2Iterator, ConstDim2Iterator> ConstDim2Interval;
 
 	typedef Iterator Dim3Iterator;
 	typedef ConstIterator ConstDim3Iterator;
-	typedef std::pair<Dim3Iterator, Dim3Iterator> Dim3Interval;
-	typedef std::pair<ConstDim3Iterator, ConstDim3Iterator> ConstDim3Interval;
 
 	Tensor3();
 	Tensor3(SizeType n1, SizeType n2, SizeType n3);
@@ -125,47 +110,52 @@ public:
 	SizeType n2() const { return n2_; }
 	SizeType n3() const { return n3_; }
 
-	Reference operator()(SizeType dim1, SizeType dim2, SizeType dim3);
-	ConstReference operator()(SizeType dim1, SizeType dim2, SizeType dim3) const;
+	Reference operator()(SizeType i1, SizeType i2, SizeType i3);
+	ConstReference operator()(SizeType i1, SizeType i2, SizeType i3) const;
 
-	Dim1Interval dim1Interval(SizeType dim2, SizeType dim3) {
-		Pointer valuePtr = &data_[dim2 * n3_ + dim3];
+	Range<Dim12Iterator<T>> range1(SizeType i2, SizeType i3) {
 		const SizeType n2n3 = n2_ * n3_;
-		return std::make_pair(Dim1Iterator(valuePtr, n2n3), Dim1Iterator(valuePtr + n1_ * n2n3, n2n3));
+		Pointer valuePtr = &data_[i2 * n3_ + i3];
+		return Range<Dim12Iterator<T>>(
+					Dim12Iterator<T>(valuePtr             , n2n3),
+					Dim12Iterator<T>(valuePtr + n1_ * n2n3, n2n3));
 	}
-
-	ConstDim1Interval dim1Interval(SizeType dim2, SizeType dim3) const {
-		ConstPointer valuePtr = &data_[dim2 * n3_ + dim3];
+	Range<Dim12Iterator<const T>> range1(SizeType i2, SizeType i3) const {
 		const SizeType n2n3 = n2_ * n3_;
-		return std::make_pair(ConstDim1Iterator(valuePtr, n2n3), ConstDim1Iterator(valuePtr + n1_ * n2n3, n2n3));
+		ConstPointer valuePtr = &data_[i2 * n3_ + i3];
+		return Range<Dim12Iterator<const T>>(
+					Dim12Iterator<const T>(valuePtr             , n2n3),
+					Dim12Iterator<const T>(valuePtr + n1_ * n2n3, n2n3));
 	}
 
-	Dim2Interval dim2Interval(SizeType dim1, SizeType dim3) {
+	Range<Dim12Iterator<T>> range2(SizeType i1, SizeType i3) {
 		const SizeType n2n3 = n2_ * n3_;
-		Pointer valuePtr = &data_[dim1 * n2n3 + dim3];
-		return std::make_pair(Dim2Iterator(valuePtr, n3_), Dim2Iterator(valuePtr + n2n3, n3_));
+		Pointer valuePtr = &data_[i1 * n2n3 + i3];
+		return Range<Dim12Iterator<T>>(
+					Dim12Iterator<T>(valuePtr       , n3_),
+					Dim12Iterator<T>(valuePtr + n2n3, n3_));
 	}
-
-	ConstDim2Interval dim2Interval(SizeType dim1, SizeType dim3) const {
+	Range<Dim12Iterator<const T>> range2(SizeType i1, SizeType i3) const {
 		const SizeType n2n3 = n2_ * n3_;
-		ConstPointer valuePtr = &data_[dim1 * n2n3 + dim3];
-		return std::make_pair(ConstDim2Iterator(valuePtr, n3_), ConstDim2Iterator(valuePtr + n2n3, n3_));
+		ConstPointer valuePtr = &data_[i1 * n2n3 + i3];
+		return Range<Dim12Iterator<const T>>(
+					Dim12Iterator<const T>(valuePtr       , n3_),
+					Dim12Iterator<const T>(valuePtr + n2n3, n3_));
 	}
 
-	Dim3Interval dim3Interval(SizeType dim1, SizeType dim2) {
-		Iterator baseIter = data_.begin() + (dim1 * n2_ + dim2) * n3_;
-		return std::make_pair(baseIter, baseIter + n3_);
+	Range<Dim3Iterator> range3(SizeType i1, SizeType i2) {
+		auto baseIter = data_.begin() + (i1 * n2_ + i2) * n3_;
+		return Range<Dim3Iterator>(baseIter, baseIter + n3_);
 	}
-
-	ConstDim3Interval dim3Interval(SizeType dim1, SizeType dim2) const {
-		ConstIterator baseIter = data_.begin() + (dim1 * n2_ + dim2) * n3_;
-		return std::make_pair(baseIter, baseIter + n3_);
+	Range<ConstDim3Iterator> range3(SizeType i1, SizeType i2) const {
+		auto baseIter = data_.cbegin() + (i1 * n2_ + i2) * n3_;
+		return Range<ConstDim3Iterator>(baseIter, baseIter + n3_);
 	}
 
 	void resize(SizeType n1, SizeType n2, SizeType n3);
 	void reset();
 	void operator=(T value);
-	bool empty() const { return data_.size() == 0; }
+	bool empty() const { return data_.empty(); }
 
 	Iterator begin() { return data_.begin(); }
 	Iterator end() { return data_.end(); }
@@ -173,11 +163,18 @@ public:
 	ConstIterator end() const { return data_.end(); }
 	ConstIterator cbegin() const { return data_.cbegin(); }
 	ConstIterator cend() const { return data_.cend(); }
+
+	bool operator==(const Tensor3<T, Alloc>& t) const {
+		return n1_ == t.n1_ && n2_ == t.n2_ && n3_ == t.n3_ && data_ == t.data_;
+	}
+	bool operator!=(const Tensor3<T, Alloc>& t) const {
+		return !(*this == t);
+	}
 private:
 	template<typename V>
-	friend std::ostream& operator<<(std::ostream& out, const Tensor3<V>& m);
+	friend std::ostream& operator<<(std::ostream& out, const Tensor3<V>& t);
 
-	void validateSize(SizeType n1, SizeType n2, SizeType n3);
+	static void validateSize(SizeType n1, SizeType n2, SizeType n3);
 
 	SizeType n1_;
 	SizeType n2_;
@@ -194,22 +191,21 @@ template<typename T, typename Alloc>
 Tensor3<T, Alloc>::Tensor3(SizeType n1, SizeType n2, SizeType n3) : n1_(n1), n2_(n2), n3_(n3)
 {
 	validateSize(n1, n2, n3);
-
 	data_.resize(n1 * n2 * n3);
 }
 
 template<typename T, typename Alloc>
 typename Tensor3<T, Alloc>::Reference
-Tensor3<T, Alloc>::operator()(SizeType dim1, SizeType dim2, SizeType dim3)
+Tensor3<T, Alloc>::operator()(SizeType i1, SizeType i2, SizeType i3)
 {
-	return data_[(dim1 * n2_ + dim2) * n3_ + dim3];
+	return data_[(i1 * n2_ + i2) * n3_ + i3];
 }
 
 template<typename T, typename Alloc>
 typename Tensor3<T, Alloc>::ConstReference
-Tensor3<T, Alloc>::operator()(SizeType dim1, SizeType dim2, SizeType dim3) const
+Tensor3<T, Alloc>::operator()(SizeType i1, SizeType i2, SizeType i3) const
 {
-	return data_[(dim1 * n2_ + dim2) * n3_ + dim3];
+	return data_[(i1 * n2_ + i2) * n3_ + i3];
 }
 
 template<typename T, typename Alloc>
@@ -267,13 +263,13 @@ Tensor3<T, Alloc>::operator=(T value)
 
 template<typename T, typename Alloc>
 std::ostream&
-operator<<(std::ostream& out, const Tensor3<T, Alloc>& m)
+operator<<(std::ostream& out, const Tensor3<T, Alloc>& t)
 {
-	for (typename Tensor3<T, Alloc>::SizeType i = 0, n1 = m.n1(); i < n1; ++i) {
-		for (typename Tensor3<T, Alloc>::SizeType j = 0, n2 = m.n2(); j < n2; ++j) {
-			typename Tensor3<T, Alloc>::ConstDim3Interval dim3Interval = m.dim3Interval(i, j);
-			for (typename Tensor3<T, Alloc>::ConstDim3Iterator iter = dim3Interval.first; iter != dim3Interval.second; ++iter) {
-				out << ' ' << *iter;
+	for (typename Tensor3<T, Alloc>::SizeType i = 0, n1 = t.n1(); i < n1; ++i) {
+		for (typename Tensor3<T, Alloc>::SizeType j = 0, n2 = t.n2(); j < n2; ++j) {
+			auto range = t.range3(i, j);
+			for (auto it = range.begin(); it != range.end(); ++it) {
+				out << ' ' << *it;
 			}
 			out << '\n';
 		}

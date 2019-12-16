@@ -148,8 +148,8 @@ DefaultSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridD
 			interpolator_.interpolate(&acqData_(rxElem, 0), samplesPerChannelLow, &tempSignal_[0]);
 
 			// Copy the signal to the signal matrix.
-			typename Tensor3<FloatType>::Dim3Interval interval = signalTensor_.dim3Interval(localTxElem, rxElem);
-			std::copy(tempSignal_.begin(), tempSignal_.end(), interval.first);
+			auto range = signalTensor_.range3(localTxElem, rxElem);
+			std::copy(tempSignal_.begin(), tempSignal_.end(), range.begin());
 
 			Util::removeDC(&signalTensor_(localTxElem, rxElem, 0), signalTensor_.n3(), deadZoneSamplesUp_);
 		}
