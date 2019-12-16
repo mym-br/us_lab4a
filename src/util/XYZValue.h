@@ -38,7 +38,7 @@ struct XYZValue {
 		}
 		return *this;
 	}
-	bool operator==(const XYZValue<FloatType>& o) {
+	bool operator==(const XYZValue<FloatType>& o) const {
 		return x == o.x && y == o.y && z == o.z && value == o.value;
 	}
 };

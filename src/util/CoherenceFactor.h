@@ -116,7 +116,7 @@ public:
 			THROW_EXCEPTION(InvalidStateException, "The object has not been initialized.");
 		}
 	}
-	bool enabled() { return cf_.get() != nullptr; }
+	bool enabled() const { return cf_.get() != nullptr; }
 private:
 	CoherenceFactorProcessor(CoherenceFactorProcessor&&) = delete;
 	CoherenceFactorProcessor& operator=(CoherenceFactorProcessor&&) = delete;
@@ -194,7 +194,7 @@ public:
 			THROW_EXCEPTION(InvalidStateException, "The object has not been initialized.");
 		}
 	}
-	bool enabled() { return cf_.get() != nullptr; }
+	bool enabled() const { return cf_.get() != nullptr; }
 private:
 	AnalyticSignalCoherenceFactorProcessor(AnalyticSignalCoherenceFactorProcessor&&) = delete;
 	AnalyticSignalCoherenceFactorProcessor& operator=(AnalyticSignalCoherenceFactorProcessor&&) = delete;
@@ -220,7 +220,7 @@ private:
 	SignCoherenceFactor(SignCoherenceFactor&&) = delete;
 	SignCoherenceFactor& operator=(SignCoherenceFactor&&) = delete;
 
-	FloatType p_;
+	const FloatType p_;
 };
 
 template<typename FloatType>
