@@ -68,6 +68,7 @@ private:
 	void testMultiplyBy();
 	void testSCF();
 	void testStatistics();
+	void testTensor3();
 
 	Project& project_;
 	unsigned int errorCount_;

@@ -42,6 +42,7 @@
 #include "Project.h"
 #include "RealToComplexFFT.h"
 #include "Statistics.h"
+#include "Tensor3.h"
 #include "Util.h"
 
 //#define TEST_DIRECT_FFTW_FILTER_SHOW_FIGURES 1
@@ -109,6 +110,7 @@ TestMethod::execute()
 	EXEC(testMultiplyBy)
 	EXEC(testSCF)
 	EXEC(testStatistics)
+	EXEC(testTensor3)
 
 	if (errorCount_ > 0) {
 		LOG_ERROR << "Number of errors: " << errorCount_;
@@ -897,7 +899,7 @@ TestMethod::testMatrix()
 			{ 10.0, 11.0, 12.0, 13.0 }
 		};
 		if (m != mRef) {
-			THROW_EXCEPTION(TestException, "Wrong results.");
+			THROW_EXCEPTION(TestException, "Wrong results 2.");
 		}
 	}
 //	{
@@ -971,6 +973,73 @@ TestMethod::testStatistics()
 	if (mean != 3.0) {
 		THROW_EXCEPTION(TestException, "Wrong mean: " << mean << '.');
 	}
+}
+
+void
+TestMethod::testTensor3()
+{
+	Tensor3<double> t(2, 3, 3);
+	t(0, 0, 0) =  2.0; t(0, 0, 1) =  3.0; t(0, 0, 2) =  4.0;
+	t(0, 1, 0) =  5.0; t(0, 1, 1) =  6.0; t(0, 1, 2) =  7.0;
+	t(0, 2, 0) =  8.0; t(0, 2, 1) =  9.0; t(0, 2, 2) = 10.0;
+	t(1, 0, 0) = 11.0; t(1, 0, 1) = 12.0; t(1, 0, 2) = 13.0;
+	t(1, 1, 0) = 14.0; t(1, 1, 1) = 15.0; t(1, 1, 2) = 16.0;
+	t(1, 2, 0) = 17.0; t(1, 2, 1) = 18.0; t(1, 2, 2) = 19.0;
+	{
+		std::vector<double> v;
+		auto range = t.range1(1, 2);
+		for (auto it = range.begin(); it != range.end(); ++it) {
+			v.push_back(*it);
+		}
+		std::vector<double> vRef = { 7.0, 16.0 };
+		if (v != vRef) {
+			THROW_EXCEPTION(TestException, "Wrong results 1.");
+		}
+	}
+	{
+		std::vector<double> v;
+		auto range = t.range2(1, 2);
+		for (auto it = range.begin(); it != range.end(); ++it) {
+			v.push_back(*it);
+		}
+		std::vector<double> vRef = { 13.0, 16.0, 19.0 };
+		if (v != vRef) {
+			THROW_EXCEPTION(TestException, "Wrong results 2.");
+		}
+	}
+	{
+		std::vector<double> v;
+		auto range = t.range3(1, 2);
+		for (auto it = range.begin(); it != range.end(); ++it) {
+			v.push_back(*it);
+		}
+		std::vector<double> vRef = { 17.0, 18.0, 19.0 };
+		if (v != vRef) {
+			THROW_EXCEPTION(TestException, "Wrong results 3.");
+		}
+	}
+
+//	auto f1 = [](const Tensor3<double>& t) {
+//		auto range = t.range1(1, 2);
+//		for (auto it = range.begin(); it != range.end(); ++it) {
+//			*it += 2.0; // error
+//		}
+//	};
+//	f1(t);
+//	auto f2 = [](const Tensor3<double>& t) {
+//		auto range = t.range2(1, 2);
+//		for (auto it = range.begin(); it != range.end(); ++it) {
+//			*it += 2.0; // error
+//		}
+//	};
+//	f2(t);
+//	auto f3 = [](const Tensor3<double>& t) {
+//		auto range = t.range3(1, 2);
+//		for (auto it = range.begin(); it != range.end(); ++it) {
+//			*it += 2.0; // error
+//		}
+//	};
+//	f3(t);
 }
 
 } // namespace Lab
