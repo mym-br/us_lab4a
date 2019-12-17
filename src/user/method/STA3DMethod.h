@@ -123,8 +123,8 @@ STA3DMethod<FloatType>::execute()
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
 	switch (project_.method()) {
-	case MethodEnum::sta_3d_simulated_save_signals:       // falls through
-	case MethodEnum::sta_3d_simulated_seq_y_save_signals: // falls through
+	case MethodEnum::sta_3d_simulated_save_signals:
+	case MethodEnum::sta_3d_simulated_seq_y_save_signals:
 	case MethodEnum::sta_3d_vectorial_simulated:
 		acquisition = std::make_unique<Simulated3DSTAAcquisition<FloatType>>(project_, config);
 		break;

@@ -131,19 +131,19 @@ STAMethod<FloatType>::execute()
 	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
 
 	switch (project_.method()) {
-	case MethodEnum::sta_simple_simulated: // falls through
+	case MethodEnum::sta_simple_simulated:
 	case MethodEnum::sta_simulated:
 		acquisition = std::make_unique<SimulatedSTAAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodEnum::sta_dp_network:           // falls through
-	case MethodEnum::sta_vectorial_dp_network: // falls through
+	case MethodEnum::sta_dp_network:
+	case MethodEnum::sta_vectorial_dp_network:
 	case MethodEnum::sta_save_signals:
 		acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodEnum::sta_simple_saved:       // falls through
-	case MethodEnum::sta_dp_saved:           // falls through
-	case MethodEnum::sta_vectorial_dp_saved: // falls through
-	case MethodEnum::sta_sp_saved:           // falls through
+	case MethodEnum::sta_simple_saved:
+	case MethodEnum::sta_dp_saved:
+	case MethodEnum::sta_vectorial_dp_saved:
+	case MethodEnum::sta_sp_saved:
 	case MethodEnum::sta_vectorial_sp_saved:
 		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(
 					project_, config.numElements,
@@ -176,15 +176,15 @@ STAMethod<FloatType>::execute()
 	visual_ = Visualization::VALUE_ENVELOPE_LOG;
 
 	switch (project_.method()) {
-	case MethodEnum::sta_simple_simulated: // falls through
+	case MethodEnum::sta_simple_simulated:
 	case MethodEnum::sta_simple_saved:
 		{
 			auto processor = std::make_unique<SimpleSTAProcessor<FloatType>>(config, *acquisition, peakOffset);
 			process(config.valueScale, *processor, baseElement, outputDir);
 		}
 		break;
-	case MethodEnum::sta_vectorial_dp_network: // falls through
-	case MethodEnum::sta_vectorial_dp_saved:   // falls through
+	case MethodEnum::sta_vectorial_dp_network:
+	case MethodEnum::sta_vectorial_dp_saved:
 	case MethodEnum::sta_vectorial_sp_saved:
 		{
 			const auto processingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");

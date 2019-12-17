@@ -201,7 +201,7 @@ OGLFigureWidget::fillOGLGridData()
 	}
 
 	switch (visualization_) {
-	case Visualization::VALUE_DEFAULT: // falls through
+	case Visualization::VALUE_DEFAULT:
 	case Visualization::VALUE_RAW_LINEAR:
 		{
 			const float valueFactor = 0.5f * calcValueFactor(gridData_);
@@ -358,7 +358,7 @@ OGLFigureWidget::updateDataVisualization()
 	if (gridData_.empty()) return;
 
 	switch (colormap_) {
-	case Colormap::DEFAULT: // falls through
+	case Colormap::DEFAULT:
 #define COLORMAP_ITEM(A, B, C) case Colormap::A: fillOGLGridData<C>(); break;
 	COLORMAP_TABLE
 #undef COLORMAP_ITEM

@@ -257,18 +257,19 @@ SingleVirtualSourceMethod<FloatType>::execute()
 	std::string savedDataDir;
 
 	switch (project_.method()) {
-	case MethodEnum::single_virtual_source_3d_simulated_save_signals: // falls through
+	case MethodEnum::single_virtual_source_3d_simulated_save_signals:
 	case MethodEnum::single_virtual_source_3d_vectorial_simulated:
 		acquisition = std::make_unique<Simulated3DTnRnAcquisition<FloatType>>(project_, config);
 		break;
-	case MethodEnum::single_virtual_source_3d_network_save_signals:            // falls through
-	case MethodEnum::single_virtual_source_3d_network_save_signal_sequence:    // falls through
-	case MethodEnum::single_virtual_source_3d_vectorial_dp_network:            // falls through
+	case MethodEnum::single_virtual_source_3d_network_save_signals:
+	case MethodEnum::single_virtual_source_3d_network_save_signal_sequence:
+	case MethodEnum::single_virtual_source_3d_vectorial_dp_network:
 	case MethodEnum::single_virtual_source_3d_vectorial_sp_network_continuous:
 		acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
 		break;
 	case MethodEnum::single_virtual_source_3d_vectorial_dp_saved:
-		savedDataDir = FileUtil::path(taskPM.value<std::string>("data_dir"), "/", 0); // falls through
+		savedDataDir = FileUtil::path(taskPM.value<std::string>("data_dir"), "/", 0);
+		[[fallthrough]];
 	case MethodEnum::single_virtual_source_3d_vectorial_dp_saved_sequence:
 		acquisition = std::make_unique<SavedTnRnAcquisition<FloatType>>(project_, config.numElements, savedDataDir);
 		break;
