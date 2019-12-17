@@ -24,28 +24,28 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 struct DeviceSectorialScanConfiguration {
 	unsigned int numElements;
 	unsigned int numElementsMux;
-	unsigned int baseElement;         // first element: 0
-	unsigned int signalMode;          // 0: Raw / 1: Envelope
-	FloatType pitch;                  // m
-	FloatType centerFrequency;        // Hz
-	FloatType gain;                   // dB
-	FloatType propagationSpeed;       // m/s
-	FloatType acquisitionDelay;       // s
-	FloatType samplingFrequency;      // Hz
-	FloatType focalEmissionDistance;  // m
-	FloatType focalReceptionDistance; // m
-	FloatType valueScale;
+	unsigned int baseElement;      // first element: 0
+	unsigned int signalMode;       // 0: Raw / 1: Envelope
+	TFloat pitch;                  // m
+	TFloat centerFrequency;        // Hz
+	TFloat gain;                   // dB
+	TFloat propagationSpeed;       // m/s
+	TFloat acquisitionDelay;       // s
+	TFloat samplingFrequency;      // Hz
+	TFloat focalEmissionDistance;  // m
+	TFloat focalReceptionDistance; // m
+	TFloat valueScale;
 
 	// Sectorial scan grid.
-	FloatType rangeStart; // m
-	FloatType rangeEnd;   // m
-	FloatType startAngle; // degree
-	FloatType endAngle;   // degree
-	FloatType angleStep;  // degree
+	TFloat rangeStart; // m
+	TFloat rangeEnd;   // m
+	TFloat startAngle; // degree
+	TFloat endAngle;   // degree
+	TFloat angleStep;  // degree
 
 	bool enableFocusing;
 
@@ -54,9 +54,9 @@ struct DeviceSectorialScanConfiguration {
 
 
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DeviceSectorialScanConfiguration<FloatType>::load(const ParameterMap& pm)
+DeviceSectorialScanConfiguration<TFloat>::load(const ParameterMap& pm)
 {
 	pm.getValue(numElementsMux        , "num_elements_mux"        ,       8,      1024);
 	pm.getValue(numElements           , "num_elements"            ,       8, numElementsMux);

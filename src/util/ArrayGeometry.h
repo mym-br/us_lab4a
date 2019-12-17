@@ -27,49 +27,49 @@
 namespace Lab {
 namespace ArrayGeometry {
 
-template<typename FloatType> void getElementXCentered2D(unsigned int numElements, FloatType pitch, std::vector<FloatType>& x);
-template<typename FloatType> void getElementX2D(unsigned int numElements, FloatType pitch, FloatType offset, std::vector<FloatType>& x);
-template<typename FloatType, typename VectorType> void getElementX2D(unsigned int numElements, FloatType pitch, FloatType offset, VectorType& x);
+template<typename TFloat> void getElementXCentered2D(unsigned int numElements, TFloat pitch, std::vector<TFloat>& x);
+template<typename TFloat> void getElementX2D(unsigned int numElements, TFloat pitch, TFloat offset, std::vector<TFloat>& x);
+template<typename TFloat, typename VectorType> void getElementX2D(unsigned int numElements, TFloat pitch, TFloat offset, VectorType& x);
 
 
 
-template<typename FloatType>
+template<typename TFloat>
 void
-getElementXCentered2D(unsigned int numElements, FloatType pitch, std::vector<FloatType>& x)
+getElementXCentered2D(unsigned int numElements, TFloat pitch, std::vector<TFloat>& x)
 {
 	if (numElements == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of elements is zero.");
 	}
 	x.resize(numElements);
-	const FloatType xCenter = ((numElements - 1) * pitch) / 2;
+	const TFloat xCenter = ((numElements - 1) * pitch) / 2;
 	for (unsigned int elem = 0; elem < numElements; ++elem) {
 		x[elem] = elem * pitch - xCenter;
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-getElementX2D(unsigned int numElements, FloatType pitch, FloatType offset, std::vector<FloatType>& x)
+getElementX2D(unsigned int numElements, TFloat pitch, TFloat offset, std::vector<TFloat>& x)
 {
 	if (numElements == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of elements is zero.");
 	}
 	x.resize(numElements);
-	const FloatType xCenter = ((numElements - 1) * pitch) / 2 - offset;
+	const TFloat xCenter = ((numElements - 1) * pitch) / 2 - offset;
 	for (unsigned int elem = 0; elem < numElements; ++elem) {
 		x[elem] = elem * pitch - xCenter;
 	}
 }
 
-template<typename FloatType, typename VectorType>
+template<typename TFloat, typename VectorType>
 void
-getElementX2D(unsigned int numElements, FloatType pitch, FloatType offset, VectorType& x)
+getElementX2D(unsigned int numElements, TFloat pitch, TFloat offset, VectorType& x)
 {
 	if (numElements == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of elements is zero.");
 	}
 	x.resize(numElements);
-	const FloatType xCenter = ((numElements - 1) * pitch) / 2 - offset;
+	const TFloat xCenter = ((numElements - 1) * pitch) / 2 - offset;
 	for (unsigned int elem = 0; elem < numElements; ++elem) {
 		x[elem] = elem * pitch - xCenter;
 	}

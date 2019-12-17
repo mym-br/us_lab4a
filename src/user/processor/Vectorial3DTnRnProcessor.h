@@ -47,31 +47,31 @@
 
 namespace Lab {
 
-template<typename FloatType>
-class Vectorial3DTnRnProcessor : public ArrayProcessor<FloatType> {
+template<typename TFloat>
+class Vectorial3DTnRnProcessor : public ArrayProcessor<TFloat> {
 public:
 	Vectorial3DTnRnProcessor(
-			const TnRnConfiguration<FloatType>& config,
-			TnRnAcquisition<FloatType>& acquisition,
+			const TnRnConfiguration<TFloat>& config,
+			TnRnAcquisition<TFloat>& acquisition,
 			unsigned int upsamplingFactor,
-			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
-			FloatType peakOffset,
-			const std::vector<FloatType>& rxApod);
+			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
+			TFloat peakOffset,
+			const std::vector<TFloat>& rxApod);
 	virtual ~Vectorial3DTnRnProcessor() = default;
 
-	void setTxDelays(FloatType focusX, FloatType focusY, FloatType focusZ /* can be negative */,
-				const std::vector<FloatType>& txDelays);
+	void setTxDelays(TFloat focusX, TFloat focusY, TFloat focusZ /* can be negative */,
+				const std::vector<TFloat>& txDelays);
 	virtual void prepare(unsigned int baseElement);
-	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
+	virtual void process(Matrix<XYZValueFactor<TFloat>>& gridData);
 private:
 	// Depends on the signal.
 	// 1.0 --> pi radian / sample at the original sampling rate.
-	static constexpr FloatType upsampFilterHalfTransitionWidth = 0.2;
+	static constexpr TFloat upsampFilterHalfTransitionWidth = 0.2;
 
 	struct ThreadData {
-		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor;
-		std::vector<std::complex<FloatType>> rxSignalSumList;
-		std::vector<FloatType> rxDelayList;
+		AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor;
+		std::vector<std::complex<TFloat>> rxSignalSumList;
+		std::vector<TFloat> rxDelayList;
 	};
 
 	Vectorial3DTnRnProcessor(const Vectorial3DTnRnProcessor&) = delete;
@@ -79,36 +79,36 @@ private:
 	Vectorial3DTnRnProcessor(Vectorial3DTnRnProcessor&&) = delete;
 	Vectorial3DTnRnProcessor& operator=(Vectorial3DTnRnProcessor&&) = delete;
 
-	const TnRnConfiguration<FloatType>& config_;
+	const TnRnConfiguration<TFloat>& config_;
 	unsigned int deadZoneSamplesUp_;
-	TnRnAcquisition<FloatType>& acquisition_;
+	TnRnAcquisition<TFloat>& acquisition_;
 	unsigned int upsamplingFactor_;
-	AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor_;
-	Matrix<std::complex<FloatType>> analyticSignalMatrix_;
-	typename TnRnAcquisition<FloatType>::AcquisitionDataType acqData_;
-	std::vector<FloatType> tempSignal_;
-	FloatType signalOffset_;
-	Interpolator<FloatType> interpolator_;
-	HilbertEnvelope<FloatType> envelope_;
+	AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor_;
+	Matrix<std::complex<TFloat>> analyticSignalMatrix_;
+	typename TnRnAcquisition<TFloat>::AcquisitionDataType acqData_;
+	std::vector<TFloat> tempSignal_;
+	TFloat signalOffset_;
+	Interpolator<TFloat> interpolator_;
+	HilbertEnvelope<TFloat> envelope_;
 	bool initialized_;
-	std::vector<FloatType> rxApod_;
-	FloatType focusX_;
-	FloatType focusY_;
-	FloatType focusZ_;
-	std::vector<FloatType> txDelays_; // focalization / divergence delays
+	std::vector<TFloat> rxApod_;
+	TFloat focusX_;
+	TFloat focusY_;
+	TFloat focusZ_;
+	std::vector<TFloat> txDelays_; // focalization / divergence delays
 	unsigned int baseElement_;
 };
 
 
 
-template<typename FloatType>
-Vectorial3DTnRnProcessor<FloatType>::Vectorial3DTnRnProcessor(
-			const TnRnConfiguration<FloatType>& config,
-			TnRnAcquisition<FloatType>& acquisition,
+template<typename TFloat>
+Vectorial3DTnRnProcessor<TFloat>::Vectorial3DTnRnProcessor(
+			const TnRnConfiguration<TFloat>& config,
+			TnRnAcquisition<TFloat>& acquisition,
 			unsigned int upsamplingFactor,
-			AnalyticSignalCoherenceFactorProcessor<FloatType>& coherenceFactor,
-			FloatType peakOffset,
-			const std::vector<FloatType>& rxApod)
+			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
+			TFloat peakOffset,
+			const std::vector<TFloat>& rxApod)
 		: config_(config)
 		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
 		, acquisition_(acquisition)
@@ -133,10 +133,10 @@ Vectorial3DTnRnProcessor<FloatType>::Vectorial3DTnRnProcessor(
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Vectorial3DTnRnProcessor<FloatType>::setTxDelays(FloatType focusX, FloatType focusY, FloatType focusZ,
-							const std::vector<FloatType>& txDelays)
+Vectorial3DTnRnProcessor<TFloat>::setTxDelays(TFloat focusX, TFloat focusY, TFloat focusZ,
+							const std::vector<TFloat>& txDelays)
 {
 	focusX_ = focusX;
 	focusY_ = focusY;
@@ -144,9 +144,9 @@ Vectorial3DTnRnProcessor<FloatType>::setTxDelays(FloatType focusX, FloatType foc
 	txDelays_ = txDelays;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Vectorial3DTnRnProcessor<FloatType>::prepare(unsigned int baseElement)
+Vectorial3DTnRnProcessor<TFloat>::prepare(unsigned int baseElement)
 {
 	if (baseElement + config_.numElements > config_.numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid base element: " << baseElement << '.');
@@ -159,9 +159,9 @@ Vectorial3DTnRnProcessor<FloatType>::prepare(unsigned int baseElement)
 	acquisition_.prepare(baseElement_, txDelays_);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Vectorial3DTnRnProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridData)
+Vectorial3DTnRnProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== Vectorial3DTnRnProcessor::process ==========";
 
@@ -207,18 +207,18 @@ Vectorial3DTnRnProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& 
 	threadData.coherenceFactor = coherenceFactor_;
 	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
-	const FloatType fsUp = config_.samplingFrequency * upsamplingFactor_;
-	const FloatType invCT = fsUp / config_.propagationSpeed;
+	const TFloat fsUp = config_.samplingFrequency * upsamplingFactor_;
+	const TFloat invCT = fsUp / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
 
 	IterationCounter::reset(gridData.n1());
 
 	// Delay of the first active element.
-	const FloatType d0 = txDelays_[0] * fsUp;
+	const TFloat d0 = txDelays_[0] * fsUp;
 
-	const XY<FloatType>& firstElem = config_.txElemPos[baseElement_];
+	const XY<TFloat>& firstElem = config_.txElemPos[baseElement_];
 	// Travel time between the first active element and the focus.
-	const FloatType t0 = Geometry::distance3DZ0(firstElem.x, firstElem.y, focusX_, focusY_, focusZ_) * invCT;
+	const TFloat t0 = Geometry::distance3DZ0(firstElem.x, firstElem.y, focusX_, focusY_, focusZ_) * invCT;
 
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n1()),
 	[&, invCT, numRows](const tbb::blocked_range<std::size_t>& r) {
@@ -226,20 +226,20 @@ Vectorial3DTnRnProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& 
 
 		local.rxSignalSumList.resize(config_.numElements);
 		local.rxDelayList.resize(config_.numElements);
-		FloatType txDelay;
+		TFloat txDelay;
 
 		// For each column:
 		for (std::size_t i = r.begin(); i != r.end(); ++i) {
 			// For each row:
 			for (std::size_t j = 0; j < numRows; ++j) {
 
-				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>(0));
-				XYZValueFactor<FloatType>& point = gridData(i, j);
+				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0));
+				XYZValueFactor<TFloat>& point = gridData(i, j);
 
 				// Calculate the delays.
 				{
 					// Travel time between the focus and the point.
-					const FloatType t1 = Geometry::distance3D(focusX_, focusY_, focusZ_,
+					const TFloat t1 = Geometry::distance3D(focusX_, focusY_, focusZ_,
 											point.x, point.y, point.z) * invCT;
 					if (focusZ_ > 0) {
 						txDelay = t1 + t0 + d0;
@@ -248,18 +248,18 @@ Vectorial3DTnRnProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& 
 					}
 				}
 				for (unsigned int iRxElem = 0, end = config_.numElements; iRxElem < end; ++iRxElem) {
-					const XY<FloatType>& elemPos = config_.rxElemPos[baseElement_ + iRxElem];
+					const XY<TFloat>& elemPos = config_.rxElemPos[baseElement_ + iRxElem];
 					local.rxDelayList[iRxElem] = Geometry::distance3DZ0(elemPos.x, elemPos.y,
 											point.x, point.y, point.z) * invCT;
 				}
 
 				for (unsigned int iRxElem = 0, rxEnd = config_.numElements; iRxElem < rxEnd; ++iRxElem) {
 					// Linear interpolation.
-					const FloatType delay = signalOffset_ + txDelay + local.rxDelayList[iRxElem];
+					const TFloat delay = signalOffset_ + txDelay + local.rxDelayList[iRxElem];
 					const std::size_t delayIdx = static_cast<std::size_t>(delay);
-					const FloatType k = delay - delayIdx;
+					const TFloat k = delay - delayIdx;
 					if (delayIdx + 1U < analyticSignalMatrix_.n2()) {
-						const std::complex<FloatType>* p = &analyticSignalMatrix_(iRxElem, delayIdx);
+						const std::complex<TFloat>* p = &analyticSignalMatrix_(iRxElem, delayIdx);
 						local.rxSignalSumList[iRxElem] = rxApod_[iRxElem] * ((1 - k) * *p + k * *(p + 1));
 					}
 				}
@@ -267,7 +267,7 @@ Vectorial3DTnRnProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& 
 				if (local.coherenceFactor.enabled()) {
 					point.factor = local.coherenceFactor.calculate(&local.rxSignalSumList[0], local.rxSignalSumList.size());
 				}
-				point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<FloatType>(0)));
+				point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0)));
 			}
 		}
 
@@ -275,7 +275,7 @@ Vectorial3DTnRnProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& 
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
-			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(FloatType(1) / numSignals));
+			Util::MultiplyValueBy<XYZValueFactor<TFloat>, TFloat>(TFloat(1) / numSignals));
 
 	LOG_DEBUG << "END ========== Vectorial3DTnRnProcessor::process ==========";
 }

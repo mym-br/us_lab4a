@@ -24,23 +24,23 @@
 
 namespace Lab {
 
-template<typename FloatType, unsigned int UpsamplingFactor>
+template<typename TFloat, unsigned int UpsamplingFactor>
 class LinearInterpolator {
 public:
-	static void interpolate(const FloatType* input, std::size_t inputLength, FloatType* output);
+	static void interpolate(const TFloat* input, std::size_t inputLength, TFloat* output);
 private:
 	LinearInterpolator() = delete;
 };
 
 // The argument "ouput" must point to an array of size inputLength * upsamplingFactor_.
-template<typename FloatType, unsigned int UpsamplingFactor>
+template<typename TFloat, unsigned int UpsamplingFactor>
 void
-LinearInterpolator<FloatType, UpsamplingFactor>::interpolate(const FloatType* input, std::size_t inputLength, FloatType* output)
+LinearInterpolator<TFloat, UpsamplingFactor>::interpolate(const TFloat* input, std::size_t inputLength, TFloat* output)
 {
 	for (std::size_t i = 0; i < inputLength - 1; ++i) {
-		const FloatType step = (input[i + 1] - input[i]) / UpsamplingFactor;
-		FloatType* destPtr = output + i * UpsamplingFactor;
-		FloatType value = input[i];
+		const TFloat step = (input[i + 1] - input[i]) / UpsamplingFactor;
+		TFloat* destPtr = output + i * UpsamplingFactor;
+		TFloat value = input[i];
 		for (unsigned int j = 0; j < UpsamplingFactor; ++j) {
 			*destPtr++ = value;
 			value += step;
@@ -49,9 +49,9 @@ LinearInterpolator<FloatType, UpsamplingFactor>::interpolate(const FloatType* in
 
 	// The last interval.
 	const std::size_t i = inputLength - 1;
-	const FloatType step = -input[i] / UpsamplingFactor;
-	FloatType* destPtr = output + i * UpsamplingFactor;
-	FloatType value = input[i];
+	const TFloat step = -input[i] / UpsamplingFactor;
+	TFloat* destPtr = output + i * UpsamplingFactor;
+	TFloat value = input[i];
 	for (unsigned int j = 0; j < UpsamplingFactor; ++j) {
 		*destPtr++ = value;
 		value += step;

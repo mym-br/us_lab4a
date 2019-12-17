@@ -20,13 +20,13 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 struct XYZValueFactor {
-	FloatType x;
-	FloatType y;
-	FloatType z;
-	FloatType value;
-	FloatType factor;
+	TFloat x;
+	TFloat y;
+	TFloat z;
+	TFloat value;
+	TFloat factor;
 };
 
 } // namespace Lab

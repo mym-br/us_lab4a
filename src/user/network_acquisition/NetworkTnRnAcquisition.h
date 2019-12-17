@@ -39,16 +39,16 @@ namespace Lab {
 
 // All the elements in the group emit and receive in each acquisition.
 // Focalization only in emission.
-template<typename FloatType>
-class NetworkTnRnAcquisition : public TnRnAcquisition<FloatType> {
+template<typename TFloat>
+class NetworkTnRnAcquisition : public TnRnAcquisition<TFloat> {
 public:
 	NetworkTnRnAcquisition(
 		const Project& project,
-		const TnRnConfiguration<FloatType>& config);
+		const TnRnConfiguration<TFloat>& config);
 	virtual ~NetworkTnRnAcquisition() = default;
 
-	virtual void prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays);
-	virtual void execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData);
+	virtual void prepare(unsigned int baseElement, const std::vector<TFloat>& txDelays);
+	virtual void execute(typename TnRnAcquisition<TFloat>::AcquisitionDataType& acqData);
 private:
 	NetworkTnRnAcquisition(const NetworkTnRnAcquisition&) = delete;
 	NetworkTnRnAcquisition& operator=(const NetworkTnRnAcquisition&) = delete;
@@ -61,18 +61,18 @@ private:
 	void getSignal(TnRnAcquisition<double>::AcquisitionDataType& acqData);
 
 	const Project& project_;
-	const TnRnConfiguration<FloatType>& config_;
+	const TnRnConfiguration<TFloat>& config_;
 	std::unique_ptr<ArrayAcqClient> acq_;
 	std::vector<float> signalBuffer_;
-	FloatType valueFactor_;
+	TFloat valueFactor_;
 	unsigned int averageN_;
 	std::vector<float> txDelays_;
 };
 
 
 
-template<typename FloatType>
-NetworkTnRnAcquisition<FloatType>::NetworkTnRnAcquisition(const Project& project, const TnRnConfiguration<FloatType>& config)
+template<typename TFloat>
+NetworkTnRnAcquisition<TFloat>::NetworkTnRnAcquisition(const Project& project, const TnRnConfiguration<TFloat>& config)
 		: project_(project)
 		, config_(config)
 		, acq_()
@@ -81,7 +81,7 @@ NetworkTnRnAcquisition<FloatType>::NetworkTnRnAcquisition(const Project& project
 	const ParamMapPtr pm = project_.getParamMap(NETWORK_AQUISITION_CONFIG_FILE);
 	const auto serverIpAddress = pm->value<std::string>(   "server_ip_address");
 	const auto portNumber      = pm->value<unsigned short>("server_port_number",   49152,  65535);
-	valueFactor_        = 1.0f / pm->value<FloatType>(     "value_scale"       , 1.0e-30, 1.0e30);
+	valueFactor_        = 1.0f / pm->value<TFloat>(        "value_scale"       , 1.0e-30, 1.0e30);
 	pm->getValue(averageN_, "average_n", 1, 256);
 
 	acq_ = std::make_unique<ArrayAcqClient>(serverIpAddress.c_str(), portNumber);
@@ -101,39 +101,39 @@ NetworkTnRnAcquisition<FloatType>::NetworkTnRnAcquisition(const Project& project
 	acq_->execPostConfiguration();
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkTnRnAcquisition<FloatType>::setTxDelays(const std::vector<float>& txDelays)
+NetworkTnRnAcquisition<TFloat>::setTxDelays(const std::vector<float>& txDelays)
 {
 	acq_->setTransmitDelays(txDelays);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkTnRnAcquisition<FloatType>::setTxDelays(const std::vector<double>& txDelays)
+NetworkTnRnAcquisition<TFloat>::setTxDelays(const std::vector<double>& txDelays)
 {
 	std::copy(txDelays.begin(), txDelays.end(), txDelays_.begin()); // double --> float
 	acq_->setTransmitDelays(txDelays_);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkTnRnAcquisition<FloatType>::getSignal(TnRnAcquisition<float>::AcquisitionDataType& acqData)
+NetworkTnRnAcquisition<TFloat>::getSignal(TnRnAcquisition<float>::AcquisitionDataType& acqData)
 {
 	acq_->getSignal(&acqData(0, 0), acqData.size());
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkTnRnAcquisition<FloatType>::getSignal(TnRnAcquisition<double>::AcquisitionDataType& acqData)
+NetworkTnRnAcquisition<TFloat>::getSignal(TnRnAcquisition<double>::AcquisitionDataType& acqData)
 {
 	acq_->getSignal(signalBuffer_);
 	std::copy(signalBuffer_.begin(), signalBuffer_.end(), acqData.begin()); // float --> double
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkTnRnAcquisition<FloatType>::prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays)
+NetworkTnRnAcquisition<TFloat>::prepare(unsigned int baseElement, const std::vector<TFloat>& txDelays)
 {
 	if (baseElement + config_.numElements > config_.numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid base element:" << baseElement << '.');
@@ -147,9 +147,9 @@ NetworkTnRnAcquisition<FloatType>::prepare(unsigned int baseElement, const std::
 	setTxDelays(txDelays);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkTnRnAcquisition<FloatType>::execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData)
+NetworkTnRnAcquisition<TFloat>::execute(typename TnRnAcquisition<TFloat>::AcquisitionDataType& acqData)
 {
 	const std::size_t signalLength = acq_->getSignalLength();
 	if (signalLength == 0) {
@@ -167,7 +167,7 @@ NetworkTnRnAcquisition<FloatType>::execute(typename TnRnAcquisition<FloatType>::
 			acq_->getSignal(signalBuffer_);
 			Util::addElements(signalBuffer_.begin(), acqData.begin(), acqData.end());
 		}
-		const FloatType factor = valueFactor_ / static_cast<FloatType>(averageN_);
+		const TFloat factor = valueFactor_ / static_cast<TFloat>(averageN_);
 		Util::multiply(acqData, factor);
 	} else {
 		getSignal(acqData);

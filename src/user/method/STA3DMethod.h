@@ -46,7 +46,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class STA3DMethod : public Method {
 public:
 	STA3DMethod(Project& project);
@@ -60,26 +60,26 @@ private:
 	STA3DMethod(STA3DMethod&&) = delete;
 	STA3DMethod& operator=(STA3DMethod&&) = delete;
 
-	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
-	void useCoherenceFactor(FloatType valueScale, const std::string& outputDir);
+	void process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement, const std::string& outputDir);
+	void useCoherenceFactor(TFloat valueScale, const std::string& outputDir);
 
 	Project& project_;
-	Matrix<XYZValueFactor<FloatType>> gridData_;
+	Matrix<XYZValueFactor<TFloat>> gridData_;
 	std::vector<XYZ<float>> pointList_;
 };
 
 
 
-template<typename FloatType>
-STA3DMethod<FloatType>::STA3DMethod(Project& project)
+template<typename TFloat>
+STA3DMethod<TFloat>::STA3DMethod(Project& project)
 		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-STA3DMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std::string& outputDir)
+STA3DMethod<TFloat>::useCoherenceFactor(TFloat valueScale, const std::string& outputDir)
 {
 	project_.saveFactorToHDF5(gridData_, outputDir, "image_factor", "factor");
 
@@ -91,9 +91,9 @@ STA3DMethod<FloatType>::useCoherenceFactor(FloatType valueScale, const std::stri
 				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-STA3DMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
+STA3DMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement, const std::string& outputDir)
 {
 	Timer tProc;
 
@@ -109,24 +109,24 @@ STA3DMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>&
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-STA3DMethod<FloatType>::execute()
+STA3DMethod<TFloat>::execute()
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	const ParamMapPtr saPM    = project_.getSubParamMap("sa_config_file");
 	const ParamMapPtr arrayPM = project_.getSubParamMap("array_config_file");
-	const SA3DConfiguration<FloatType> config(*saPM, *arrayPM);
+	const SA3DConfiguration<TFloat> config(*saPM, *arrayPM);
 
 	const auto baseElement = saPM->value<unsigned int>("base_element", 0, config.numElementsMux - 1U);
 
-	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
+	std::unique_ptr<STAAcquisition<TFloat>> acquisition;
 
 	switch (project_.method()) {
 	case MethodEnum::sta_3d_simulated_save_signals:
 	case MethodEnum::sta_3d_simulated_seq_y_save_signals:
 	case MethodEnum::sta_3d_vectorial_simulated:
-		acquisition = std::make_unique<Simulated3DSTAAcquisition<FloatType>>(project_, config);
+		acquisition = std::make_unique<Simulated3DSTAAcquisition<TFloat>>(project_, config);
 		break;
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
@@ -134,7 +134,7 @@ STA3DMethod<FloatType>::execute()
 
 	if (project_.method() == MethodEnum::sta_3d_simulated_save_signals) {
 		const auto dataDir = taskPM.value<std::string>("data_dir");
-		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+		typename STAAcquisition<TFloat>::AcquisitionDataType acqData;
 		IterationCounter::reset(config.activeTxElem.size());
 		acquisition->prepare(baseElement);
 		for (unsigned int txElem : config.activeTxElem) {
@@ -146,18 +146,18 @@ STA3DMethod<FloatType>::execute()
 	} else if (project_.method() == MethodEnum::sta_3d_simulated_seq_y_save_signals) {
 		const auto dataDir = taskPM.value<std::string>("data_dir");
 		const ParamMapPtr seqYCylPM = project_.getSubParamMap("seq_y_cyl_config_file");
-		const auto yStep = seqYCylPM->value<FloatType>("y_step",          0.0,   100.0);
-		const auto minY  = seqYCylPM->value<FloatType>("min_y" ,     -10000.0, 10000.0);
-		const auto maxY  = seqYCylPM->value<FloatType>("max_y" , minY + yStep, 10000.0);
+		const auto yStep = seqYCylPM->value<TFloat>("y_step",          0.0,   100.0);
+		const auto minY  = seqYCylPM->value<TFloat>("min_y" ,     -10000.0, 10000.0);
+		const auto maxY  = seqYCylPM->value<TFloat>("max_y" , minY + yStep, 10000.0);
 		project_.createDirectory(dataDir, true);
-		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
-		std::vector<FloatType> yList;
+		typename STAAcquisition<TFloat>::AcquisitionDataType acqData;
+		std::vector<TFloat> yList;
 		Util::fillSequenceFromStartWithStep(yList, minY, maxY, yStep);
-		auto& simAcq = dynamic_cast<Simulated3DSTAAcquisition<FloatType>&>(*acquisition);
+		auto& simAcq = dynamic_cast<Simulated3DSTAAcquisition<TFloat>&>(*acquisition);
 		IterationCounter::reset(yList.size());
 		acquisition->prepare(baseElement);
 		for (std::size_t i = 0, end = yList.size(); i < end; ++i) {
-			const FloatType y = yList[i];
+			const TFloat y = yList[i];
 			simAcq.modifyReflectorsOffset(0.0, -y);
 			for (unsigned int txElem : config.activeTxElem) {
 				acquisition->execute(txElem, acqData);
@@ -171,15 +171,15 @@ STA3DMethod<FloatType>::execute()
 	const auto outputDir = taskPM.value<std::string>("output_dir");
 	project_.createDirectory(outputDir, false);
 
-	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData_);
+	const TFloat nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
+	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData_);
 
 	if (project_.method() == MethodEnum::sta_3d_vectorial_simulated) {
 		const ParamMapPtr imagPM = project_.getSubParamMap("imag_config_file");
 		const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
-		const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset", 0.0, 50.0);
+		const auto peakOffset       = imagPM->value<TFloat>(      "peak_offset", 0.0, 50.0);
 
-		std::vector<FloatType> txApod;
+		std::vector<TFloat> txApod;
 		if (config.activeTxElem.size() > 1) {
 			const auto txApodFile = imagPM->value<std::string>("tx_apodization_file");
 			project_.loadHDF5(txApodFile, "apod", txApod);
@@ -187,12 +187,12 @@ STA3DMethod<FloatType>::execute()
 			txApod.push_back(1.0);
 		}
 
-		std::vector<FloatType> rxApod;
+		std::vector<TFloat> rxApod;
 		const auto rxApodFile = imagPM->value<std::string>("rx_apodization_file");
 		project_.loadHDF5(rxApodFile, "apod", rxApod);
 
-		AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
-		auto processor = std::make_unique<Vectorial3DSTAProcessor<FloatType>>(
+		AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
+		auto processor = std::make_unique<Vectorial3DSTAProcessor<TFloat>>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset,
 							txApod, rxApod);

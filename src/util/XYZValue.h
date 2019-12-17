@@ -19,17 +19,17 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 struct XYZValue {
 	XYZValue() = default;
-	XYZValue(FloatType x, FloatType y, FloatType z, FloatType value) : x(x), y(y), z(z), value(value) {}
+	XYZValue(TFloat x, TFloat y, TFloat z, TFloat value) : x(x), y(y), z(z), value(value) {}
 
-	FloatType x;
-	FloatType y;
-	FloatType z;
-	FloatType value;
+	TFloat x;
+	TFloat y;
+	TFloat z;
+	TFloat value;
 
-	template<typename FloatType2> XYZValue<FloatType>& operator=(const XYZValue<FloatType2>& o) {
+	template<typename TFloat2> XYZValue<TFloat>& operator=(const XYZValue<TFloat2>& o) {
 		if (&o != this) {
 			this->x = o.x;
 			this->y = o.y;
@@ -38,7 +38,7 @@ struct XYZValue {
 		}
 		return *this;
 	}
-	bool operator==(const XYZValue<FloatType>& o) const {
+	bool operator==(const XYZValue<TFloat>& o) const {
 		return x == o.x && y == o.y && z == o.z && value == o.value;
 	}
 };

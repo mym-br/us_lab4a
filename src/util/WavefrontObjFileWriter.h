@@ -26,38 +26,38 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class WavefrontObjFileWriter {
 public:
 	WavefrontObjFileWriter(const char* filePath);
 
-	void addPoint(FloatType x, FloatType y, FloatType z);
+	void addPoint(TFloat x, TFloat y, TFloat z);
 	void adjustPointIndex(int& i);
 	void addTri(int p0, int p1, int p2); // first index: 0
 	void addQuad(int p0, int p1, int p2, int p3); // first index: 0
 	void write();
 private:
 	std::ofstream out_;
-	std::vector<XYZ<FloatType>> pointList_;
+	std::vector<XYZ<TFloat>> pointList_;
 	std::vector<std::vector<int>> faceList_;
 };
 
-template<typename FloatType>
-WavefrontObjFileWriter<FloatType>::WavefrontObjFileWriter(const char* filePath)
+template<typename TFloat>
+WavefrontObjFileWriter<TFloat>::WavefrontObjFileWriter(const char* filePath)
 		: out_(filePath)
 {
 	out_ << "g group0\n\n";
 }
 
-template<typename FloatType>
-void WavefrontObjFileWriter<FloatType>::addPoint(FloatType x, FloatType y, FloatType z)
+template<typename TFloat>
+void WavefrontObjFileWriter<TFloat>::addPoint(TFloat x, TFloat y, TFloat z)
 {
-	pointList_.push_back(XYZ<FloatType>{x, y, z});
+	pointList_.push_back(XYZ<TFloat>{x, y, z});
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-WavefrontObjFileWriter<FloatType>::adjustPointIndex(int& i)
+WavefrontObjFileWriter<TFloat>::adjustPointIndex(int& i)
 {
 	if (i < 0) {
 		i = static_cast<int>(pointList_.size()) + i;
@@ -67,9 +67,9 @@ WavefrontObjFileWriter<FloatType>::adjustPointIndex(int& i)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-WavefrontObjFileWriter<FloatType>::addTri(int p0, int p1, int p2)
+WavefrontObjFileWriter<TFloat>::addTri(int p0, int p1, int p2)
 {
 	adjustPointIndex(p0);
 	adjustPointIndex(p1);
@@ -77,9 +77,9 @@ WavefrontObjFileWriter<FloatType>::addTri(int p0, int p1, int p2)
 	faceList_.push_back(std::vector<int>{p0, p1, p2});
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-WavefrontObjFileWriter<FloatType>::addQuad(int p0, int p1, int p2, int p3)
+WavefrontObjFileWriter<TFloat>::addQuad(int p0, int p1, int p2, int p3)
 {
 	adjustPointIndex(p0);
 	adjustPointIndex(p1);
@@ -88,9 +88,9 @@ WavefrontObjFileWriter<FloatType>::addQuad(int p0, int p1, int p2, int p3)
 	faceList_.push_back(std::vector<int>{p0, p1, p2, p3});
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-WavefrontObjFileWriter<FloatType>::write()
+WavefrontObjFileWriter<TFloat>::write()
 {
 	for (const auto& p : pointList_) {
 		out_ << "v " << p.x << ' ' << p.y << ' ' << p.z << '\n';

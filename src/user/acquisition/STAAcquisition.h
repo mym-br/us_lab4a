@@ -24,10 +24,10 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class STAAcquisition {
 public:
-	typedef Matrix<FloatType> AcquisitionDataType;
+	typedef Matrix<TFloat> AcquisitionDataType;
 
 	STAAcquisition() = default;
 	virtual ~STAAcquisition() = default;

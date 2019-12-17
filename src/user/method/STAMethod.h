@@ -51,7 +51,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class STAMethod : public Method {
 public:
 	STAMethod(Project& project);
@@ -64,33 +64,33 @@ private:
 	STAMethod(STAMethod&&) = delete;
 	STAMethod& operator=(STAMethod&&) = delete;
 
-	void process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir);
-	void useCoherenceFactor(FloatType valueScale, bool calculateEnvelope, const std::string& outputDir);
+	void process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement, const std::string& outputDir);
+	void useCoherenceFactor(TFloat valueScale, bool calculateEnvelope, const std::string& outputDir);
 
 	Project& project_;
-	Matrix<XYZValueFactor<FloatType>> gridData_;
+	Matrix<XYZValueFactor<TFloat>> gridData_;
 	std::vector<XYZ<float>> pointList_;
 	Visualization::Value visual_;
 };
 
 
 
-template<typename FloatType>
-STAMethod<FloatType>::STAMethod(Project& project)
+template<typename TFloat>
+STAMethod<TFloat>::STAMethod(Project& project)
 		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
 		, visual_(Visualization::VALUE_ENVELOPE_LOG)
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnvelope, const std::string& outputDir)
+STAMethod<TFloat>::useCoherenceFactor(TFloat valueScale, bool calculateEnvelope, const std::string& outputDir)
 {
 	project_.saveFactorToHDF5(gridData_, outputDir, "image_factor", "factor");
 
 	if (calculateEnvelope) {
-		ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData_);
+		ParallelHilbertEnvelope<TFloat>::calculateDim2(gridData_);
 	}
 
 	Util::applyFactorToValue(gridData_.begin(), gridData_.end());
@@ -101,9 +101,9 @@ STAMethod<FloatType>::useCoherenceFactor(FloatType valueScale, bool calculateEnv
 				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-STAMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& processor, unsigned int baseElement, const std::string& outputDir)
+STAMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement, const std::string& outputDir)
 {
 	Timer tProc;
 
@@ -119,33 +119,33 @@ STAMethod<FloatType>::process(FloatType valueScale, ArrayProcessor<FloatType>& p
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-STAMethod<FloatType>::execute()
+STAMethod<TFloat>::execute()
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	const ParamMapPtr staPM = project_.getSubParamMap("sta_config_file");
-	const STAConfiguration<FloatType> config(*staPM);
+	const STAConfiguration<TFloat> config(*staPM);
 	const auto baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 
-	std::unique_ptr<STAAcquisition<FloatType>> acquisition;
+	std::unique_ptr<STAAcquisition<TFloat>> acquisition;
 
 	switch (project_.method()) {
 	case MethodEnum::sta_simple_simulated:
 	case MethodEnum::sta_simulated:
-		acquisition = std::make_unique<SimulatedSTAAcquisition<FloatType>>(project_, config);
+		acquisition = std::make_unique<SimulatedSTAAcquisition<TFloat>>(project_, config);
 		break;
 	case MethodEnum::sta_dp_network:
 	case MethodEnum::sta_vectorial_dp_network:
 	case MethodEnum::sta_save_signals:
-		acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
+		acquisition = std::make_unique<NetworkSTAAcquisition<TFloat>>(project_, config);
 		break;
 	case MethodEnum::sta_simple_saved:
 	case MethodEnum::sta_dp_saved:
 	case MethodEnum::sta_vectorial_dp_saved:
 	case MethodEnum::sta_sp_saved:
 	case MethodEnum::sta_vectorial_sp_saved:
-		acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(
+		acquisition = std::make_unique<SavedSTAAcquisition<TFloat>>(
 					project_, config.numElements,
 					FileUtil::path(taskPM.value<std::string>("data_dir"), "/", 0));
 		break;
@@ -155,7 +155,7 @@ STAMethod<FloatType>::execute()
 
 	if (project_.method() == MethodEnum::sta_save_signals) {
 		const auto dataDir = taskPM.value<std::string>("data_dir");
-		typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+		typename STAAcquisition<TFloat>::AcquisitionDataType acqData;
 		acquisition->prepare(baseElement);
 		for (unsigned int txElem = config.firstTxElem; txElem <= config.lastTxElem; ++txElem) {
 			acquisition->execute(txElem, acqData);
@@ -168,10 +168,10 @@ STAMethod<FloatType>::execute()
 	project_.createDirectory(outputDir, false);
 
 	const ParamMapPtr imagPM = project_.getSubParamMap("imag_config_file");
-	const auto peakOffset = imagPM->value<FloatType>("peak_offset", 0.0, 50.0);
+	const auto peakOffset = imagPM->value<TFloat>("peak_offset", 0.0, 50.0);
 
-	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData_);
+	const TFloat nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
+	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData_);
 
 	visual_ = Visualization::VALUE_ENVELOPE_LOG;
 
@@ -179,7 +179,7 @@ STAMethod<FloatType>::execute()
 	case MethodEnum::sta_simple_simulated:
 	case MethodEnum::sta_simple_saved:
 		{
-			auto processor = std::make_unique<SimpleSTAProcessor<FloatType>>(config, *acquisition, peakOffset);
+			auto processor = std::make_unique<SimpleSTAProcessor<TFloat>>(config, *acquisition, peakOffset);
 			process(config.valueScale, *processor, baseElement, outputDir);
 		}
 		break;
@@ -192,10 +192,10 @@ STAMethod<FloatType>::execute()
 			if (processingWithEnvelope) {
 				visual_ = Visualization::VALUE_RECTIFIED_LOG;
 			}
-			AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
-			std::vector<FloatType> txApod(config.numElements, 1.0);
-			std::vector<FloatType> rxApod(config.numElements, 1.0);
-			auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(
+			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
+			std::vector<TFloat> txApod(config.numElements, 1.0);
+			std::vector<TFloat> rxApod(config.numElements, 1.0);
+			auto processor = std::make_unique<VectorialSTAProcessor<TFloat>>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset, processingWithEnvelope, txApod, rxApod);
 			process(config.valueScale, *processor, baseElement, outputDir);
@@ -206,8 +206,8 @@ STAMethod<FloatType>::execute()
 		break;
 	default:
 		{
-			CoherenceFactorProcessor<FloatType> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
-			auto processor = std::make_unique<DefaultSTAProcessor<FloatType>>(config, *acquisition,
+			CoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
+			auto processor = std::make_unique<DefaultSTAProcessor<TFloat>>(config, *acquisition,
 												coherenceFactor, peakOffset);
 			process(config.valueScale, *processor, baseElement, outputDir);
 			if (coherenceFactor.enabled()) {

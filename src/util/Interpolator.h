@@ -33,7 +33,7 @@
 namespace Lab {
 
 // This class is copy constructible and assignable.
-template<typename FloatType>
+template<typename TFloat>
 class Interpolator {
 public:
 	Interpolator();
@@ -41,29 +41,29 @@ public:
 	// lpFilterTransitionWidth:
 	//     half the total transition width
 	//     1.0 -> pi radian / sample at the original sampling rate
-	void prepare(unsigned int upsamplingFactor, FloatType lpFilterHalfTransitionWidth);
+	void prepare(unsigned int upsamplingFactor, TFloat lpFilterHalfTransitionWidth);
 
-	void interpolate(const FloatType* input, std::size_t inputLength, FloatType* output);
+	void interpolate(const TFloat* input, std::size_t inputLength, TFloat* output);
 private:
 	static constexpr double kaiserTolerance = 1.0e-4;
 	static constexpr unsigned int maxUpFactor = 64;
 
 	unsigned int upsamplingFactor_;
-	std::vector<FloatType> lowPassFIRFilter_;
-	std::vector<FloatType> inputVector_;
-	std::vector<FloatType> outputVector_;
-	FFTWFilter<FloatType> filter_;
+	std::vector<TFloat> lowPassFIRFilter_;
+	std::vector<TFloat> inputVector_;
+	std::vector<TFloat> outputVector_;
+	FFTWFilter<TFloat> filter_;
 };
 
-template<typename FloatType>
-Interpolator<FloatType>::Interpolator()
+template<typename TFloat>
+Interpolator<TFloat>::Interpolator()
 		: upsamplingFactor_()
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Interpolator<FloatType>::prepare(unsigned int upsamplingFactor, FloatType lpFilterHalfTransitionWidth)
+Interpolator<TFloat>::prepare(unsigned int upsamplingFactor, TFloat lpFilterHalfTransitionWidth)
 {
 	if (upsamplingFactor_ != 0) {
 		THROW_EXCEPTION(InvalidStateException, "The object is already configured.");
@@ -80,23 +80,23 @@ Interpolator<FloatType>::prepare(unsigned int upsamplingFactor, FloatType lpFilt
 				<< ". Must be <= 1.0");
 	}
 
-	const FloatType tol_dB = -20.0 * std::log10(kaiserTolerance);
-	const FloatType kaiserBeta = KaiserWindow::getBeta(tol_dB);
+	const TFloat tol_dB = -20.0 * std::log10(kaiserTolerance);
+	const TFloat kaiserBeta = KaiserWindow::getBeta(tol_dB);
 
-	const FloatType finalTransitionWidth = (lpFilterHalfTransitionWidth * 2) / upsamplingFactor;
+	const TFloat finalTransitionWidth = (lpFilterHalfTransitionWidth * 2) / upsamplingFactor;
 	const unsigned int windowSize = KaiserWindow::getSize(tol_dB, finalTransitionWidth);
 
-	const FloatType twoUpFactor = 2 * upsamplingFactor;
+	const TFloat twoUpFactor = 2 * upsamplingFactor;
 	const unsigned int finalWindowSize = static_cast<unsigned int>(
 				std::ceil((windowSize - 1) / twoUpFactor) * twoUpFactor) + 1U;
 
 	// Kaiser window.
-	std::vector<FloatType> window;
+	std::vector<TFloat> window;
 	KaiserWindow::getWindow(finalWindowSize, kaiserBeta, window);
 
 	// Sinc.
-	const FloatType numPeriods = (finalWindowSize - 1U) / twoUpFactor;
-	std::vector<FloatType> x;
+	const TFloat numPeriods = (finalWindowSize - 1U) / twoUpFactor;
+	std::vector<TFloat> x;
 	Util::fillSequenceFromStartToEndWithSize(x, -numPeriods, numPeriods, finalWindowSize);
 	lowPassFIRFilter_.resize(x.size());
 	for (unsigned int i = 0; i < lowPassFIRFilter_.size(); ++i) {
@@ -111,9 +111,9 @@ Interpolator<FloatType>::prepare(unsigned int upsamplingFactor, FloatType lpFilt
 }
 
 // The argument "ouput" must point to an array of size inputLength * upsamplingFactor.
-template<typename FloatType>
+template<typename TFloat>
 void
-Interpolator<FloatType>::interpolate(const FloatType* input, std::size_t inputLength, FloatType* output)
+Interpolator<TFloat>::interpolate(const TFloat* input, std::size_t inputLength, TFloat* output)
 {
 	if (upsamplingFactor_ == 0) THROW_EXCEPTION(InvalidStateException, "The interpolator has not been initialized.");
 
@@ -134,7 +134,7 @@ Interpolator<FloatType>::interpolate(const FloatType* input, std::size_t inputLe
 //	for (std::size_t i = 0; i < inputLength * UPSAMPLING_FACTOR; ++i) {
 //		output[i] = outputVector_[i + offset];
 //	}
-	memcpy(output, &outputVector_[offset], inputLength * upsamplingFactor_ * sizeof(FloatType));
+	memcpy(output, &outputVector_[offset], inputLength * upsamplingFactor_ * sizeof(TFloat));
 }
 
 } // namespace Lab

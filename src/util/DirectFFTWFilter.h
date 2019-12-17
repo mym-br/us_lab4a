@@ -37,7 +37,7 @@ namespace Lab {
 // Filter (convolver) that executes DFT -> IDFT only once.
 //
 // This class is copy constructible and assignable.
-template<typename FloatType>
+template<typename TFloat>
 class DirectFFTWFilter {
 public:
 	DirectFFTWFilter();
@@ -46,10 +46,10 @@ public:
 
 	DirectFFTWFilter& operator=(const DirectFFTWFilter& o);
 
-	void setCoefficients(const std::vector<FloatType>& filterCoeff);
+	void setCoefficients(const std::vector<TFloat>& filterCoeff);
 
 	// y.size() will be x.size() + filterCoeff_.size() - 1.
-	void filter(const std::vector<FloatType>& x, std::vector<FloatType>& y);
+	void filter(const std::vector<TFloat>& x, std::vector<TFloat>& y);
 private:
 	static constexpr unsigned int maxDataSize = 1000000; // arbitrary
 
@@ -64,21 +64,21 @@ private:
 	unsigned int dataSize_;
 	unsigned int fftSize_;
 	unsigned int freqDataSize_;
-	FloatType* fftIn1_;
-	FloatType (*fftOut1_)[2]; // pointer to array of size two
-	FloatType* fftIn2_;
-	FloatType (*fftOut2_)[2]; // pointer to array of size two
-	FloatType* ifftOut_;
+	TFloat* fftIn1_;
+	TFloat (*fftOut1_)[2]; // pointer to array of size two
+	TFloat* fftIn2_;
+	TFloat (*fftOut2_)[2]; // pointer to array of size two
+	TFloat* ifftOut_;
 	FFTWPlan fftPlan1_;
 	FFTWPlan fftPlan2_;
 	FFTWPlan ifftPlan_;
-	std::vector<FloatType> filterCoeff_;
+	std::vector<TFloat> filterCoeff_;
 };
 
 
 
-template<typename FloatType>
-DirectFFTWFilter<FloatType>::DirectFFTWFilter()
+template<typename TFloat>
+DirectFFTWFilter<TFloat>::DirectFFTWFilter()
 		: initialized_()
 		, dataSize_()
 		, fftSize_()
@@ -94,8 +94,8 @@ DirectFFTWFilter<FloatType>::DirectFFTWFilter()
 {
 }
 
-template<typename FloatType>
-DirectFFTWFilter<FloatType>::DirectFFTWFilter(const DirectFFTWFilter& o)
+template<typename TFloat>
+DirectFFTWFilter<TFloat>::DirectFFTWFilter(const DirectFFTWFilter& o)
 		: initialized_()
 		, dataSize_()
 		, fftSize_()
@@ -114,15 +114,15 @@ DirectFFTWFilter<FloatType>::DirectFFTWFilter(const DirectFFTWFilter& o)
 	*this = o;
 }
 
-template<typename FloatType>
-DirectFFTWFilter<FloatType>::~DirectFFTWFilter()
+template<typename TFloat>
+DirectFFTWFilter<TFloat>::~DirectFFTWFilter()
 {
 	clean();
 }
 
-template<typename FloatType>
-DirectFFTWFilter<FloatType>&
-DirectFFTWFilter<FloatType>::operator=(const DirectFFTWFilter& o)
+template<typename TFloat>
+DirectFFTWFilter<TFloat>&
+DirectFFTWFilter<TFloat>::operator=(const DirectFFTWFilter& o)
 {
 	//LOG_DEBUG << "DirectFFTWFilter: assignment";
 
@@ -145,9 +145,9 @@ DirectFFTWFilter<FloatType>::operator=(const DirectFFTWFilter& o)
 	return *this;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DirectFFTWFilter<FloatType>::clean()
+DirectFFTWFilter<TFloat>::clean()
 {
 	//LOG_DEBUG << "DirectFFTWFilter::clean()";
 	{
@@ -167,9 +167,9 @@ DirectFFTWFilter<FloatType>::clean()
 	initialized_ = false;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DirectFFTWFilter<FloatType>::prepare()
+DirectFFTWFilter<TFloat>::prepare()
 {
 	//LOG_DEBUG << "DirectFFTWFilter::prepare()";
 	assert(!filterCoeff_.empty());
@@ -185,18 +185,18 @@ DirectFFTWFilter<FloatType>::prepare()
 
 	prepareFFTW();
 
-	memcpy(fftIn1_, &filterCoeff_[0], sizeof(FloatType) * filterSize);
+	memcpy(fftIn1_, &filterCoeff_[0], sizeof(TFloat) * filterSize);
 	if (fftSize_ > filterSize) {
-		memset(fftIn1_ + filterSize, 0, sizeof(FloatType) * (fftSize_ - filterSize));
+		memset(fftIn1_ + filterSize, 0, sizeof(TFloat) * (fftSize_ - filterSize));
 	}
 	FFTW::execute(fftPlan1_);
 
 	initialized_ = true;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DirectFFTWFilter<FloatType>::prepareFFTW()
+DirectFFTWFilter<TFloat>::prepareFFTW()
 {
 	//LOG_DEBUG << "DirectFFTWFilter::prepareFFTW()";
 	assert(!initialized_);
@@ -204,11 +204,11 @@ DirectFFTWFilter<FloatType>::prepareFFTW()
 	assert(freqDataSize_ > 0);
 
 	try {
-		fftIn1_   = FFTW::alloc_real<FloatType>(fftSize_);
-		fftOut1_  = FFTW::alloc_complex<FloatType>(freqDataSize_);
-		fftIn2_   = FFTW::alloc_real<FloatType>(fftSize_);
-		fftOut2_  = FFTW::alloc_complex<FloatType>(freqDataSize_);
-		ifftOut_  = FFTW::alloc_real<FloatType>(fftSize_);
+		fftIn1_   = FFTW::alloc_real<TFloat>(fftSize_);
+		fftOut1_  = FFTW::alloc_complex<TFloat>(freqDataSize_);
+		fftIn2_   = FFTW::alloc_real<TFloat>(fftSize_);
+		fftOut2_  = FFTW::alloc_complex<TFloat>(freqDataSize_);
+		ifftOut_  = FFTW::alloc_real<TFloat>(fftSize_);
 		FFTW fftw;
 		fftPlan1_ = fftw.plan_dft_r2c_1d(fftSize_, fftIn1_, fftOut1_);
 		fftPlan2_ = fftw.plan_dft_r2c_1d(fftSize_, fftIn2_, fftOut2_);
@@ -219,9 +219,9 @@ DirectFFTWFilter<FloatType>::prepareFFTW()
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DirectFFTWFilter<FloatType>::setCoefficients(const std::vector<FloatType>& filterCoeff)
+DirectFFTWFilter<TFloat>::setCoefficients(const std::vector<TFloat>& filterCoeff)
 {
 	if (filterCoeff.empty()) THROW_EXCEPTION(InvalidParameterException, "The list of filter coefficients is empty.");
 	if (filterCoeff.size() > maxDataSize) THROW_EXCEPTION(InvalidValueException, "The filter length is greater than " << maxDataSize << '.');
@@ -231,9 +231,9 @@ DirectFFTWFilter<FloatType>::setCoefficients(const std::vector<FloatType>& filte
 }
 
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DirectFFTWFilter<FloatType>::filter(const std::vector<FloatType>& x, std::vector<FloatType>& y)
+DirectFFTWFilter<TFloat>::filter(const std::vector<TFloat>& x, std::vector<TFloat>& y)
 {
 	if (filterCoeff_.empty()) THROW_EXCEPTION(InvalidStateException, "The filter coefficients have not been set.");
 
@@ -245,16 +245,16 @@ DirectFFTWFilter<FloatType>::filter(const std::vector<FloatType>& x, std::vector
 		prepare();
 	}
 
-	memcpy(fftIn2_, &x[0], sizeof(FloatType) * dataSize_);
+	memcpy(fftIn2_, &x[0], sizeof(TFloat) * dataSize_);
 	if (fftSize_ > dataSize_) {
-		memset(fftIn2_ + dataSize_, 0, sizeof(FloatType) * (fftSize_ - dataSize_));
+		memset(fftIn2_ + dataSize_, 0, sizeof(TFloat) * (fftSize_ - dataSize_));
 	}
 
 	FFTW::execute(fftPlan2_);
 
-	const std::complex<FloatType>* p1    = reinterpret_cast<std::complex<FloatType>*>(fftOut1_);
-	const std::complex<FloatType>* p1End = reinterpret_cast<std::complex<FloatType>*>(fftOut1_ + freqDataSize_);
-	std::complex<FloatType>*       p2    = reinterpret_cast<std::complex<FloatType>*>(fftOut2_);
+	const std::complex<TFloat>* p1    = reinterpret_cast<std::complex<TFloat>*>(fftOut1_);
+	const std::complex<TFloat>* p1End = reinterpret_cast<std::complex<TFloat>*>(fftOut1_ + freqDataSize_);
+	std::complex<TFloat>*       p2    = reinterpret_cast<std::complex<TFloat>*>(fftOut2_);
 	for ( ; p1 != p1End; ++p1, ++p2) {
 		*p2 = (*p1) * (*p2);
 	}
@@ -263,10 +263,10 @@ DirectFFTWFilter<FloatType>::filter(const std::vector<FloatType>& x, std::vector
 
 	const std::size_t ySize = filterCoeff_.size() + dataSize_ - 1;
 	y.resize(ySize);
-	const FloatType k = 1 / static_cast<FloatType>(fftSize_); // normalization factor
-	const FloatType* orig = ifftOut_;
-	const FloatType* origEnd = ifftOut_ + ySize;
-	FloatType* dest = &y[0];
+	const TFloat k = 1 / static_cast<TFloat>(fftSize_); // normalization factor
+	const TFloat* orig = ifftOut_;
+	const TFloat* origEnd = ifftOut_ + ySize;
+	TFloat* dest = &y[0];
 	while (orig != origEnd) {
 		*dest++ = *orig++ * k;
 	}

@@ -37,15 +37,15 @@
 
 namespace Lab {
 
-template<typename FloatType>
-class SimulatedSTAAcquisition : public STAAcquisition<FloatType> {
+template<typename TFloat>
+class SimulatedSTAAcquisition : public STAAcquisition<TFloat> {
 public:
-	SimulatedSTAAcquisition(Project& project, const STAConfiguration<FloatType>& config);
+	SimulatedSTAAcquisition(Project& project, const STAConfiguration<TFloat>& config);
 	virtual ~SimulatedSTAAcquisition() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void execute(unsigned int txElement,
-				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
+				typename STAAcquisition<TFloat>::AcquisitionDataType& acqData);
 private:
 	SimulatedSTAAcquisition(const SimulatedSTAAcquisition&) = delete;
 	SimulatedSTAAcquisition& operator=(const SimulatedSTAAcquisition&) = delete;
@@ -53,17 +53,17 @@ private:
 	SimulatedSTAAcquisition& operator=(SimulatedSTAAcquisition&&) = delete;
 
 	Project& project_;
-	const STAConfiguration<FloatType>& config_;
-	FloatType maxAbsValue_; // auxiliar
-	std::unique_ptr<Simulated3DAcquisitionDevice<FloatType>> acqDevice_;
-	std::vector<XYZValue<FloatType>> reflectorList_;
+	const STAConfiguration<TFloat>& config_;
+	TFloat maxAbsValue_; // auxiliar
+	std::unique_ptr<Simulated3DAcquisitionDevice<TFloat>> acqDevice_;
+	std::vector<XYZValue<TFloat>> reflectorList_;
 	unsigned int baseElement_;
 };
 
 
 
-template<typename FloatType>
-SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, const STAConfiguration<FloatType>& config)
+template<typename TFloat>
+SimulatedSTAAcquisition<TFloat>::SimulatedSTAAcquisition(Project& project, const STAConfiguration<TFloat>& config)
 		: project_(project)
 		, config_(config)
 		, maxAbsValue_()
@@ -73,9 +73,9 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 	const ParamMapPtr arrayPM = project_.getSubParamMap("array_config_file");
 
 	const auto reflectorsFileName = pm->value<std::string>("reflectors_file");
-	const auto reflectorsOffsetX  = pm->value<FloatType>(  "reflectors_offset_x", -10000.0, 10000.0);
+	const auto reflectorsOffsetX  = pm->value<TFloat>(     "reflectors_offset_x", -10000.0, 10000.0);
 
-	Matrix<FloatType> inputReflectorList;
+	Matrix<TFloat> inputReflectorList;
 	project_.loadHDF5(reflectorsFileName, "reflectors", inputReflectorList);
 	if (inputReflectorList.n2() != 2) {
 		THROW_EXCEPTION(InvalidValueException, "Wrong number of columns (" << inputReflectorList.n2() <<
@@ -84,14 +84,14 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 
 	reflectorList_.resize(inputReflectorList.n1());
 	for (std::size_t i = 0, end = inputReflectorList.n1(); i < end; ++i) {
-		XYZValue<FloatType>& data = reflectorList_[i];
+		XYZValue<TFloat>& data = reflectorList_[i];
 		data.x     = inputReflectorList(i, 0);
 		data.y     = 0.0;
 		data.z     = inputReflectorList(i, 1);
 		data.value = 1.0;
 	}
 
-	acqDevice_ = std::make_unique<Simulated3DAcquisitionDevice<FloatType>>(
+	acqDevice_ = std::make_unique<Simulated3DAcquisitionDevice<TFloat>>(
 								*pm,
 								*arrayPM,
 								config_.samplingFrequency,
@@ -105,9 +105,9 @@ SimulatedSTAAcquisition<FloatType>::SimulatedSTAAcquisition(Project& project, co
 	acqDevice_->setGain(config_.minGain);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimulatedSTAAcquisition<FloatType>::prepare(unsigned int baseElement)
+SimulatedSTAAcquisition<TFloat>::prepare(unsigned int baseElement)
 {
 	if (baseElement + config_.numElements > config_.numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid base element:" << baseElement << '.');
@@ -122,10 +122,10 @@ SimulatedSTAAcquisition<FloatType>::prepare(unsigned int baseElement)
 	baseElement_ = baseElement;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimulatedSTAAcquisition<FloatType>::execute(unsigned int txElement,
-						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
+SimulatedSTAAcquisition<TFloat>::execute(unsigned int txElement,
+						typename STAAcquisition<TFloat>::AcquisitionDataType& acqData)
 {
 	LOG_DEBUG << "ACQ baseElement=" << baseElement_ << " txElement=" << txElement;
 
@@ -146,9 +146,9 @@ SimulatedSTAAcquisition<FloatType>::execute(unsigned int txElement,
 	txMask[baseElement_ + txElement] = true;
 	acqDevice_->setActiveTxElements(txMask);
 
-	const std::vector<FloatType>& signalList = acqDevice_->getSignalList();
+	const std::vector<TFloat>& signalList = acqDevice_->getSignalList();
 
-	const FloatType mx = Util::maxAbsolute(signalList);
+	const TFloat mx = Util::maxAbsolute(signalList);
 	if (mx > maxAbsValue_) maxAbsValue_ = mx;
 	LOG_DEBUG << "########## max(abs(signalList)): " << mx << " global: " << maxAbsValue_;
 

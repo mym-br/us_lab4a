@@ -30,29 +30,29 @@
 namespace Lab {
 
 // This class is copy constructible and assignable.
-template<typename FloatType>
+template<typename TFloat>
 class Interpolator4X {
 public:
 	Interpolator4X();
 
 	// The argument "ouput" must point to an array of size inputLength * upsamplingFactor.
-	void interpolate(const FloatType* input, std::size_t inputLength, FloatType* output);
+	void interpolate(const TFloat* input, std::size_t inputLength, TFloat* output);
 private:
 	static constexpr unsigned int upsamplingFactor = 4; /* do not change */
 
 	void prepare();
 
 	bool initialized_;
-	std::vector<FloatType> lowPassFIRFilter_;
-	std::vector<FloatType> inputVector_;
-	std::vector<FloatType> outputVector_;
-	FFTWFilter<FloatType> filter_;
+	std::vector<TFloat> lowPassFIRFilter_;
+	std::vector<TFloat> inputVector_;
+	std::vector<TFloat> outputVector_;
+	FFTWFilter<TFloat> filter_;
 };
 
 
 
-template<typename FloatType>
-Interpolator4X<FloatType>::Interpolator4X()
+template<typename TFloat>
+Interpolator4X<TFloat>::Interpolator4X()
 		: initialized_()
 {
 	// Calculated in Octave using:
@@ -152,9 +152,9 @@ Interpolator4X<FloatType>::Interpolator4X()
 	};
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Interpolator4X<FloatType>::prepare()
+Interpolator4X<TFloat>::prepare()
 {
 	assert(!initialized_);
 
@@ -163,9 +163,9 @@ Interpolator4X<FloatType>::prepare()
 	initialized_ = true;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Interpolator4X<FloatType>::interpolate(const FloatType* input, std::size_t inputLength, FloatType* output)
+Interpolator4X<TFloat>::interpolate(const TFloat* input, std::size_t inputLength, TFloat* output)
 {
 	if (!initialized_) prepare();
 
@@ -186,7 +186,7 @@ Interpolator4X<FloatType>::interpolate(const FloatType* input, std::size_t input
 //	for (std::size_t i = 0; i < inputLength * upsamplingFactor; ++i) {
 //		output[i] = outputVector_[i + offset];
 //	}
-	memcpy(output, &outputVector_[offset], inputLength * upsamplingFactor * sizeof(FloatType));
+	memcpy(output, &outputVector_[offset], inputLength * upsamplingFactor * sizeof(TFloat));
 }
 
 } // namespace Lab

@@ -31,7 +31,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class RealToComplexFFT {
 public:
 	RealToComplexFFT();
@@ -57,14 +57,14 @@ private:
 	unsigned int fftSize_;
 	unsigned int freqDataSize_;
 	FFTWPlan fftPlan_;
-	FloatType* timeData_;
-	FloatType (*frequencyData_)[2];  // pointer to array of size two
+	TFloat* timeData_;
+	TFloat (*frequencyData_)[2];  // pointer to array of size two
 };
 
 
 
-template<typename FloatType>
-RealToComplexFFT<FloatType>::RealToComplexFFT()
+template<typename TFloat>
+RealToComplexFFT<TFloat>::RealToComplexFFT()
 		: initialized_()
 		, fftSize_()
 		, freqDataSize_()
@@ -74,21 +74,21 @@ RealToComplexFFT<FloatType>::RealToComplexFFT()
 {
 }
 
-template<typename FloatType>
-RealToComplexFFT<FloatType>::RealToComplexFFT(const RealToComplexFFT& o)
+template<typename TFloat>
+RealToComplexFFT<TFloat>::RealToComplexFFT(const RealToComplexFFT& o)
 {
 	*this = o;
 }
 
-template<typename FloatType>
-RealToComplexFFT<FloatType>::~RealToComplexFFT()
+template<typename TFloat>
+RealToComplexFFT<TFloat>::~RealToComplexFFT()
 {
 	clean();
 }
 
-template<typename FloatType>
-RealToComplexFFT<FloatType>&
-RealToComplexFFT<FloatType>::operator=(const RealToComplexFFT& o)
+template<typename TFloat>
+RealToComplexFFT<TFloat>&
+RealToComplexFFT<TFloat>::operator=(const RealToComplexFFT& o)
 {
 	if (&o != this) {
 		if (o.initialized_) {
@@ -100,9 +100,9 @@ RealToComplexFFT<FloatType>::operator=(const RealToComplexFFT& o)
 	return *this;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-RealToComplexFFT<FloatType>::clean()
+RealToComplexFFT<TFloat>::clean()
 {
 	{
 		FFTW fftw;
@@ -115,9 +115,9 @@ RealToComplexFFT<FloatType>::clean()
 	initialized_ = false;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-RealToComplexFFT<FloatType>::prepare(unsigned int numInputSamples)
+RealToComplexFFT<TFloat>::prepare(unsigned int numInputSamples)
 {
 	//LOG_DEBUG << "[RealToComplexFFT::prepare] numInputSamples: " << numInputSamples;
 
@@ -127,8 +127,8 @@ RealToComplexFFT<FloatType>::prepare(unsigned int numInputSamples)
 	freqDataSize_ = fftSize_ / 2 + 1;
 
 	try {
-		timeData_      = FFTW::alloc_real<FloatType>(fftSize_);
-		frequencyData_ = FFTW::alloc_complex<FloatType>(fftSize_);
+		timeData_      = FFTW::alloc_real<TFloat>(fftSize_);
+		frequencyData_ = FFTW::alloc_complex<TFloat>(fftSize_);
 		FFTW fftw;
 		fftPlan_ = fftw.plan_dft_r2c_1d(fftSize_, timeData_, frequencyData_);
 	} catch (std::exception& e) {
@@ -139,9 +139,9 @@ RealToComplexFFT<FloatType>::prepare(unsigned int numInputSamples)
 	initialized_ = true;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-RealToComplexFFT<FloatType>::process()
+RealToComplexFFT<TFloat>::process()
 {
 	// Time --> frequency.
 	FFTW::execute(fftPlan_); // fftw_plan_dft_r2c_1d only returns floor(N/2)+1 complex values
@@ -149,19 +149,19 @@ RealToComplexFFT<FloatType>::process()
 	bool nIsEven = ((fftSize_ & 1) == 0);
 
 	// For "negative" frequencies:
-	FloatType (*orig)[2] = frequencyData_ + freqDataSize_ - (nIsEven ? 2 : 1);
-	FloatType (*dest)[2] = frequencyData_ + freqDataSize_;
-	FloatType (*destEnd)[2] = frequencyData_ + fftSize_;
+	TFloat (*orig)[2] = frequencyData_ + freqDataSize_ - (nIsEven ? 2 : 1);
+	TFloat (*dest)[2] = frequencyData_ + freqDataSize_;
+	TFloat (*destEnd)[2] = frequencyData_ + fftSize_;
 	while (dest != destEnd) {
 		(*dest  )[FFTW::REAL] =  (*orig  )[FFTW::REAL];
 		(*dest++)[FFTW::IMAG] = -(*orig--)[FFTW::IMAG];
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 template<typename InputElementType, typename OutputElementType>
 void
-RealToComplexFFT<FloatType>::calculate(InputElementType* origData, unsigned int size, OutputElementType* destData)
+RealToComplexFFT<TFloat>::calculate(InputElementType* origData, unsigned int size, OutputElementType* destData)
 {
 	if (size == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of input samples (" << size << ") is = 0.");

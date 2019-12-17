@@ -31,35 +31,35 @@ namespace Lab {
 namespace WindowFunction {
 
 // n can be a non-integer.
-template<typename FloatType> void fadeIn(double n, FloatType* data);
+template<typename TFloat> void fadeIn(double n, TFloat* data);
 // The first zeroed element is not included in the data.
 // n can be a non-integer.
-template<typename FloatType> void fadeIn2(double n, FloatType* data);
+template<typename TFloat> void fadeIn2(double n, TFloat* data);
 // n can be a non-integer.
-template<typename FloatType> void fadeOut(double n, FloatType* data);
+template<typename TFloat> void fadeOut(double n, TFloat* data);
 // The last zeroed element is not included in the data.
 // n can be a non-integer.
-template<typename FloatType> void fadeOut2(double n, FloatType* data);
-template<typename FloatType> void rectangular(unsigned int n, std::vector<FloatType>& w);
-template<typename FloatType> void trapezoidal(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<FloatType>& w);
+template<typename TFloat> void fadeOut2(double n, TFloat* data);
+template<typename TFloat> void rectangular(unsigned int n, std::vector<TFloat>& w);
+template<typename TFloat> void trapezoidal(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<TFloat>& w);
 // The first and the last zeroed elements are not included in the array.
-template<typename FloatType> void trapezoidal2(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<FloatType>& w);
-template<typename FloatType> void triangular(unsigned int n, std::vector<FloatType>& w);
+template<typename TFloat> void trapezoidal2(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<TFloat>& w);
+template<typename TFloat> void triangular(unsigned int n, std::vector<TFloat>& w);
 // The first and the last zeroed elements are not included in the array.
-template<typename FloatType> void triangular2(unsigned int n, std::vector<FloatType>& w);
-template<typename FloatType> void hanning(unsigned int n, std::vector<FloatType>& w);
+template<typename TFloat> void triangular2(unsigned int n, std::vector<TFloat>& w);
+template<typename TFloat> void hanning(unsigned int n, std::vector<TFloat>& w);
 // The first and the last zeroed elements are not included in the array.
-template<typename FloatType> void hanning2(unsigned int n, std::vector<FloatType>& w);
-template<typename FloatType> void hamming(unsigned int n, std::vector<FloatType>& w);
-template<typename FloatType> void blackman(unsigned int n, std::vector<FloatType>& w);
+template<typename TFloat> void hanning2(unsigned int n, std::vector<TFloat>& w);
+template<typename TFloat> void hamming(unsigned int n, std::vector<TFloat>& w);
+template<typename TFloat> void blackman(unsigned int n, std::vector<TFloat>& w);
 // The first and the last zeroed elements are not included in the array.
-template<typename FloatType> void blackman2(unsigned int n, std::vector<FloatType>& w);
+template<typename TFloat> void blackman2(unsigned int n, std::vector<TFloat>& w);
 
 
 
-template<typename FloatType>
+template<typename TFloat>
 void
-fadeIn(double n, FloatType* data)
+fadeIn(double n, TFloat* data)
 {
 	const double c1 = 1.0 / n;
 	for (unsigned int i = 0; i < n; ++i) {
@@ -67,9 +67,9 @@ fadeIn(double n, FloatType* data)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-fadeIn2(double n, FloatType* data)
+fadeIn2(double n, TFloat* data)
 {
 	const double c1 = 1.0 / (n + 1.0);
 	for (unsigned int i = 0; i < n; ++i) {
@@ -77,9 +77,9 @@ fadeIn2(double n, FloatType* data)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-fadeOut(double n, FloatType* data)
+fadeOut(double n, TFloat* data)
 {
 	const double c1 = 1.0 / n;
 	for (unsigned int i = 0; i < n; ++i) {
@@ -87,9 +87,9 @@ fadeOut(double n, FloatType* data)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-fadeOut2(double n, FloatType* data)
+fadeOut2(double n, TFloat* data)
 {
 	const double c1 = 1.0 / (n + 1.0);
 	for (unsigned int i = 0; i < n; ++i) {
@@ -97,17 +97,17 @@ fadeOut2(double n, FloatType* data)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-rectangular(unsigned int n, std::vector<FloatType>& w)
+rectangular(unsigned int n, std::vector<TFloat>& w)
 {
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
 	w.assign(n, 1.0);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-trapezoidal(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<FloatType>& w)
+trapezoidal(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<TFloat>& w)
 {
 	const unsigned int n = nFadeIn + nTop + nFadeOut;
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
@@ -119,9 +119,9 @@ trapezoidal(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std:
 	fadeOut(nFadeOut, &w[nFadeIn + nTop]);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-trapezoidal2(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<FloatType>& w)
+trapezoidal2(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std::vector<TFloat>& w)
 {
 	const unsigned int n = nFadeIn + nTop + nFadeOut;
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
@@ -133,9 +133,9 @@ trapezoidal2(unsigned int nFadeIn, unsigned int nTop, unsigned int nFadeOut, std
 	fadeOut2(nFadeOut, &w[nFadeIn + nTop]);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-triangular(unsigned int n, std::vector<FloatType>& w)
+triangular(unsigned int n, std::vector<TFloat>& w)
 {
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
 	w.resize(n);
@@ -151,9 +151,9 @@ triangular(unsigned int n, std::vector<FloatType>& w)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-triangular2(unsigned int n, std::vector<FloatType>& w)
+triangular2(unsigned int n, std::vector<TFloat>& w)
 {
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
 	w.resize(n);
@@ -169,9 +169,9 @@ triangular2(unsigned int n, std::vector<FloatType>& w)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-hanning(unsigned int n, std::vector<FloatType>& w)
+hanning(unsigned int n, std::vector<TFloat>& w)
 {
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
 	w.resize(n);
@@ -182,9 +182,9 @@ hanning(unsigned int n, std::vector<FloatType>& w)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-hanning2(unsigned int n, std::vector<FloatType>& w)
+hanning2(unsigned int n, std::vector<TFloat>& w)
 {
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
 	w.resize(n);
@@ -195,9 +195,9 @@ hanning2(unsigned int n, std::vector<FloatType>& w)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-hamming(unsigned int n, std::vector<FloatType>& w)
+hamming(unsigned int n, std::vector<TFloat>& w)
 {
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
 	w.resize(n);
@@ -208,9 +208,9 @@ hamming(unsigned int n, std::vector<FloatType>& w)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-blackman(unsigned int n, std::vector<FloatType>& w)
+blackman(unsigned int n, std::vector<TFloat>& w)
 {
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
 	w.resize(n);
@@ -221,9 +221,9 @@ blackman(unsigned int n, std::vector<FloatType>& w)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-blackman2(unsigned int n, std::vector<FloatType>& w)
+blackman2(unsigned int n, std::vector<TFloat>& w)
 {
 	if (n < 2U) THROW_EXCEPTION(InvalidParameterException, "The window function size must be >= 2.");
 	w.resize(n);
@@ -234,9 +234,9 @@ blackman2(unsigned int n, std::vector<FloatType>& w)
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-get(const std::string& description, unsigned int size, std::vector<FloatType>& window)
+get(const std::string& description, unsigned int size, std::vector<TFloat>& window)
 {
 	std::istringstream in(description);
 	std::string name;

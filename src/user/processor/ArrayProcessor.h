@@ -25,14 +25,14 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class ArrayProcessor {
 public:
 	ArrayProcessor() = default;
 	virtual ~ArrayProcessor() = default;
 
 	virtual void prepare(unsigned int /*baseElement*/) {}
-	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData) = 0;
+	virtual void process(Matrix<XYZValueFactor<TFloat>>& gridData) = 0;
 private:
 	ArrayProcessor(const ArrayProcessor&) = delete;
 	ArrayProcessor& operator=(const ArrayProcessor&) = delete;

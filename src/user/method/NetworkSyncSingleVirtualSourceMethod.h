@@ -48,7 +48,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class NetworkSyncSingleVirtualSourceMethod : public Method {
 public:
 	NetworkSyncSingleVirtualSourceMethod(Project& project);
@@ -67,8 +67,8 @@ private:
 	NetworkSyncSingleVirtualSourceMethod(NetworkSyncSingleVirtualSourceMethod&&) = delete;
 	NetworkSyncSingleVirtualSourceMethod& operator=(NetworkSyncSingleVirtualSourceMethod&&) = delete;
 
-	void saveSignals(TnRnAcquisition<FloatType>& acq,
-				unsigned int baseElement, const std::vector<FloatType>& txDelays,
+	void saveSignals(TnRnAcquisition<TFloat>& acq,
+				unsigned int baseElement, const std::vector<TFloat>& txDelays,
 				const std::string& dataDir);
 
 	Project& project_;
@@ -76,74 +76,74 @@ private:
 
 
 
-template<typename FloatType>
-NetworkSyncSingleVirtualSourceMethod<FloatType>::NetworkSyncSingleVirtualSourceMethod(Project& project)
+template<typename TFloat>
+NetworkSyncSingleVirtualSourceMethod<TFloat>::NetworkSyncSingleVirtualSourceMethod(Project& project)
 		: project_(project)
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
+NetworkSyncSingleVirtualSourceMethod<TFloat>::execute()
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	const ParamMapPtr svsPM   = project_.getSubParamMap("svs_config_file");
 	const ParamMapPtr arrayPM = project_.getSubParamMap("array_config_file");
-	const TnRnConfiguration<FloatType> config(*svsPM, *arrayPM);
+	const TnRnConfiguration<TFloat> config(*svsPM, *arrayPM);
 	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
+	const auto focusZ      = svsPM->value<TFloat>(      "tx_focus_z", -10000.0, 10000.0);
 	const auto dataDir = taskPM.value<std::string>("data_dir");
 
-	FloatType focusX = 0, focusY = 0;
+	TFloat focusX = 0, focusY = 0;
 	// Set the focus at the mean x, y.
 	for (unsigned int i = baseElement, end = baseElement + config.numElements; i < end; ++i) {
 		if (i >= config.txElemPos.size()) {
 			THROW_EXCEPTION(InvalidValueException, "Invalid tx element number: " << i << '.');
 		}
-		const XY<FloatType>& pos = config.txElemPos[i];
+		const XY<TFloat>& pos = config.txElemPos[i];
 		focusX += pos.x;
 		focusY += pos.y;
 	}
 	focusX /= config.numElements;
 	focusY /= config.numElements;
-	std::vector<FloatType> txDelays;
+	std::vector<TFloat> txDelays;
 	ArrayUtil::calculateTx3DFocusDelay(focusX, focusY, focusZ, config.propagationSpeed,
 						config.txElemPos, baseElement, config.numElements, txDelays);
 
 	if (project_.method() == MethodEnum::single_virtual_source_network_sync_save_signals) {
 		project_.createDirectory(dataDir, true);
-		auto acquisition = std::make_unique<NetworkTnRnAcquisition<FloatType>>(project_, config);
+		auto acquisition = std::make_unique<NetworkTnRnAcquisition<TFloat>>(project_, config);
 		saveSignals(*acquisition, baseElement, txDelays, dataDir);
 		return;
 	}
 
 	const auto outputDir = taskPM.value<std::string>("output_dir");
 	const ParamMapPtr imagPM = project_.getSubParamMap("imag_config_file");
-	const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
+	const auto peakOffset       = imagPM->value<TFloat>(      "peak_offset"      , 0.0, 50.0);
 	const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 
 	const auto rxApodFile = imagPM->value<std::string>("rx_apodization_file");
-	std::vector<FloatType> rxApod;
+	std::vector<TFloat> rxApod;
 	project_.loadHDF5(rxApodFile, "apod", rxApod);
 
 	project_.createDirectory(outputDir, true);
 
-	Matrix<XYZValueFactor<FloatType>> gridData;
+	Matrix<XYZValueFactor<TFloat>> gridData;
 
-	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
+	const TFloat nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
+	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
 
-	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
+	AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 	bool coherenceFactorEnabled = coherenceFactor.enabled();
-	auto acquisition = std::make_unique<SavedTnRnAcquisition<FloatType>>(project_, config.numElements, "");
-	auto processor = std::make_unique<Vectorial3DTnRnProcessor<FloatType>>(config, *acquisition,
+	auto acquisition = std::make_unique<SavedTnRnAcquisition<TFloat>>(project_, config.numElements, "");
+	auto processor = std::make_unique<Vectorial3DTnRnProcessor<TFloat>>(config, *acquisition,
 					upsamplingFactor, coherenceFactor, peakOffset, rxApod);
 	processor->setTxDelays(focusX, focusY, focusZ, txDelays);
 	processor->prepare(baseElement);
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
-	FloatType valueLevel = 0.0;
-	FloatType cfValueLevel = 0.0;
+	TFloat valueLevel = 0.0;
+	TFloat cfValueLevel = 0.0;
 
 	// Load y (acquisition position).
 	std::vector<double> yList;
@@ -176,12 +176,12 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 
 		if (config.valueScale != 0.0) {
 			std::for_each(gridData.begin(), gridData.end(),
-				Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(config.valueScale));
+				Util::MultiplyValueBy<XYZValueFactor<TFloat>, TFloat>(config.valueScale));
 		}
 
 		project_.saveImageToHDF5(gridData, acqOutputDir);
 		project_.saveXYZToHDF5(gridData, acqOutputDir);
-		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
+		const TFloat maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<TFloat>, TFloat>(gridData);
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
 		project_.showFigure3D(1, "Raw image", &gridData, &pointList,
@@ -192,7 +192,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 			project_.saveFactorToHDF5(gridData, acqOutputDir, "image_factor", "factor");
 
 			Util::applyFactorToValue(gridData.begin(), gridData.end());
-			const FloatType maxAbsCFValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
+			const TFloat maxAbsCFValue = Util::maxAbsoluteValueField<XYZValueFactor<TFloat>, TFloat>(gridData);
 			if (maxAbsCFValue > cfValueLevel) cfValueLevel = maxAbsCFValue;
 
 			project_.saveImageToHDF5(gridData, acqOutputDir, "image_cf", "cf");
@@ -211,19 +211,19 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::execute()
 	LOG_DEBUG << ">>> Acquisition + processing + saving data time: " << timer.getTime();
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(TnRnAcquisition<FloatType>& acq,
-								unsigned int baseElement, const std::vector<FloatType>& txDelays,
+NetworkSyncSingleVirtualSourceMethod<TFloat>::saveSignals(TnRnAcquisition<TFloat>& acq,
+								unsigned int baseElement, const std::vector<TFloat>& txDelays,
 								const std::string& dataDir)
 {
 	const ParamMapPtr scanPM = project_.getSubParamMap("scan_config_file");
 	const auto serverPort = scanPM->value<unsigned int>("sync_server_port", 1024, 65535);
 	const auto asyncAcq   = scanPM->value<bool>(        "async_acquisition");
-	const auto minY       = scanPM->value<FloatType>(   "min_y", -10000.0, 10000.0);
+	const auto minY       = scanPM->value<TFloat>(      "min_y", -10000.0, 10000.0);
 
 	SyncServer server(serverPort);
-	std::vector<typename TnRnAcquisition<FloatType>::AcquisitionDataType> acqDataList;
+	std::vector<typename TnRnAcquisition<TFloat>::AcquisitionDataType> acqDataList;
 	acqDataList.reserve(1000);
 	std::vector<double> timeList;
 	timeList.reserve(1000);
@@ -236,13 +236,13 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(TnRnAcquisition<Flo
 	Timer timer;
 	unsigned int acqNumber = 0;
 	if (asyncAcq) {
-		const auto ySpeed = scanPM->value<FloatType>("y_speed", 1.0, 100000.0) * FloatType(1.0e-3 / 60.0);
-		const auto maxY   = scanPM->value<FloatType>("max_y", minY, 10000.0);
+		const auto ySpeed = scanPM->value<TFloat>("y_speed", 1.0, 100000.0) * TFloat(1.0e-3 / 60.0);
+		const auto maxY   = scanPM->value<TFloat>("max_y", minY, 10000.0);
 		LOG_DEBUG << "Waiting for trigger...";
 		if (server.waitForTrigger()) {
 			server.freeTrigger(); // start the array movement
 			const double t0 = timer.getTime();
-			FloatType y = minY;
+			TFloat y = minY;
 			while (y <= maxY) {
 				if (acqNumber == maxSteps) break;
 				LOG_INFO << "ACQ " << acqNumber;
@@ -258,7 +258,7 @@ NetworkSyncSingleVirtualSourceMethod<FloatType>::saveSignals(TnRnAcquisition<Flo
 		}
 		LOG_DEBUG << "Average y step: " << (yList.back() - yList.front()) / (yList.size() - 1);
 	} else {
-		const auto yStep = scanPM->value<FloatType>("y_step", 1.0e-6, 1000.0);
+		const auto yStep = scanPM->value<TFloat>("y_step", 1.0e-6, 1000.0);
 		const double t0 = timer.getTime();
 		while (true) {
 			LOG_DEBUG << "Waiting for trigger...";

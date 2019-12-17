@@ -30,86 +30,86 @@
 namespace Lab {
 namespace ArrayUtil {
 
-template<typename FloatType> void calculateElementPositions(
-					FloatType pitchX, unsigned int numElemX, FloatType offsetX,
-					FloatType pitchY, unsigned int numElemY, FloatType offsetY,
-					std::vector<XY<FloatType>>& elemPos);
+template<typename TFloat> void calculateElementPositions(
+					TFloat pitchX, unsigned int numElemX, TFloat offsetX,
+					TFloat pitchY, unsigned int numElemY, TFloat offsetY,
+					std::vector<XY<TFloat>>& elemPos);
 
-template<typename FloatType> void calculateTxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos);
-template<typename FloatType> void calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos);
+template<typename TFloat> void calculateTxElementPositions(const ParameterMap& pm, std::vector<XY<TFloat>>& elemPos);
+template<typename TFloat> void calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<TFloat>>& elemPos);
 
-template<typename FloatType> void calculateTx3DFocusDelay(
-					FloatType focusX, FloatType focusY, FloatType focusZ, FloatType propagationSpeed,
-					const std::vector<XY<FloatType>>& elemPos, std::vector<FloatType>& focusDelay /* s */);
-template<typename FloatType> void calculateTx3DFocusDelay(
-					FloatType focusX, FloatType focusY, FloatType focusZ, FloatType propagationSpeed,
-					const std::vector<XY<FloatType>>& elemPos, unsigned int baseElement,
-					unsigned int numGroupElements, std::vector<FloatType>& focusDelay /* s */);
+template<typename TFloat> void calculateTx3DFocusDelay(
+					TFloat focusX, TFloat focusY, TFloat focusZ, TFloat propagationSpeed,
+					const std::vector<XY<TFloat>>& elemPos, std::vector<TFloat>& focusDelay /* s */);
+template<typename TFloat> void calculateTx3DFocusDelay(
+					TFloat focusX, TFloat focusY, TFloat focusZ, TFloat propagationSpeed,
+					const std::vector<XY<TFloat>>& elemPos, unsigned int baseElement,
+					unsigned int numGroupElements, std::vector<TFloat>& focusDelay /* s */);
 
 //==============================================================================
 
-template<typename FloatType>
+template<typename TFloat>
 void
 calculateElementPositions(
-		FloatType pitchX, unsigned int numElemX, FloatType offsetX,
-		FloatType pitchY, unsigned int numElemY, FloatType offsetY,
-		std::vector<XY<FloatType>>& elemPos)
+		TFloat pitchX, unsigned int numElemX, TFloat offsetX,
+		TFloat pitchY, unsigned int numElemY, TFloat offsetY,
+		std::vector<XY<TFloat>>& elemPos)
 {
 	// Calculate the center of each element.
-	const FloatType halfW = (numElemX - 1) * 0.5 * pitchX;
-	const FloatType halfH = (numElemY - 1) * 0.5 * pitchY;
+	const TFloat halfW = (numElemX - 1) * 0.5 * pitchX;
+	const TFloat halfH = (numElemY - 1) * 0.5 * pitchY;
 	elemPos.resize(numElemX * numElemY);
 	for (unsigned int iy = 0; iy < numElemY; ++iy) {
 		for (unsigned int ix = 0; ix < numElemX; ++ix) {
-			XY<FloatType>& pos = elemPos[iy * numElemX + ix];
+			XY<TFloat>& pos = elemPos[iy * numElemX + ix];
 			pos.x = ix * pitchX - halfW + offsetX;
 			pos.y = iy * pitchY - halfH + offsetY;
 		}
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-calculateTxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos)
+calculateTxElementPositions(const ParameterMap& pm, std::vector<XY<TFloat>>& elemPos)
 {
-	const auto pitchX   = pm.value<FloatType>("tx_pitch_x"   ,  1.0e-6, 1000.0);
-	const auto pitchY   = pm.value<FloatType>("tx_pitch_y"   ,  1.0e-6, 1000.0);
-	const auto numElemX = pm.value<FloatType>("tx_num_elem_x",       1,   1024);
-	const auto numElemY = pm.value<FloatType>("tx_num_elem_y",       1,   1024);
-	const auto offsetX  = pm.value<FloatType>("tx_offset_x"  , -1000.0, 1000.0);
-	const auto offsetY  = pm.value<FloatType>("tx_offset_y"  , -1000.0, 1000.0);
+	const auto pitchX   = pm.value<TFloat>("tx_pitch_x"   ,  1.0e-6, 1000.0);
+	const auto pitchY   = pm.value<TFloat>("tx_pitch_y"   ,  1.0e-6, 1000.0);
+	const auto numElemX = pm.value<TFloat>("tx_num_elem_x",       1,   1024);
+	const auto numElemY = pm.value<TFloat>("tx_num_elem_y",       1,   1024);
+	const auto offsetX  = pm.value<TFloat>("tx_offset_x"  , -1000.0, 1000.0);
+	const auto offsetY  = pm.value<TFloat>("tx_offset_y"  , -1000.0, 1000.0);
 
 	calculateElementPositions(pitchX, numElemX, offsetX, pitchY, numElemY, offsetY, elemPos);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<FloatType>>& elemPos)
+calculateRxElementPositions(const ParameterMap& pm, std::vector<XY<TFloat>>& elemPos)
 {
-	const auto pitchX   = pm.value<FloatType>("rx_pitch_x"   ,  1.0e-6, 1000.0);
-	const auto pitchY   = pm.value<FloatType>("rx_pitch_y"   ,  1.0e-6, 1000.0);
-	const auto numElemX = pm.value<FloatType>("rx_num_elem_x",       1,   1024);
-	const auto numElemY = pm.value<FloatType>("rx_num_elem_y",       1,   1024);
-	const auto offsetX  = pm.value<FloatType>("rx_offset_x"  , -1000.0, 1000.0);
-	const auto offsetY  = pm.value<FloatType>("rx_offset_y"  , -1000.0, 1000.0);
+	const auto pitchX   = pm.value<TFloat>("rx_pitch_x"   ,  1.0e-6, 1000.0);
+	const auto pitchY   = pm.value<TFloat>("rx_pitch_y"   ,  1.0e-6, 1000.0);
+	const auto numElemX = pm.value<TFloat>("rx_num_elem_x",       1,   1024);
+	const auto numElemY = pm.value<TFloat>("rx_num_elem_y",       1,   1024);
+	const auto offsetX  = pm.value<TFloat>("rx_offset_x"  , -1000.0, 1000.0);
+	const auto offsetY  = pm.value<TFloat>("rx_offset_y"  , -1000.0, 1000.0);
 
 	calculateElementPositions(pitchX, numElemX, offsetX, pitchY, numElemY, offsetY, elemPos);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-calculateTx3DFocusDelay(FloatType focusX, FloatType focusY, FloatType focusZ, FloatType propagationSpeed,
-			const std::vector<XY<FloatType>>& elemPos, std::vector<FloatType>& focusDelay /* s */)
+calculateTx3DFocusDelay(TFloat focusX, TFloat focusY, TFloat focusZ, TFloat propagationSpeed,
+			const std::vector<XY<TFloat>>& elemPos, std::vector<TFloat>& focusDelay /* s */)
 {
 	calculateTx3DFocusDelay(focusX, focusY, focusZ, propagationSpeed,
 				elemPos, 0, elemPos.size(), focusDelay);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-calculateTx3DFocusDelay(FloatType focusX, FloatType focusY, FloatType focusZ, FloatType propagationSpeed,
-			const std::vector<XY<FloatType>>& elemPos, unsigned int baseElement,
-			unsigned int numGroupElements, std::vector<FloatType>& focusDelay /* s */)
+calculateTx3DFocusDelay(TFloat focusX, TFloat focusY, TFloat focusZ, TFloat propagationSpeed,
+			const std::vector<XY<TFloat>>& elemPos, unsigned int baseElement,
+			unsigned int numGroupElements, std::vector<TFloat>& focusDelay /* s */)
 {
 	if (baseElement + numGroupElements > elemPos.size()) {
 		THROW_EXCEPTION(InvalidParameterException, "Error: baseElement + numGroupElements > elemPos.size() ("
@@ -118,12 +118,12 @@ calculateTx3DFocusDelay(FloatType focusX, FloatType focusY, FloatType focusZ, Fl
 	}
 	focusDelay.assign(numGroupElements, 0.0);
 
-	const FloatType invC = 1 / propagationSpeed;
+	const TFloat invC = 1 / propagationSpeed;
 	if (focusZ > 0.0) {
-		FloatType maxDt = 0.0;
+		TFloat maxDt = 0.0;
 		for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
-			const XY<FloatType>& pos = elemPos[baseElement + i];
-			const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
+			const XY<TFloat>& pos = elemPos[baseElement + i];
+			const TFloat dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
 			if (dt > maxDt) maxDt = dt;
 			focusDelay[i] = dt;
 		}
@@ -131,10 +131,10 @@ calculateTx3DFocusDelay(FloatType focusX, FloatType focusY, FloatType focusZ, Fl
 			focusDelay[i] = maxDt - focusDelay[i];
 		}
 	} else {
-		FloatType minDt = std::numeric_limits<FloatType>::max();
+		TFloat minDt = std::numeric_limits<TFloat>::max();
 		for (unsigned int i = 0, iEnd = focusDelay.size(); i < iEnd; ++i) {
-			const XY<FloatType>& pos = elemPos[baseElement + i];
-			const FloatType dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
+			const XY<TFloat>& pos = elemPos[baseElement + i];
+			const TFloat dt = Geometry::distance3DZ0(pos.x, pos.y, focusX, focusY, focusZ) * invC;
 			if (dt < minDt) minDt = dt;
 			focusDelay[i] = dt;
 		}

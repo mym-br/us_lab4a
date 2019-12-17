@@ -28,40 +28,40 @@
 
 namespace Lab {
 
-template<typename FloatType, typename ImpulseResponse>
+template<typename TFloat, typename ImpulseResponse>
 class ArrayOfRectangularSourcesImpulseResponse {
 public:
 	ArrayOfRectangularSourcesImpulseResponse(
-					FloatType samplingFreq,
-					FloatType propagationSpeed,
-					FloatType sourceWidth,
-					FloatType sourceHeight,
-					FloatType discretization,
-					const std::vector<XY<FloatType>>& elemPos,
-					const std::vector<FloatType>& focusDelay);
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceWidth,
+					TFloat sourceHeight,
+					TFloat discretization,
+					const std::vector<XY<TFloat>>& elemPos,
+					const std::vector<TFloat>& focusDelay);
 
-	void getImpulseResponse(FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
+	void getImpulseResponse(TFloat x, TFloat y, TFloat z, std::size_t& hOffset, std::vector<TFloat>& h,
 				std::vector<unsigned int>* activeElemList=nullptr);
 private:
-	const FloatType samplingFreq_;
+	const TFloat samplingFreq_;
 	ImpulseResponse ir_;
-	const std::vector<XY<FloatType>>& elemPos_;
-	const std::vector<FloatType>& focusDelay_;
+	const std::vector<XY<TFloat>>& elemPos_;
+	const std::vector<TFloat>& focusDelay_;
 	std::vector<std::size_t> offsetList_;
-	std::vector<std::vector<FloatType>> hList_;
+	std::vector<std::vector<TFloat>> hList_;
 };
 
 
 
-template<typename FloatType, typename ImpulseResponse>
-ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse>::ArrayOfRectangularSourcesImpulseResponse(
-				FloatType samplingFreq,
-				FloatType propagationSpeed,
-				FloatType sourceWidth,
-				FloatType sourceHeight,
-				FloatType discretization,
-				const std::vector<XY<FloatType>>& elemPos,
-				const std::vector<FloatType>& focusDelay /* s */)
+template<typename TFloat, typename ImpulseResponse>
+ArrayOfRectangularSourcesImpulseResponse<TFloat, ImpulseResponse>::ArrayOfRectangularSourcesImpulseResponse(
+				TFloat samplingFreq,
+				TFloat propagationSpeed,
+				TFloat sourceWidth,
+				TFloat sourceHeight,
+				TFloat discretization,
+				const std::vector<XY<TFloat>>& elemPos,
+				const std::vector<TFloat>& focusDelay /* s */)
 		: samplingFreq_(samplingFreq)
 		, ir_(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization)
 		, elemPos_(elemPos)
@@ -77,10 +77,10 @@ ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse>::ArrayOfRec
 	}
 }
 
-template<typename FloatType, typename ImpulseResponse>
+template<typename TFloat, typename ImpulseResponse>
 void
-ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse>::getImpulseResponse(
-		FloatType x, FloatType y, FloatType z, std::size_t& hOffset, std::vector<FloatType>& h,
+ArrayOfRectangularSourcesImpulseResponse<TFloat, ImpulseResponse>::getImpulseResponse(
+		TFloat x, TFloat y, TFloat z, std::size_t& hOffset, std::vector<TFloat>& h,
 		std::vector<unsigned int>* activeElemList)
 {
 	if (activeElemList) {
@@ -113,7 +113,7 @@ ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse>::getImpulse
 				continue;
 			}
 		}
-		const XY<FloatType>& pos = elemPos_[i];
+		const XY<TFloat>& pos = elemPos_[i];
 
 		ir_.getImpulseResponse(x - pos.x, y - pos.y, z, offsetList_[j], hList_[j]);
 

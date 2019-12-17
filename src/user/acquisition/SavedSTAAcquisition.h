@@ -29,8 +29,8 @@
 
 namespace Lab {
 
-template<typename FloatType>
-class SavedSTAAcquisition : public STAAcquisition<FloatType> {
+template<typename TFloat>
+class SavedSTAAcquisition : public STAAcquisition<TFloat> {
 public:
 	SavedSTAAcquisition(const Project& project,
 				unsigned int numRxElements,
@@ -41,7 +41,7 @@ public:
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void execute(unsigned int txElement,
-				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
+				typename STAAcquisition<TFloat>::AcquisitionDataType& acqData);
 private:
 	SavedSTAAcquisition(const SavedSTAAcquisition&) = delete;
 	SavedSTAAcquisition& operator=(const SavedSTAAcquisition&) = delete;
@@ -56,8 +56,8 @@ private:
 
 
 
-template<typename FloatType>
-SavedSTAAcquisition<FloatType>::SavedSTAAcquisition(
+template<typename TFloat>
+SavedSTAAcquisition<TFloat>::SavedSTAAcquisition(
 			const Project& project,
 			unsigned int numRxElements,
 			const std::string& dataDir)
@@ -68,17 +68,17 @@ SavedSTAAcquisition<FloatType>::SavedSTAAcquisition(
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SavedSTAAcquisition<FloatType>::prepare(unsigned int baseElement)
+SavedSTAAcquisition<TFloat>::prepare(unsigned int baseElement)
 {
 	baseElement_ = baseElement;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SavedSTAAcquisition<FloatType>::execute(unsigned int txElement,
-						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
+SavedSTAAcquisition<TFloat>::execute(unsigned int txElement,
+						typename STAAcquisition<TFloat>::AcquisitionDataType& acqData)
 {
 	std::string filePath = FileUtil::txElemSignalsPath(dataDir_, baseElement_, txElement);
 	project_.loadHDF5(filePath, "signal", acqData);

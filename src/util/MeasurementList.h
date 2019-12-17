@@ -28,7 +28,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class MeasurementList {
 public:
 	MeasurementList() : position_(), list_() { }
@@ -37,7 +37,7 @@ public:
 		position_ = 0;
 		list_.assign(n, 0);
 	}
-	void put(FloatType measurement) {
+	void put(TFloat measurement) {
 		if (list_.empty()) {
 			THROW_EXCEPTION(InvalidStateException, "The list size is zero.");
 		}
@@ -47,7 +47,7 @@ public:
 		list_[position_++] = measurement;
 	}
 
-	const std::vector<FloatType>& list() const {
+	const std::vector<TFloat>& list() const {
 		if (list_.empty()) {
 			THROW_EXCEPTION(InvalidStateException, "The list size is zero.");
 		}
@@ -57,7 +57,7 @@ public:
 		return list_;
 	}
 
-	FloatType arithmeticMean() const {
+	TFloat arithmeticMean() const {
 		if (list_.empty()) {
 			THROW_EXCEPTION(InvalidStateException, "The list size is zero.");
 		}
@@ -68,7 +68,7 @@ public:
 		return Statistics::arithmeticMean(&list_[0], list_.size());
 	}
 
-	FloatType standardDeviation() const {
+	TFloat standardDeviation() const {
 		if (list_.empty()) {
 			THROW_EXCEPTION(InvalidStateException, "The list size is zero.");
 		}
@@ -79,7 +79,7 @@ public:
 		return Statistics::standardDeviation(&list_[0], list_.size());
 	}
 
-	FloatType minimum() const {
+	TFloat minimum() const {
 		if (list_.empty()) {
 			THROW_EXCEPTION(InvalidStateException, "The list size is zero.");
 		}
@@ -87,7 +87,7 @@ public:
 			THROW_EXCEPTION(InvalidStateException, "The list is not full.");
 		}
 
-		FloatType minValue = list_[0];
+		TFloat minValue = list_[0];
 		for (std::size_t i = 1; i < list_.size(); ++i) {
 			if (list_[i] < minValue) {
 				minValue = list_[i];
@@ -96,7 +96,7 @@ public:
 		return minValue;
 	}
 
-	FloatType maximum() const {
+	TFloat maximum() const {
 		if (list_.empty()) {
 			THROW_EXCEPTION(InvalidStateException, "The list size is zero.");
 		}
@@ -104,7 +104,7 @@ public:
 			THROW_EXCEPTION(InvalidStateException, "The list is not full.");
 		}
 
-		FloatType maxValue = list_[0];
+		TFloat maxValue = list_[0];
 		for (std::size_t i = 1; i < list_.size(); ++i) {
 			if (list_[i] > maxValue) {
 				maxValue = list_[i];
@@ -115,7 +115,7 @@ public:
 
 private:
 	std::size_t position_;
-	std::vector<FloatType> list_;
+	std::vector<TFloat> list_;
 };
 
 } // namespace Lab

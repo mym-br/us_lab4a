@@ -22,12 +22,12 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 struct XYZValueArray {
-	FloatType x;
-	FloatType y;
-	FloatType z;
-	std::vector<FloatType> values;
+	TFloat x;
+	TFloat y;
+	TFloat z;
+	std::vector<TFloat> values;
 };
 
 } // namespace Lab

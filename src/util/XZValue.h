@@ -20,16 +20,16 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 struct XZValue {
 	XZValue() = default;
-	XZValue(FloatType x, FloatType z, FloatType value) : x(x), z(z), value(value) {}
+	XZValue(TFloat x, TFloat z, TFloat value) : x(x), z(z), value(value) {}
 
-	FloatType x;
-	FloatType z;
-	FloatType value;
+	TFloat x;
+	TFloat z;
+	TFloat value;
 
-	template<typename FloatType2> XZValue<FloatType>& operator=(const XZValue<FloatType2>& o) {
+	template<typename TFloat2> XZValue<TFloat>& operator=(const XZValue<TFloat2>& o) {
 		if (&o != this) {
 			this->x = o.x;
 			this->z = o.z;

@@ -32,7 +32,7 @@
 namespace Lab {
 
 // Calculate the envelope using the Hilbert transform.
-template<typename FloatType>
+template<typename TFloat>
 class HilbertEnvelope {
 public:
 	HilbertEnvelope();
@@ -63,17 +63,17 @@ private:
 	unsigned int numInputSamples_;
 	unsigned int fftSize_;
 	unsigned int freqDataSize_;
-	FloatType* inputTimeData_;
-	FloatType (*frequencyData_)[2];  // pointer to array of size two
-	FloatType (*outputTimeData_)[2]; // pointer to array of size two
+	TFloat* inputTimeData_;
+	TFloat (*frequencyData_)[2];  // pointer to array of size two
+	TFloat (*outputTimeData_)[2]; // pointer to array of size two
 	FFTWPlan fftPlan_;
 	FFTWPlan ifftPlan_;
 };
 
 
 
-template<typename FloatType>
-HilbertEnvelope<FloatType>::HilbertEnvelope()
+template<typename TFloat>
+HilbertEnvelope<TFloat>::HilbertEnvelope()
 		: initialized_()
 		, numInputSamples_()
 		, fftSize_()
@@ -86,8 +86,8 @@ HilbertEnvelope<FloatType>::HilbertEnvelope()
 {
 }
 
-template<typename FloatType>
-HilbertEnvelope<FloatType>::HilbertEnvelope(const HilbertEnvelope& o)
+template<typename TFloat>
+HilbertEnvelope<TFloat>::HilbertEnvelope(const HilbertEnvelope& o)
 		: initialized_()
 		, numInputSamples_()
 		, fftSize_()
@@ -101,15 +101,15 @@ HilbertEnvelope<FloatType>::HilbertEnvelope(const HilbertEnvelope& o)
 	*this = o;
 }
 
-template<typename FloatType>
-HilbertEnvelope<FloatType>::~HilbertEnvelope()
+template<typename TFloat>
+HilbertEnvelope<TFloat>::~HilbertEnvelope()
 {
 	clean();
 }
 
-template<typename FloatType>
-HilbertEnvelope<FloatType>&
-HilbertEnvelope<FloatType>::operator=(const HilbertEnvelope& o)
+template<typename TFloat>
+HilbertEnvelope<TFloat>&
+HilbertEnvelope<TFloat>::operator=(const HilbertEnvelope& o)
 {
 	if (&o != this) {
 		if (o.initialized_) {
@@ -121,9 +121,9 @@ HilbertEnvelope<FloatType>::operator=(const HilbertEnvelope& o)
 	return *this;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-HilbertEnvelope<FloatType>::clean()
+HilbertEnvelope<TFloat>::clean()
 {
 	{
 		FFTW fftw;
@@ -139,9 +139,9 @@ HilbertEnvelope<FloatType>::clean()
 	initialized_ = false;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-HilbertEnvelope<FloatType>::prepare(unsigned int numInputSamples)
+HilbertEnvelope<TFloat>::prepare(unsigned int numInputSamples)
 {
 	clean();
 
@@ -156,9 +156,9 @@ HilbertEnvelope<FloatType>::prepare(unsigned int numInputSamples)
 //		", freqDataSize_: " << freqDataSize_;
 
 	try {
-		inputTimeData_  = FFTW::alloc_real<FloatType>(fftSize_);
-		frequencyData_  = FFTW::alloc_complex<FloatType>(fftSize_);
-		outputTimeData_ = FFTW::alloc_complex<FloatType>(fftSize_);
+		inputTimeData_  = FFTW::alloc_real<TFloat>(fftSize_);
+		frequencyData_  = FFTW::alloc_complex<TFloat>(fftSize_);
+		outputTimeData_ = FFTW::alloc_complex<TFloat>(fftSize_);
 		FFTW fftw;
 		fftPlan_ = fftw.plan_dft_r2c_1d(fftSize_, inputTimeData_, frequencyData_);
 		ifftPlan_ = fftw.plan_idft_1d(fftSize_, frequencyData_, outputTimeData_);
@@ -171,9 +171,9 @@ HilbertEnvelope<FloatType>::prepare(unsigned int numInputSamples)
 	initialized_ = true;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-HilbertEnvelope<FloatType>::process()
+HilbertEnvelope<TFloat>::process()
 {
 	// Time --> frequency.
 	FFTW::execute(fftPlan_); // fftw_plan_dft_r2c_1d only returns floor(N/2)+1 complex values
@@ -185,8 +185,8 @@ HilbertEnvelope<FloatType>::process()
 		frequencyData_[freqDataSize_ - 1][FFTW::REAL] *= 0.5;
 	}
 	// For "negative" frequencies:
-	FloatType (*p)[2] = frequencyData_ + freqDataSize_;
-	FloatType (*pEnd)[2] = frequencyData_ + fftSize_;
+	TFloat (*p)[2] = frequencyData_ + freqDataSize_;
+	TFloat (*pEnd)[2] = frequencyData_ + fftSize_;
 	while (p != pEnd) {
 		(*p)[FFTW::REAL] = 0.0;
 		(*p++)[FFTW::IMAG] = 0.0;
@@ -196,10 +196,10 @@ HilbertEnvelope<FloatType>::process()
 	FFTW::execute(ifftPlan_);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 template<typename ExternalElementType>
 void
-HilbertEnvelope<FloatType>::calculate(ExternalElementType* data, unsigned int size)
+HilbertEnvelope<TFloat>::calculate(ExternalElementType* data, unsigned int size)
 {
 	if (size == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of input samples (" << size << ") is = 0.");
@@ -218,16 +218,16 @@ HilbertEnvelope<FloatType>::calculate(ExternalElementType* data, unsigned int si
 	process();
 
 	// Get the output.
-	const FloatType coef = 2 / static_cast<FloatType>(fftSize_); // The values will be divided by fftSize because FFTW produces unnormalized results
-	Value::transformSequence(outputTimeData_, outputTimeData_ + numInputSamples_, data, Value::ComplexToScaledAbsoluteOp<FloatType>(coef));
+	const TFloat coef = 2 / static_cast<TFloat>(fftSize_); // The values will be divided by fftSize because FFTW produces unnormalized results
+	Value::transformSequence(outputTimeData_, outputTimeData_ + numInputSamples_, data, Value::ComplexToScaledAbsoluteOp<TFloat>(coef));
 }
 
 
 
-template<typename FloatType>
+template<typename TFloat>
 template<typename InputElementType, typename OutputElementType>
 void
-HilbertEnvelope<FloatType>::getAnalyticSignal(InputElementType* origData, unsigned int size, OutputElementType* destData)
+HilbertEnvelope<TFloat>::getAnalyticSignal(InputElementType* origData, unsigned int size, OutputElementType* destData)
 {
 	if (size == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of input samples (" << size << ") is = 0.");
@@ -246,8 +246,8 @@ HilbertEnvelope<FloatType>::getAnalyticSignal(InputElementType* origData, unsign
 	process();
 
 	// Get the output.
-	const FloatType coef = 2 / static_cast<FloatType>(fftSize_); // The values will be divided by fftSize because FFTW produces unnormalized results
-	Value::transformSequence(outputTimeData_, outputTimeData_ + numInputSamples_, destData, Value::ScaleComplexOp<FloatType>(coef));
+	const TFloat coef = 2 / static_cast<TFloat>(fftSize_); // The values will be divided by fftSize because FFTW produces unnormalized results
+	Value::transformSequence(outputTimeData_, outputTimeData_ + numInputSamples_, destData, Value::ScaleComplexOp<TFloat>(coef));
 }
 
 } // namespace Lab

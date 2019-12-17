@@ -49,7 +49,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class SimCircularSourceMethod : public Method {
 public:
 	SimCircularSourceMethod(Project& project);
@@ -58,22 +58,22 @@ public:
 	virtual void execute();
 private:
 	struct MainData {
-		FloatType propagationSpeed;
-		FloatType centerFreq;
-		FloatType maxFreq;
-		FloatType nyquistRate;
+		TFloat propagationSpeed;
+		TFloat centerFreq;
+		TFloat maxFreq;
+		TFloat nyquistRate;
 		std::string outputDir;
 	};
 	struct SimulationData {
-		FloatType samplingFreq;
-		FloatType excNumPeriods;
-		FloatType discretFactor;
+		TFloat samplingFreq;
+		TFloat excNumPeriods;
+		TFloat discretFactor;
 		std::string irMethod;
 		std::string excitationType;
-		std::vector<FloatType> exc;
+		std::vector<TFloat> exc;
 	};
 	struct SourceData {
-		FloatType sourceRadius;
+		TFloat sourceRadius;
 	};
 
 	SimCircularSourceMethod(const SimCircularSourceMethod&) = delete;
@@ -84,8 +84,8 @@ private:
 	void loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData);
 	void loadSourceData(SourceData& srcData);
 	void loadSimulationData(const MainData& data, SimulationData& simData);
-	void prepareExcitation(FloatType dt, const SimulationData& simData, std::vector<FloatType>& tExc,
-				std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt);
+	void prepareExcitation(TFloat dt, const SimulationData& simData, std::vector<TFloat>& tExc,
+				std::vector<TFloat>& dvdt, std::vector<TFloat>& tDvdt);
 
 	void execImpulseResponse(); // calculate p/(c*density)
 	void execTransientAcousticField();
@@ -95,15 +95,15 @@ private:
 	Project& project_;
 };
 
-template<typename FloatType>
-SimCircularSourceMethod<FloatType>::SimCircularSourceMethod(Project& project)
+template<typename TFloat>
+SimCircularSourceMethod<TFloat>::SimCircularSourceMethod(Project& project)
 		: project_(project)
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimCircularSourceMethod<FloatType>::loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData)
+SimCircularSourceMethod<TFloat>::loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData)
 {
 	const ParamMapPtr mainPM = project_.getSubParamMap("main_config_file");
 	//mainPM->getValue(data.density         , "density"          , 0.0, 100000.0);
@@ -116,20 +116,20 @@ SimCircularSourceMethod<FloatType>::loadData(const ParameterMap& taskPM, MainDat
 	loadSimulationData(data, simData);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimCircularSourceMethod<FloatType>::loadSourceData(SourceData& srcData)
+SimCircularSourceMethod<TFloat>::loadSourceData(SourceData& srcData)
 {
 	const ParamMapPtr singlePM = project_.getSubParamMap("source_config_file");
 	singlePM->getValue(srcData.sourceRadius, "source_radius" , 0.0, 10.0);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimCircularSourceMethod<FloatType>::loadSimulationData(const MainData& data, SimulationData& simData)
+SimCircularSourceMethod<TFloat>::loadSimulationData(const MainData& data, SimulationData& simData)
 {
 	const ParamMapPtr simPM = project_.getSubParamMap("simulation_config_file");
-	simData.samplingFreq = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
+	simData.samplingFreq = simPM->value<TFloat>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
 	simPM->getValue(simData.irMethod      , "impulse_response_method");
 	simPM->getValue(simData.excitationType, "excitation_type");
 	simPM->getValue(simData.excNumPeriods , "excitation_num_periods", 0.0, 100.0);
@@ -145,11 +145,11 @@ SimCircularSourceMethod<FloatType>::loadSimulationData(const MainData& data, Sim
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimCircularSourceMethod<FloatType>::prepareExcitation(FloatType dt,
-						const SimulationData& simData, std::vector<FloatType>& tExc,
-						std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt)
+SimCircularSourceMethod<TFloat>::prepareExcitation(TFloat dt,
+						const SimulationData& simData, std::vector<TFloat>& tExc,
+						std::vector<TFloat>& dvdt, std::vector<TFloat>& tDvdt)
 {
 	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, simData.exc.size());
 	project_.showFigure2D(1, "v", tExc, simData.exc);
@@ -160,9 +160,9 @@ SimCircularSourceMethod<FloatType>::prepareExcitation(FloatType dt,
 	project_.showFigure2D(2, "dv/dt", tDvdt, dvdt);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimCircularSourceMethod<FloatType>::execTransientRadiationPattern()
+SimCircularSourceMethod<TFloat>::execTransientRadiationPattern()
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	MainData mainData;
@@ -174,46 +174,46 @@ SimCircularSourceMethod<FloatType>::execTransientRadiationPattern()
 	project_.createDirectory(mainData.outputDir, false);
 
 	const ParamMapPtr radPM = project_.getSubParamMap("rad_config_file");
-	const auto distance   = radPM->value<FloatType>("distance", 0.0, 100.0);
-	const auto thetaYStep = radPM->value<FloatType>("theta_y_step", 0.0, 10.0);
-	const auto thetaYMin  = FloatType(0);
-	const auto thetaYMax  = radPM->value<FloatType>("theta_y_max" , thetaYMin + 0.1, 90.0);
+	const auto distance   = radPM->value<TFloat>("distance", 0.0, 100.0);
+	const auto thetaYStep = radPM->value<TFloat>("theta_y_step", 0.0, 10.0);
+	const auto thetaYMin  = TFloat(0);
+	const auto thetaYMax  = radPM->value<TFloat>("theta_y_max" , thetaYMin + 0.1, 90.0);
 
-	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc, dvdt, tDvdt;
+	const TFloat dt = 1.0 / simData.samplingFreq;
+	std::vector<TFloat> tExc, dvdt, tDvdt;
 	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
-	std::vector<FloatType> thetaYList;
+	std::vector<TFloat> thetaYList;
 	Util::fillSequenceFromStartToEndWithSize(thetaYList, thetaYMin, thetaYMax, std::ceil((thetaYMax - thetaYMin) / thetaYStep) + 1);
 
-	std::vector<FloatType> radData(thetaYList.size());
-	std::vector<XYZ<FloatType>> inputData(thetaYList.size());
+	std::vector<TFloat> radData(thetaYList.size());
+	std::vector<XYZ<TFloat>> inputData(thetaYList.size());
 
 	for (unsigned int i = 0, size = thetaYList.size(); i < size; ++i) {
-		const FloatType tY = Util::degreeToRadian(thetaYList[i]);
-		const FloatType x = distance * std::sin(tY);
-		const FloatType y = 0.0;
-		const FloatType z = distance * std::cos(tY);
-		XYZ<FloatType>& id = inputData[i];
+		const TFloat tY = Util::degreeToRadian(thetaYList[i]);
+		const TFloat x = distance * std::sin(tY);
+		const TFloat y = 0.0;
+		const TFloat z = distance * std::cos(tY);
+		XYZ<TFloat>& id = inputData[i];
 		id.x = x;
 		id.y = y;
 		id.z = z;
 	}
 
 	if (simData.irMethod == "numeric") {
-		const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
-		const FloatType numSubElemPerLambda = simData.discretFactor;
-		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		const TFloat nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
+		const TFloat numSubElemPerLambda = simData.discretFactor;
+		const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
 		SimTransientRadiationPattern<
-			FloatType,
-			NumericCircularSourceImpulseResponse<FloatType>>::getCircularSourceRadiationPattern(
+			TFloat,
+			NumericCircularSourceImpulseResponse<TFloat>>::getCircularSourceRadiationPattern(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, inputData, radData);
 	} else if (simData.irMethod == "analytic") {
 		SimTransientRadiationPattern<
-			FloatType,
-			AnalyticCircularSourceImpulseResponse<FloatType>>::getCircularSourceRadiationPattern(
+			TFloat,
+			AnalyticCircularSourceImpulseResponse<TFloat>>::getCircularSourceRadiationPattern(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					0.0,
 					dvdt, inputData, radData);
@@ -221,8 +221,8 @@ SimCircularSourceMethod<FloatType>::execTransientRadiationPattern()
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 
-	const FloatType maxAbsValue = Util::maxAbsolute(radData);
-	const FloatType k = 1.0 / maxAbsValue;
+	const TFloat maxAbsValue = Util::maxAbsolute(radData);
+	const TFloat k = 1.0 / maxAbsValue;
 	Util::multiply(radData, k);
 
 	Util::linearToDecibels(radData, -100.0);
@@ -236,9 +236,9 @@ SimCircularSourceMethod<FloatType>::execTransientRadiationPattern()
 	project_.saveHDF5(radData    , mainData.outputDir + "/pattern_theta_y", "value");
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimCircularSourceMethod<FloatType>::execTransientAcousticField()
+SimCircularSourceMethod<TFloat>::execTransientAcousticField()
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	MainData mainData;
@@ -249,28 +249,28 @@ SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 
 	project_.createDirectory(mainData.outputDir, false);
 
-	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc, dvdt, tDvdt;
+	const TFloat dt = 1.0 / simData.samplingFreq;
+	std::vector<TFloat> tExc, dvdt, tDvdt;
 	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
-	Matrix<XYZValue<FloatType>> gridData;
+	Matrix<XYZValue<TFloat>> gridData;
 
-	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
-	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
+	const TFloat nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
+	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
-		const FloatType numSubElemPerLambda = simData.discretFactor;
-		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		const TFloat numSubElemPerLambda = simData.discretFactor;
+		const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
 		SimTransientAcousticField<
-			FloatType,
-			NumericCircularSourceImpulseResponse<FloatType>>::getCircularSourceAcousticField(
+			TFloat,
+			NumericCircularSourceImpulseResponse<TFloat>>::getCircularSourceAcousticField(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, gridData);
 	} else if (simData.irMethod == "analytic") {
 		SimTransientAcousticField<
-			FloatType,
-			AnalyticCircularSourceImpulseResponse<FloatType>>::getCircularSourceAcousticField(
+			TFloat,
+			AnalyticCircularSourceImpulseResponse<TFloat>>::getCircularSourceAcousticField(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					0.0,
 					dvdt, gridData);
@@ -278,8 +278,8 @@ SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
-	const FloatType k = 1.0 / maxAbsValue;
+	const TFloat maxAbsValue = Util::maxAbsoluteValueField<XYZValue<TFloat>, TFloat>(gridData);
+	const TFloat k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
 		it->value *= k;
 	}
@@ -297,9 +297,9 @@ SimCircularSourceMethod<FloatType>::execTransientAcousticField()
 	project_.saveXYZToHDF5(gridData, mainData.outputDir);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimCircularSourceMethod<FloatType>::execTransientPropagation()
+SimCircularSourceMethod<TFloat>::execTransientPropagation()
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	MainData mainData;
@@ -311,42 +311,42 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 	project_.createDirectory(mainData.outputDir, false);
 
 	const ParamMapPtr propagPM = project_.getSubParamMap("propag_config_file");
-	const auto propagDistanceStep = propagPM->value<FloatType>("propagation_distance_step", 1.0e-6, 100.0);
-	const auto propagMinDistance  = propagPM->value<FloatType>("propagation_min_distance", 0.0, 100.0);
-	const auto propagMaxDistance  = propagPM->value<FloatType>("propagation_max_distance", propagMinDistance + propagDistanceStep, 100.0);
+	const auto propagDistanceStep = propagPM->value<TFloat>("propagation_distance_step", 1.0e-6, 100.0);
+	const auto propagMinDistance  = propagPM->value<TFloat>("propagation_min_distance", 0.0, 100.0);
+	const auto propagMaxDistance  = propagPM->value<TFloat>("propagation_max_distance", propagMinDistance + propagDistanceStep, 100.0);
 	const auto propagRepet        = propagPM->value<unsigned int>("propagation_repetitions", 1, 100);
 	const auto propagPause        = propagPM->value<unsigned int>("propagation_pause", 0, 10000);
 
-	std::vector<FloatType> propagDist;
+	std::vector<TFloat> propagDist;
 	Util::fillSequenceFromStartWithStep(propagDist, propagMinDistance, propagMaxDistance, propagDistanceStep);
 	std::vector<unsigned int> propagIndexList(propagDist.size());
-	const FloatType coef = simData.samplingFreq / mainData.propagationSpeed;
+	const TFloat coef = simData.samplingFreq / mainData.propagationSpeed;
 	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
 		propagIndexList[i] = std::rint(propagDist[i] * coef);
 	}
 
-	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc, dvdt, tDvdt;
+	const TFloat dt = 1.0 / simData.samplingFreq;
+	std::vector<TFloat> tExc, dvdt, tDvdt;
 	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
-	Matrix<XYZValueArray<FloatType>> gridData;
+	Matrix<XYZValueArray<TFloat>> gridData;
 
-	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
-	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
+	const TFloat nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
+	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
-		const FloatType numSubElemPerLambda = simData.discretFactor;
-		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		const TFloat numSubElemPerLambda = simData.discretFactor;
+		const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
 		SimTransientPropagation<
-			FloatType,
-			NumericCircularSourceImpulseResponse<FloatType>>::getCircularSourcePropagation(
+			TFloat,
+			NumericCircularSourceImpulseResponse<TFloat>>::getCircularSourcePropagation(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, propagIndexList, gridData);
 	} else if (simData.irMethod == "analytic") {
 		SimTransientPropagation<
-			FloatType,
-			AnalyticCircularSourceImpulseResponse<FloatType>>::getCircularSourcePropagation(
+			TFloat,
+			AnalyticCircularSourceImpulseResponse<TFloat>>::getCircularSourcePropagation(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					0.0,
 					dvdt, propagIndexList, gridData);
@@ -355,8 +355,8 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 	}
 
 	// Normalize.
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField(gridData);
-	const FloatType k = 1.0 / maxAbsValue;
+	const TFloat maxAbsValue = Util::maxAbsoluteValueField(gridData);
+	const TFloat k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
 		for (auto& v : it->values) {
 			v *= k;
@@ -400,15 +400,15 @@ SimCircularSourceMethod<FloatType>::execTransientPropagation()
 		imageFileName << imagePrefix << std::setw(numDigits) << std::setfill('0') << i;
 		project_.saveHDF5(gridData, imageFileName.str(),
 					"value",
-					[&i](const XYZValueArray<FloatType>& orig, double& dest) {
+					[&i](const XYZValueArray<TFloat>& orig, double& dest) {
 						dest = orig.values[i];
 					});
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimCircularSourceMethod<FloatType>::execImpulseResponse()
+SimCircularSourceMethod<TFloat>::execImpulseResponse()
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	MainData mainData;
@@ -420,48 +420,48 @@ SimCircularSourceMethod<FloatType>::execImpulseResponse()
 	project_.createDirectory(mainData.outputDir, false);
 
 	const ParamMapPtr irPM = project_.getSubParamMap("ir_config_file");
-	const auto pointX = irPM->value<FloatType>("point_x", 0.0, 10000.0);
-	const auto pointZ = irPM->value<FloatType>("point_z", 0.0, 10000.0);
+	const auto pointX = irPM->value<TFloat>("point_x", 0.0, 10000.0);
+	const auto pointZ = irPM->value<TFloat>("point_z", 0.0, 10000.0);
 
-	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc, dvdt, tDvdt;
+	const TFloat dt = 1.0 / simData.samplingFreq;
+	std::vector<TFloat> tExc, dvdt, tDvdt;
 	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
 	std::size_t hOffset;
-	std::vector<FloatType> h;
+	std::vector<TFloat> h;
 	if (simData.irMethod == "numeric") {
-		const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
-		const FloatType numSubElemPerLambda = simData.discretFactor;
-		const FloatType numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
-		auto impResp = std::make_unique<NumericCircularSourceImpulseResponse<FloatType>>(
+		const TFloat nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
+		const TFloat numSubElemPerLambda = simData.discretFactor;
+		const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		auto impResp = std::make_unique<NumericCircularSourceImpulseResponse<TFloat>>(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius);
 		impResp->getImpulseResponse(pointX, 0.0, pointZ, hOffset, h);
 	} else if (simData.irMethod == "analytic") {
-		auto impResp = std::make_unique<AnalyticCircularSourceImpulseResponse<FloatType>>(
+		auto impResp = std::make_unique<AnalyticCircularSourceImpulseResponse<TFloat>>(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius);
 		impResp->getImpulseResponse(pointX, 0.0, pointZ, hOffset, h);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 
-	std::vector<FloatType> tH;
+	std::vector<TFloat> tH;
 	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset / simData.samplingFreq, dt, h.size());
 	project_.showFigure2D(3, "Impulse response", tH, h);
 
-	std::vector<std::complex<FloatType>> filterFreqCoeff;
-	auto filter = std::make_unique<FFTWFilter2<FloatType>>();
+	std::vector<std::complex<TFloat>> filterFreqCoeff;
+	auto filter = std::make_unique<FFTWFilter2<TFloat>>();
 	filter->setCoefficients(dvdt, filterFreqCoeff);
-	std::vector<FloatType> signal;
+	std::vector<TFloat> signal;
 
 	filter->filter(filterFreqCoeff, h, signal);
 
-	std::vector<FloatType> tSignal;
+	std::vector<TFloat> tSignal;
 	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset / simData.samplingFreq, dt, signal.size());
 	//Util::multiply(signal, density);
 	project_.showFigure2D(4, "Pressure", tSignal, signal);
 
-	const FloatType maxAbsValue = Util::maxAbsolute(signal);
+	const TFloat maxAbsValue = Util::maxAbsolute(signal);
 	LOG_INFO << "signal: maxAbsValue = " << maxAbsValue;
 
 	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"                    , "value");
@@ -474,9 +474,9 @@ SimCircularSourceMethod<FloatType>::execImpulseResponse()
 	project_.saveHDF5(tSignal    , mainData.outputDir + "/pressure_time"        , "value");
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimCircularSourceMethod<FloatType>::execute()
+SimCircularSourceMethod<TFloat>::execute()
 {
 	Timer tProc;
 

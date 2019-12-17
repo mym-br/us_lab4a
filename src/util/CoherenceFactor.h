@@ -47,20 +47,20 @@
 
 namespace Lab {
 
-template<typename FloatType> class SignCoherenceFactor;
-template<typename FloatType> class PhaseCoherenceFactor;
-template<typename FloatType> class PRNGPhaseCoherenceFactor;
+template<typename TFloat> class SignCoherenceFactor;
+template<typename TFloat> class PhaseCoherenceFactor;
+template<typename TFloat> class PRNGPhaseCoherenceFactor;
 
-template<typename FloatType>
+template<typename TFloat>
 class CoherenceFactor {
 public:
 	CoherenceFactor() = default;
 	virtual ~CoherenceFactor() = default;
 
-	virtual std::unique_ptr<CoherenceFactor<FloatType>> clone() const = 0;
-	virtual FloatType calculate(const FloatType* data, unsigned int size) = 0;
+	virtual std::unique_ptr<CoherenceFactor<TFloat>> clone() const = 0;
+	virtual TFloat calculate(const TFloat* data, unsigned int size) = 0;
 
-	static std::unique_ptr<CoherenceFactor<FloatType>> get(const ParameterMap& pm);
+	static std::unique_ptr<CoherenceFactor<TFloat>> get(const ParameterMap& pm);
 private:
 	CoherenceFactor(const CoherenceFactor&) = delete;
 	CoherenceFactor& operator=(const CoherenceFactor&) = delete;
@@ -68,16 +68,16 @@ private:
 	CoherenceFactor& operator=(CoherenceFactor&&) = delete;
 };
 
-template<typename FloatType>
-std::unique_ptr<CoherenceFactor<FloatType>>
-CoherenceFactor<FloatType>::get(const ParameterMap& pm)
+template<typename TFloat>
+std::unique_ptr<CoherenceFactor<TFloat>>
+CoherenceFactor<TFloat>::get(const ParameterMap& pm)
 {
 	const auto coherenceFactorMethod = pm.value<std::string>("coherence_factor_method");
 	if (coherenceFactorMethod == "none") {
 		return nullptr;
 	} else if (coherenceFactorMethod == "sign_coherence_factor") {
-		const auto p = pm.value<FloatType>("sign_coherence_factor_p", 0.0, 100.0);
-		return std::make_unique<SignCoherenceFactor<FloatType>>(p);
+		const auto p = pm.value<TFloat>("sign_coherence_factor_p", 0.0, 100.0);
+		return std::make_unique<SignCoherenceFactor<TFloat>>(p);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid coherence factor method: " << coherenceFactorMethod << '.');
 	}
@@ -87,12 +87,12 @@ CoherenceFactor<FloatType>::get(const ParameterMap& pm)
 
 // Copy constructible and assignable.
 // May be allocated on the stack.
-template<typename FloatType>
+template<typename TFloat>
 class CoherenceFactorProcessor {
 public:
 	CoherenceFactorProcessor() = default;
 	CoherenceFactorProcessor(const ParameterMap& pm)
-			: cf_(CoherenceFactor<FloatType>::get(pm)) {
+			: cf_(CoherenceFactor<TFloat>::get(pm)) {
 	}
 	CoherenceFactorProcessor(const CoherenceFactorProcessor& o)
 			: cf_(o.cf_ ? o.cf_->clone() : nullptr) {
@@ -109,7 +109,7 @@ public:
 	}
 	~CoherenceFactorProcessor() = default;
 
-	FloatType calculate(const FloatType* data, unsigned int size) {
+	TFloat calculate(const TFloat* data, unsigned int size) {
 		if (cf_) {
 			return cf_->calculate(data, size);
 		} else {
@@ -121,21 +121,21 @@ private:
 	CoherenceFactorProcessor(CoherenceFactorProcessor&&) = delete;
 	CoherenceFactorProcessor& operator=(CoherenceFactorProcessor&&) = delete;
 
-	std::unique_ptr<CoherenceFactor<FloatType>> cf_;
+	std::unique_ptr<CoherenceFactor<TFloat>> cf_;
 };
 
 //=============================================================================
 
-template<typename FloatType>
+template<typename TFloat>
 class AnalyticSignalCoherenceFactor {
 public:
 	AnalyticSignalCoherenceFactor() = default;
 	virtual ~AnalyticSignalCoherenceFactor() = default;
 
-	virtual std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>> clone() const = 0;
-	virtual FloatType calculate(const std::complex<FloatType>* data, unsigned int size) = 0;
+	virtual std::unique_ptr<AnalyticSignalCoherenceFactor<TFloat>> clone() const = 0;
+	virtual TFloat calculate(const std::complex<TFloat>* data, unsigned int size) = 0;
 
-	static std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>> get(const ParameterMap& pm);
+	static std::unique_ptr<AnalyticSignalCoherenceFactor<TFloat>> get(const ParameterMap& pm);
 private:
 	AnalyticSignalCoherenceFactor(const AnalyticSignalCoherenceFactor&) = delete;
 	AnalyticSignalCoherenceFactor& operator=(const AnalyticSignalCoherenceFactor&) = delete;
@@ -143,19 +143,19 @@ private:
 	AnalyticSignalCoherenceFactor& operator=(AnalyticSignalCoherenceFactor&&) = delete;
 };
 
-template<typename FloatType>
-std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>>
-AnalyticSignalCoherenceFactor<FloatType>::get(const ParameterMap& pm)
+template<typename TFloat>
+std::unique_ptr<AnalyticSignalCoherenceFactor<TFloat>>
+AnalyticSignalCoherenceFactor<TFloat>::get(const ParameterMap& pm)
 {
 	const auto coherenceFactorMethod = pm.value<std::string>("analytic_signal_coherence_factor_method");
 	if (coherenceFactorMethod == "none") {
 		return nullptr;
 	} else if (coherenceFactorMethod == "phase_coherence_factor") {
-		const auto gamma = pm.value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
-		return std::make_unique<PhaseCoherenceFactor<FloatType>>(gamma);
+		const auto gamma = pm.value<TFloat>("phase_coherence_factor_gamma", 0.0, 100.0);
+		return std::make_unique<PhaseCoherenceFactor<TFloat>>(gamma);
 	} else if (coherenceFactorMethod == "prng_phase_coherence_factor") {
-		const auto gamma = pm.value<FloatType>("phase_coherence_factor_gamma", 0.0, 100.0);
-		return std::make_unique<PRNGPhaseCoherenceFactor<FloatType>>(gamma);
+		const auto gamma = pm.value<TFloat>("phase_coherence_factor_gamma", 0.0, 100.0);
+		return std::make_unique<PRNGPhaseCoherenceFactor<TFloat>>(gamma);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid coherence factor method: " << coherenceFactorMethod << '.');
 	}
@@ -165,12 +165,12 @@ AnalyticSignalCoherenceFactor<FloatType>::get(const ParameterMap& pm)
 
 // Copy constructible and assignable.
 // May be allocated on the stack.
-template<typename FloatType>
+template<typename TFloat>
 class AnalyticSignalCoherenceFactorProcessor {
 public:
 	AnalyticSignalCoherenceFactorProcessor() = default;
 	AnalyticSignalCoherenceFactorProcessor(const ParameterMap& pm)
-			: cf_(AnalyticSignalCoherenceFactor<FloatType>::get(pm)) {
+			: cf_(AnalyticSignalCoherenceFactor<TFloat>::get(pm)) {
 	}
 	AnalyticSignalCoherenceFactorProcessor(const AnalyticSignalCoherenceFactorProcessor& o)
 			: cf_(o.cf_ ? o.cf_->clone() : nullptr) {
@@ -187,7 +187,7 @@ public:
 	}
 	~AnalyticSignalCoherenceFactorProcessor() = default;
 
-	FloatType calculate(const std::complex<FloatType>* data, unsigned int size) {
+	TFloat calculate(const std::complex<TFloat>* data, unsigned int size) {
 		if (cf_) {
 			return cf_->calculate(data, size);
 		} else {
@@ -199,37 +199,37 @@ private:
 	AnalyticSignalCoherenceFactorProcessor(AnalyticSignalCoherenceFactorProcessor&&) = delete;
 	AnalyticSignalCoherenceFactorProcessor& operator=(AnalyticSignalCoherenceFactorProcessor&&) = delete;
 
-	std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>> cf_;
+	std::unique_ptr<AnalyticSignalCoherenceFactor<TFloat>> cf_;
 };
 
 //=============================================================================
 
-template<typename FloatType>
-class SignCoherenceFactor : public CoherenceFactor<FloatType> {
+template<typename TFloat>
+class SignCoherenceFactor : public CoherenceFactor<TFloat> {
 public:
-	SignCoherenceFactor(FloatType p) : p_(p) { }
+	SignCoherenceFactor(TFloat p) : p_(p) { }
 	virtual ~SignCoherenceFactor() = default;
 
-	virtual std::unique_ptr<CoherenceFactor<FloatType>> clone() const {
+	virtual std::unique_ptr<CoherenceFactor<TFloat>> clone() const {
 		return std::make_unique<SignCoherenceFactor>(p_);
 	}
-	virtual FloatType calculate(const FloatType* data, unsigned int size);
+	virtual TFloat calculate(const TFloat* data, unsigned int size);
 private:
 	SignCoherenceFactor(const SignCoherenceFactor&) = delete;
 	SignCoherenceFactor& operator=(const SignCoherenceFactor&) = delete;
 	SignCoherenceFactor(SignCoherenceFactor&&) = delete;
 	SignCoherenceFactor& operator=(SignCoherenceFactor&&) = delete;
 
-	const FloatType p_;
+	const TFloat p_;
 };
 
-template<typename FloatType>
-FloatType
-SignCoherenceFactor<FloatType>::calculate(const FloatType* data, unsigned int size)
+template<typename TFloat>
+TFloat
+SignCoherenceFactor<TFloat>::calculate(const TFloat* data, unsigned int size)
 {
 	unsigned int n = 0;
 	int signSum = 0;
-	const FloatType* end = data + size;
+	const TFloat* end = data + size;
 	while (data != end) {
 		if (*data++ >= 0) {
 			++signSum;
@@ -239,42 +239,42 @@ SignCoherenceFactor<FloatType>::calculate(const FloatType* data, unsigned int si
 		++n;
 	}
 
-	const FloatType k = static_cast<FloatType>(signSum) / n;
-	const FloatType m = 1 - std::sqrt(1 - k * k);
+	const TFloat k = static_cast<TFloat>(signSum) / n;
+	const TFloat m = 1 - std::sqrt(1 - k * k);
 	return std::pow(std::abs(m), p_);
 }
 
 //=============================================================================
 
-template<typename FloatType>
-class PhaseCoherenceFactor : public AnalyticSignalCoherenceFactor<FloatType> {
+template<typename TFloat>
+class PhaseCoherenceFactor : public AnalyticSignalCoherenceFactor<TFloat> {
 public:
-	PhaseCoherenceFactor(FloatType gamma)
+	PhaseCoherenceFactor(TFloat gamma)
 		: gamma_(gamma)
 		, sigma0_(pi / std::sqrt(3.0))
 		, factor_(gamma / sigma0_) { }
 	virtual ~PhaseCoherenceFactor() = default;
 
-	virtual std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>> clone() const {
+	virtual std::unique_ptr<AnalyticSignalCoherenceFactor<TFloat>> clone() const {
 		return std::make_unique<PhaseCoherenceFactor>(gamma_);
 	}
-	virtual FloatType calculate(const std::complex<FloatType>* data, unsigned int size);
+	virtual TFloat calculate(const std::complex<TFloat>* data, unsigned int size);
 private:
 	PhaseCoherenceFactor(const PhaseCoherenceFactor&) = delete;
 	PhaseCoherenceFactor& operator=(const PhaseCoherenceFactor&) = delete;
 	PhaseCoherenceFactor(PhaseCoherenceFactor&&) = delete;
 	PhaseCoherenceFactor& operator=(PhaseCoherenceFactor&&) = delete;
 
-	const FloatType gamma_;
-	const FloatType sigma0_;
-	const FloatType factor_;
-	std::vector<FloatType> phi_;
-	std::vector<FloatType> phiAux_;
+	const TFloat gamma_;
+	const TFloat sigma0_;
+	const TFloat factor_;
+	std::vector<TFloat> phi_;
+	std::vector<TFloat> phiAux_;
 };
 
-template<typename FloatType>
-FloatType
-PhaseCoherenceFactor<FloatType>::calculate(const std::complex<FloatType>* data, unsigned int size)
+template<typename TFloat>
+TFloat
+PhaseCoherenceFactor<TFloat>::calculate(const std::complex<TFloat>* data, unsigned int size)
 {
 	if (phi_.size() != size) {
 		phi_.resize(size);
@@ -282,32 +282,32 @@ PhaseCoherenceFactor<FloatType>::calculate(const std::complex<FloatType>* data, 
 	}
 
 	for (unsigned int i = 0; i < size; ++i) {
-		const std::complex<FloatType> c = data[i];
+		const std::complex<TFloat> c = data[i];
 		phi_[i] = std::atan2(c.imag(), c.real());
-		phiAux_[i] = phi_[i] + ((phi_[i] < 0) ? FloatType(pi) : -FloatType(pi));
+		phiAux_[i] = phi_[i] + ((phi_[i] < 0) ? TFloat(pi) : -TFloat(pi));
 	}
 
-	const FloatType sf = std::min(
+	const TFloat sf = std::min(
 				Statistics::standardDeviation(&phi_[0]   , size),
 				Statistics::standardDeviation(&phiAux_[0], size));
-	return std::max<FloatType>(0, 1 - factor_ * sf);
+	return std::max<TFloat>(0, 1 - factor_ * sf);
 }
 
 //=============================================================================
 
-template<typename FloatType>
-class PRNGPhaseCoherenceFactor : public AnalyticSignalCoherenceFactor<FloatType> {
+template<typename TFloat>
+class PRNGPhaseCoherenceFactor : public AnalyticSignalCoherenceFactor<TFloat> {
 public:
-	PRNGPhaseCoherenceFactor(FloatType gamma)
+	PRNGPhaseCoherenceFactor(TFloat gamma)
 		: gamma_(gamma)
 		, sigma0_(pi / std::sqrt(3.0))
 		, factor_(gamma / sigma0_) { }
 	virtual ~PRNGPhaseCoherenceFactor() = default;
 
-	virtual std::unique_ptr<AnalyticSignalCoherenceFactor<FloatType>> clone() const {
+	virtual std::unique_ptr<AnalyticSignalCoherenceFactor<TFloat>> clone() const {
 		return std::make_unique<PRNGPhaseCoherenceFactor>(gamma_);
 	}
-	virtual FloatType calculate(const std::complex<FloatType>* data, unsigned int size);
+	virtual TFloat calculate(const std::complex<TFloat>* data, unsigned int size);
 private:
 	PRNGPhaseCoherenceFactor(const PRNGPhaseCoherenceFactor&) = delete;
 	PRNGPhaseCoherenceFactor& operator=(const PRNGPhaseCoherenceFactor&) = default;
@@ -315,16 +315,16 @@ private:
 	PRNGPhaseCoherenceFactor& operator=(PRNGPhaseCoherenceFactor&&) = default;
 
 	PseudorandomNumberGenerator prng_;
-	const FloatType gamma_;
-	const FloatType sigma0_;
-	const FloatType factor_;
-	std::vector<FloatType> phi_;
-	std::vector<FloatType> phiAux_;
+	const TFloat gamma_;
+	const TFloat sigma0_;
+	const TFloat factor_;
+	std::vector<TFloat> phi_;
+	std::vector<TFloat> phiAux_;
 };
 
-template<typename FloatType>
-FloatType
-PRNGPhaseCoherenceFactor<FloatType>::calculate(const std::complex<FloatType>* data, unsigned int size)
+template<typename TFloat>
+TFloat
+PRNGPhaseCoherenceFactor<TFloat>::calculate(const std::complex<TFloat>* data, unsigned int size)
 {
 	if (phi_.size() != size) {
 		phi_.resize(size);
@@ -332,19 +332,19 @@ PRNGPhaseCoherenceFactor<FloatType>::calculate(const std::complex<FloatType>* da
 	}
 
 	for (unsigned int i = 0; i < size; ++i) {
-		const std::complex<FloatType> c = data[i];
-		if (c == FloatType(0)) {
+		const std::complex<TFloat> c = data[i];
+		if (c == TFloat(0)) {
 			phi_[i] = (2.0 * prng_.get() - 1.0) * pi;
 		} else {
 			phi_[i] = std::atan2(c.imag(), c.real());
 		}
-		phiAux_[i] = phi_[i] + ((phi_[i] < 0) ? FloatType(pi) : -FloatType(pi));
+		phiAux_[i] = phi_[i] + ((phi_[i] < 0) ? TFloat(pi) : -TFloat(pi));
 	}
 
-	const FloatType sf = std::min(
+	const TFloat sf = std::min(
 				Statistics::standardDeviation(&phi_[0]   , size),
 				Statistics::standardDeviation(&phiAux_[0], size));
-	return std::max<FloatType>(0, 1 - factor_ * sf);
+	return std::max<TFloat>(0, 1 - factor_ * sf);
 }
 
 } // namespace Lab

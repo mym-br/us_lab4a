@@ -53,7 +53,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class SimRectangularSourceMethod : public Method {
 public:
 	SimRectangularSourceMethod(Project& project);
@@ -62,30 +62,30 @@ public:
 	virtual void execute();
 private:
 	struct MainData {
-		FloatType propagationSpeed;
-		FloatType centerFreq;
-		FloatType maxFreq;
-		FloatType nyquistRate;
+		TFloat propagationSpeed;
+		TFloat centerFreq;
+		TFloat maxFreq;
+		TFloat nyquistRate;
 		std::string outputDir;
 	};
 	struct SimulationData {
-		FloatType samplingFreq;
-		FloatType excNumPeriods;
-		FloatType discretFactor;
+		TFloat samplingFreq;
+		TFloat excNumPeriods;
+		TFloat discretFactor;
 		std::string irMethod;
 		std::string excitationType;
-		std::vector<FloatType> exc;
+		std::vector<TFloat> exc;
 	};
 	struct SourceData {
-		FloatType sourceWidth;
-		FloatType sourceHeight;
+		TFloat sourceWidth;
+		TFloat sourceHeight;
 
 		// For arrays.
-		FloatType focusX;
-		FloatType focusY;
-		FloatType focusZ;
-		std::vector<XY<FloatType>> elemPos;
-		std::vector<FloatType> focusDelay;
+		TFloat focusX;
+		TFloat focusY;
+		TFloat focusZ;
+		std::vector<XY<TFloat>> elemPos;
+		std::vector<TFloat> focusDelay;
 		bool useFocus;
 	};
 
@@ -97,8 +97,8 @@ private:
 	void loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData);
 	void loadSourceData(MainData& data, bool sourceIsArray, SourceData& srcData);
 	void loadSimulationData(const MainData& data, SimulationData& simData);
-	void prepareExcitation(FloatType dt, const SimulationData& simData, std::vector<FloatType>& tExc,
-				std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt);
+	void prepareExcitation(TFloat dt, const SimulationData& simData, std::vector<TFloat>& tExc,
+				std::vector<TFloat>& dvdt, std::vector<TFloat>& tDvdt);
 
 	void execImpulseResponse(bool sourceIsArray); // calculate p/(c*density)
 	void execTransientRadiationPattern(bool sourceIsArray);
@@ -108,15 +108,15 @@ private:
 	Project& project_;
 };
 
-template<typename FloatType>
-SimRectangularSourceMethod<FloatType>::SimRectangularSourceMethod(Project& project)
+template<typename TFloat>
+SimRectangularSourceMethod<TFloat>::SimRectangularSourceMethod(Project& project)
 		: project_(project)
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimRectangularSourceMethod<FloatType>::loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData)
+SimRectangularSourceMethod<TFloat>::loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData)
 {
 	const ParamMapPtr mainPM = project_.getSubParamMap("main_config_file");
 	//mainPM->getValue(data.density         , "density"          , 0.0, 100000.0);
@@ -129,11 +129,11 @@ SimRectangularSourceMethod<FloatType>::loadData(const ParameterMap& taskPM, Main
 	loadSimulationData(data, simData);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimRectangularSourceMethod<FloatType>::loadSourceData(MainData& data, bool sourceIsArray, SourceData& srcData)
+SimRectangularSourceMethod<TFloat>::loadSourceData(MainData& data, bool sourceIsArray, SourceData& srcData)
 {
-	WavefrontObjFileWriter<FloatType> fw((project_.expDirectory() + "/source_geometry.obj").c_str());
+	WavefrontObjFileWriter<TFloat> fw((project_.expDirectory() + "/source_geometry.obj").c_str());
 
 	if (sourceIsArray) {
 		const ParamMapPtr arrayPM = project_.getSubParamMap("array_config_file");
@@ -153,8 +153,8 @@ SimRectangularSourceMethod<FloatType>::loadSourceData(MainData& data, bool sourc
 			srcData.focusDelay.assign(srcData.elemPos.size(), 0.0);
 		}
 
-		const FloatType hw = 0.5 * srcData.sourceWidth;
-		const FloatType hh = 0.5 * srcData.sourceHeight;
+		const TFloat hw = 0.5 * srcData.sourceWidth;
+		const TFloat hh = 0.5 * srcData.sourceHeight;
 		for (const auto& pos : srcData.elemPos) {
 			fw.addPoint(pos.x - hw, pos.y + hh, 0.0);
 			fw.addPoint(pos.x + hw, pos.y + hh, 0.0);
@@ -171,8 +171,8 @@ SimRectangularSourceMethod<FloatType>::loadSourceData(MainData& data, bool sourc
 		srcData.useFocus = false;
 		srcData.focusX = srcData.focusY = srcData.focusZ = 0;
 
-		const FloatType hw = 0.5 * srcData.sourceWidth;
-		const FloatType hh = 0.5 * srcData.sourceHeight;
+		const TFloat hw = 0.5 * srcData.sourceWidth;
+		const TFloat hh = 0.5 * srcData.sourceHeight;
 		fw.addPoint(-hw,  hh, 0.0);
 		fw.addPoint( hw,  hh, 0.0);
 		fw.addPoint( hw, -hh, 0.0);
@@ -182,12 +182,12 @@ SimRectangularSourceMethod<FloatType>::loadSourceData(MainData& data, bool sourc
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimRectangularSourceMethod<FloatType>::loadSimulationData(const MainData& data, SimulationData& simData)
+SimRectangularSourceMethod<TFloat>::loadSimulationData(const MainData& data, SimulationData& simData)
 {
 	const ParamMapPtr simPM = project_.getSubParamMap("simulation_config_file");
-	simData.samplingFreq = simPM->value<FloatType>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
+	simData.samplingFreq = simPM->value<TFloat>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
 	simPM->getValue(simData.irMethod      , "impulse_response_method");
 	simPM->getValue(simData.excitationType, "excitation_type");
 	simPM->getValue(simData.excNumPeriods , "excitation_num_periods", 0.0, 100.0);
@@ -203,11 +203,11 @@ SimRectangularSourceMethod<FloatType>::loadSimulationData(const MainData& data, 
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimRectangularSourceMethod<FloatType>::prepareExcitation(FloatType dt,
-						const SimulationData& simData, std::vector<FloatType>& tExc,
-						std::vector<FloatType>& dvdt, std::vector<FloatType>& tDvdt)
+SimRectangularSourceMethod<TFloat>::prepareExcitation(TFloat dt,
+						const SimulationData& simData, std::vector<TFloat>& tExc,
+						std::vector<TFloat>& dvdt, std::vector<TFloat>& tDvdt)
 {
 	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, simData.exc.size());
 	project_.showFigure2D(1, "v", tExc, simData.exc);
@@ -218,9 +218,9 @@ SimRectangularSourceMethod<FloatType>::prepareExcitation(FloatType dt,
 	project_.showFigure2D(2, "dv/dt", tDvdt, dvdt);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool sourceIsArray)
+SimRectangularSourceMethod<TFloat>::execTransientRadiationPattern(bool sourceIsArray)
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	MainData mainData;
@@ -232,42 +232,42 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 	project_.createDirectory(mainData.outputDir, false);
 
 	const ParamMapPtr radPM = project_.getSubParamMap("rad_config_file");
-	const auto distance   = radPM->value<FloatType>("distance", 0.0, 100.0);
-	const auto thetaYStep = radPM->value<FloatType>("theta_y_step", 0.0, 10.0);
-	const auto thetaYMin  = sourceIsArray ? radPM->value<FloatType>("theta_y_min" , -90.0, 90.0) : FloatType(0);
-	const auto thetaYMax  = radPM->value<FloatType>("theta_y_max" , thetaYMin + 0.1, 90.0);
-	const auto thetaXStep = radPM->value<FloatType>("theta_x_step", 0.0, 10.0);
-	const auto thetaXMin  = sourceIsArray ? radPM->value<FloatType>("theta_x_min" , -90.0, 90.0) : FloatType(0);
-	const auto thetaXMax  = radPM->value<FloatType>("theta_x_max" , thetaXMin + 0.1, 90.0);
+	const auto distance   = radPM->value<TFloat>("distance", 0.0, 100.0);
+	const auto thetaYStep = radPM->value<TFloat>("theta_y_step", 0.0, 10.0);
+	const auto thetaYMin  = sourceIsArray ? radPM->value<TFloat>("theta_y_min" , -90.0, 90.0) : TFloat(0);
+	const auto thetaYMax  = radPM->value<TFloat>("theta_y_max" , thetaYMin + 0.1, 90.0);
+	const auto thetaXStep = radPM->value<TFloat>("theta_x_step", 0.0, 10.0);
+	const auto thetaXMin  = sourceIsArray ? radPM->value<TFloat>("theta_x_min" , -90.0, 90.0) : TFloat(0);
+	const auto thetaXMax  = radPM->value<TFloat>("theta_x_max" , thetaXMin + 0.1, 90.0);
 
-	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc, dvdt, tDvdt;
+	const TFloat dt = 1.0 / simData.samplingFreq;
+	std::vector<TFloat> tExc, dvdt, tDvdt;
 	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
-	std::vector<FloatType> thetaXList;
+	std::vector<TFloat> thetaXList;
 	Util::fillSequenceFromStartToEndWithSize(thetaXList, thetaXMin, thetaXMax, std::ceil((thetaXMax - thetaXMin) / thetaXStep) + 1);
-	std::vector<FloatType> thetaYList;
+	std::vector<TFloat> thetaYList;
 	Util::fillSequenceFromStartToEndWithSize(thetaYList, thetaYMin, thetaYMax, std::ceil((thetaYMax - thetaYMin) / thetaYStep) + 1);
 
-	Matrix<XYZValue<FloatType>> gridData{thetaXList.size(), thetaYList.size()};
-	Matrix<XYZ<FloatType>> inputData{thetaXList.size(), thetaYList.size()};
+	Matrix<XYZValue<TFloat>> gridData{thetaXList.size(), thetaYList.size()};
+	Matrix<XYZ<TFloat>> inputData{thetaXList.size(), thetaYList.size()};
 
 	for (unsigned int ix = 0, xSize = thetaXList.size(); ix < xSize; ++ix) {
-		const FloatType tX = Util::degreeToRadian(thetaXList[ix]);
-		const FloatType sinTX = std::sin(tX);
-		const FloatType cosTX = std::cos(tX);
+		const TFloat tX = Util::degreeToRadian(thetaXList[ix]);
+		const TFloat sinTX = std::sin(tX);
+		const TFloat cosTX = std::cos(tX);
 		for (unsigned int iy = 0, ySize = thetaYList.size(); iy < ySize; ++iy) {
-			const FloatType tY = Util::degreeToRadian(thetaYList[iy]);
-			const FloatType x = distance * std::sin(tY);
-			const FloatType rx = distance * std::cos(tY);
-			const FloatType y = rx * sinTX;
-			const FloatType z = rx * cosTX;
-			XYZValue<FloatType>& gd = gridData(ix, iy);
+			const TFloat tY = Util::degreeToRadian(thetaYList[iy]);
+			const TFloat x = distance * std::sin(tY);
+			const TFloat rx = distance * std::cos(tY);
+			const TFloat y = rx * sinTX;
+			const TFloat z = rx * cosTX;
+			XYZValue<TFloat>& gd = gridData(ix, iy);
 			gd.x = thetaYList[iy];
 			gd.y = 0.0;
 			gd.z = thetaXList[ix];
 			gd.value = 0.0;
-			XYZ<FloatType>& id = inputData(ix, iy);
+			XYZ<TFloat>& id = inputData(ix, iy);
 			id.x = x;
 			id.y = y;
 			id.z = z;
@@ -275,38 +275,38 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 	}
 
 	if (simData.irMethod == "numeric") {
-		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
 			SimTransientRadiationPattern<
-				FloatType,
-				NumericRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesRadiationPattern(
+				TFloat,
+				NumericRectangularSourceImpulseResponse<TFloat>>::getArrayOfRectangularSourcesRadiationPattern(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
 		} else {
 			SimTransientRadiationPattern<
-				FloatType,
-				NumericRectangularSourceImpulseResponse<FloatType>>::getRectangularSourceRadiationPattern(
+				TFloat,
+				NumericRectangularSourceImpulseResponse<TFloat>>::getRectangularSourceRadiationPattern(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, inputData, gridData);
 		}
 	} else if (simData.irMethod == "analytic") {
-		const FloatType minEdgeDivisor = simData.discretFactor;
+		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
 			SimTransientRadiationPattern<
-				FloatType,
-				AnalyticRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesRadiationPattern(
+				TFloat,
+				AnalyticRectangularSourceImpulseResponse<TFloat>>::getArrayOfRectangularSourcesRadiationPattern(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
 		} else {
 			SimTransientRadiationPattern<
-				FloatType,
-				AnalyticRectangularSourceImpulseResponse<FloatType>>::getRectangularSourceRadiationPattern(
+				TFloat,
+				AnalyticRectangularSourceImpulseResponse<TFloat>>::getRectangularSourceRadiationPattern(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
@@ -316,8 +316,8 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
-	const FloatType k = 1.0 / maxAbsValue;
+	const TFloat maxAbsValue = Util::maxAbsoluteValueField<XYZValue<TFloat>, TFloat>(gridData);
+	const TFloat k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
 		it->value *= k;
 	}
@@ -330,8 +330,8 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 	std::size_t sectionTYIndex = 0;
 	std::size_t sectionTXIndex = 0;
 	if (sourceIsArray) {
-		FloatType sectionTY = 0.0;
-		FloatType sectionTX = 0.0;
+		TFloat sectionTY = 0.0;
+		TFloat sectionTX = 0.0;
 		if (srcData.useFocus) {
 			sectionTY = Util::radianToDegree(std::atan2(srcData.focusX, srcData.focusZ));
 			sectionTX = Util::radianToDegree(std::atan2(srcData.focusY, srcData.focusZ));
@@ -341,13 +341,13 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 		LOG_DEBUG << "Section theta-x: " << thetaXList[sectionTXIndex] << " theta-y: " << thetaYList[sectionTYIndex];
 	}
 
-	std::vector<FloatType> patternTY(gridData.n2());
+	std::vector<TFloat> patternTY(gridData.n2());
 	auto tyRange = gridData.range2(sectionTXIndex);
 	Util::copyUsingOperator(tyRange.begin(), tyRange.end(), patternTY.begin(), Util::CopyValueOp{});
 	Util::linearToDecibels(patternTY, -100.0);
 	project_.showFigure2D(3, "Pattern theta-y", thetaYList, patternTY);
 
-	std::vector<FloatType> patternTX(gridData.n1());
+	std::vector<TFloat> patternTX(gridData.n1());
 	auto txRange = gridData.range1(sectionTYIndex);
 	Util::copyUsingOperator(txRange.begin(), txRange.end(), patternTX.begin(), Util::CopyValueOp{});
 	Util::linearToDecibels(patternTX, -100.0);
@@ -365,9 +365,9 @@ SimRectangularSourceMethod<FloatType>::execTransientRadiationPattern(bool source
 	project_.saveHDF5(patternTX  , mainData.outputDir + "/pattern_theta_x", "value");
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsArray)
+SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArray)
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	MainData mainData;
@@ -378,48 +378,48 @@ SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsA
 
 	project_.createDirectory(mainData.outputDir, false);
 
-	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc, dvdt, tDvdt;
+	const TFloat dt = 1.0 / simData.samplingFreq;
+	std::vector<TFloat> tExc, dvdt, tDvdt;
 	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
-	Matrix<XYZValue<FloatType>> gridData;
+	Matrix<XYZValue<TFloat>> gridData;
 
-	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
-	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
+	const TFloat nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
+	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
-		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
 			SimTransientAcousticField<
-				FloatType,
-				NumericRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesAcousticField(
+				TFloat,
+				NumericRectangularSourceImpulseResponse<TFloat>>::getArrayOfRectangularSourcesAcousticField(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
 			SimTransientAcousticField<
-				FloatType,
-				NumericRectangularSourceImpulseResponse<FloatType>>::getRectangularSourceAcousticField(
+				TFloat,
+				NumericRectangularSourceImpulseResponse<TFloat>>::getRectangularSourceAcousticField(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, gridData);
 		}
 	} else if (simData.irMethod == "analytic") {
-		const FloatType minEdgeDivisor = simData.discretFactor;
+		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
 			SimTransientAcousticField<
-				FloatType,
-				AnalyticRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesAcousticField(
+				TFloat,
+				AnalyticRectangularSourceImpulseResponse<TFloat>>::getArrayOfRectangularSourcesAcousticField(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
 			SimTransientAcousticField<
-				FloatType,
-				AnalyticRectangularSourceImpulseResponse<FloatType>>::getRectangularSourceAcousticField(
+				TFloat,
+				AnalyticRectangularSourceImpulseResponse<TFloat>>::getRectangularSourceAcousticField(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
@@ -429,8 +429,8 @@ SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsA
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValue<FloatType>, FloatType>(gridData);
-	const FloatType k = 1.0 / maxAbsValue;
+	const TFloat maxAbsValue = Util::maxAbsoluteValueField<XYZValue<TFloat>, TFloat>(gridData);
+	const TFloat k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
 		it->value *= k;
 	}
@@ -448,9 +448,9 @@ SimRectangularSourceMethod<FloatType>::execTransientAcousticField(bool sourceIsA
 	project_.saveXYZToHDF5(gridData, mainData.outputDir);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArray)
+SimRectangularSourceMethod<TFloat>::execTransientPropagation(bool sourceIsArray)
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	MainData mainData;
@@ -462,62 +462,62 @@ SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArr
 	project_.createDirectory(mainData.outputDir, false);
 
 	const ParamMapPtr propagPM = project_.getSubParamMap("propag_config_file");
-	const auto propagDistanceStep = propagPM->value<FloatType>("propagation_distance_step", 1.0e-6, 100.0);
-	const auto propagMinDistance  = propagPM->value<FloatType>("propagation_min_distance", 0.0, 100.0);
-	const auto propagMaxDistance  = propagPM->value<FloatType>("propagation_max_distance", propagMinDistance + propagDistanceStep, 100.0);
+	const auto propagDistanceStep = propagPM->value<TFloat>("propagation_distance_step", 1.0e-6, 100.0);
+	const auto propagMinDistance  = propagPM->value<TFloat>("propagation_min_distance", 0.0, 100.0);
+	const auto propagMaxDistance  = propagPM->value<TFloat>("propagation_max_distance", propagMinDistance + propagDistanceStep, 100.0);
 	const auto propagRepet        = propagPM->value<unsigned int>("propagation_repetitions", 1, 100);
 	const auto propagPause        = propagPM->value<unsigned int>("propagation_pause", 0, 10000);
 
-	std::vector<FloatType> propagDist;
+	std::vector<TFloat> propagDist;
 	Util::fillSequenceFromStartWithStep(propagDist, propagMinDistance, propagMaxDistance, propagDistanceStep);
 	std::vector<unsigned int> propagIndexList(propagDist.size());
-	const FloatType coef = simData.samplingFreq / mainData.propagationSpeed;
+	const TFloat coef = simData.samplingFreq / mainData.propagationSpeed;
 	for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
 		propagIndexList[i] = std::rint(propagDist[i] * coef);
 	}
 
-	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc, dvdt, tDvdt;
+	const TFloat dt = 1.0 / simData.samplingFreq;
+	std::vector<TFloat> tExc, dvdt, tDvdt;
 	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
-	Matrix<XYZValueArray<FloatType>> gridData;
+	Matrix<XYZValueArray<TFloat>> gridData;
 
-	const FloatType nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
-	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
+	const TFloat nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
+	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
-		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
 			SimTransientPropagation<
-				FloatType,
-				NumericRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesPropagation(
+				TFloat,
+				NumericRectangularSourceImpulseResponse<TFloat>>::getArrayOfRectangularSourcesPropagation(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
 		} else {
 			SimTransientPropagation<
-				FloatType,
-				NumericRectangularSourceImpulseResponse<FloatType>>::getRectangularSourcePropagation(
+				TFloat,
+				NumericRectangularSourceImpulseResponse<TFloat>>::getRectangularSourcePropagation(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, propagIndexList, gridData);
 		}
 	} else if (simData.irMethod == "analytic") {
-		const FloatType minEdgeDivisor = simData.discretFactor;
+		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
 			SimTransientPropagation<
-				FloatType,
-				AnalyticRectangularSourceImpulseResponse<FloatType>>::getArrayOfRectangularSourcesPropagation(
+				TFloat,
+				AnalyticRectangularSourceImpulseResponse<TFloat>>::getArrayOfRectangularSourcesPropagation(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
 		} else {
 			SimTransientPropagation<
-				FloatType,
-				AnalyticRectangularSourceImpulseResponse<FloatType>>::getRectangularSourcePropagation(
+				TFloat,
+				AnalyticRectangularSourceImpulseResponse<TFloat>>::getRectangularSourcePropagation(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
@@ -528,8 +528,8 @@ SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArr
 	}
 
 	// Normalize.
-	const FloatType maxAbsValue = Util::maxAbsoluteValueField(gridData);
-	const FloatType k = 1.0 / maxAbsValue;
+	const TFloat maxAbsValue = Util::maxAbsoluteValueField(gridData);
+	const TFloat k = 1.0 / maxAbsValue;
 	for (auto it = gridData.begin(); it != gridData.end(); ++it) {
 		for (auto& v : it->values) {
 			v *= k;
@@ -573,15 +573,15 @@ SimRectangularSourceMethod<FloatType>::execTransientPropagation(bool sourceIsArr
 		imageFileName << imagePrefix << std::setw(numDigits) << std::setfill('0') << i;
 		project_.saveHDF5(gridData, imageFileName.str(),
 					"value",
-					[&i](const XYZValueArray<FloatType>& orig, double& dest) {
+					[&i](const XYZValueArray<TFloat>& orig, double& dest) {
 						dest = orig.values[i];
 					});
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimRectangularSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArray)
+SimRectangularSourceMethod<TFloat>::execImpulseResponse(bool sourceIsArray)
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	MainData mainData;
@@ -593,40 +593,40 @@ SimRectangularSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArray)
 	project_.createDirectory(mainData.outputDir, false);
 
 	const ParamMapPtr irPM = project_.getSubParamMap("ir_config_file");
-	const auto pointX = irPM->value<FloatType>("point_x", sourceIsArray ? -10000.0 : 0.0, 10000.0);
-	const auto pointY = irPM->value<FloatType>("point_y", sourceIsArray ? -10000.0 : 0.0, 10000.0);
-	const auto pointZ = irPM->value<FloatType>("point_z", 0.0, 10000.0);
+	const auto pointX = irPM->value<TFloat>("point_x", sourceIsArray ? -10000.0 : 0.0, 10000.0);
+	const auto pointY = irPM->value<TFloat>("point_y", sourceIsArray ? -10000.0 : 0.0, 10000.0);
+	const auto pointZ = irPM->value<TFloat>("point_z", 0.0, 10000.0);
 
-	const FloatType dt = 1.0 / simData.samplingFreq;
-	std::vector<FloatType> tExc, dvdt, tDvdt;
+	const TFloat dt = 1.0 / simData.samplingFreq;
+	std::vector<TFloat> tExc, dvdt, tDvdt;
 	prepareExcitation(dt, simData, tExc, dvdt, tDvdt);
 
 	std::size_t hOffset;
-	std::vector<FloatType> h;
+	std::vector<TFloat> h;
 	if (simData.irMethod == "numeric") {
-		const FloatType subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
-			auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<FloatType, NumericRectangularSourceImpulseResponse<FloatType>>>(
+			auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<TFloat, NumericRectangularSourceImpulseResponse<TFloat>>>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						srcData.elemPos, srcData.focusDelay);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		} else {
-			auto impResp = std::make_unique<NumericRectangularSourceImpulseResponse<FloatType>>(
+			auto impResp = std::make_unique<NumericRectangularSourceImpulseResponse<TFloat>>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		}
 	} else if (simData.irMethod == "analytic") {
-		const FloatType minEdgeDivisor = simData.discretFactor;
+		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
-			auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<FloatType, AnalyticRectangularSourceImpulseResponse<FloatType>>>(
+			auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<TFloat, AnalyticRectangularSourceImpulseResponse<TFloat>>>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						srcData.elemPos, srcData.focusDelay);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		} else {
-			auto impResp = std::make_unique<AnalyticRectangularSourceImpulseResponse<FloatType>>(
+			auto impResp = std::make_unique<AnalyticRectangularSourceImpulseResponse<TFloat>>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
@@ -635,23 +635,23 @@ SimRectangularSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArray)
 		THROW_EXCEPTION(InvalidParameterException, "Invalid impulse response method: " << simData.irMethod << '.');
 	}
 
-	std::vector<FloatType> tH;
+	std::vector<TFloat> tH;
 	Util::fillSequenceFromStartWithStepAndSize(tH, hOffset / simData.samplingFreq, dt, h.size());
 	project_.showFigure2D(3, "Impulse response", tH, h);
 
-	std::vector<std::complex<FloatType>> filterFreqCoeff;
-	auto filter = std::make_unique<FFTWFilter2<FloatType>>();
+	std::vector<std::complex<TFloat>> filterFreqCoeff;
+	auto filter = std::make_unique<FFTWFilter2<TFloat>>();
 	filter->setCoefficients(dvdt, filterFreqCoeff);
-	std::vector<FloatType> signal;
+	std::vector<TFloat> signal;
 
 	filter->filter(filterFreqCoeff, h, signal);
 
-	std::vector<FloatType> tSignal;
+	std::vector<TFloat> tSignal;
 	Util::fillSequenceFromStartWithStepAndSize(tSignal, hOffset / simData.samplingFreq, dt, signal.size());
 	//Util::multiply(signal, density);
 	project_.showFigure2D(4, "Pressure", tSignal, signal);
 
-	const FloatType maxAbsValue = Util::maxAbsolute(signal);
+	const TFloat maxAbsValue = Util::maxAbsolute(signal);
 	LOG_INFO << "signal: maxAbsValue = " << maxAbsValue;
 
 	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"                    , "value");
@@ -664,9 +664,9 @@ SimRectangularSourceMethod<FloatType>::execImpulseResponse(bool sourceIsArray)
 	project_.saveHDF5(tSignal    , mainData.outputDir + "/pressure_time"        , "value");
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SimRectangularSourceMethod<FloatType>::execute()
+SimRectangularSourceMethod<TFloat>::execute()
 {
 	Timer tProc;
 

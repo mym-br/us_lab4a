@@ -41,40 +41,40 @@ namespace Lab {
 //
 // Note:
 // - The source is surrounded by a rigid baffle.
-template<typename FloatType>
+template<typename TFloat>
 class AnalyticRectangularSourceImpulseResponse {
 public:
 	AnalyticRectangularSourceImpulseResponse(
-					FloatType samplingFreq,
-					FloatType propagationSpeed,
-					FloatType sourceWidth,
-					FloatType sourceHeight,
-					FloatType minEdgeDivisor);
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceWidth,
+					TFloat sourceHeight,
+					TFloat minEdgeDivisor);
 
 	// Return h/c.
-	void getImpulseResponse(FloatType x, FloatType y, FloatType z,
-				std::size_t& hOffset /* samples */, std::vector<FloatType>& h);
+	void getImpulseResponse(TFloat x, TFloat y, TFloat z,
+				std::size_t& hOffset /* samples */, std::vector<TFloat>& h);
 private:
-	static FloatType alphaP(FloatType v);
-	static FloatType alphaN(FloatType v);
+	static TFloat alphaP(TFloat v);
+	static TFloat alphaN(TFloat v);
 
-	FloatType samplingFreq_;
-	FloatType propagationSpeed_;
-	FloatType a_;
-	FloatType b_;
-	FloatType minADivisor_;
+	TFloat samplingFreq_;
+	TFloat propagationSpeed_;
+	TFloat a_;
+	TFloat b_;
+	TFloat minADivisor_;
 	bool swapXY_;
 };
 
 
 
-template<typename FloatType>
-AnalyticRectangularSourceImpulseResponse<FloatType>::AnalyticRectangularSourceImpulseResponse(
-		FloatType samplingFreq,
-		FloatType propagationSpeed,
-		FloatType sourceWidth,
-		FloatType sourceHeight,
-		FloatType minEdgeDivisor)
+template<typename TFloat>
+AnalyticRectangularSourceImpulseResponse<TFloat>::AnalyticRectangularSourceImpulseResponse(
+		TFloat samplingFreq,
+		TFloat propagationSpeed,
+		TFloat sourceWidth,
+		TFloat sourceHeight,
+		TFloat minEdgeDivisor)
 			: samplingFreq_(samplingFreq)
 			, propagationSpeed_(propagationSpeed)
 			, a_(sourceWidth / 2)
@@ -88,28 +88,28 @@ AnalyticRectangularSourceImpulseResponse<FloatType>::AnalyticRectangularSourceIm
 	}
 }
 
-template<typename FloatType>
-FloatType
-AnalyticRectangularSourceImpulseResponse<FloatType>::alphaP(FloatType v)
+template<typename TFloat>
+TFloat
+AnalyticRectangularSourceImpulseResponse<TFloat>::alphaP(TFloat v)
 {
-	return std::asin(std::min(v, FloatType(1)));
+	return std::asin(std::min(v, TFloat(1)));
 }
 
-template<typename FloatType>
-FloatType
-AnalyticRectangularSourceImpulseResponse<FloatType>::alphaN(FloatType v)
+template<typename TFloat>
+TFloat
+AnalyticRectangularSourceImpulseResponse<TFloat>::alphaN(TFloat v)
 {
-	return -std::asin(std::min(-v, FloatType(1)));
+	return -std::asin(std::min(-v, TFloat(1)));
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-AnalyticRectangularSourceImpulseResponse<FloatType>::getImpulseResponse(
-								FloatType x,
-								FloatType y,
-								FloatType z,
+AnalyticRectangularSourceImpulseResponse<TFloat>::getImpulseResponse(
+								TFloat x,
+								TFloat y,
+								TFloat z,
 								std::size_t& hOffset,
-								std::vector<FloatType>& h)
+								std::vector<TFloat>& h)
 {
 	// The field is symmetric.
 	x = std::abs(x);
@@ -118,38 +118,38 @@ AnalyticRectangularSourceImpulseResponse<FloatType>::getImpulseResponse(
 
 	if (swapXY_) std::swap(x, y);
 
-	const FloatType z2 = z * z;
-	const FloatType c2 = propagationSpeed_ * propagationSpeed_;
-	constexpr FloatType halfPi = pi / 2.0;
-	constexpr FloatType halfPi3 = 3.0 * pi / 2.0;
+	const TFloat z2 = z * z;
+	const TFloat c2 = propagationSpeed_ * propagationSpeed_;
+	constexpr TFloat halfPi = pi / 2.0;
+	constexpr TFloat halfPi3 = 3.0 * pi / 2.0;
 
 	// Figure 2.
-	const FloatType d1 = x - a_;
-	const FloatType d2 = y - b_;
-	const FloatType d3 = x + a_; // d3 > 0
-	const FloatType d4 = y + b_; // d4 > 0
+	const TFloat d1 = x - a_;
+	const TFloat d2 = y - b_;
+	const TFloat d3 = x + a_; // d3 > 0
+	const TFloat d4 = y + b_; // d4 > 0
 
-	const FloatType d1_2 = d1 * d1;
-	const FloatType d2_2 = d2 * d2;
-	const FloatType d3_2 = d3 * d3;
-	const FloatType d4_2 = d4 * d4;
+	const TFloat d1_2 = d1 * d1;
+	const TFloat d2_2 = d2 * d2;
+	const TFloat d3_2 = d3 * d3;
+	const TFloat d4_2 = d4 * d4;
 
-	const FloatType invC = 1 / propagationSpeed_;
+	const TFloat invC = 1 / propagationSpeed_;
 
 	// (7)
-	const FloatType ta = std::sqrt(d1_2 + d2_2 + z2) * invC;
-	const FloatType tb = std::sqrt(d2_2 + d3_2 + z2) * invC;
-	const FloatType tc = std::sqrt(d1_2 + d4_2 + z2) * invC;
-	const FloatType td = std::sqrt(d3_2 + d4_2 + z2) * invC;
+	const TFloat ta = std::sqrt(d1_2 + d2_2 + z2) * invC;
+	const TFloat tb = std::sqrt(d2_2 + d3_2 + z2) * invC;
+	const TFloat tc = std::sqrt(d1_2 + d4_2 + z2) * invC;
+	const TFloat td = std::sqrt(d3_2 + d4_2 + z2) * invC;
 	// (8)
-	const FloatType ts1 = std::sqrt(d1_2 + z2) * invC;
-	const FloatType ts2 = std::sqrt(d2_2 + z2) * invC;
+	const TFloat ts1 = std::sqrt(d1_2 + z2) * invC;
+	const TFloat ts2 = std::sqrt(d2_2 + z2) * invC;
 	// (9)
-	const FloatType t0 = z * invC;
+	const TFloat t0 = z * invC;
 
 	// Determine the region and the start time of the impulse response.
 	unsigned int region;
-	FloatType tMin;
+	TFloat tMin;
 	if (x >= a_) {
 		if (y >= b_) {
 			region = 1;
@@ -168,12 +168,12 @@ AnalyticRectangularSourceImpulseResponse<FloatType>::getImpulseResponse(
 		}
 	}
 
-	const FloatType dt = 1 / samplingFreq_;
+	const TFloat dt = 1 / samplingFreq_;
 	if (minADivisor_ > 0.0) {
-		const FloatType deltaA = a_ / minADivisor_;
-		const FloatType sigma1 = std::sqrt(std::max(c2 * tMin * tMin - z2, FloatType(0)));
-		const FloatType sigma2 = sigma1 + deltaA;
-		const FloatType maxDt = std::sqrt(sigma2 * sigma2 + z2) * invC - tMin;
+		const TFloat deltaA = a_ / minADivisor_;
+		const TFloat sigma1 = std::sqrt(std::max(c2 * tMin * tMin - z2, TFloat(0)));
+		const TFloat sigma2 = sigma1 + deltaA;
+		const TFloat maxDt = std::sqrt(sigma2 * sigma2 + z2) * invC - tMin;
 		if (dt > maxDt) {
 			THROW_EXCEPTION(InvalidValueException,
 				"The sampling rate is too low (fs=" << samplingFreq_ << " min_fs=" << 1.0 / maxDt << ").");
@@ -181,15 +181,15 @@ AnalyticRectangularSourceImpulseResponse<FloatType>::getImpulseResponse(
 	}
 
 	// (13)
-	const FloatType tm1 = std::min(tb, tc);
-	const FloatType tm2 = std::max(tb, tc);
+	const TFloat tm1 = std::min(tb, tc);
+	const TFloat tm2 = std::max(tb, tc);
 
 	const std::size_t minAbsoluteIndex = static_cast<std::size_t>(std::ceil(tMin * samplingFreq_));
 	const std::size_t maxAbsoluteIndex = static_cast<std::size_t>(std::ceil(td * samplingFreq_));
 	h.assign(maxAbsoluteIndex - minAbsoluteIndex + 1, 0);
-	const FloatType tOffset = minAbsoluteIndex * dt;
+	const TFloat tOffset = minAbsoluteIndex * dt;
 
-	const FloatType sigmaEps = a_ * std::numeric_limits<FloatType>::epsilon();
+	const TFloat sigmaEps = a_ * std::numeric_limits<TFloat>::epsilon();
 
 	switch (region) {
 	case 1:
@@ -200,36 +200,36 @@ AnalyticRectangularSourceImpulseResponse<FloatType>::getImpulseResponse(
 		const std::size_t i4 = maxAbsoluteIndex - minAbsoluteIndex;
 
 		for (std::size_t i = i1; i < i2; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
+			const TFloat t = tOffset + i * dt;
+			const TFloat sigma = std::sqrt(std::max(c2 * t * t - z2, TFloat(0)));
 			if (sigma <= sigmaEps) continue;
-			const FloatType invSigma = 1 / sigma;
-			const FloatType alpha1 = alphaP(d1 * invSigma);
-			const FloatType alpha2 = alphaP(d2 * invSigma);
+			const TFloat invSigma = 1 / sigma;
+			const TFloat alpha1 = alphaP(d1 * invSigma);
+			const TFloat alpha2 = alphaP(d2 * invSigma);
 			h[i] = halfPi - alpha1 - alpha2;
 		}
 		if (tb <= tc) {
 			for (std::size_t i = i2; i < i3; ++i) {
-				const FloatType t = tOffset + i * dt;
-				const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-				const FloatType alpha1 = alphaP(d1 * invSigma);
-				const FloatType alpha3 = alphaP(d3 * invSigma);
+				const TFloat t = tOffset + i * dt;
+				const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+				const TFloat alpha1 = alphaP(d1 * invSigma);
+				const TFloat alpha3 = alphaP(d3 * invSigma);
 				h[i] = alpha3 - alpha1;
 			}
 		} else {
 			for (std::size_t i = i2; i < i3; ++i) {
-				const FloatType t = tOffset + i * dt;
-				const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-				const FloatType alpha2 = alphaP(d2 * invSigma);
-				const FloatType alpha4 = alphaP(d4 * invSigma);
+				const TFloat t = tOffset + i * dt;
+				const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+				const TFloat alpha2 = alphaP(d2 * invSigma);
+				const TFloat alpha4 = alphaP(d4 * invSigma);
 				h[i] = alpha4 - alpha2;
 			}
 		}
 		for (std::size_t i = i3; i < i4; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-			const FloatType alpha3 = alphaP(d3 * invSigma);
-			const FloatType alpha4 = alphaP(d4 * invSigma);
+			const TFloat t = tOffset + i * dt;
+			const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+			const TFloat alpha3 = alphaP(d3 * invSigma);
+			const TFloat alpha4 = alphaP(d4 * invSigma);
 			h[i] = alpha3 + alpha4 - halfPi;
 		}
 		break;
@@ -243,34 +243,34 @@ AnalyticRectangularSourceImpulseResponse<FloatType>::getImpulseResponse(
 		const std::size_t i4 = maxAbsoluteIndex - minAbsoluteIndex;
 
 		for (std::size_t i = i0; i < i1; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
+			const TFloat t = tOffset + i * dt;
+			const TFloat sigma = std::sqrt(std::max(c2 * t * t - z2, TFloat(0)));
 			if (sigma <= sigmaEps) continue;
-			const FloatType alpha2 = alphaP(d2 / sigma);
-			h[i] = FloatType(pi) - 2 * alpha2;
+			const TFloat alpha2 = alphaP(d2 / sigma);
+			h[i] = TFloat(pi) - 2 * alpha2;
 		}
 		for (std::size_t i = i1; i < i2; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
+			const TFloat t = tOffset + i * dt;
+			const TFloat sigma = std::sqrt(std::max(c2 * t * t - z2, TFloat(0)));
 			if (sigma <= sigmaEps) continue;
-			const FloatType invSigma = 1 / sigma;
-			const FloatType alpha1 = alphaN(d1 * invSigma);
-			const FloatType alpha2 = alphaP(d2 * invSigma);
+			const TFloat invSigma = 1 / sigma;
+			const TFloat alpha1 = alphaN(d1 * invSigma);
+			const TFloat alpha2 = alphaP(d2 * invSigma);
 			h[i] = halfPi - alpha1 - alpha2;
 		}
 		for (std::size_t i = i2; i < i3; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-			const FloatType alpha1 = alphaN(d1 * invSigma);
-			const FloatType alpha3 = alphaP(d3 * invSigma);
-			const FloatType alpha4 = alphaP(d4 * invSigma);
-			h[i] = alpha3 - alpha1 - FloatType(pi) + 2 * alpha4;
+			const TFloat t = tOffset + i * dt;
+			const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+			const TFloat alpha1 = alphaN(d1 * invSigma);
+			const TFloat alpha3 = alphaP(d3 * invSigma);
+			const TFloat alpha4 = alphaP(d4 * invSigma);
+			h[i] = alpha3 - alpha1 - TFloat(pi) + 2 * alpha4;
 		}
 		for (std::size_t i = i3; i < i4; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-			const FloatType alpha3 = alphaP(d3 * invSigma);
-			const FloatType alpha4 = alphaP(d4 * invSigma);
+			const TFloat t = tOffset + i * dt;
+			const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+			const TFloat alpha3 = alphaP(d3 * invSigma);
+			const TFloat alpha4 = alphaP(d4 * invSigma);
 			h[i] = alpha3 + alpha4 - halfPi;
 		}
 		break;
@@ -284,47 +284,47 @@ AnalyticRectangularSourceImpulseResponse<FloatType>::getImpulseResponse(
 		const std::size_t i4 = maxAbsoluteIndex - minAbsoluteIndex;
 
 		for (std::size_t i = i0; i < i1; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
+			const TFloat t = tOffset + i * dt;
+			const TFloat sigma = std::sqrt(std::max(c2 * t * t - z2, TFloat(0)));
 			if (sigma <= sigmaEps) continue;
-			const FloatType invSigma = 1 / sigma;
-			const FloatType alpha1 = alphaP(d1 * invSigma);
-			const FloatType alpha3 = alphaP(d3 * invSigma);
+			const TFloat invSigma = 1 / sigma;
+			const TFloat alpha1 = alphaP(d1 * invSigma);
+			const TFloat alpha3 = alphaP(d3 * invSigma);
 			h[i] = 2 * (alpha3 - alpha1);
 		}
 		for (std::size_t i = i1; i < i2; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
+			const TFloat t = tOffset + i * dt;
+			const TFloat sigma = std::sqrt(std::max(c2 * t * t - z2, TFloat(0)));
 			if (sigma <= sigmaEps) continue;
-			const FloatType invSigma = 1 / sigma;
-			const FloatType alpha1 = alphaP(d1 * invSigma);
-			const FloatType alpha2 = alphaN(d2 * invSigma);
-			const FloatType alpha3 = alphaP(d3 * invSigma);
+			const TFloat invSigma = 1 / sigma;
+			const TFloat alpha1 = alphaP(d1 * invSigma);
+			const TFloat alpha2 = alphaN(d2 * invSigma);
+			const TFloat alpha3 = alphaP(d3 * invSigma);
 			h[i] = 2 * alpha3 - halfPi - alpha1 - alpha2;
 		}
 		if (tb <= tc ) {
 			for (std::size_t i = i2; i < i3; ++i) {
-				const FloatType t = tOffset + i * dt;
-				const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-				const FloatType alpha1 = alphaP(d1 * invSigma);
-				const FloatType alpha3 = alphaP(d3 * invSigma);
+				const TFloat t = tOffset + i * dt;
+				const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+				const TFloat alpha1 = alphaP(d1 * invSigma);
+				const TFloat alpha3 = alphaP(d3 * invSigma);
 				h[i] = alpha3 - alpha1;
 			}
 		} else {
 			for (std::size_t i = i2; i < i3; ++i) {
-				const FloatType t = tOffset + i * dt;
-				const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-				const FloatType alpha2 = alphaN(d2 * invSigma);
-				const FloatType alpha3 = alphaP(d3 * invSigma);
-				const FloatType alpha4 = alphaP(d4 * invSigma);
-				h[i] = alpha4 - alpha2 - FloatType(pi) + 2 * alpha3;
+				const TFloat t = tOffset + i * dt;
+				const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+				const TFloat alpha2 = alphaN(d2 * invSigma);
+				const TFloat alpha3 = alphaP(d3 * invSigma);
+				const TFloat alpha4 = alphaP(d4 * invSigma);
+				h[i] = alpha4 - alpha2 - TFloat(pi) + 2 * alpha3;
 			}
 		}
 		for (std::size_t i = i3; i < i4; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-			const FloatType alpha3 = alphaP(d3 * invSigma);
-			const FloatType alpha4 = alphaP(d4 * invSigma);
+			const TFloat t = tOffset + i * dt;
+			const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+			const TFloat alpha3 = alphaP(d3 * invSigma);
+			const TFloat alpha4 = alphaP(d4 * invSigma);
 			h[i] = alpha3 + alpha4 - halfPi;
 		}
 		break;
@@ -338,59 +338,59 @@ AnalyticRectangularSourceImpulseResponse<FloatType>::getImpulseResponse(
 		const std::size_t i4 = maxAbsoluteIndex - minAbsoluteIndex;
 
 		for (std::size_t i = i0; i < i1; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
+			const TFloat t = tOffset + i * dt;
+			const TFloat sigma = std::sqrt(std::max(c2 * t * t - z2, TFloat(0)));
 			if (sigma <= sigmaEps) continue;
-			const FloatType invSigma = 1 / sigma;
-			const FloatType alpha1 = alphaN(d1 * invSigma);
-			const FloatType alpha2 = alphaN(d2 * invSigma);
-			const FloatType alpha3 = alphaP(d3 * invSigma);
-			const FloatType alpha4 = alphaP(d4 * invSigma);
-			h[i] = 2 * (alpha3 + alpha4 - alpha1 - alpha2 - FloatType(pi));
+			const TFloat invSigma = 1 / sigma;
+			const TFloat alpha1 = alphaN(d1 * invSigma);
+			const TFloat alpha2 = alphaN(d2 * invSigma);
+			const TFloat alpha3 = alphaP(d3 * invSigma);
+			const TFloat alpha4 = alphaP(d4 * invSigma);
+			h[i] = 2 * (alpha3 + alpha4 - alpha1 - alpha2 - TFloat(pi));
 		}
 		for (std::size_t i = i1; i < i2; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType sigma = std::sqrt(std::max(c2 * t * t - z2, FloatType(0)));
+			const TFloat t = tOffset + i * dt;
+			const TFloat sigma = std::sqrt(std::max(c2 * t * t - z2, TFloat(0)));
 			if (sigma <= sigmaEps) continue;
-			const FloatType invSigma = 1 / sigma;
-			const FloatType alpha1 = alphaN(d1 * invSigma);
-			const FloatType alpha2 = alphaN(d2 * invSigma);
-			const FloatType alpha3 = alphaP(d3 * invSigma);
-			const FloatType alpha4 = alphaP(d4 * invSigma);
+			const TFloat invSigma = 1 / sigma;
+			const TFloat alpha1 = alphaN(d1 * invSigma);
+			const TFloat alpha2 = alphaN(d2 * invSigma);
+			const TFloat alpha3 = alphaP(d3 * invSigma);
+			const TFloat alpha4 = alphaP(d4 * invSigma);
 			h[i] = 2 * (alpha3 + alpha4) - alpha1 - alpha2 - halfPi3;
 		}
 		if (tb <= tc) {
 			for (std::size_t i = i2; i < i3; ++i) {
-				const FloatType t = tOffset + i * dt;
-				const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-				const FloatType alpha1 = alphaN(d1 * invSigma);
-				const FloatType alpha3 = alphaP(d3 * invSigma);
-				const FloatType alpha4 = alphaP(d4 * invSigma);
-				h[i] = alpha3 - alpha1 + 2 * alpha4 - FloatType(pi);
+				const TFloat t = tOffset + i * dt;
+				const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+				const TFloat alpha1 = alphaN(d1 * invSigma);
+				const TFloat alpha3 = alphaP(d3 * invSigma);
+				const TFloat alpha4 = alphaP(d4 * invSigma);
+				h[i] = alpha3 - alpha1 + 2 * alpha4 - TFloat(pi);
 			}
 		} else {
 			for (std::size_t i = i2; i < i3; ++i) {
-				const FloatType t = tOffset + i * dt;
-				const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-				const FloatType alpha2 = alphaN(d2 * invSigma);
-				const FloatType alpha3 = alphaP(d3 * invSigma);
-				const FloatType alpha4 = alphaP(d4 * invSigma);
-				h[i] = alpha4 - alpha2 + 2 * alpha3 - FloatType(pi);
+				const TFloat t = tOffset + i * dt;
+				const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+				const TFloat alpha2 = alphaN(d2 * invSigma);
+				const TFloat alpha3 = alphaP(d3 * invSigma);
+				const TFloat alpha4 = alphaP(d4 * invSigma);
+				h[i] = alpha4 - alpha2 + 2 * alpha3 - TFloat(pi);
 			}
 		}
 		for (std::size_t i = i3; i < i4; ++i) {
-			const FloatType t = tOffset + i * dt;
-			const FloatType invSigma = 1 / std::sqrt(c2 * t * t - z2);
-			const FloatType alpha3 = alphaP(d3 * invSigma);
-			const FloatType alpha4 = alphaP(d4 * invSigma);
+			const TFloat t = tOffset + i * dt;
+			const TFloat invSigma = 1 / std::sqrt(c2 * t * t - z2);
+			const TFloat alpha3 = alphaP(d3 * invSigma);
+			const TFloat alpha4 = alphaP(d4 * invSigma);
 			h[i] = alpha3 + alpha4 - halfPi;
 		}
 		break;
 	}
 	}
 
-	//Util::multiply(h, propagationSpeed_ / FloatType(2.0 * pi));
-	Util::multiply(h, 1 / FloatType(2.0 * pi));
+	//Util::multiply(h, propagationSpeed_ / TFloat(2.0 * pi));
+	Util::multiply(h, 1 / TFloat(2.0 * pi));
 	hOffset = minAbsoluteIndex;
 }
 

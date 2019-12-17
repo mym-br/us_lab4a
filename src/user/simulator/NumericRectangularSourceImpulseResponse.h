@@ -48,31 +48,31 @@ namespace Lab {
 //
 // Note:
 // - The source is surrounded by a rigid baffle.
-template<typename FloatType>
+template<typename TFloat>
 class NumericRectangularSourceImpulseResponse {
 public:
 	NumericRectangularSourceImpulseResponse(
-					FloatType samplingFreq,
-					FloatType propagationSpeed,
-					FloatType sourceWidth,
-					FloatType sourceHeight,
-					FloatType subElemSize);
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceWidth,
+					TFloat sourceHeight,
+					TFloat subElemSize);
 
 	// Return h/c.
-	void getImpulseResponse(FloatType x, FloatType y, FloatType z,
-				std::size_t& hOffset /* samples */, std::vector<FloatType>& h);
+	void getImpulseResponse(TFloat x, TFloat y, TFloat z,
+				std::size_t& hOffset /* samples */, std::vector<TFloat>& h);
 private:
 	struct SubElem {
-		FloatType x;
-		FloatType y;
+		TFloat x;
+		TFloat y;
 		std::size_t n0;
-		FloatType value;
+		TFloat value;
 	};
 
-	FloatType samplingFreq_;
-	FloatType propagationSpeed_;
-	FloatType subElemWidth_;
-	FloatType subElemHeight_;
+	TFloat samplingFreq_;
+	TFloat propagationSpeed_;
+	TFloat subElemWidth_;
+	TFloat subElemHeight_;
 	unsigned int numElemX_;
 	unsigned int numElemY_;
 	Matrix<SubElem> subElem_;
@@ -80,13 +80,13 @@ private:
 
 
 
-template<typename FloatType>
-NumericRectangularSourceImpulseResponse<FloatType>::NumericRectangularSourceImpulseResponse(
-		FloatType samplingFreq,
-		FloatType propagationSpeed,
-		FloatType sourceWidth,
-		FloatType sourceHeight,
-		FloatType subElemSize)
+template<typename TFloat>
+NumericRectangularSourceImpulseResponse<TFloat>::NumericRectangularSourceImpulseResponse(
+		TFloat samplingFreq,
+		TFloat propagationSpeed,
+		TFloat sourceWidth,
+		TFloat sourceHeight,
+		TFloat subElemSize)
 			: samplingFreq_(samplingFreq)
 			, propagationSpeed_(propagationSpeed)
 			, subElemWidth_()
@@ -107,8 +107,8 @@ NumericRectangularSourceImpulseResponse<FloatType>::NumericRectangularSourceImpu
 	subElemWidth_  = sourceWidth  / numElemX_;
 	subElemHeight_ = sourceHeight / numElemY_;
 
-	const FloatType halfW = 0.5 * (numElemX_ - 1);
-	const FloatType halfH = 0.5 * (numElemY_ - 1);
+	const TFloat halfW = 0.5 * (numElemX_ - 1);
+	const TFloat halfH = 0.5 * (numElemY_ - 1);
 	subElem_.resize(numElemY_, numElemX_);
 	for (unsigned int iy = 0; iy < numElemY_; ++iy) {
 		for (unsigned int ix = 0; ix < numElemX_; ++ix) {
@@ -120,27 +120,27 @@ NumericRectangularSourceImpulseResponse<FloatType>::NumericRectangularSourceImpu
 	LOG_DEBUG << "[NumericRectangularSourceImpulseResponse] numElemX=" << numElemX_ << " numElemY=" << numElemY_;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NumericRectangularSourceImpulseResponse<FloatType>::getImpulseResponse(
-								FloatType x,
-								FloatType y,
-								FloatType z,
+NumericRectangularSourceImpulseResponse<TFloat>::getImpulseResponse(
+								TFloat x,
+								TFloat y,
+								TFloat z,
 								std::size_t& hOffset,
-								std::vector<FloatType>& h)
+								std::vector<TFloat>& h)
 {
 	std::size_t minN0 = std::numeric_limits<std::size_t>::max();
 	std::size_t maxN0 = 0;
-	const FloatType k1 = samplingFreq_ / propagationSpeed_;
-	const FloatType k2 = samplingFreq_ * subElemWidth_ * subElemHeight_ / (FloatType(2.0 * pi) * propagationSpeed_);
-	const FloatType z2 = z * z;
+	const TFloat k1 = samplingFreq_ / propagationSpeed_;
+	const TFloat k2 = samplingFreq_ * subElemWidth_ * subElemHeight_ / (TFloat(2.0 * pi) * propagationSpeed_);
+	const TFloat z2 = z * z;
 	for (unsigned int iy = 0; iy < numElemY_; ++iy) {
-		const FloatType dy = y - subElem_(iy, 0).y;
-		const FloatType dy2_z2 = dy * dy + z2;
+		const TFloat dy = y - subElem_(iy, 0).y;
+		const TFloat dy2_z2 = dy * dy + z2;
 		for (unsigned int ix = 0; ix < numElemX_; ++ix) {
 			SubElem& se = subElem_(iy, ix);
-			const FloatType dx = x - se.x;
-			const FloatType r = std::sqrt(dx * dx + dy2_z2);
+			const TFloat dx = x - se.x;
+			const TFloat r = std::sqrt(dx * dx + dy2_z2);
 			se.n0 = static_cast<std::size_t>(std::nearbyint(r * k1));
 			se.value = k2 / r;
 			if (se.n0 < minN0) minN0 = se.n0;

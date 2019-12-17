@@ -49,7 +49,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class NetworkSyncSTAMethod : public Method {
 public:
 	NetworkSyncSTAMethod(Project& project);
@@ -68,7 +68,7 @@ private:
 	NetworkSyncSTAMethod(NetworkSyncSTAMethod&&) = delete;
 	NetworkSyncSTAMethod& operator=(NetworkSyncSTAMethod&&) = delete;
 
-	void saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
+	void saveSignals(const STAConfiguration<TFloat>& config, STAAcquisition<TFloat>& acq,
 				unsigned int baseElement, const std::string& dataDir);
 
 	Project& project_;
@@ -76,58 +76,58 @@ private:
 
 
 
-template<typename FloatType>
-NetworkSyncSTAMethod<FloatType>::NetworkSyncSTAMethod(Project& project)
+template<typename TFloat>
+NetworkSyncSTAMethod<TFloat>::NetworkSyncSTAMethod(Project& project)
 		: project_(project)
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkSyncSTAMethod<FloatType>::execute()
+NetworkSyncSTAMethod<TFloat>::execute()
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	const ParamMapPtr staPM = project_.getSubParamMap("sta_config_file");
-	const STAConfiguration<FloatType> config(*staPM);
+	const STAConfiguration<TFloat> config(*staPM);
 	const auto baseElement = staPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
 	const auto dataDir = taskPM.value<std::string>("data_dir");
 
 	if (project_.method() == MethodEnum::sta_network_sync_save_signals) {
 		project_.createDirectory(dataDir, true);
-		auto acquisition = std::make_unique<NetworkSTAAcquisition<FloatType>>(project_, config);
+		auto acquisition = std::make_unique<NetworkSTAAcquisition<TFloat>>(project_, config);
 		saveSignals(config, *acquisition, baseElement, dataDir);
 		return;
 	}
 
 	const auto outputDir = taskPM.value<std::string>("output_dir");
 	const ParamMapPtr imagPM = project_.getSubParamMap("imag_config_file");
-	const auto peakOffset                      = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
+	const auto peakOffset                      = imagPM->value<TFloat>(      "peak_offset"      , 0.0, 50.0);
 	const auto vectorialProcessingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
 	const auto upsamplingFactor                = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 	const auto txApodDesc                      = imagPM->value<std::string>( "tx_apodization");
 	const auto rxApodDesc                      = imagPM->value<std::string>( "rx_apodization");
 
-	std::vector<FloatType> txApod(config.numElements);
+	std::vector<TFloat> txApod(config.numElements);
 	WindowFunction::get(txApodDesc, config.numElements, txApod);
-	std::vector<FloatType> rxApod(config.numElements);
+	std::vector<TFloat> rxApod(config.numElements);
 	WindowFunction::get(rxApodDesc, config.numElements, rxApod);
-	std::vector<FloatType> elemIndex;
+	std::vector<TFloat> elemIndex;
 	Util::fillSequenceFromStartToEndWithSize(elemIndex,
-		FloatType(0), static_cast<FloatType>(config.numElements - 1U), static_cast<FloatType>(config.numElements));
+		TFloat(0), static_cast<TFloat>(config.numElements - 1U), static_cast<TFloat>(config.numElements));
 	project_.showFigure2D(1, "TX Apodization", elemIndex, txApod, true, true);
 	project_.showFigure2D(2, "RX Apodization", elemIndex, rxApod, true, true);
 
 	project_.createDirectory(outputDir, true);
 
-	Matrix<XYZValueFactor<FloatType>> gridData;
+	Matrix<XYZValueFactor<TFloat>> gridData;
 
-	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
+	const TFloat nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
+	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
 
-	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
+	AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 	bool coherenceFactorEnabled = coherenceFactor.enabled();
-	auto acquisition = std::make_unique<SavedSTAAcquisition<FloatType>>(project_, config.numElements, "");
-	auto processor = std::make_unique<VectorialSTAProcessor<FloatType>>(config, *acquisition,
+	auto acquisition = std::make_unique<SavedSTAAcquisition<TFloat>>(project_, config.numElements, "");
+	auto processor = std::make_unique<VectorialSTAProcessor<TFloat>>(config, *acquisition,
 					upsamplingFactor, coherenceFactor, peakOffset,
 					vectorialProcessingWithEnvelope, txApod, rxApod);
 	Visualization::Value visual;
@@ -137,7 +137,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 		visual = Visualization::VALUE_ENVELOPE_LOG;
 	}
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
-	FloatType valueLevel = 0.0;
+	TFloat valueLevel = 0.0;
 
 	// Load y.
 	std::vector<double> yList;
@@ -167,12 +167,12 @@ NetworkSyncSTAMethod<FloatType>::execute()
 
 		if (config.valueScale != 0.0) {
 			std::for_each(gridData.begin(), gridData.end(),
-				Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(config.valueScale));
+				Util::MultiplyValueBy<XYZValueFactor<TFloat>, TFloat>(config.valueScale));
 		}
 
 		project_.saveImageToHDF5(gridData, acqOutputDir);
 		project_.saveXYZToHDF5(gridData, acqOutputDir);
-		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
+		const TFloat maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<TFloat>, TFloat>(gridData);
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
 		project_.showFigure3D(1, "Raw image", &gridData, &pointList,
@@ -183,7 +183,7 @@ NetworkSyncSTAMethod<FloatType>::execute()
 			project_.saveFactorToHDF5(gridData, acqOutputDir, "image_factor", "factor");
 
 			if (!vectorialProcessingWithEnvelope) {
-				ParallelHilbertEnvelope<FloatType>::calculateDim2(gridData);
+				ParallelHilbertEnvelope<TFloat>::calculateDim2(gridData);
 			}
 
 			Util::applyFactorToValue(gridData.begin(), gridData.end());
@@ -201,18 +201,18 @@ NetworkSyncSTAMethod<FloatType>::execute()
 	LOG_DEBUG << ">>> Acquisition + processing + saving data time: " << timer.getTime();
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkSyncSTAMethod<FloatType>::saveSignals(const STAConfiguration<FloatType>& config, STAAcquisition<FloatType>& acq,
+NetworkSyncSTAMethod<TFloat>::saveSignals(const STAConfiguration<TFloat>& config, STAAcquisition<TFloat>& acq,
 						unsigned int baseElement, const std::string& dataDir)
 {
 	const ParamMapPtr scanPM = project_.getSubParamMap("scan_config_file");
 	const auto serverPort = scanPM->value<unsigned int>("sync_server_port",     1024,   65535);
-	const auto minY       = scanPM->value<FloatType>(   "min_y"           , -10000.0, 10000.0);
-	const auto yStep      = scanPM->value<FloatType>(   "y_step"          ,   1.0e-6,  1000.0);
+	const auto minY       = scanPM->value<TFloat>(      "min_y"           , -10000.0, 10000.0);
+	const auto yStep      = scanPM->value<TFloat>(      "y_step"          ,   1.0e-6,  1000.0);
 
 	SyncServer server(serverPort);
-	typename STAAcquisition<FloatType>::AcquisitionDataType acqData;
+	typename STAAcquisition<TFloat>::AcquisitionDataType acqData;
 	std::vector<double> timeList;
 	timeList.reserve(1000);
 	std::vector<double> yList;

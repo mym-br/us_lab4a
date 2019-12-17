@@ -48,26 +48,26 @@ namespace Lab {
 // x = 0 is at the center of the element group.
 // y = 0
 // z = 0 is at the surface of the array.
-template<typename FloatType>
-class DefaultSTAProcessor : public ArrayProcessor<FloatType> {
+template<typename TFloat>
+class DefaultSTAProcessor : public ArrayProcessor<TFloat> {
 public:
 	DefaultSTAProcessor(
-			const STAConfiguration<FloatType>& config,
-			STAAcquisition<FloatType>& acquisition,
-			CoherenceFactorProcessor<FloatType>& coherenceFactor,
-			FloatType peakOffset);
+			const STAConfiguration<TFloat>& config,
+			STAAcquisition<TFloat>& acquisition,
+			CoherenceFactorProcessor<TFloat>& coherenceFactor,
+			TFloat peakOffset);
 	virtual ~DefaultSTAProcessor() = default;
 
 	virtual void prepare(unsigned int baseElement);
-	virtual void process(Matrix<XYZValueFactor<FloatType>>& gridData);
+	virtual void process(Matrix<XYZValueFactor<TFloat>>& gridData);
 private:
 	// Do not change.
 	static constexpr unsigned int upsamplingFactor = 4;
 
 	struct ThreadData {
-		CoherenceFactorProcessor<FloatType> coherenceFactor;
-		std::vector<FloatType> rxSignalSumList;
-		std::vector<FloatType> delayList;
+		CoherenceFactorProcessor<TFloat> coherenceFactor;
+		std::vector<TFloat> rxSignalSumList;
+		std::vector<TFloat> delayList;
 	};
 
 	DefaultSTAProcessor(const DefaultSTAProcessor&) = delete;
@@ -75,26 +75,26 @@ private:
 	DefaultSTAProcessor(DefaultSTAProcessor&&) = delete;
 	DefaultSTAProcessor& operator=(DefaultSTAProcessor&&) = delete;
 
-	const STAConfiguration<FloatType>& config_;
+	const STAConfiguration<TFloat>& config_;
 	bool initialized_;
 	unsigned int deadZoneSamplesUp_;
-	STAAcquisition<FloatType>& acquisition_;
-	CoherenceFactorProcessor<FloatType>& coherenceFactor_;
-	Tensor3<FloatType> signalTensor_;
-	typename STAAcquisition<FloatType>::AcquisitionDataType acqData_;
-	std::vector<FloatType> tempSignal_;
-	FloatType signalOffset_;
-	Interpolator4X<FloatType> interpolator_;
+	STAAcquisition<TFloat>& acquisition_;
+	CoherenceFactorProcessor<TFloat>& coherenceFactor_;
+	Tensor3<TFloat> signalTensor_;
+	typename STAAcquisition<TFloat>::AcquisitionDataType acqData_;
+	std::vector<TFloat> tempSignal_;
+	TFloat signalOffset_;
+	Interpolator4X<TFloat> interpolator_;
 };
 
 
 
-template<typename FloatType>
-DefaultSTAProcessor<FloatType>::DefaultSTAProcessor(
-			const STAConfiguration<FloatType>& config,
-			STAAcquisition<FloatType>& acquisition,
-			CoherenceFactorProcessor<FloatType>& coherenceFactor,
-			FloatType peakOffset)
+template<typename TFloat>
+DefaultSTAProcessor<TFloat>::DefaultSTAProcessor(
+			const STAConfiguration<TFloat>& config,
+			STAAcquisition<TFloat>& acquisition,
+			CoherenceFactorProcessor<TFloat>& coherenceFactor,
+			TFloat peakOffset)
 		: config_(config)
 		, initialized_()
 		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
@@ -104,16 +104,16 @@ DefaultSTAProcessor<FloatType>::DefaultSTAProcessor(
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor) * peakOffset / config_.centerFrequency;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DefaultSTAProcessor<FloatType>::prepare(unsigned int baseElement)
+DefaultSTAProcessor<TFloat>::prepare(unsigned int baseElement)
 {
 	acquisition_.prepare(baseElement);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DefaultSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridData)
+DefaultSTAProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== DefaultSTAProcessor::process ==========";
 
@@ -155,14 +155,14 @@ DefaultSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridD
 		}
 	}
 
-	std::vector<FloatType> xArray;
+	std::vector<TFloat> xArray;
 	ArrayGeometry::getElementXCentered2D(config_.numElements, config_.pitch, xArray);
 
 	ThreadData threadData;
 	threadData.coherenceFactor = coherenceFactor_;
 	tbb::enumerable_thread_specific<ThreadData> tls(threadData);
 
-	const FloatType invCT = (config_.samplingFrequency * upsamplingFactor) / config_.propagationSpeed;
+	const TFloat invCT = (config_.samplingFrequency * upsamplingFactor) / config_.propagationSpeed;
 	const std::size_t numRows = gridData.n2();
 
 	IterationCounter::reset(gridData.n1());
@@ -179,8 +179,8 @@ DefaultSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridD
 			// For each row:
 			for (std::size_t j = 0; j < numRows; ++j) {
 
-				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), FloatType(0));
-				XYZValueFactor<FloatType>& point = gridData(i, j);
+				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), TFloat(0));
+				XYZValueFactor<TFloat>& point = gridData(i, j);
 
 				// Calculate the delays.
 				for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
@@ -188,22 +188,22 @@ DefaultSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridD
 				}
 
 				for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
-					const FloatType txDelay = local.delayList[txElem];
+					const TFloat txDelay = local.delayList[txElem];
 					const unsigned int localTxElem = txElem - config_.firstTxElem;
 					for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 #if 0
 						// Nearest neighbor.
-						const std::size_t delayIdx = static_cast<std::size_t>(FloatType(0.5) + signalOffset_ + txDelay + local.delayList[rxElem]);
+						const std::size_t delayIdx = static_cast<std::size_t>(TFloat(0.5) + signalOffset_ + txDelay + local.delayList[rxElem]);
 						if (delayIdx < signalTensor_.n3()) {
 							local.rxSignalSumList[rxElem] += signalTensor_(localTxElem, rxElem, delayIdx);
 						}
 #else
 						// Linear interpolation.
-						const FloatType delay = signalOffset_ + txDelay + local.delayList[rxElem];
+						const TFloat delay = signalOffset_ + txDelay + local.delayList[rxElem];
 						const std::size_t delayIdx = static_cast<std::size_t>(delay);
-						const FloatType k = delay - delayIdx;
+						const TFloat k = delay - delayIdx;
 						if (delayIdx + 1U < signalTensor_.n3()) {
-							const FloatType* p = &signalTensor_(localTxElem, rxElem, delayIdx);
+							const TFloat* p = &signalTensor_(localTxElem, rxElem, delayIdx);
 							local.rxSignalSumList[rxElem] += (1 - k) * *p + k * *(p + 1);
 						}
 #endif
@@ -213,7 +213,7 @@ DefaultSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridD
 				if (local.coherenceFactor.enabled()) {
 					point.factor = local.coherenceFactor.calculate(&local.rxSignalSumList[0], local.rxSignalSumList.size());
 				}
-				point.value = std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), FloatType(0));
+				point.value = std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), TFloat(0));
 			}
 		}
 
@@ -221,7 +221,7 @@ DefaultSTAProcessor<FloatType>::process(Matrix<XYZValueFactor<FloatType>>& gridD
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
-			Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(FloatType(1) / numSignals));
+			Util::MultiplyValueBy<XYZValueFactor<TFloat>, TFloat>(TFloat(1) / numSignals));
 
 	LOG_DEBUG << "END ========== DefaultSTAProcessor::process ==========";
 }

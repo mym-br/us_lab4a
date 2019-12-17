@@ -47,22 +47,22 @@ constexpr int deflateLevel = 1;
 using namespace H5;
 #endif
 
-template<typename FloatType> void resize(std::vector<FloatType>& container, hsize_t n1, hsize_t n2);
-template<typename FloatType> void resize(std::vector<std::pair<FloatType, FloatType>>& container, hsize_t n1, hsize_t n2);
-template<typename FloatType> void resize(Matrix<FloatType>& container, hsize_t n1, hsize_t n2);
+template<typename TFloat> void resize(std::vector<TFloat>& container, hsize_t n1, hsize_t n2);
+template<typename TFloat> void resize(std::vector<std::pair<TFloat, TFloat>>& container, hsize_t n1, hsize_t n2);
+template<typename TFloat> void resize(Matrix<TFloat>& container, hsize_t n1, hsize_t n2);
 
-template<typename FloatType> FloatType* getBeginPtr(std::vector<FloatType>& container);
-template<typename FloatType> const FloatType* getBeginPtr(const std::vector<FloatType>& container);
+template<typename TFloat> TFloat* getBeginPtr(std::vector<TFloat>& container);
+template<typename TFloat> const TFloat* getBeginPtr(const std::vector<TFloat>& container);
 
-template<typename FloatType> FloatType* getBeginPtr(std::vector<std::pair<FloatType, FloatType>>& container);
-template<typename FloatType> const FloatType* getBeginPtr(const std::vector<std::pair<FloatType, FloatType>>& container);
+template<typename TFloat> TFloat* getBeginPtr(std::vector<std::pair<TFloat, TFloat>>& container);
+template<typename TFloat> const TFloat* getBeginPtr(const std::vector<std::pair<TFloat, TFloat>>& container);
 
-template<typename FloatType> FloatType* getBeginPtr(Matrix<FloatType>& container);
-template<typename FloatType> const FloatType* getBeginPtr(const Matrix<FloatType>& container);
+template<typename TFloat> TFloat* getBeginPtr(Matrix<TFloat>& container);
+template<typename TFloat> const TFloat* getBeginPtr(const Matrix<TFloat>& container);
 
-template<typename FloatType> void getSize(const std::vector<FloatType>& container, hsize_t& n1, hsize_t& n2);
-template<typename FloatType> void getSize(const std::vector<std::pair<FloatType, FloatType>>& container, hsize_t& n1, hsize_t& n2);
-template<typename FloatType> void getSize(const Matrix<FloatType>& container, hsize_t& n1, hsize_t& n2);
+template<typename TFloat> void getSize(const std::vector<TFloat>& container, hsize_t& n1, hsize_t& n2);
+template<typename TFloat> void getSize(const std::vector<std::pair<TFloat, TFloat>>& container, hsize_t& n1, hsize_t& n2);
+template<typename TFloat> void getSize(const Matrix<TFloat>& container, hsize_t& n1, hsize_t& n2);
 
 template<typename T> void load(const std::string& filePath, const std::string& dataSetName, T& container);
 template<typename T> void save(const T& container, const std::string& filePath, const std::string& datasetName);
@@ -73,9 +73,9 @@ void calcChunkDims(const std::vector<hsize_t>& dataDims, std::vector<hsize_t>& c
 
 
 
-template<typename FloatType>
+template<typename TFloat>
 void
-resize(std::vector<FloatType>& container, hsize_t n1, hsize_t n2)
+resize(std::vector<TFloat>& container, hsize_t n1, hsize_t n2)
 {
 	if (n1 != 1) {
 		THROW_EXCEPTION(InvalidParameterException, "The first dimension (" << n1 << ") is not equal to 1.");
@@ -86,9 +86,9 @@ resize(std::vector<FloatType>& container, hsize_t n1, hsize_t n2)
 	container.resize(n2);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-resize(std::vector<std::pair<FloatType, FloatType>>& container, hsize_t n1, hsize_t n2)
+resize(std::vector<std::pair<TFloat, TFloat>>& container, hsize_t n1, hsize_t n2)
 {
 	if (n1 == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The first dimension (" << n1 << ") is equal to 0.");
@@ -99,9 +99,9 @@ resize(std::vector<std::pair<FloatType, FloatType>>& container, hsize_t n1, hsiz
 	container.resize(n1);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-resize(Matrix<FloatType>& container, hsize_t n1, hsize_t n2)
+resize(Matrix<TFloat>& container, hsize_t n1, hsize_t n2)
 {
 	if (n1 == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The first dimension (" << n1 << ") is equal to 0.");
@@ -112,67 +112,67 @@ resize(Matrix<FloatType>& container, hsize_t n1, hsize_t n2)
 	container.resize(n1, n2);
 }
 
-template<typename FloatType>
-FloatType*
-getBeginPtr(std::vector<FloatType>& v)
+template<typename TFloat>
+TFloat*
+getBeginPtr(std::vector<TFloat>& v)
 {
 	return &v[0];
 }
 
-template<typename FloatType>
-const FloatType*
-getBeginPtr(const std::vector<FloatType>& v)
+template<typename TFloat>
+const TFloat*
+getBeginPtr(const std::vector<TFloat>& v)
 {
 	return &v[0];
 }
 
-template<typename FloatType>
-FloatType*
-getBeginPtr(std::vector<std::pair<FloatType, FloatType>>& v)
+template<typename TFloat>
+TFloat*
+getBeginPtr(std::vector<std::pair<TFloat, TFloat>>& v)
 {
 	return &(v[0].first);
 }
 
-template<typename FloatType>
-const FloatType*
-getBeginPtr(const std::vector<std::pair<FloatType, FloatType>>& v)
+template<typename TFloat>
+const TFloat*
+getBeginPtr(const std::vector<std::pair<TFloat, TFloat>>& v)
 {
 	return &(v[0].first);
 }
 
-template<typename FloatType>
-FloatType*
-getBeginPtr(Matrix<FloatType>& m)
+template<typename TFloat>
+TFloat*
+getBeginPtr(Matrix<TFloat>& m)
 {
 	return &m(0, 0);
 }
 
-template<typename FloatType>
-const FloatType*
-getBeginPtr(const Matrix<FloatType>& m)
+template<typename TFloat>
+const TFloat*
+getBeginPtr(const Matrix<TFloat>& m)
 {
 	return &m(0, 0);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-getSize(const std::vector<FloatType>& v, hsize_t& n1, hsize_t& n2)
+getSize(const std::vector<TFloat>& v, hsize_t& n1, hsize_t& n2)
 {
 	n1 = 1;
 	n2 = v.size();
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-getSize(const std::vector<std::pair<FloatType, FloatType>>& v, hsize_t& n1, hsize_t& n2)
+getSize(const std::vector<std::pair<TFloat, TFloat>>& v, hsize_t& n1, hsize_t& n2)
 {
 	n1 = v.size();
 	n2 = 2;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-getSize(const Matrix<FloatType>& m, hsize_t& n1, hsize_t& n2)
+getSize(const Matrix<TFloat>& m, hsize_t& n1, hsize_t& n2)
 {
 	n1 = m.n1();
 	n2 = m.n2();
@@ -193,7 +193,7 @@ load(const std::string& filePath, const std::string& dataSetName, T& container)
 			THROW_EXCEPTION(InvalidFileException, "The data type class in the file " << filePath << " is not floating point.");
 		}
 
-		FloatType type = dataSet.getFloatType();
+		H5::FloatType type = dataSet.getFloatType();
 		//H5std_string orderString;
 		//H5T_order_t order = type.getOrder(orderString);
 		//std::cout << orderString << std::endl;

@@ -37,16 +37,16 @@
 
 namespace Lab {
 
-template<typename FloatType>
-class Simulated3DTnRnAcquisition : public TnRnAcquisition<FloatType> {
+template<typename TFloat>
+class Simulated3DTnRnAcquisition : public TnRnAcquisition<TFloat> {
 public:
-	Simulated3DTnRnAcquisition(Project& project, const TnRnConfiguration<FloatType>& config);
+	Simulated3DTnRnAcquisition(Project& project, const TnRnConfiguration<TFloat>& config);
 	virtual ~Simulated3DTnRnAcquisition() = default;
 
-	virtual void prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays);
-	virtual void execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData);
+	virtual void prepare(unsigned int baseElement, const std::vector<TFloat>& txDelays);
+	virtual void execute(typename TnRnAcquisition<TFloat>::AcquisitionDataType& acqData);
 
-	void modifyReflectorsOffset(FloatType offsetX, FloatType offsetY);
+	void modifyReflectorsOffset(TFloat offsetX, TFloat offsetY);
 private:
 	Simulated3DTnRnAcquisition(const Simulated3DTnRnAcquisition&) = delete;
 	Simulated3DTnRnAcquisition& operator=(const Simulated3DTnRnAcquisition&) = delete;
@@ -54,18 +54,18 @@ private:
 	Simulated3DTnRnAcquisition& operator=(Simulated3DTnRnAcquisition&&) = delete;
 
 	Project& project_;
-	const TnRnConfiguration<FloatType>& config_;
-	FloatType maxAbsValue_; // auxiliar
-	std::unique_ptr<Simulated3DAcquisitionDevice<FloatType>> acqDevice_;
-	std::vector<XYZValue<FloatType>> reflectorList_;
-	FloatType reflectorsOffsetX_;
-	FloatType reflectorsOffsetY_;
+	const TnRnConfiguration<TFloat>& config_;
+	TFloat maxAbsValue_; // auxiliar
+	std::unique_ptr<Simulated3DAcquisitionDevice<TFloat>> acqDevice_;
+	std::vector<XYZValue<TFloat>> reflectorList_;
+	TFloat reflectorsOffsetX_;
+	TFloat reflectorsOffsetY_;
 };
 
 
 
-template<typename FloatType>
-Simulated3DTnRnAcquisition<FloatType>::Simulated3DTnRnAcquisition(Project& project, const TnRnConfiguration<FloatType>& config)
+template<typename TFloat>
+Simulated3DTnRnAcquisition<TFloat>::Simulated3DTnRnAcquisition(Project& project, const TnRnConfiguration<TFloat>& config)
 		: project_(project)
 		, config_(config)
 		, maxAbsValue_()
@@ -77,7 +77,7 @@ Simulated3DTnRnAcquisition<FloatType>::Simulated3DTnRnAcquisition(Project& proje
 	pm->getValue(reflectorsOffsetX_, "reflectors_offset_x", -10000.0, 10000.0);
 	pm->getValue(reflectorsOffsetY_, "reflectors_offset_y", -10000.0, 10000.0);
 
-	Matrix<FloatType> inputReflectorList;
+	Matrix<TFloat> inputReflectorList;
 	project_.loadHDF5(reflectorsFileName, "reflectors", inputReflectorList);
 	if (inputReflectorList.n2() != 4) {
 		THROW_EXCEPTION(InvalidValueException, "Wrong number of columns (" << inputReflectorList.n2() <<
@@ -86,14 +86,14 @@ Simulated3DTnRnAcquisition<FloatType>::Simulated3DTnRnAcquisition(Project& proje
 
 	reflectorList_.resize(inputReflectorList.n1());
 	for (std::size_t i = 0, end = inputReflectorList.n1(); i < end; ++i) {
-		XYZValue<FloatType>& data = reflectorList_[i];
+		XYZValue<TFloat>& data = reflectorList_[i];
 		data.x     = inputReflectorList(i, 0);
 		data.y     = inputReflectorList(i, 1);
 		data.z     = inputReflectorList(i, 2);
 		data.value = inputReflectorList(i, 3);
 	}
 
-	acqDevice_ = std::make_unique<Simulated3DAcquisitionDevice<FloatType>>(
+	acqDevice_ = std::make_unique<Simulated3DAcquisitionDevice<TFloat>>(
 								*pm,
 								*arrayPM,
 								config_.samplingFrequency,
@@ -107,9 +107,9 @@ Simulated3DTnRnAcquisition<FloatType>::Simulated3DTnRnAcquisition(Project& proje
 	acqDevice_->setGain(config_.minGain);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DTnRnAcquisition<FloatType>::prepare(unsigned int baseElement, const std::vector<FloatType>& txDelays)
+Simulated3DTnRnAcquisition<TFloat>::prepare(unsigned int baseElement, const std::vector<TFloat>& txDelays)
 {
 	if (baseElement + config_.numElements > config_.numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid base element: " << baseElement << '.');
@@ -130,9 +130,9 @@ Simulated3DTnRnAcquisition<FloatType>::prepare(unsigned int baseElement, const s
 	acqDevice_->setActiveRxElements(rxMask);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DTnRnAcquisition<FloatType>::execute(typename TnRnAcquisition<FloatType>::AcquisitionDataType& acqData)
+Simulated3DTnRnAcquisition<TFloat>::execute(typename TnRnAcquisition<TFloat>::AcquisitionDataType& acqData)
 {
 	const std::size_t signalLength = acqDevice_->signalLength();
 	if (signalLength == 0) {
@@ -144,18 +144,18 @@ Simulated3DTnRnAcquisition<FloatType>::execute(typename TnRnAcquisition<FloatTyp
 				<< " signalLength=" << signalLength;
 	}
 
-	const std::vector<FloatType>& signalList = acqDevice_->getSignalList();
+	const std::vector<TFloat>& signalList = acqDevice_->getSignalList();
 
-	const FloatType mx = Util::maxAbsolute(signalList);
+	const TFloat mx = Util::maxAbsolute(signalList);
 	if (mx > maxAbsValue_) maxAbsValue_ = mx;
 	LOG_DEBUG << "########## max(abs(signalList)): " << mx << " global: " << maxAbsValue_;
 
 	std::copy(signalList.begin(), signalList.end(), acqData.begin());
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DTnRnAcquisition<FloatType>::modifyReflectorsOffset(FloatType offsetX, FloatType offsetY)
+Simulated3DTnRnAcquisition<TFloat>::modifyReflectorsOffset(TFloat offsetX, TFloat offsetY)
 {
 	acqDevice_->setReflectorOffset(reflectorsOffsetX_ + offsetX, reflectorsOffsetY_ + offsetY);
 }

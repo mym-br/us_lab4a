@@ -31,21 +31,21 @@ namespace Lab {
 namespace KaiserWindow {
 
 // tolerance_dB > 0.0
-template<typename FloatType> FloatType getBeta(FloatType tolerance_dB);
+template<typename TFloat> TFloat getBeta(TFloat tolerance_dB);
 
 // tolerance_dB > 0.0
 // transition_width: 1.0 --> fs/2
-template<typename FloatType> unsigned int getSize(FloatType tolerance_dB, FloatType transitionWidth);
+template<typename TFloat> unsigned int getSize(TFloat tolerance_dB, TFloat transitionWidth);
 
-template<typename FloatType> void getWindow(unsigned int size, FloatType beta, std::vector<FloatType>& window);
+template<typename TFloat> void getWindow(unsigned int size, TFloat beta, std::vector<TFloat>& window);
 
 
 
-template<typename FloatType>
-FloatType
-getBeta(FloatType tolerance_dB)
+template<typename TFloat>
+TFloat
+getBeta(TFloat tolerance_dB)
 {
-	FloatType beta;
+	TFloat beta;
 	if (tolerance_dB > 50) {
 		beta = 0.1102 * (tolerance_dB - 8.7);
 	} else if (tolerance_dB > 21) {
@@ -58,9 +58,9 @@ getBeta(FloatType tolerance_dB)
 	return beta;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 unsigned int
-getSize(FloatType tolerance_dB, FloatType transitionWidth)
+getSize(TFloat tolerance_dB, TFloat transitionWidth)
 {
 	// Scipy and Matlab use 7.95.
 	// Oppenheim and Octave use 8.0.
@@ -71,9 +71,9 @@ getSize(FloatType tolerance_dB, FloatType transitionWidth)
 	return static_cast<unsigned int>(size);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-getWindow(unsigned int size, FloatType beta, std::vector<FloatType>& window)
+getWindow(unsigned int size, TFloat beta, std::vector<TFloat>& window)
 {
 	if (size < 2) {
 		THROW_EXCEPTION(InvalidValueException, "Invalid Kaiser window size: " << size << '.');
@@ -81,11 +81,11 @@ getWindow(unsigned int size, FloatType beta, std::vector<FloatType>& window)
 
 	window.resize(size);
 
-	const FloatType c1 = 2 / static_cast<FloatType>(size - 1U);
-	const FloatType c2 = 1 / std::cyl_bessel_i(0, beta);
+	const TFloat c1 = 2 / static_cast<TFloat>(size - 1U);
+	const TFloat c2 = 1 / std::cyl_bessel_i(0, beta);
 	for (unsigned int n = 0; n < size; ++n) {
-		const FloatType k = c1 * n - 1;
-		FloatType x = 1 - k * k;
+		const TFloat k = c1 * n - 1;
+		TFloat x = 1 - k * k;
 		if (x < 0.0) x = 0.0;
 		window[n] = c2 * std::cyl_bessel_i(0, beta * std::sqrt(x));
 	}

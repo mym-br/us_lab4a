@@ -45,7 +45,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class SyntheticYSingleVirtualSourceMethod : public Method {
 public:
 	SyntheticYSingleVirtualSourceMethod(Project& project);
@@ -66,67 +66,67 @@ private:
 
 
 
-template<typename FloatType>
-SyntheticYSingleVirtualSourceMethod<FloatType>::SyntheticYSingleVirtualSourceMethod(Project& project)
+template<typename TFloat>
+SyntheticYSingleVirtualSourceMethod<TFloat>::SyntheticYSingleVirtualSourceMethod(Project& project)
 		: project_(project)
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
+SyntheticYSingleVirtualSourceMethod<TFloat>::execute()
 {
 	const ParameterMap& taskPM = project_.taskParamMap();
 	const ParamMapPtr svsPM   = project_.getSubParamMap("svs_config_file");
 	const ParamMapPtr arrayPM = project_.getSubParamMap("array_config_file");
-	const TnRnConfiguration<FloatType> config(*svsPM, *arrayPM);
+	const TnRnConfiguration<TFloat> config(*svsPM, *arrayPM);
 	const auto baseElement = svsPM->value<unsigned int>("base_element", 0, config.numElementsMux - config.numElements);
-	const auto focusZ      = svsPM->value<FloatType>(   "tx_focus_z", -10000.0, 10000.0);
+	const auto focusZ      = svsPM->value<TFloat>(      "tx_focus_z", -10000.0, 10000.0);
 	const auto dataDir = taskPM.value<std::string>("data_dir");
 
-	FloatType focusX = 0, focusY = 0;
+	TFloat focusX = 0, focusY = 0;
 	// Set the focus at the mean x, y.
 	for (unsigned int i = baseElement, end = baseElement + config.numElements; i < end; ++i) {
 		if (i >= config.txElemPos.size()) {
 			THROW_EXCEPTION(InvalidValueException, "Invalid tx element number: " << i << '.');
 		}
-		const XY<FloatType>& pos = config.txElemPos[i];
+		const XY<TFloat>& pos = config.txElemPos[i];
 		focusX += pos.x;
 		focusY += pos.y;
 	}
 	focusX /= config.numElements;
 	focusY /= config.numElements;
-	std::vector<FloatType> txDelays;
+	std::vector<TFloat> txDelays;
 	ArrayUtil::calculateTx3DFocusDelay(focusX, focusY, focusZ, config.propagationSpeed,
 						config.txElemPos, baseElement, config.numElements, txDelays);
 
 	const auto outputDir = taskPM.value<std::string>("output_dir");
 	const ParamMapPtr imagPM = project_.getSubParamMap("imag_config_file");
-	const auto peakOffset       = imagPM->value<FloatType>(   "peak_offset"      , 0.0, 50.0);
+	const auto peakOffset       = imagPM->value<TFloat>(      "peak_offset"      , 0.0, 50.0);
 	const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
 
 	const auto rxApodFile = imagPM->value<std::string>("rx_apodization_file");
-	std::vector<FloatType> rxApod;
+	std::vector<TFloat> rxApod;
 	project_.loadHDF5(rxApodFile, "apod", rxApod);
 
 	project_.createDirectory(outputDir, true);
 
-	Matrix<XYZValueFactor<FloatType>> gridData;
+	Matrix<XYZValueFactor<TFloat>> gridData;
 
-	const FloatType nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
-	ImageGrid<FloatType>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
+	const TFloat nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
+	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
 
-	AnalyticSignalCoherenceFactorProcessor<FloatType> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
+	AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 	bool coherenceFactorEnabled = coherenceFactor.enabled();
-	auto acquisition = std::make_unique<SavedTnRnAcquisition<FloatType>>(project_, config.numElements, "");
-	auto processor = std::make_unique<SynthYVectorial3DTnRnProcessor<FloatType>>(config, *acquisition,
+	auto acquisition = std::make_unique<SavedTnRnAcquisition<TFloat>>(project_, config.numElements, "");
+	auto processor = std::make_unique<SynthYVectorial3DTnRnProcessor<TFloat>>(config, *acquisition,
 					upsamplingFactor, coherenceFactor, peakOffset, rxApod);
 	processor->setTxDelays(focusX, focusY, focusZ, txDelays);
 	processor->prepare(baseElement);
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
-	FloatType valueLevel = 0.0;
-	FloatType cfValueLevel = 0.0;
+	TFloat valueLevel = 0.0;
+	TFloat cfValueLevel = 0.0;
 
 	// Load y (acquisition position).
 	std::vector<double> yList;
@@ -163,12 +163,12 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 
 		if (config.valueScale != 0.0) {
 			std::for_each(gridData.begin(), gridData.end(),
-				Util::MultiplyValueBy<XYZValueFactor<FloatType>, FloatType>(config.valueScale));
+				Util::MultiplyValueBy<XYZValueFactor<TFloat>, TFloat>(config.valueScale));
 		}
 
 		project_.saveImageToHDF5(gridData, acqOutputDir);
 		project_.saveXYZToHDF5(gridData, acqOutputDir);
-		const FloatType maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
+		const TFloat maxAbsValue = Util::maxAbsoluteValueField<XYZValueFactor<TFloat>, TFloat>(gridData);
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
 		project_.showFigure3D(1, "Raw image", &gridData, &pointList,
@@ -179,7 +179,7 @@ SyntheticYSingleVirtualSourceMethod<FloatType>::execute()
 			project_.saveFactorToHDF5(gridData, acqOutputDir, "image_factor", "factor");
 
 			Util::applyFactorToValue(gridData.begin(), gridData.end());
-			const FloatType maxAbsCFValue = Util::maxAbsoluteValueField<XYZValueFactor<FloatType>, FloatType>(gridData);
+			const TFloat maxAbsCFValue = Util::maxAbsoluteValueField<XYZValueFactor<TFloat>, TFloat>(gridData);
 			if (maxAbsCFValue > cfValueLevel) cfValueLevel = maxAbsCFValue;
 
 			project_.saveImageToHDF5(gridData, acqOutputDir, "image_cf", "cf");

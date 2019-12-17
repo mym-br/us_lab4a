@@ -52,115 +52,115 @@ class Project;
 
 // x = 0, y = 0 is at the center of the array.
 // z = 0 is at the surface of the array.
-template<typename FloatType>
+template<typename TFloat>
 class Simulated3DAcquisitionDevice {
 public:
 	template<typename ImpulseResponse>
 	struct ThreadData {
 		ThreadData(
-			FloatType samplingFreq,
-			FloatType propagationSpeed,
-			FloatType rxElemWidth,
-			FloatType rxElemHeight,
-			FloatType rxDiscretization)
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat rxElemWidth,
+			TFloat rxElemHeight,
+			TFloat rxDiscretization)
 				: rxImpResp(samplingFreq, propagationSpeed, rxElemWidth, rxElemHeight, rxDiscretization) {}
 		ImpulseResponse rxImpResp;
-		std::vector<FloatType> hRx;
-		std::vector<FloatType> p;
-		std::vector<FloatType> pDown;
-		FFTWFilter2<FloatType> convDadtHTxFilter;
-		std::vector<std::complex<FloatType>> dadtFilterFreqCoeff;
+		std::vector<TFloat> hRx;
+		std::vector<TFloat> p;
+		std::vector<TFloat> pDown;
+		FFTWFilter2<TFloat> convDadtHTxFilter;
+		std::vector<std::complex<TFloat>> dadtFilterFreqCoeff;
 	};
 
 	Simulated3DAcquisitionDevice(const ParameterMap& pm, const ParameterMap& arrayPM,
-					FloatType outputSamplingFreq, FloatType propagationSpeed, FloatType maxFrequency,
+					TFloat outputSamplingFreq, TFloat propagationSpeed, TFloat maxFrequency,
 					const std::string& expDirectory);
 	~Simulated3DAcquisitionDevice() = default;
 
-	void setAcquisitionTime(FloatType acqTime);
+	void setAcquisitionTime(TFloat acqTime);
 
 	std::size_t signalLength() const { return signalLength_; }
-	const std::vector<FloatType>& getSignalList();
+	const std::vector<TFloat>& getSignalList();
 
 	void setActiveTxElements(const std::vector<bool>& mask);
 	void setActiveRxElements(const std::vector<bool>& mask);
 
 	// Must be preceded by a call to setActiveTxElements(const std::vector<bool>& mask).
-	void setTxDelays(const std::vector<FloatType>& delays);
+	void setTxDelays(const std::vector<TFloat>& delays);
 
 	// Must be preceded by a call to setActiveTxElements(const std::vector<bool>& mask).
-	void setTxFocalPoint(FloatType xf, FloatType yf, FloatType zf);
+	void setTxFocalPoint(TFloat xf, TFloat yf, TFloat zf);
 
-	void setReflectorList(const std::vector<XYZValue<FloatType>>& reflectorList) {
+	void setReflectorList(const std::vector<XYZValue<TFloat>>& reflectorList) {
 		reflectorList_ = reflectorList;
 	}
-	void setReflectorOffset(FloatType reflectorsOffsetX, FloatType reflectorsOffsetY) {
+	void setReflectorOffset(TFloat reflectorsOffsetX, TFloat reflectorsOffsetY) {
 		reflectorsOffsetX_ = reflectorsOffsetX;
 		reflectorsOffsetY_ = reflectorsOffsetY;
 	}
 
-	void setExcitationWaveform(FloatType centerFrequency /* Hz */);
-	void setExcitationWaveform(const std::vector<FloatType>& dadtExc);
+	void setExcitationWaveform(TFloat centerFrequency /* Hz */);
+	void setExcitationWaveform(const std::vector<TFloat>& dadtExc);
 
-	void setGain(FloatType gain /* dB */);
+	void setGain(TFloat gain /* dB */);
 
 private:
 	// Fraction of the destination bandwidth.
-	static constexpr FloatType decimatorLPFilterTransitionWidth = 0.3;
-	static constexpr FloatType maxSignalLength = std::numeric_limits<unsigned int>::max() / sizeof(FloatType);
+	static constexpr TFloat decimatorLPFilterTransitionWidth = 0.3;
+	static constexpr TFloat maxSignalLength = std::numeric_limits<unsigned int>::max() / sizeof(TFloat);
 
 	Simulated3DAcquisitionDevice(const Simulated3DAcquisitionDevice&) = delete;
 	Simulated3DAcquisitionDevice& operator=(const Simulated3DAcquisitionDevice&) = delete;
 	Simulated3DAcquisitionDevice(Simulated3DAcquisitionDevice&&) = delete;
 	Simulated3DAcquisitionDevice& operator=(Simulated3DAcquisitionDevice&&) = delete;
 
-	void prepareExcitationDadt(const std::vector<FloatType>& vExc);
-	template<typename ImpulseResponse> void processReflector(const XYZValue<FloatType>& reflector,
-									FFTWFilter2<FloatType>& dadtFilter);
+	void prepareExcitationDadt(const std::vector<TFloat>& vExc);
+	template<typename ImpulseResponse> void processReflector(const XYZValue<TFloat>& reflector,
+									FFTWFilter2<TFloat>& dadtFilter);
 
-	const FloatType c_; // propagation speed (m/s)
-	const FloatType invC_;
-	FloatType simFs_; // simulation sampling frequency (Hz)
-	FloatType outFs_; // output sampling frequency (Hz)
-	FloatType txElemWidth_; // width of each element (m)
-	FloatType txElemHeight_; // height of each element (m)
-	FloatType rxElemWidth_; // width of each element (m)
-	FloatType rxElemHeight_; // height of each element (m)
+	const TFloat c_; // propagation speed (m/s)
+	const TFloat invC_;
+	TFloat simFs_; // simulation sampling frequency (Hz)
+	TFloat outFs_; // output sampling frequency (Hz)
+	TFloat txElemWidth_; // width of each element (m)
+	TFloat txElemHeight_; // height of each element (m)
+	TFloat rxElemWidth_; // width of each element (m)
+	TFloat rxElemHeight_; // height of each element (m)
 	bool useNumericMethod_;
-	FloatType txDiscretization_;
-	FloatType rxDiscretization_;
-	FloatType noiseAmplitude_;
+	TFloat txDiscretization_;
+	TFloat rxDiscretization_;
+	TFloat noiseAmplitude_;
 	std::string excitationType_;
-	FloatType excNumPeriods_;
-	std::vector<FloatType> dadt_;
-	std::vector<FloatType> hTx_;
+	TFloat excNumPeriods_;
+	std::vector<TFloat> dadt_;
+	std::vector<TFloat> hTx_;
 	std::vector<unsigned int> activeTxElem_;
 	std::vector<unsigned int> activeRxElem_;
 	std::size_t signalLength_;
-	std::vector<FloatType> signalList_;
-	std::vector<XYZValue<FloatType>> reflectorList_; // coordinates of the reflectors
-	FloatType reflectorsOffsetX_;
-	FloatType reflectorsOffsetY_;
-	FloatType signalCoeff_;
+	std::vector<TFloat> signalList_;
+	std::vector<XYZValue<TFloat>> reflectorList_; // coordinates of the reflectors
+	TFloat reflectorsOffsetX_;
+	TFloat reflectorsOffsetY_;
+	TFloat signalCoeff_;
 	PseudorandomNumberGenerator prng_;
-	std::vector<std::complex<FloatType>> dadtFilterFreqCoeff_;
-	std::vector<FloatType> convDadtHTx_;
-	std::vector<std::complex<FloatType>> convDadtHTxFilterFreqCoeff_;
-	std::vector<XY<FloatType>> txElemPos_;
-	std::vector<XY<FloatType>> rxElemPos_;
-	std::vector<FloatType> txDelays_;
-	std::unique_ptr<Decimator<FloatType>> decimator_;
+	std::vector<std::complex<TFloat>> dadtFilterFreqCoeff_;
+	std::vector<TFloat> convDadtHTx_;
+	std::vector<std::complex<TFloat>> convDadtHTxFilterFreqCoeff_;
+	std::vector<XY<TFloat>> txElemPos_;
+	std::vector<XY<TFloat>> rxElemPos_;
+	std::vector<TFloat> txDelays_;
+	std::unique_ptr<Decimator<TFloat>> decimator_;
 };
 
 
 
-template<typename FloatType>
-Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
+template<typename TFloat>
+Simulated3DAcquisitionDevice<TFloat>::Simulated3DAcquisitionDevice(
 		const ParameterMap& pm,
 		const ParameterMap& arrayPM,
-		FloatType outputSamplingFreq,
-		FloatType propagationSpeed,
-		FloatType maxFrequency,
+		TFloat outputSamplingFreq,
+		TFloat propagationSpeed,
+		TFloat maxFrequency,
 		const std::string& expDirectory)
 			: c_(propagationSpeed)
 			, invC_(1 / c_)
@@ -190,13 +190,13 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 	pm.getValue(excNumPeriods_ , "excitation_num_periods", 0.0, 100.0);
 
 	const auto irMethod = pm.value<std::string>("impulse_response_method");
-	const FloatType nyquistRate = Util::nyquistRate(maxFrequency);
+	const TFloat nyquistRate = Util::nyquistRate(maxFrequency);
 	if (irMethod == "numeric") {
 		useNumericMethod_ = true;
-		const FloatType txSubElemSize = propagationSpeed /
-						(nyquistRate * pm.value<FloatType>("tx_sub_elem_size_factor", 0.0, 1.0e3));
-		const FloatType rxSubElemSize = propagationSpeed /
-						(nyquistRate * pm.value<FloatType>("rx_sub_elem_size_factor", 0.0, 1.0e3));
+		const TFloat txSubElemSize = propagationSpeed /
+						(nyquistRate * pm.value<TFloat>("tx_sub_elem_size_factor", 0.0, 1.0e3));
+		const TFloat rxSubElemSize = propagationSpeed /
+						(nyquistRate * pm.value<TFloat>("rx_sub_elem_size_factor", 0.0, 1.0e3));
 		if (txSubElemSize == 0.0) {
 			THROW_EXCEPTION(InvalidParameterException, "The size of the transmit sub-elements is equal to zero.");
 		}
@@ -206,8 +206,8 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 		txDiscretization_ = txSubElemSize;
 		rxDiscretization_ = rxSubElemSize;
 	} else if (irMethod == "analytic") {
-		const auto txMinEdgeDivisor = pm.value<FloatType>("tx_min_edge_divisor", 0.0, 1.0e6);
-		const auto rxMinEdgeDivisor = pm.value<FloatType>("rx_min_edge_divisor", 0.0, 1.0e6);
+		const auto txMinEdgeDivisor = pm.value<TFloat>("tx_min_edge_divisor", 0.0, 1.0e6);
+		const auto rxMinEdgeDivisor = pm.value<TFloat>("rx_min_edge_divisor", 0.0, 1.0e6);
 		txDiscretization_ = txMinEdgeDivisor;
 		rxDiscretization_ = rxMinEdgeDivisor;
 	} else {
@@ -221,13 +221,13 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 	ArrayUtil::calculateTxElementPositions(arrayPM, txElemPos_);
 	ArrayUtil::calculateRxElementPositions(arrayPM, rxElemPos_);
 
-	decimator_ = std::make_unique<Decimator<FloatType>>();
+	decimator_ = std::make_unique<Decimator<TFloat>>();
 	decimator_->prepare(simFs_ / outFs_, decimatorLPFilterTransitionWidth);
 
 	{
-		WavefrontObjFileWriter<FloatType> fw((expDirectory + "/tx_geometry.obj").c_str());
-		const FloatType hw = 0.5 * txElemWidth_;
-		const FloatType hh = 0.5 * txElemHeight_;
+		WavefrontObjFileWriter<TFloat> fw((expDirectory + "/tx_geometry.obj").c_str());
+		const TFloat hw = 0.5 * txElemWidth_;
+		const TFloat hh = 0.5 * txElemHeight_;
 		for (const auto& pos : txElemPos_) {
 			fw.addPoint(pos.x - hw, pos.y + hh, 0.0);
 			fw.addPoint(pos.x + hw, pos.y + hh, 0.0);
@@ -238,9 +238,9 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 		fw.write();
 	}
 	{
-		WavefrontObjFileWriter<FloatType> fw((expDirectory + "/rx_geometry.obj").c_str());
-		const FloatType hw = 0.5 * rxElemWidth_;
-		const FloatType hh = 0.5 * rxElemHeight_;
+		WavefrontObjFileWriter<TFloat> fw((expDirectory + "/rx_geometry.obj").c_str());
+		const TFloat hw = 0.5 * rxElemWidth_;
+		const TFloat hh = 0.5 * rxElemHeight_;
 		for (const auto& pos : rxElemPos_) {
 			fw.addPoint(pos.x - hw, pos.y + hh, 0.0);
 			fw.addPoint(pos.x + hw, pos.y + hh, 0.0);
@@ -252,11 +252,11 @@ Simulated3DAcquisitionDevice<FloatType>::Simulated3DAcquisitionDevice(
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DAcquisitionDevice<FloatType>::setAcquisitionTime(FloatType acqTime)
+Simulated3DAcquisitionDevice<TFloat>::setAcquisitionTime(TFloat acqTime)
 {
-	FloatType len = std::ceil(acqTime * outFs_);
+	TFloat len = std::ceil(acqTime * outFs_);
 	if (len > maxSignalLength) {
 		THROW_EXCEPTION(InvalidValueException, "The acquisition time is too long.");
 	}
@@ -265,55 +265,55 @@ Simulated3DAcquisitionDevice<FloatType>::setAcquisitionTime(FloatType acqTime)
 }
 
 // Convert the excitation velocity to da/dt.
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DAcquisitionDevice<FloatType>::prepareExcitationDadt(const std::vector<FloatType>& vExc)
+Simulated3DAcquisitionDevice<TFloat>::prepareExcitationDadt(const std::vector<TFloat>& vExc)
 {
-	const FloatType period = 1.0 / simFs_;
+	const TFloat period = 1.0 / simFs_;
 
 	// Calculate the excitation acceleration.
-	std::vector<FloatType> aExc;
+	std::vector<TFloat> aExc;
 	Util::centralDiff(vExc, period, aExc); // adds delay of 1 sample
 
 	// Calculate the excitation d(acceleration)/dt.
-	std::vector<FloatType> unfilteredDadt;
+	std::vector<TFloat> unfilteredDadt;
 	Util::centralDiff(aExc, period, unfilteredDadt); // adds delay of 1 sample
-	std::vector<std::complex<FloatType>> filterFreqCoeff;
-	FFTWFilter2<FloatType> f;
+	std::vector<std::complex<TFloat>> filterFreqCoeff;
+	FFTWFilter2<TFloat> f;
 	f.setCoefficients(decimator_->lowPassFIRFilter(), filterFreqCoeff);
 	f.filter(filterFreqCoeff, unfilteredDadt, dadt_); // adds delay of (filter size - 1) / 2 samples
 
 	Util::normalizeBySumOfAbs(dadt_);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DAcquisitionDevice<FloatType>::setExcitationWaveform(FloatType centerFrequency)
+Simulated3DAcquisitionDevice<TFloat>::setExcitationWaveform(TFloat centerFrequency)
 {
-	std::vector<FloatType> vExc;
+	std::vector<TFloat> vExc;
 	Waveform::get(excitationType_, centerFrequency, simFs_, excNumPeriods_, vExc);
 
 	prepareExcitationDadt(vExc);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DAcquisitionDevice<FloatType>::setExcitationWaveform(const std::vector<FloatType>& dadtExc)
+Simulated3DAcquisitionDevice<TFloat>::setExcitationWaveform(const std::vector<TFloat>& dadtExc)
 {
 	dadt_ = dadtExc;
 	Util::normalizeBySumOfAbs(dadt_);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DAcquisitionDevice<FloatType>::setGain(FloatType gain)
+Simulated3DAcquisitionDevice<TFloat>::setGain(TFloat gain)
 {
 	signalCoeff_ = Util::decibelsToLinear(gain);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DAcquisitionDevice<FloatType>::setActiveTxElements(const std::vector<bool>& mask)
+Simulated3DAcquisitionDevice<TFloat>::setActiveTxElements(const std::vector<bool>& mask)
 {
 	if (mask.size() != txElemPos_.size()) {
 		THROW_EXCEPTION(InvalidValueException, "Wrong size of the tx mask: " << mask.size()
@@ -333,9 +333,9 @@ Simulated3DAcquisitionDevice<FloatType>::setActiveTxElements(const std::vector<b
 	txDelays_.assign(activeTxElem_.size(), 0.0);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DAcquisitionDevice<FloatType>::setActiveRxElements(const std::vector<bool>& mask)
+Simulated3DAcquisitionDevice<TFloat>::setActiveRxElements(const std::vector<bool>& mask)
 {
 	if (signalLength_ == 0) {
 		THROW_EXCEPTION(InvalidStateException, "The acquisition time has not been set.");
@@ -358,9 +358,9 @@ Simulated3DAcquisitionDevice<FloatType>::setActiveRxElements(const std::vector<b
 	signalList_.resize(activeRxElem_.size() * signalLength_);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DAcquisitionDevice<FloatType>::setTxDelays(const std::vector<FloatType>& delays)
+Simulated3DAcquisitionDevice<TFloat>::setTxDelays(const std::vector<TFloat>& delays)
 {
 	if (delays.size() != txDelays_.size()) {
 		THROW_EXCEPTION(InvalidValueException, "Wrong size of the delay vector: " << delays.size()
@@ -369,9 +369,9 @@ Simulated3DAcquisitionDevice<FloatType>::setTxDelays(const std::vector<FloatType
 	std::copy(delays.begin(), delays.end(), txDelays_.begin());
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DAcquisitionDevice<FloatType>::setTxFocalPoint(FloatType xf, FloatType yf, FloatType zf)
+Simulated3DAcquisitionDevice<TFloat>::setTxFocalPoint(TFloat xf, TFloat yf, TFloat zf)
 {
 	if (c_ == 0.0) {
 		THROW_EXCEPTION(InvalidStateException, "The propagation speed has not been set.");
@@ -380,13 +380,13 @@ Simulated3DAcquisitionDevice<FloatType>::setTxFocalPoint(FloatType xf, FloatType
 		THROW_EXCEPTION(InvalidStateException, "Focus z must be > 0.");
 	}
 
-	FloatType maxDt = 0.0;
+	TFloat maxDt = 0.0;
 	txDelays_.resize(activeTxElem_.size());
 
 	// For each active transmit element:
 	for (unsigned int i = 0, iEnd = activeTxElem_.size(); i < iEnd; ++i) {
 		const unsigned int txElem = activeTxElem_[i];
-		const FloatType dt = Geometry::distance3DZ0(txElemPos_[txElem].x, txElemPos_[txElem].y,
+		const TFloat dt = Geometry::distance3DZ0(txElemPos_[txElem].x, txElemPos_[txElem].y,
 								xf, yf, zf) * invC_;
 		if (dt > maxDt) maxDt = dt;
 		txDelays_[i] = dt;
@@ -398,17 +398,17 @@ Simulated3DAcquisitionDevice<FloatType>::setTxFocalPoint(FloatType xf, FloatType
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 template<typename ImpulseResponse>
 void
-Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatType>& reflector, FFTWFilter2<FloatType>& dadtFilter)
+Simulated3DAcquisitionDevice<TFloat>::processReflector(const XYZValue<TFloat>& reflector, FFTWFilter2<TFloat>& dadtFilter)
 {
-	const FloatType refX = reflector.x + reflectorsOffsetX_;
-	const FloatType refY = reflector.y + reflectorsOffsetY_;
-	const FloatType refZ = reflector.z;
-	const FloatType refCoeff = reflector.value;
+	const TFloat refX = reflector.x + reflectorsOffsetX_;
+	const TFloat refY = reflector.y + reflectorsOffsetY_;
+	const TFloat refZ = reflector.z;
+	const TFloat refCoeff = reflector.value;
 
-	auto txImpResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse>>(
+	auto txImpResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<TFloat, ImpulseResponse>>(
 				simFs_, c_, txElemWidth_, txElemHeight_, txDiscretization_, txElemPos_, txDelays_);
 
 	// Calculate the impulse response in transmission (all active elements).
@@ -437,7 +437,7 @@ Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatTy
 		// For each active receive element:
 		for (std::size_t iActiveRx = r.begin(); iActiveRx != r.end(); ++iActiveRx) {
 			const unsigned int activeRxElem = activeRxElem_[iActiveRx];
-			const XY<FloatType>& pos = rxElemPos_[activeRxElem];
+			const XY<TFloat>& pos = rxElemPos_[activeRxElem];
 
 			// Calculate the impulse response in reception (only for the active element).
 			std::size_t hRxOffset;
@@ -463,9 +463,9 @@ Simulated3DAcquisitionDevice<FloatType>::processReflector(const XYZValue<FloatTy
 	});
 }
 
-template<typename FloatType>
-const std::vector<FloatType>&
-Simulated3DAcquisitionDevice<FloatType>::getSignalList()
+template<typename TFloat>
+const std::vector<TFloat>&
+Simulated3DAcquisitionDevice<TFloat>::getSignalList()
 {
 	if (activeTxElem_.empty()) {
 		THROW_EXCEPTION(InvalidStateException, "The active transmit elements have not been defined.");
@@ -483,11 +483,11 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 		THROW_EXCEPTION(InvalidStateException, "The list of reflectors is empty.");
 	}
 
-	std::fill(signalList_.begin(), signalList_.end(), FloatType(0));
-	FFTWFilter2<FloatType> dadtFilter;
+	std::fill(signalList_.begin(), signalList_.end(), TFloat(0));
+	FFTWFilter2<TFloat> dadtFilter;
 	dadtFilter.setCoefficients(dadt_, dadtFilterFreqCoeff_);
 
-	FloatType refCoeffSum = 0.0;
+	TFloat refCoeffSum = 0.0;
 
 	// For each reflector:
 	for (std::size_t iRef = 0, iRefEnd = reflectorList_.size(); iRef < iRefEnd; ++iRef) {
@@ -496,9 +496,9 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 		refCoeffSum += std::abs(reflectorList_[iRef].value);
 
 		if (useNumericMethod_) {
-			processReflector<NumericRectangularSourceImpulseResponse<FloatType>>(reflectorList_[iRef], dadtFilter);
+			processReflector<NumericRectangularSourceImpulseResponse<TFloat>>(reflectorList_[iRef], dadtFilter);
 		} else {
-			processReflector<AnalyticRectangularSourceImpulseResponse<FloatType>>(reflectorList_[iRef], dadtFilter);
+			processReflector<AnalyticRectangularSourceImpulseResponse<TFloat>>(reflectorList_[iRef], dadtFilter);
 		}
 	}
 
@@ -508,7 +508,7 @@ Simulated3DAcquisitionDevice<FloatType>::getSignalList()
 	if (noiseAmplitude_ == 0.0) {
 		noiseAmplitude_ = 1.0e-4; // -80 dB
 	}
-	const FloatType a = 2.0 * noiseAmplitude_;
+	const TFloat a = 2.0 * noiseAmplitude_;
 	for (auto& sample : signalList_) {
 		sample += (prng_.get() - 0.5) * a;
 	}

@@ -26,10 +26,10 @@
 namespace Lab {
 
 // The image formation is executed on the acquisition device.
-template<typename FloatType>
+template<typename TFloat>
 class DeviceSectorialScanAcquisition {
 public:
-	typedef Matrix<XZValue<FloatType>> AcquisitionDataType;
+	typedef Matrix<XZValue<TFloat>> AcquisitionDataType;
 
 	DeviceSectorialScanAcquisition() = default;
 	virtual ~DeviceSectorialScanAcquisition() = default;

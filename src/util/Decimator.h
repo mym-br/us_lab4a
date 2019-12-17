@@ -33,7 +33,7 @@
 namespace Lab {
 
 // This class is copy constructible and assignable.
-template<typename FloatType>
+template<typename TFloat>
 class Decimator {
 public:
 	Decimator();
@@ -42,37 +42,37 @@ public:
 	// lpFilterTransitionWidth:
 	//     half the total transition width
 	//     1.0 -> pi radian / sample at the destination sampling rate
-	void prepare(unsigned int downsamplingFactor, FloatType lpFilterHalfTransitionWidth);
+	void prepare(unsigned int downsamplingFactor, TFloat lpFilterHalfTransitionWidth);
 
 	// Reentrant.
 	void downsample(std::size_t filterOffset,
-			std::size_t inputOffset, const std::vector<FloatType>& input,
-			std::size_t& outputOffset, std::vector<FloatType>& output);
+			std::size_t inputOffset, const std::vector<TFloat>& input,
+			std::size_t& outputOffset, std::vector<TFloat>& output);
 
-	void decimate(std::size_t inputOffset, const std::vector<FloatType>& input,
-			std::size_t& outputOffset, std::vector<FloatType>& output);
+	void decimate(std::size_t inputOffset, const std::vector<TFloat>& input,
+			std::size_t& outputOffset, std::vector<TFloat>& output);
 
-	const std::vector<FloatType>& lowPassFIRFilter() const { return lowPassFIRFilter_; }
+	const std::vector<TFloat>& lowPassFIRFilter() const { return lowPassFIRFilter_; }
 	unsigned int downsamplingFactor() const { return downsamplingFactor_; }
 private:
 	static constexpr unsigned int maxDownFactor = 10;
-	static constexpr FloatType kaiserTolerance = 1.0e-4;
+	static constexpr TFloat kaiserTolerance = 1.0e-4;
 
 	unsigned int downsamplingFactor_;
-	std::vector<FloatType> lowPassFIRFilter_;
-	std::vector<FloatType> filteredSignal_;
-	FFTWFilter<FloatType> filter_;
+	std::vector<TFloat> lowPassFIRFilter_;
+	std::vector<TFloat> filteredSignal_;
+	FFTWFilter<TFloat> filter_;
 };
 
-template<typename FloatType>
-Decimator<FloatType>::Decimator()
+template<typename TFloat>
+Decimator<TFloat>::Decimator()
 		: downsamplingFactor_()
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Decimator<FloatType>::prepare(unsigned int downsamplingFactor, FloatType lpFilterHalfTransitionWidth)
+Decimator<TFloat>::prepare(unsigned int downsamplingFactor, TFloat lpFilterHalfTransitionWidth)
 {
 	if (downsamplingFactor_ != 0) {
 		THROW_EXCEPTION(InvalidStateException, "The object is already configured.");
@@ -89,23 +89,23 @@ Decimator<FloatType>::prepare(unsigned int downsamplingFactor, FloatType lpFilte
 				<< ". Must be <= 1.0");
 	}
 
-	const FloatType tol_dB = -20.0 * std::log10(kaiserTolerance);
-	const FloatType kaiserBeta = KaiserWindow::getBeta(tol_dB);
+	const TFloat tol_dB = -20.0 * std::log10(kaiserTolerance);
+	const TFloat kaiserBeta = KaiserWindow::getBeta(tol_dB);
 
-	const FloatType finalTransitionWidth = (lpFilterHalfTransitionWidth * 2) / downsamplingFactor;
+	const TFloat finalTransitionWidth = (lpFilterHalfTransitionWidth * 2) / downsamplingFactor;
 	const unsigned int windowSize = KaiserWindow::getSize(tol_dB, finalTransitionWidth);
 
-	const FloatType twoDownFactor = 2 * downsamplingFactor;
+	const TFloat twoDownFactor = 2 * downsamplingFactor;
 	const unsigned int finalWindowSize = static_cast<unsigned int>(
 				std::ceil((windowSize - 1) / twoDownFactor) * twoDownFactor) + 1U;
 
 	// Kaiser window.
-	std::vector<FloatType> window;
+	std::vector<TFloat> window;
 	KaiserWindow::getWindow(finalWindowSize, kaiserBeta, window);
 
 	// Sinc.
-	const FloatType numPeriods = (finalWindowSize - 1U) / twoDownFactor;
-	std::vector<FloatType> x;
+	const TFloat numPeriods = (finalWindowSize - 1U) / twoDownFactor;
+	std::vector<TFloat> x;
 	Util::fillSequenceFromStartToEndWithSize(x, -numPeriods, numPeriods, finalWindowSize);
 	lowPassFIRFilter_.resize(x.size());
 	for (unsigned int i = 0; i < lowPassFIRFilter_.size(); ++i) {
@@ -119,11 +119,11 @@ Decimator<FloatType>::prepare(unsigned int downsamplingFactor, FloatType lpFilte
 	downsamplingFactor_ = downsamplingFactor;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Decimator<FloatType>::downsample(std::size_t filterOffset,
-					std::size_t inputOffset, const std::vector<FloatType>& input,
-					std::size_t& outputOffset, std::vector<FloatType>& output)
+Decimator<TFloat>::downsample(std::size_t filterOffset,
+					std::size_t inputOffset, const std::vector<TFloat>& input,
+					std::size_t& outputOffset, std::vector<TFloat>& output)
 {
 	const unsigned int m = inputOffset % downsamplingFactor_;
 	// The first input relative index that is multiple of downsamplingFactor_, considering the absolute value.
@@ -144,10 +144,10 @@ Decimator<FloatType>::downsample(std::size_t filterOffset,
 	outputOffset = (inputOffset + firstIndex) / downsamplingFactor_;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Decimator<FloatType>::decimate(std::size_t inputOffset, const std::vector<FloatType>& input,
-				std::size_t& outputOffset, std::vector<FloatType>& output)
+Decimator<TFloat>::decimate(std::size_t inputOffset, const std::vector<TFloat>& input,
+				std::size_t& outputOffset, std::vector<TFloat>& output)
 {
 	if (downsamplingFactor_ == 0) THROW_EXCEPTION(InvalidStateException, "The decimator has not been initialized.");
 

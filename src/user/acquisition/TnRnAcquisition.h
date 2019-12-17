@@ -26,15 +26,15 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class TnRnAcquisition {
 public:
-	typedef Matrix<FloatType> AcquisitionDataType;
+	typedef Matrix<TFloat> AcquisitionDataType;
 
 	TnRnAcquisition() = default;
 	virtual ~TnRnAcquisition() = default;
 
-	virtual void prepare(unsigned int /*baseElement*/, const std::vector<FloatType>& /*txDelays*/) {}
+	virtual void prepare(unsigned int /*baseElement*/, const std::vector<TFloat>& /*txDelays*/) {}
 	virtual void execute(AcquisitionDataType& acqData) = 0;
 private:
 	TnRnAcquisition(const TnRnAcquisition&) = delete;

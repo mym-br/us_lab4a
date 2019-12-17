@@ -33,110 +33,110 @@
 
 namespace Lab {
 
-template<typename FloatType, typename ImpulseResponse>
+template<typename TFloat, typename ImpulseResponse>
 class SimTransientAcousticField {
 public:
 	struct CircularSourceThreadData {
 		CircularSourceThreadData(
-			FloatType samplingFreq,
-			FloatType propagationSpeed,
-			FloatType sourceRadius,
-			FloatType discretization,
-			const std::vector<FloatType>& dvdt)
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceRadius,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt)
 				: ir(samplingFreq, propagationSpeed, sourceRadius, discretization)
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
 		ImpulseResponse ir;
-		std::vector<std::complex<FloatType>> filterFreqCoeff;
-		std::vector<FloatType> h;
-		std::vector<FloatType> signal;
-		FFTWFilter2<FloatType> filter;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
 	};
 
 	struct RectangularSourceThreadData {
 		RectangularSourceThreadData(
-			FloatType samplingFreq,
-			FloatType propagationSpeed,
-			FloatType sourceWidth,
-			FloatType sourceHeight,
-			FloatType discretization,
-			const std::vector<FloatType>& dvdt)
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt)
 				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization)
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
 		ImpulseResponse ir;
-		std::vector<std::complex<FloatType>> filterFreqCoeff;
-		std::vector<FloatType> h;
-		std::vector<FloatType> signal;
-		FFTWFilter2<FloatType> filter;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
 	};
 
 	struct ArrayOfRectangularSourcesThreadData {
 		ArrayOfRectangularSourcesThreadData(
-			FloatType samplingFreq,
-			FloatType propagationSpeed,
-			FloatType sourceWidth,
-			FloatType sourceHeight,
-			FloatType discretization,
-			const std::vector<XY<FloatType>>& elemPos,
-			const std::vector<FloatType>& focusDelay,
-			const std::vector<FloatType>& dvdt)
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<XY<TFloat>>& elemPos,
+			const std::vector<TFloat>& focusDelay,
+			const std::vector<TFloat>& dvdt)
 				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
 					elemPos, focusDelay)
 		{
 			filter.setCoefficients(dvdt, filterFreqCoeff);
 		}
-		ArrayOfRectangularSourcesImpulseResponse<FloatType, ImpulseResponse> ir;
-		std::vector<std::complex<FloatType>> filterFreqCoeff;
-		std::vector<FloatType> h;
-		std::vector<FloatType> signal;
-		FFTWFilter2<FloatType> filter;
+		ArrayOfRectangularSourcesImpulseResponse<TFloat, ImpulseResponse> ir;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
 	};
 
 	static void getCircularSourceAcousticField(
-			FloatType samplingFreq,
-			FloatType propagationSpeed,
-			FloatType sourceRadius,
-			FloatType discretization,
-			const std::vector<FloatType>& dvdt,
-			Matrix<XYZValue<FloatType>>& gridData);
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceRadius,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt,
+			Matrix<XYZValue<TFloat>>& gridData);
 
 	static void getRectangularSourceAcousticField(
-			FloatType samplingFreq,
-			FloatType propagationSpeed,
-			FloatType sourceWidth,
-			FloatType sourceHeight,
-			FloatType discretization,
-			const std::vector<FloatType>& dvdt,
-			Matrix<XYZValue<FloatType>>& gridData);
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt,
+			Matrix<XYZValue<TFloat>>& gridData);
 
 	static void getArrayOfRectangularSourcesAcousticField(
-			FloatType samplingFreq,
-			FloatType propagationSpeed,
-			FloatType sourceWidth,
-			FloatType sourceHeight,
-			FloatType discretization,
-			const std::vector<FloatType>& dvdt,
-			const std::vector<XY<FloatType>>& elemPos,
-			const std::vector<FloatType>& focusDelay /* s */,
-			Matrix<XYZValue<FloatType>>& gridData);
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt,
+			const std::vector<XY<TFloat>>& elemPos,
+			const std::vector<TFloat>& focusDelay /* s */,
+			Matrix<XYZValue<TFloat>>& gridData);
 private:
 	SimTransientAcousticField() = delete;
 };
 
 
 
-template<typename FloatType, typename ImpulseResponse>
+template<typename TFloat, typename ImpulseResponse>
 void
-SimTransientAcousticField<FloatType, ImpulseResponse>::getCircularSourceAcousticField(
-					FloatType samplingFreq,
-					FloatType propagationSpeed,
-					FloatType sourceRadius,
-					FloatType discretization,
-					const std::vector<FloatType>& dvdt,
-					Matrix<XYZValue<FloatType>>& gridData)
+SimTransientAcousticField<TFloat, ImpulseResponse>::getCircularSourceAcousticField(
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceRadius,
+					TFloat discretization,
+					const std::vector<TFloat>& dvdt,
+					Matrix<XYZValue<TFloat>>& gridData)
 {
 	CircularSourceThreadData threadData{
 		samplingFreq,
@@ -157,12 +157,12 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getCircularSourceAcoustic
 				std::size_t hOffset;
 
 				for (std::size_t j = r.begin(); j != r.end(); ++j) {
-					XYZValue<FloatType>& point = gridData(i, j);
+					XYZValue<TFloat>& point = gridData(i, j);
 					local.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, local.h);
 
 					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
 
-					FloatType minValue, maxValue;
+					TFloat minValue, maxValue;
 					Util::minMax(local.signal, minValue, maxValue);
 					point.value = maxValue - minValue;
 				}
@@ -172,16 +172,16 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getCircularSourceAcoustic
 	}
 }
 
-template<typename FloatType, typename ImpulseResponse>
+template<typename TFloat, typename ImpulseResponse>
 void
-SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularSourceAcousticField(
-					FloatType samplingFreq,
-					FloatType propagationSpeed,
-					FloatType sourceWidth,
-					FloatType sourceHeight,
-					FloatType discretization,
-					const std::vector<FloatType>& dvdt,
-					Matrix<XYZValue<FloatType>>& gridData)
+SimTransientAcousticField<TFloat, ImpulseResponse>::getRectangularSourceAcousticField(
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceWidth,
+					TFloat sourceHeight,
+					TFloat discretization,
+					const std::vector<TFloat>& dvdt,
+					Matrix<XYZValue<TFloat>>& gridData)
 {
 	RectangularSourceThreadData threadData{
 		samplingFreq,
@@ -203,12 +203,12 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularSourceAcous
 				std::size_t hOffset;
 
 				for (std::size_t j = r.begin(); j != r.end(); ++j) {
-					XYZValue<FloatType>& point = gridData(i, j);
+					XYZValue<TFloat>& point = gridData(i, j);
 					local.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, local.h);
 
 					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
 
-					FloatType minValue, maxValue;
+					TFloat minValue, maxValue;
 					Util::minMax(local.signal, minValue, maxValue);
 					point.value = maxValue - minValue;
 				}
@@ -218,18 +218,18 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getRectangularSourceAcous
 	}
 }
 
-template<typename FloatType, typename ImpulseResponse>
+template<typename TFloat, typename ImpulseResponse>
 void
-SimTransientAcousticField<FloatType, ImpulseResponse>::getArrayOfRectangularSourcesAcousticField(
-					FloatType samplingFreq,
-					FloatType propagationSpeed,
-					FloatType sourceWidth,
-					FloatType sourceHeight,
-					FloatType discretization,
-					const std::vector<FloatType>& dvdt,
-					const std::vector<XY<FloatType>>& elemPos,
-					const std::vector<FloatType>& focusDelay,
-					Matrix<XYZValue<FloatType>>& gridData)
+SimTransientAcousticField<TFloat, ImpulseResponse>::getArrayOfRectangularSourcesAcousticField(
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceWidth,
+					TFloat sourceHeight,
+					TFloat discretization,
+					const std::vector<TFloat>& dvdt,
+					const std::vector<XY<TFloat>>& elemPos,
+					const std::vector<TFloat>& focusDelay,
+					Matrix<XYZValue<TFloat>>& gridData)
 {
 	ArrayOfRectangularSourcesThreadData threadData{
 		samplingFreq,
@@ -253,12 +253,12 @@ SimTransientAcousticField<FloatType, ImpulseResponse>::getArrayOfRectangularSour
 				std::size_t hOffset;
 
 				for (std::size_t j = r.begin(); j != r.end(); ++j) {
-					XYZValue<FloatType>& point = gridData(i, j);
+					XYZValue<TFloat>& point = gridData(i, j);
 					local.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, local.h);
 
 					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
 
-					FloatType minValue, maxValue;
+					TFloat minValue, maxValue;
 					Util::minMax(local.signal, minValue, maxValue);
 					point.value = maxValue - minValue;
 				}

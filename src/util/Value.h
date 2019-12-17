@@ -29,19 +29,19 @@
 namespace Lab {
 namespace Value {
 
-template<typename FloatType> void copy(const XYZValue<FloatType>& orig, FloatType& dest);
-template<typename FloatType> void copy(const FloatType& orig, XYZValue<FloatType>& dest);
+template<typename TFloat> void copy(const XYZValue<TFloat>& orig, TFloat& dest);
+template<typename TFloat> void copy(const TFloat& orig, XYZValue<TFloat>& dest);
 
-template<typename FloatType> void copy(const XYZValueFactor<FloatType>& orig, FloatType& dest);
-template<typename FloatType> void copy(const FloatType& orig, XYZValueFactor<FloatType>& dest);
+template<typename TFloat> void copy(const XYZValueFactor<TFloat>& orig, TFloat& dest);
+template<typename TFloat> void copy(const TFloat& orig, XYZValueFactor<TFloat>& dest);
 
 // array of size two --> complex
-template<typename FloatType> void copy(const FloatType (&orig)[2], std::complex<FloatType>& dest);
+template<typename TFloat> void copy(const TFloat (&orig)[2], std::complex<TFloat>& dest);
 // complex --> array of size two
-template<typename FloatType> void copy(const std::complex<FloatType>& orig, FloatType (&dest)[2]);
+template<typename TFloat> void copy(const std::complex<TFloat>& orig, TFloat (&dest)[2]);
 
-template<typename FloatType1, typename FloatType2> void copy(const FloatType1& orig, FloatType2& dest);
-template<typename FloatType1, typename FloatType2> void copy(const std::complex<FloatType1>& orig, FloatType2 &dest);
+template<typename TFloat1, typename TFloat2> void copy(const TFloat1& orig, TFloat2& dest);
+template<typename TFloat1, typename TFloat2> void copy(const std::complex<TFloat1>& orig, TFloat2 &dest);
 
 template<typename InputIterator, typename OutputIterator>
 	void copySequence(InputIterator input, InputIterator inputEnd, OutputIterator output);
@@ -49,8 +49,8 @@ template<typename InputIterator, typename OutputIterator>
 	void copySequenceWithPadding(InputIterator input, InputIterator inputEnd, OutputIterator output, unsigned int padding);
 template<typename InputIterator, typename OutputIterator, typename T>
 	void transformSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest, T transform);
-template<typename Iterator, typename FloatType>
-	void copyRealImagToComplexSequence(Iterator re, Iterator reEnd, Iterator im, std::vector<std::complex<FloatType>>& cpx);
+template<typename Iterator, typename TFloat>
+	void copyRealImagToComplexSequence(Iterator re, Iterator reEnd, Iterator im, std::vector<std::complex<TFloat>>& cpx);
 template<typename InputIterator, typename OutputIterator>
 	void copyXYZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
 template<typename InputIterator, typename OutputIterator>
@@ -58,22 +58,22 @@ template<typename InputIterator, typename OutputIterator>
 
 
 
-template<typename FloatType>
+template<typename TFloat>
 class ComplexToScaledAbsoluteOp {
 public:
-	ComplexToScaledAbsoluteOp(FloatType scale) : scale_(scale) { }
+	ComplexToScaledAbsoluteOp(TFloat scale) : scale_(scale) { }
 
 	template<typename DestType>
-	void operator()(const std::complex<FloatType>& orig, DestType& dest) {
+	void operator()(const std::complex<TFloat>& orig, DestType& dest) {
 		copy(std::sqrt(orig.real() * orig.real() + orig.imag() * orig.imag()) * scale_, dest);
 	}
 
 	template<typename DestType>
-	void operator()(const FloatType (&orig)[2], DestType& dest) {
+	void operator()(const TFloat (&orig)[2], DestType& dest) {
 		copy(std::sqrt(orig[0] * orig[0] + orig[1] * orig[1]) * scale_, dest);
 	}
 private:
-	FloatType scale_;
+	TFloat scale_;
 };
 
 template<typename T, typename U>
@@ -83,27 +83,27 @@ struct ScalarToValueFieldOp {
 	}
 };
 
-template<typename FloatType>
+template<typename TFloat>
 class ScaleComplexOp {
 public:
-	ScaleComplexOp(FloatType scale) : scale_(scale) { }
+	ScaleComplexOp(TFloat scale) : scale_(scale) { }
 
-	void operator()(const std::complex<FloatType>& orig, std::complex<FloatType>& dest) {
+	void operator()(const std::complex<TFloat>& orig, std::complex<TFloat>& dest) {
 		dest = orig * scale_;
 	}
-	void operator()(const FloatType (&orig)[2], std::complex<FloatType>& dest) {
-		dest = std::complex<FloatType>(orig[0], orig[1]) * scale_;
+	void operator()(const TFloat (&orig)[2], std::complex<TFloat>& dest) {
+		dest = std::complex<TFloat>(orig[0], orig[1]) * scale_;
 	}
-	void operator()(const std::complex<FloatType>& orig, FloatType (&dest)[2]) {
+	void operator()(const std::complex<TFloat>& orig, TFloat (&dest)[2]) {
 		dest[0] = orig.real() * scale_;
 		dest[0] = orig.imag() * scale_;
 	}
-	void operator()(const FloatType (&orig)[2], FloatType (&dest)[2]) {
+	void operator()(const TFloat (&orig)[2], TFloat (&dest)[2]) {
 		dest[0] = orig[0] * scale_;
 		dest[0] = orig[1] * scale_;
 	}
 private:
-	FloatType scale_;
+	TFloat scale_;
 };
 
 template<typename T>
@@ -120,60 +120,60 @@ private:
 
 
 
-template<typename FloatType>
+template<typename TFloat>
 void
-copy(const XYZValue<FloatType>& orig, FloatType& dest)
+copy(const XYZValue<TFloat>& orig, TFloat& dest)
 {
 	dest = orig.value;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-copy(const FloatType& orig, XYZValue<FloatType>& dest)
+copy(const TFloat& orig, XYZValue<TFloat>& dest)
 {
 	dest.value = orig;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-copy(const XYZValueFactor<FloatType>& orig, FloatType& dest)
+copy(const XYZValueFactor<TFloat>& orig, TFloat& dest)
 {
 	dest = orig.value;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-copy(const FloatType& orig, XYZValueFactor<FloatType>& dest)
+copy(const TFloat& orig, XYZValueFactor<TFloat>& dest)
 {
 	dest.value = orig;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-copy(const FloatType (&orig)[2], std::complex<FloatType>& dest)
+copy(const TFloat (&orig)[2], std::complex<TFloat>& dest)
 {
-	dest = std::complex<FloatType>(orig[0], orig[1]);
+	dest = std::complex<TFloat>(orig[0], orig[1]);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-copy(const std::complex<FloatType>& orig, FloatType (&dest)[2])
+copy(const std::complex<TFloat>& orig, TFloat (&dest)[2])
 {
 	dest[0] = orig.real();
 	dest[1] = orig.imag();
 }
 
 
-template<typename FloatType1, typename FloatType2>
+template<typename TFloat1, typename TFloat2>
 void
-copy(const FloatType1& orig, FloatType2& dest)
+copy(const TFloat1& orig, TFloat2& dest)
 {
 	dest = orig;
 }
 
-template<typename FloatType1, typename FloatType2>
+template<typename TFloat1, typename TFloat2>
 void
-copy(const std::complex<FloatType1>& orig, FloatType2 &dest)
+copy(const std::complex<TFloat1>& orig, TFloat2 &dest)
 {
 	dest = std::abs(orig);
 }
@@ -211,13 +211,13 @@ transformSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest
 	}
 }
 
-template<typename Iterator, typename FloatType>
+template<typename Iterator, typename TFloat>
 void
-copyRealImagToComplexSequence(Iterator re, Iterator reEnd, Iterator im, std::vector<std::complex<FloatType>>& cpx)
+copyRealImagToComplexSequence(Iterator re, Iterator reEnd, Iterator im, std::vector<std::complex<TFloat>>& cpx)
 {
-	typename std::vector<std::complex<FloatType>>::iterator cpxIter = cpx.begin();
+	typename std::vector<std::complex<TFloat>>::iterator cpxIter = cpx.begin();
 	while (re != reEnd) {
-		*cpxIter++ = std::complex<FloatType>(*re++, *im++);
+		*cpxIter++ = std::complex<TFloat>(*re++, *im++);
 	}
 }
 

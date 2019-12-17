@@ -86,10 +86,10 @@ public:
 	// Uses taskParamMap() to obtain the fileNameKey.
 	ParamMapPtr getSubParamMap(const char* fileNameKey) const;
 
-	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<FloatType>& container) const;
-	template<typename FloatType> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const;
-	template<typename FloatType> void saveHDF5(const std::vector<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
-	template<typename FloatType> void saveHDF5(const Matrix<FloatType>& container, const std::string& fileName, const std::string& datasetName) const;
+	template<typename TFloat> void loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<TFloat>& container) const;
+	template<typename TFloat> void loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<TFloat>& container) const;
+	template<typename TFloat> void saveHDF5(const std::vector<TFloat>& container, const std::string& fileName, const std::string& datasetName) const;
+	template<typename TFloat> void saveHDF5(const Matrix<TFloat>& container, const std::string& fileName, const std::string& datasetName) const;
 	template<typename T> void saveSignalToHDF5(const std::vector<T>& container, const std::string& outputDir,
 					unsigned int acqNumber, unsigned int baseElement,
 					unsigned int txElem, unsigned int rxElem);
@@ -125,10 +125,10 @@ public:
 	// This function blocks if waitPending = true and there is a pending request.
 	// If waitPending = false and there is a pending request, this function does nothing.
 	// This function is thread-safe.
-	template<typename FloatType> void showFigure2D(int id,
+	template<typename TFloat> void showFigure2D(int id,
 						const char* figureName,
-						const std::vector<FloatType>& xList,
-						const std::vector<FloatType>& yList,
+						const std::vector<TFloat>& xList,
+						const std::vector<TFloat>& yList,
 						bool waitPending=true,
 						bool markPoints=false);
 
@@ -271,33 +271,33 @@ private:
 
 
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Project::loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<FloatType>& container) const
+Project::loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<TFloat>& container) const
 {
 	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5Util::fileSuffix;
 	HDF5Util::load(filePath.toStdString(), datasetName, container);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Project::loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<FloatType>& container) const
+Project::loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<TFloat>& container) const
 {
 	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5Util::fileSuffix;
 	HDF5Util::load(filePath.toStdString(), datasetName, container);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Project::saveHDF5(const std::vector<FloatType>& container, const std::string& fileName, const std::string& datasetName) const
+Project::saveHDF5(const std::vector<TFloat>& container, const std::string& fileName, const std::string& datasetName) const
 {
 	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5Util::fileSuffix;
 	HDF5Util::save(container, filePath.toStdString(), datasetName);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Project::saveHDF5(const Matrix<FloatType>& container, const std::string& fileName, const std::string& datasetName) const
+Project::saveHDF5(const Matrix<TFloat>& container, const std::string& fileName, const std::string& datasetName) const
 {
 	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5Util::fileSuffix;
 	HDF5Util::save(container, filePath.toStdString(), datasetName);
@@ -452,12 +452,12 @@ Project::loadXYZFromHDF5(const std::string& inputDir,
 	Util::copyXYZFromSimpleMatrices(auxHDF5Matrix_, aux2HDF5Matrix_, aux3HDF5Matrix_, container);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
 Project::showFigure2D(int id,
 		const char* figureName,
-		const std::vector<FloatType>& xList,
-		const std::vector<FloatType>& yList,
+		const std::vector<TFloat>& xList,
+		const std::vector<TFloat>& yList,
 		bool waitPending,
 		bool markPoints)
 {

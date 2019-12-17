@@ -26,31 +26,31 @@
 namespace Lab {
 namespace Statistics {
 
-template<typename FloatType> FloatType standardDeviation(const FloatType* data, std::size_t size);
-template<typename FloatType> FloatType arithmeticMean(const FloatType* data, std::size_t size);
+template<typename TFloat> TFloat standardDeviation(const TFloat* data, std::size_t size);
+template<typename TFloat> TFloat arithmeticMean(const TFloat* data, std::size_t size);
 
 
 
-template<typename FloatType>
-FloatType
-standardDeviation(const FloatType* data, std::size_t size)
+template<typename TFloat>
+TFloat
+standardDeviation(const TFloat* data, std::size_t size)
 {
-	FloatType sum = 0.0;
-	const FloatType* end = data + size;
-	const FloatType mean = arithmeticMean(data, size);
+	TFloat sum = 0.0;
+	const TFloat* end = data + size;
+	const TFloat mean = arithmeticMean(data, size);
 	while (data != end) {
-		const FloatType e = *data++ - mean;
+		const TFloat e = *data++ - mean;
 		sum += e * e;
 	}
 	return std::sqrt(sum / size);
 }
 
-template<typename FloatType>
-FloatType
-arithmeticMean(const FloatType* data, std::size_t size)
+template<typename TFloat>
+TFloat
+arithmeticMean(const TFloat* data, std::size_t size)
 {
-	FloatType sum = 0.0;
-	const FloatType* end = data + size;
+	TFloat sum = 0.0;
+	const TFloat* end = data + size;
 	while (data != end) {
 		sum += *data++;
 	}

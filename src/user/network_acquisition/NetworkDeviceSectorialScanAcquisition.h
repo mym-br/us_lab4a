@@ -36,15 +36,15 @@
 
 namespace Lab {
 
-template<typename FloatType>
-class NetworkDeviceSectorialScanAcquisition : public DeviceSectorialScanAcquisition<FloatType> {
+template<typename TFloat>
+class NetworkDeviceSectorialScanAcquisition : public DeviceSectorialScanAcquisition<TFloat> {
 public:
 	NetworkDeviceSectorialScanAcquisition(
 		const Project& project,
-		const DeviceSectorialScanConfiguration<FloatType>& config);
+		const DeviceSectorialScanConfiguration<TFloat>& config);
 	virtual ~NetworkDeviceSectorialScanAcquisition() = default;
 
-	virtual void execute(typename DeviceSectorialScanAcquisition<FloatType>::AcquisitionDataType& acqData);
+	virtual void execute(typename DeviceSectorialScanAcquisition<TFloat>::AcquisitionDataType& acqData);
 private:
 	NetworkDeviceSectorialScanAcquisition(const NetworkDeviceSectorialScanAcquisition&) = delete;
 	NetworkDeviceSectorialScanAcquisition& operator=(const NetworkDeviceSectorialScanAcquisition&) = delete;
@@ -52,7 +52,7 @@ private:
 	NetworkDeviceSectorialScanAcquisition& operator=(NetworkDeviceSectorialScanAcquisition&&) = delete;
 
 	const Project& project_;
-	const DeviceSectorialScanConfiguration<FloatType>& config_;
+	const DeviceSectorialScanConfiguration<TFloat>& config_;
 	std::unique_ptr<PhasedArrayAcqClient> acq_;
 	std::vector<float> imageBuffer_;
 	std::vector<float> lineStartX_;
@@ -63,8 +63,8 @@ private:
 
 
 
-template<typename FloatType>
-NetworkDeviceSectorialScanAcquisition<FloatType>::NetworkDeviceSectorialScanAcquisition(const Project& project, const DeviceSectorialScanConfiguration<FloatType>& config)
+template<typename TFloat>
+NetworkDeviceSectorialScanAcquisition<TFloat>::NetworkDeviceSectorialScanAcquisition(const Project& project, const DeviceSectorialScanConfiguration<TFloat>& config)
 		: project_(project)
 		, config_(config)
 {
@@ -94,9 +94,9 @@ NetworkDeviceSectorialScanAcquisition<FloatType>::NetworkDeviceSectorialScanAcqu
 	acq_->execPostConfiguration();
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkDeviceSectorialScanAcquisition<FloatType>::execute(typename DeviceSectorialScanAcquisition<FloatType>::AcquisitionDataType& acqData)
+NetworkDeviceSectorialScanAcquisition<TFloat>::execute(typename DeviceSectorialScanAcquisition<TFloat>::AcquisitionDataType& acqData)
 {
 	LOG_DEBUG << "ACQ";
 
@@ -110,13 +110,13 @@ NetworkDeviceSectorialScanAcquisition<FloatType>::execute(typename DeviceSectori
 	acq_->getImageLineGeometry(lineStartX_, lineStartZ_, lineAngle_);
 
 	for (unsigned int j = 0; j < numCols; ++j) {
-		const FloatType angle = lineAngle_[j];
-		const FloatType sa = std::sin(angle);
-		const FloatType ca = std::cos(angle);
+		const TFloat angle = lineAngle_[j];
+		const TFloat sa = std::sin(angle);
+		const TFloat ca = std::cos(angle);
 		for (unsigned int i = 0; i < numRows; ++i) {
-			const FloatType coef = i / (numRows - FloatType(1.0));
-			const FloatType r = (config_.rangeEnd - config_.rangeStart) * coef + config_.rangeStart;
-			XZValue<FloatType>& point = acqData(j, i);
+			const TFloat coef = i / (numRows - TFloat(1.0));
+			const TFloat r = (config_.rangeEnd - config_.rangeStart) * coef + config_.rangeStart;
+			XZValue<TFloat>& point = acqData(j, i);
 			point.x = lineStartX_[j] * 1.0e-3f + sa * r;
 			point.z = lineStartZ_[j] * 1.0e-3f + ca * r;
 			point.value = imageBuffer_[i + j * numRows];

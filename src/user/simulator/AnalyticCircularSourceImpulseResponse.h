@@ -39,65 +39,65 @@ namespace Lab {
 //
 // Note:
 // - The source is surrounded by a rigid baffle.
-template<typename FloatType>
+template<typename TFloat>
 class AnalyticCircularSourceImpulseResponse {
 public:
 	AnalyticCircularSourceImpulseResponse(
-					FloatType samplingFreq,
-					FloatType propagationSpeed,
-					FloatType sourceRadius,
-					FloatType discretization=0.0 /* not used */);
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceRadius,
+					TFloat discretization=0.0 /* not used */);
 
 	// Return h/c.
-	void getImpulseResponse(FloatType x, FloatType y, FloatType z,
-				std::size_t& hOffset /* samples */, std::vector<FloatType>& h);
+	void getImpulseResponse(TFloat x, TFloat y, TFloat z,
+				std::size_t& hOffset /* samples */, std::vector<TFloat>& h);
 private:
-	FloatType samplingFreq_;
-	FloatType propagationSpeed_;
-	FloatType r_;
+	TFloat samplingFreq_;
+	TFloat propagationSpeed_;
+	TFloat r_;
 };
 
 
 
-template<typename FloatType>
-AnalyticCircularSourceImpulseResponse<FloatType>::AnalyticCircularSourceImpulseResponse(
-		FloatType samplingFreq,
-		FloatType propagationSpeed,
-		FloatType sourceRadius,
-		FloatType /*discretization*/)
+template<typename TFloat>
+AnalyticCircularSourceImpulseResponse<TFloat>::AnalyticCircularSourceImpulseResponse(
+		TFloat samplingFreq,
+		TFloat propagationSpeed,
+		TFloat sourceRadius,
+		TFloat /*discretization*/)
 			: samplingFreq_(samplingFreq)
 			, propagationSpeed_(propagationSpeed)
 			, r_(sourceRadius)
 {
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-AnalyticCircularSourceImpulseResponse<FloatType>::getImpulseResponse(
-								FloatType x,
-								FloatType y,
-								FloatType z,
+AnalyticCircularSourceImpulseResponse<TFloat>::getImpulseResponse(
+								TFloat x,
+								TFloat y,
+								TFloat z,
 								std::size_t& hOffset,
-								std::vector<FloatType>& h)
+								std::vector<TFloat>& h)
 {
 	// The field is symmetric.
 	x = std::sqrt(x * x + y * y);
 	z = std::abs(z);
 
-	const FloatType x2 = x * x;
-	const FloatType z2 = z * z;
-	const FloatType c2 = propagationSpeed_ * propagationSpeed_;
-	const FloatType r2 = r_ * r_;
-	const FloatType d1 = x - r_;
-	const FloatType d2 = x + r_;
-	const FloatType invC = 1 / propagationSpeed_;
-	const FloatType t0 = z * invC;
-	const FloatType t1 = std::sqrt(d1 * d1 + z2) * invC;
-	const FloatType t2 = std::sqrt(d2 * d2 + z2) * invC;
+	const TFloat x2 = x * x;
+	const TFloat z2 = z * z;
+	const TFloat c2 = propagationSpeed_ * propagationSpeed_;
+	const TFloat r2 = r_ * r_;
+	const TFloat d1 = x - r_;
+	const TFloat d2 = x + r_;
+	const TFloat invC = 1 / propagationSpeed_;
+	const TFloat t0 = z * invC;
+	const TFloat t1 = std::sqrt(d1 * d1 + z2) * invC;
+	const TFloat t2 = std::sqrt(d2 * d2 + z2) * invC;
 
 	// Determine the region and the start time of the impulse response.
 	unsigned int region;
-	FloatType tMin;
+	TFloat tMin;
 	if (x < r_) {
 		region = 1;
 		tMin = t0;
@@ -106,24 +106,24 @@ AnalyticCircularSourceImpulseResponse<FloatType>::getImpulseResponse(
 		tMin = t1;
 	}
 
-	const FloatType dt = 1 / samplingFreq_;
+	const TFloat dt = 1 / samplingFreq_;
 
 	const std::size_t minAbsoluteIndex = static_cast<std::size_t>(std::ceil(tMin * samplingFreq_));
 	const std::size_t maxAbsoluteIndex = static_cast<std::size_t>(std::ceil(t2 * samplingFreq_));
 	h.assign(maxAbsoluteIndex - minAbsoluteIndex + 1, 0);
-	const FloatType tOffset = minAbsoluteIndex * dt;
+	const TFloat tOffset = minAbsoluteIndex * dt;
 
-	const FloatType sigmaEps = r_ * std::numeric_limits<FloatType>::epsilon();
+	const TFloat sigmaEps = r_ * std::numeric_limits<TFloat>::epsilon();
 
-	auto setTheta = [&](FloatType t, FloatType& theta) {
-		const FloatType k1 = c2 * t * t - z2;
-		const FloatType sigma = (2 * x) * std::sqrt(std::max(k1, FloatType(0)));
+	auto setTheta = [&](TFloat t, TFloat& theta) {
+		const TFloat k1 = c2 * t * t - z2;
+		const TFloat sigma = (2 * x) * std::sqrt(std::max(k1, TFloat(0)));
 		if (sigma <= sigmaEps) return;
-		const FloatType k2 = (k1 + x2 - r2) / sigma;
+		const TFloat k2 = (k1 + x2 - r2) / sigma;
 		if (k2 >= 0) {
-			theta = std::acos(std::min(k2, FloatType(1)));
+			theta = std::acos(std::min(k2, TFloat(1)));
 		} else {
-			theta = std::acos(std::max(k2, FloatType(-1)));
+			theta = std::acos(std::max(k2, TFloat(-1)));
 		}
 	};
 
@@ -154,8 +154,8 @@ AnalyticCircularSourceImpulseResponse<FloatType>::getImpulseResponse(
 	}
 	}
 
-	//Util::multiply(h, propagationSpeed_ / FloatType(pi));
-	Util::multiply(h, 1 / FloatType(pi));
+	//Util::multiply(h, propagationSpeed_ / TFloat(pi));
+	Util::multiply(h, 1 / TFloat(pi));
 	hOffset = minAbsoluteIndex;
 }
 

@@ -32,28 +32,28 @@ namespace Waveform {
 // For types 2a, 2b and 2c, numPeriods doesn't significantly change the shape,
 // if increased it only gives more time for the fade-out
 // (reducing the discontinuity in the derivative at the end).
-template<typename FloatType> void get(const std::string& type,
-					FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods,
-					std::vector<FloatType>& v);
+template<typename TFloat> void get(const std::string& type,
+					TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods,
+					std::vector<TFloat>& v);
 
-template<typename FloatType> void getType1(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods,
-						std::vector<FloatType>& v);
-template<typename FloatType> void getType2(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, FloatType k,
-						std::vector<FloatType>& v);
-template<typename FloatType> void getType2a(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods,
-						std::vector<FloatType>& v);
-template<typename FloatType> void getType2b(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods,
-						std::vector<FloatType>& v);
-template<typename FloatType> void getType2c(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods,
-						std::vector<FloatType>& v);
+template<typename TFloat> void getType1(TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods,
+						std::vector<TFloat>& v);
+template<typename TFloat> void getType2(TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods, TFloat k,
+						std::vector<TFloat>& v);
+template<typename TFloat> void getType2a(TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods,
+						std::vector<TFloat>& v);
+template<typename TFloat> void getType2b(TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods,
+						std::vector<TFloat>& v);
+template<typename TFloat> void getType2c(TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods,
+						std::vector<TFloat>& v);
 
 
 
-template<typename FloatType>
+template<typename TFloat>
 void
 get(const std::string& type,
-	FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods,
-	std::vector<FloatType>& v)
+	TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods,
+	std::vector<TFloat>& v)
 {
 	if (type == "1") {
 		getType1(centerFreq, samplingFreq, numPeriods, v);
@@ -68,21 +68,21 @@ get(const std::string& type,
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-getType1(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
+getType1(TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods, std::vector<TFloat>& v)
 {
 	if (numPeriods <= 0.0) numPeriods = 3.0;
 
-	const FloatType end = numPeriods / centerFreq;
-	const FloatType dt = 1.0 / samplingFreq;
-	const FloatType w = 2.0 * pi * centerFreq;
-	const FloatType k = 1.0 / numPeriods;
+	const TFloat end = numPeriods / centerFreq;
+	const TFloat dt = 1.0 / samplingFreq;
+	const TFloat w = 2.0 * pi * centerFreq;
+	const TFloat k = 1.0 / numPeriods;
 	const unsigned int numSamples = static_cast<unsigned int>(end / dt) + 1U;
 	v.resize(numSamples);
 	for (unsigned int i = 0; i < numSamples; ++i) {
-		const FloatType t = dt * i;
-		v[i] = std::sin(w * t) * (FloatType(0.5) - FloatType(0.5) * std::cos(w * k * t));
+		const TFloat t = dt * i;
+		v[i] = std::sin(w * t) * (TFloat(0.5) - TFloat(0.5) * std::cos(w * k * t));
 	}
 }
 
@@ -91,50 +91,50 @@ getType1(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std
 // Diffraction impulse response of rectangular transducers.
 // J. Acoust. Soc. Am., vol. 92, no. 2, pp. 651-662, 1992.
 // DOI: 10.1121/1.403990
-template<typename FloatType>
+template<typename TFloat>
 void
-getType2(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, FloatType k, std::vector<FloatType>& v)
+getType2(TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods, TFloat k, std::vector<TFloat>& v)
 {
-	const FloatType end = numPeriods / centerFreq;
-	const FloatType dt = 1.0 / samplingFreq;
-	const FloatType w = 2.0 * pi * centerFreq;
+	const TFloat end = numPeriods / centerFreq;
+	const TFloat dt = 1.0 / samplingFreq;
+	const TFloat w = 2.0 * pi * centerFreq;
 	const unsigned int numSamples = static_cast<unsigned int>(end / dt) + 1U;
 	v.resize(numSamples);
-	FloatType maxVal = 0.0;
+	TFloat maxVal = 0.0;
 	for (unsigned int i = 0; i < numSamples; ++i) {
-		const FloatType t = dt * i;
+		const TFloat t = dt * i;
 		v[i] = t * t * t * std::exp(-k * centerFreq * t) * std::cos(w * t);
-		const FloatType absVal = std::abs(v[i]);
+		const TFloat absVal = std::abs(v[i]);
 		if (absVal > maxVal) maxVal = absVal;
 	}
 	for (auto& elem : v) {
 		elem /= maxVal;
 	}
 }
-template<typename FloatType>
+template<typename TFloat>
 void
-getType2a(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
+getType2a(TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods, std::vector<TFloat>& v)
 {
 	if (numPeriods <= 0.0) numPeriods = 3.25;
 
-	getType2(centerFreq, samplingFreq, numPeriods, FloatType(3.833), v);
+	getType2(centerFreq, samplingFreq, numPeriods, TFloat(3.833), v);
 }
-template<typename FloatType>
+template<typename TFloat>
 void
-getType2b(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
+getType2b(TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods, std::vector<TFloat>& v)
 {
 	if (numPeriods <= 0.0) numPeriods = 8.25;
 
-	getType2(centerFreq, samplingFreq, numPeriods, FloatType(1.437), v);
+	getType2(centerFreq, samplingFreq, numPeriods, TFloat(1.437), v);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-getType2c(FloatType centerFreq, FloatType samplingFreq, FloatType numPeriods, std::vector<FloatType>& v)
+getType2c(TFloat centerFreq, TFloat samplingFreq, TFloat numPeriods, std::vector<TFloat>& v)
 {
 	if (numPeriods <= 0.0) numPeriods = 4.25;
 
-	getType2(centerFreq, samplingFreq, numPeriods, FloatType(3.5), v);
+	getType2(centerFreq, samplingFreq, numPeriods, TFloat(3.5), v);
 }
 
 } // namespace Waveform

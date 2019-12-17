@@ -38,7 +38,7 @@ namespace Lab {
 // The FFT size is greater than the size of filterCoeff.
 //
 // This class is copy constructible and assignable.
-template<typename FloatType>
+template<typename TFloat>
 class FFTWFilter {
 public:
 	FFTWFilter();
@@ -47,10 +47,10 @@ public:
 
 	FFTWFilter& operator=(const FFTWFilter& o);
 
-	void setCoefficients(const std::vector<FloatType>& filterCoeff);
+	void setCoefficients(const std::vector<TFloat>& filterCoeff);
 
 	// y.size() will be x.size() + filterCoeff.size() - 1.
-	void filter(const std::vector<FloatType>& x, std::vector<FloatType>& y);
+	void filter(const std::vector<TFloat>& x, std::vector<TFloat>& y);
 private:
 	static constexpr unsigned int minFFTSize = 512;
 
@@ -58,18 +58,18 @@ private:
 	FFTWFilter& operator=(FFTWFilter&&) = delete;
 
 	void clean();
-	void copyInput(const std::vector<FloatType>& v, long offset);
+	void copyInput(const std::vector<TFloat>& v, long offset);
 	void prepare();
 
 	bool initialized_;
 	unsigned int fftSize_;
 	unsigned int freqDataSize_;
 	unsigned int filterLength_;
-	FloatType* fftIn1_;
-	FloatType (*fftOut1_)[2]; // pointer to array of size two
-	FloatType* fftIn2_;
-	FloatType (*fftOut2_)[2]; // pointer to array of size two
-	FloatType* ifftOut_;
+	TFloat* fftIn1_;
+	TFloat (*fftOut1_)[2]; // pointer to array of size two
+	TFloat* fftIn2_;
+	TFloat (*fftOut2_)[2]; // pointer to array of size two
+	TFloat* ifftOut_;
 	FFTWPlan fftPlan1_;
 	FFTWPlan fftPlan2_;
 	FFTWPlan ifftPlan_;
@@ -77,8 +77,8 @@ private:
 
 
 
-template<typename FloatType>
-FFTWFilter<FloatType>::FFTWFilter()
+template<typename TFloat>
+FFTWFilter<TFloat>::FFTWFilter()
 		: initialized_()
 		, fftSize_()
 		, freqDataSize_()
@@ -94,8 +94,8 @@ FFTWFilter<FloatType>::FFTWFilter()
 {
 }
 
-template<typename FloatType>
-FFTWFilter<FloatType>::FFTWFilter(const FFTWFilter& o)
+template<typename TFloat>
+FFTWFilter<TFloat>::FFTWFilter(const FFTWFilter& o)
 		: initialized_()
 		, fftSize_()
 		, freqDataSize_()
@@ -112,15 +112,15 @@ FFTWFilter<FloatType>::FFTWFilter(const FFTWFilter& o)
 	*this = o;
 }
 
-template<typename FloatType>
-FFTWFilter<FloatType>::~FFTWFilter()
+template<typename TFloat>
+FFTWFilter<TFloat>::~FFTWFilter()
 {
 	clean();
 }
 
-template<typename FloatType>
-FFTWFilter<FloatType>&
-FFTWFilter<FloatType>::operator=(const FFTWFilter& o)
+template<typename TFloat>
+FFTWFilter<TFloat>&
+FFTWFilter<TFloat>::operator=(const FFTWFilter& o)
 {
 	if (&o != this) {
 		if (o.initialized_) {
@@ -137,9 +137,9 @@ FFTWFilter<FloatType>::operator=(const FFTWFilter& o)
 	return *this;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-FFTWFilter<FloatType>::clean()
+FFTWFilter<TFloat>::clean()
 {
 //	LOG_DEBUG << "FFTWFilter::clean()";
 	{
@@ -159,9 +159,9 @@ FFTWFilter<FloatType>::clean()
 	initialized_ = false;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-FFTWFilter<FloatType>::prepare()
+FFTWFilter<TFloat>::prepare()
 {
 	assert(!initialized_);
 	assert(fftSize_ > 0);
@@ -170,11 +170,11 @@ FFTWFilter<FloatType>::prepare()
 	//LOG_DEBUG << "FFTWFilter::prepare()";
 
 	try {
-		fftIn1_   = FFTW::alloc_real<FloatType>(fftSize_);
-		fftOut1_  = FFTW::alloc_complex<FloatType>(freqDataSize_);
-		fftIn2_   = FFTW::alloc_real<FloatType>(fftSize_);
-		fftOut2_  = FFTW::alloc_complex<FloatType>(freqDataSize_);
-		ifftOut_  = FFTW::alloc_real<FloatType>(fftSize_);
+		fftIn1_   = FFTW::alloc_real<TFloat>(fftSize_);
+		fftOut1_  = FFTW::alloc_complex<TFloat>(freqDataSize_);
+		fftIn2_   = FFTW::alloc_real<TFloat>(fftSize_);
+		fftOut2_  = FFTW::alloc_complex<TFloat>(freqDataSize_);
+		ifftOut_  = FFTW::alloc_real<TFloat>(fftSize_);
 		FFTW fftw;
 		fftPlan1_ = fftw.plan_dft_r2c_1d(fftSize_, fftIn1_, fftOut1_);
 		fftPlan2_ = fftw.plan_dft_r2c_1d(fftSize_, fftIn2_, fftOut2_);
@@ -185,9 +185,9 @@ FFTWFilter<FloatType>::prepare()
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-FFTWFilter<FloatType>::setCoefficients(const std::vector<FloatType>& filterCoeff)
+FFTWFilter<TFloat>::setCoefficients(const std::vector<TFloat>& filterCoeff)
 {
 	if (initialized_) THROW_EXCEPTION(InvalidStateException, "The filter is already initialized.");
 
@@ -204,42 +204,42 @@ FFTWFilter<FloatType>::setCoefficients(const std::vector<FloatType>& filterCoeff
 
 	prepare();
 
-	memcpy(fftIn1_, &filterCoeff[0], sizeof(FloatType) * filterSize);
-	memset(fftIn1_ + filterSize, 0, sizeof(FloatType) * (fftSize_ - filterSize));
+	memcpy(fftIn1_, &filterCoeff[0], sizeof(TFloat) * filterSize);
+	memset(fftIn1_ + filterSize, 0, sizeof(TFloat) * (fftSize_ - filterSize));
 	FFTW::execute(fftPlan1_);
 
 	initialized_ = true;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-FFTWFilter<FloatType>::copyInput(const std::vector<FloatType>& v, long offset)
+FFTWFilter<TFloat>::copyInput(const std::vector<TFloat>& v, long offset)
 {
 	if (offset < 0) {
 		const std::size_t dataSize = v.size();
-		memset(fftIn2_, 0, sizeof(FloatType) * (fftSize_ / 2));
+		memset(fftIn2_, 0, sizeof(TFloat) * (fftSize_ / 2));
 		if (dataSize < fftSize_ / 2) {
-			memcpy(fftIn2_ + fftSize_ / 2           , &v[0], sizeof(FloatType) * dataSize);
-			memset(fftIn2_ + fftSize_ / 2 + dataSize,     0, sizeof(FloatType) * (fftSize_ / 2 - dataSize));
+			memcpy(fftIn2_ + fftSize_ / 2           , &v[0], sizeof(TFloat) * dataSize);
+			memset(fftIn2_ + fftSize_ / 2 + dataSize,     0, sizeof(TFloat) * (fftSize_ / 2 - dataSize));
 		} else {
-			memcpy(fftIn2_ + fftSize_ / 2           , &v[0], sizeof(FloatType) * (fftSize_ / 2));
+			memcpy(fftIn2_ + fftSize_ / 2           , &v[0], sizeof(TFloat) * (fftSize_ / 2));
 		}
 	} else {
 		const unsigned long base = offset + 1;
 		const unsigned long dataSize = v.size() - base;
 		fftIn2_[0] = 0.0;
 		if (dataSize < fftSize_ - 1) {
-			memcpy(fftIn2_ + 1           , &v[base], sizeof(FloatType) * dataSize);
-			memset(fftIn2_ + 1 + dataSize,        0, sizeof(FloatType) * (fftSize_ - 1 - dataSize));
+			memcpy(fftIn2_ + 1           , &v[base], sizeof(TFloat) * dataSize);
+			memset(fftIn2_ + 1 + dataSize,        0, sizeof(TFloat) * (fftSize_ - 1 - dataSize));
 		} else {
-			memcpy(fftIn2_ + 1           , &v[base], sizeof(FloatType) * (fftSize_ - 1));
+			memcpy(fftIn2_ + 1           , &v[base], sizeof(TFloat) * (fftSize_ - 1));
 		}
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-FFTWFilter<FloatType>::filter(const std::vector<FloatType>& x, std::vector<FloatType>& y)
+FFTWFilter<TFloat>::filter(const std::vector<TFloat>& x, std::vector<TFloat>& y)
 {
 	if (!initialized_) THROW_EXCEPTION(InvalidStateException, "The filter has not been initialized.");
 
@@ -258,13 +258,13 @@ FFTWFilter<FloatType>::filter(const std::vector<FloatType>& x, std::vector<Float
 		FFTW::execute(fftPlan2_);
 
 		{
-			const FloatType (*p1)[2] = fftOut1_;
-			const FloatType (*p1End)[2] = fftOut1_ + freqDataSize_;
-			FloatType (*p2)[2] = fftOut2_;
+			const TFloat (*p1)[2] = fftOut1_;
+			const TFloat (*p1End)[2] = fftOut1_ + freqDataSize_;
+			TFloat (*p2)[2] = fftOut2_;
 			while (p1 != p1End) {
 				// Multiplication of two complex numbers.
-				const FloatType re = (*p1)[0] * (*p2)[0] - (*p1)[1] * (*p2)[1];
-				const FloatType im = (*p1)[0] * (*p2)[1] + (*p1)[1] * (*p2)[0];
+				const TFloat re = (*p1)[0] * (*p2)[0] - (*p1)[1] * (*p2)[1];
+				const TFloat im = (*p1)[0] * (*p2)[1] + (*p1)[1] * (*p2)[0];
 				(*p2)[0] = re;
 				(*p2)[1] = im;
 				++p1; ++p2;
@@ -276,9 +276,9 @@ FFTWFilter<FloatType>::filter(const std::vector<FloatType>& x, std::vector<Float
 		const std::size_t offset = i + halfFFTSize;
 		const long numOutElem = std::min<long>(halfFFTSize, static_cast<long>(ySize) - static_cast<long>(offset));
 		if (numOutElem > 0) {
-			const FloatType* orig = ifftOut_ + halfFFTSize;
-			const FloatType* origEnd = orig + numOutElem;
-			FloatType* dest = &y[offset];
+			const TFloat* orig = ifftOut_ + halfFFTSize;
+			const TFloat* origEnd = orig + numOutElem;
+			TFloat* dest = &y[offset];
 			while (orig != origEnd) {
 				*dest++ = *orig++;
 			}
@@ -286,7 +286,7 @@ FFTWFilter<FloatType>::filter(const std::vector<FloatType>& x, std::vector<Float
 	}
 
 	// Normalization.
-	Util::multiply<FloatType>(y, 1 / static_cast<FloatType>(fftSize_));
+	Util::multiply<TFloat>(y, 1 / static_cast<TFloat>(fftSize_));
 }
 
 } // namespace Lab

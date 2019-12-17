@@ -30,7 +30,7 @@
 namespace Lab {
 
 // Configuration for imaging using all the active group elements in transmission and reception - one medium.
-template<typename FloatType>
+template<typename TFloat>
 struct TnRnConfiguration {
 	TnRnConfiguration() = default;
 	TnRnConfiguration(const ParameterMap& imgPM, const ParameterMap& arrayPM) { load(imgPM, arrayPM); }
@@ -38,26 +38,26 @@ struct TnRnConfiguration {
 	unsigned int numElements;
 	unsigned int numElementsMux;
 	unsigned int numPulses;
-	FloatType centerFrequency; // Hz
-	FloatType maxFrequency; // Hz
-	FloatType acquisitionTime; // s
-	FloatType minGain; // dB
-	FloatType maxGain; // dB
-	FloatType propagationSpeed; // m/s
-	FloatType acquisitionDelay; // s
-	FloatType samplingFrequency; // Hz
-	FloatType deadZoneM; // m
-	FloatType valueScale;
+	TFloat centerFrequency; // Hz
+	TFloat maxFrequency; // Hz
+	TFloat acquisitionTime; // s
+	TFloat minGain; // dB
+	TFloat maxGain; // dB
+	TFloat propagationSpeed; // m/s
+	TFloat acquisitionDelay; // s
+	TFloat samplingFrequency; // Hz
+	TFloat deadZoneM; // m
+	TFloat valueScale;
 
-	std::vector<XY<FloatType>> txElemPos; // m
-	std::vector<XY<FloatType>> rxElemPos; // m
+	std::vector<XY<TFloat>> txElemPos; // m
+	std::vector<XY<TFloat>> rxElemPos; // m
 
 	void load(const ParameterMap& imgPM, const ParameterMap& arrayPM);
 };
 
-template<typename FloatType>
+template<typename TFloat>
 void
-TnRnConfiguration<FloatType>::load(const ParameterMap& imgPM, const ParameterMap& arrayPM)
+TnRnConfiguration<TFloat>::load(const ParameterMap& imgPM, const ParameterMap& arrayPM)
 {
 	imgPM.getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
 	imgPM.getValue(numElements      , "num_elements"       ,       1, numElementsMux);

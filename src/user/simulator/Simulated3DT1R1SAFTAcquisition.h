@@ -36,17 +36,17 @@
 
 namespace Lab {
 
-template<typename FloatType>
-class Simulated3DT1R1SAFTAcquisition : public STAAcquisition<FloatType> {
+template<typename TFloat>
+class Simulated3DT1R1SAFTAcquisition : public STAAcquisition<TFloat> {
 public:
-	Simulated3DT1R1SAFTAcquisition(Project& project, const SA3DConfiguration<FloatType>& config);
+	Simulated3DT1R1SAFTAcquisition(Project& project, const SA3DConfiguration<TFloat>& config);
 	virtual ~Simulated3DT1R1SAFTAcquisition() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void execute(unsigned int txElement,
-				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
+				typename STAAcquisition<TFloat>::AcquisitionDataType& acqData);
 
-	void modifyReflectorsOffset(FloatType offsetX, FloatType offsetY);
+	void modifyReflectorsOffset(TFloat offsetX, TFloat offsetY);
 private:
 	Simulated3DT1R1SAFTAcquisition(const Simulated3DT1R1SAFTAcquisition&) = delete;
 	Simulated3DT1R1SAFTAcquisition& operator=(const Simulated3DT1R1SAFTAcquisition&) = delete;
@@ -54,19 +54,19 @@ private:
 	Simulated3DT1R1SAFTAcquisition& operator=(Simulated3DT1R1SAFTAcquisition&&) = delete;
 
 	Project& project_;
-	const SA3DConfiguration<FloatType>& config_;
-	FloatType maxAbsValue_; // auxiliar
-	std::unique_ptr<Simulated3DAcquisitionDevice<FloatType>> acqDevice_;
-	std::vector<XYZValue<FloatType>> reflectorList_;
-	FloatType reflectorsOffsetX_;
-	FloatType reflectorsOffsetY_;
+	const SA3DConfiguration<TFloat>& config_;
+	TFloat maxAbsValue_; // auxiliar
+	std::unique_ptr<Simulated3DAcquisitionDevice<TFloat>> acqDevice_;
+	std::vector<XYZValue<TFloat>> reflectorList_;
+	TFloat reflectorsOffsetX_;
+	TFloat reflectorsOffsetY_;
 	unsigned int baseElement_;
 };
 
 
 
-template<typename FloatType>
-Simulated3DT1R1SAFTAcquisition<FloatType>::Simulated3DT1R1SAFTAcquisition(Project& project, const SA3DConfiguration<FloatType>& config)
+template<typename TFloat>
+Simulated3DT1R1SAFTAcquisition<TFloat>::Simulated3DT1R1SAFTAcquisition(Project& project, const SA3DConfiguration<TFloat>& config)
 		: project_(project)
 		, config_(config)
 		, maxAbsValue_()
@@ -79,7 +79,7 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::Simulated3DT1R1SAFTAcquisition(Projec
 	pm->getValue(reflectorsOffsetX_, "reflectors_offset_x", -10000.0, 10000.0);
 	pm->getValue(reflectorsOffsetY_, "reflectors_offset_y", -10000.0, 10000.0);
 
-	Matrix<FloatType> inputReflectorList;
+	Matrix<TFloat> inputReflectorList;
 	project_.loadHDF5(reflectorsFileName, "reflectors", inputReflectorList);
 	if (inputReflectorList.n2() != 4) {
 		THROW_EXCEPTION(InvalidValueException, "Wrong number of columns (" << inputReflectorList.n2() <<
@@ -88,14 +88,14 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::Simulated3DT1R1SAFTAcquisition(Projec
 
 	reflectorList_.resize(inputReflectorList.n1());
 	for (std::size_t i = 0, end = inputReflectorList.n1(); i < end; ++i) {
-		XYZValue<FloatType>& data = reflectorList_[i];
+		XYZValue<TFloat>& data = reflectorList_[i];
 		data.x     = inputReflectorList(i, 0);
 		data.y     = inputReflectorList(i, 1);
 		data.z     = inputReflectorList(i, 2);
 		data.value = inputReflectorList(i, 3);
 	}
 
-	acqDevice_ = std::make_unique<Simulated3DAcquisitionDevice<FloatType>>(
+	acqDevice_ = std::make_unique<Simulated3DAcquisitionDevice<TFloat>>(
 								*pm,
 								*arrayPM,
 								config_.samplingFrequency,
@@ -109,17 +109,17 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::Simulated3DT1R1SAFTAcquisition(Projec
 	acqDevice_->setGain(config_.minGain);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DT1R1SAFTAcquisition<FloatType>::prepare(unsigned int baseElement)
+Simulated3DT1R1SAFTAcquisition<TFloat>::prepare(unsigned int baseElement)
 {
 	baseElement_ = baseElement;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DT1R1SAFTAcquisition<FloatType>::execute(unsigned int txElement,
-							typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
+Simulated3DT1R1SAFTAcquisition<TFloat>::execute(unsigned int txElement,
+							typename STAAcquisition<TFloat>::AcquisitionDataType& acqData)
 {
 	LOG_DEBUG << "ACQ baseElement=" << baseElement_ << " txElement=" << txElement;
 
@@ -162,18 +162,18 @@ Simulated3DT1R1SAFTAcquisition<FloatType>::execute(unsigned int txElement,
 	rxMask[rxElem] = true;
 	acqDevice_->setActiveRxElements(rxMask);
 
-	const std::vector<FloatType>& signalList = acqDevice_->getSignalList();
+	const std::vector<TFloat>& signalList = acqDevice_->getSignalList();
 
-	const FloatType mx = Util::maxAbsolute(signalList);
+	const TFloat mx = Util::maxAbsolute(signalList);
 	if (mx > maxAbsValue_) maxAbsValue_ = mx;
 	LOG_DEBUG << "########## max(abs(signalList)): " << mx << " global: " << maxAbsValue_;
 
 	std::copy(signalList.begin(), signalList.end(), acqData.begin());
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-Simulated3DT1R1SAFTAcquisition<FloatType>::modifyReflectorsOffset(FloatType offsetX, FloatType offsetY)
+Simulated3DT1R1SAFTAcquisition<TFloat>::modifyReflectorsOffset(TFloat offsetX, TFloat offsetY)
 {
 	acqDevice_->setReflectorOffset(reflectorsOffsetX_ + offsetX, reflectorsOffsetY_ + offsetY);
 }

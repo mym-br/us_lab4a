@@ -33,28 +33,28 @@
 namespace Lab {
 
 // Configuration for 3D Synthetic Aperture - one medium.
-template<typename FloatType>
+template<typename TFloat>
 struct SA3DConfiguration {
 	SA3DConfiguration() = default;
 	SA3DConfiguration(const ParameterMap& saPM, const ParameterMap& arrayPM) { load(saPM, arrayPM); }
 
 	unsigned int numElementsMux;
 	unsigned int numPulses;
-	FloatType centerFrequency; // Hz
-	FloatType maxFrequency; // Hz
-	FloatType acquisitionTime; // s
-	FloatType minGain; // dB
-	FloatType maxGain; // dB
-	FloatType propagationSpeed; // m/s
-	FloatType acquisitionDelay; // s
-	FloatType samplingFrequency; // Hz
-	FloatType deadZoneM; // m
-	FloatType valueScale;
+	TFloat centerFrequency; // Hz
+	TFloat maxFrequency; // Hz
+	TFloat acquisitionTime; // s
+	TFloat minGain; // dB
+	TFloat maxGain; // dB
+	TFloat propagationSpeed; // m/s
+	TFloat acquisitionDelay; // s
+	TFloat samplingFrequency; // Hz
+	TFloat deadZoneM; // m
+	TFloat valueScale;
 
 	std::vector<unsigned int> activeTxElem; // relative to the base element
 	std::vector<unsigned int> activeRxElem; // relative to the base element
-	std::vector<XY<FloatType>> txElemPos; // m
-	std::vector<XY<FloatType>> rxElemPos; // m
+	std::vector<XY<TFloat>> txElemPos; // m
+	std::vector<XY<TFloat>> rxElemPos; // m
 
 	void load(const ParameterMap& saPM, const ParameterMap& arrayPM);
 
@@ -62,9 +62,9 @@ private:
 	static void fillActiveElem(const std::string& listStr, unsigned int maxElem, std::vector<unsigned int>& activeElem);
 };
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SA3DConfiguration<FloatType>::fillActiveElem(const std::string& listStr, unsigned int maxElem,
+SA3DConfiguration<TFloat>::fillActiveElem(const std::string& listStr, unsigned int maxElem,
 						std::vector<unsigned int>& activeElem)
 {
 	std::istringstream in(listStr);
@@ -105,9 +105,9 @@ SA3DConfiguration<FloatType>::fillActiveElem(const std::string& listStr, unsigne
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-SA3DConfiguration<FloatType>::load(const ParameterMap& saPM, const ParameterMap& arrayPM)
+SA3DConfiguration<TFloat>::load(const ParameterMap& saPM, const ParameterMap& arrayPM)
 {
 	saPM.getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
 	saPM.getValue(numPulses        , "num_pulses"         ,       1,     100);

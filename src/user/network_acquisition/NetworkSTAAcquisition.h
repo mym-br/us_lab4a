@@ -37,17 +37,17 @@
 
 namespace Lab {
 
-template<typename FloatType>
-class NetworkSTAAcquisition : public STAAcquisition<FloatType> {
+template<typename TFloat>
+class NetworkSTAAcquisition : public STAAcquisition<TFloat> {
 public:
 	NetworkSTAAcquisition(
 		const Project& project,
-		const STAConfiguration<FloatType>& config);
+		const STAConfiguration<TFloat>& config);
 	virtual ~NetworkSTAAcquisition() = default;
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void execute(unsigned int txElement,
-				typename STAAcquisition<FloatType>::AcquisitionDataType& acqData);
+				typename STAAcquisition<TFloat>::AcquisitionDataType& acqData);
 private:
 	NetworkSTAAcquisition(const NetworkSTAAcquisition&) = delete;
 	NetworkSTAAcquisition& operator=(const NetworkSTAAcquisition&) = delete;
@@ -55,7 +55,7 @@ private:
 	NetworkSTAAcquisition& operator=(NetworkSTAAcquisition&&) = delete;
 
 	const Project& project_;
-	const STAConfiguration<FloatType>& config_;
+	const STAConfiguration<TFloat>& config_;
 	std::unique_ptr<ArrayAcqClient> acq_;
 	std::vector<float> signalBuffer_;
 	double valueFactor_;
@@ -64,8 +64,8 @@ private:
 
 
 
-template<typename FloatType>
-NetworkSTAAcquisition<FloatType>::NetworkSTAAcquisition(const Project& project, const STAConfiguration<FloatType>& config)
+template<typename TFloat>
+NetworkSTAAcquisition<TFloat>::NetworkSTAAcquisition(const Project& project, const STAConfiguration<TFloat>& config)
 		: project_(project)
 		, config_(config)
 		, acq_()
@@ -92,9 +92,9 @@ NetworkSTAAcquisition<FloatType>::NetworkSTAAcquisition(const Project& project, 
 	acq_->execPostConfiguration();
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkSTAAcquisition<FloatType>::prepare(unsigned int baseElement)
+NetworkSTAAcquisition<TFloat>::prepare(unsigned int baseElement)
 {
 	if (baseElement + config_.numElements > config_.numElementsMux) {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid base element:" << baseElement << '.');
@@ -103,10 +103,10 @@ NetworkSTAAcquisition<FloatType>::prepare(unsigned int baseElement)
 	acq_->setBaseElement(baseElement);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-NetworkSTAAcquisition<FloatType>::execute(unsigned int txElement,
-						typename STAAcquisition<FloatType>::AcquisitionDataType& acqData)
+NetworkSTAAcquisition<TFloat>::execute(unsigned int txElement,
+						typename STAAcquisition<TFloat>::AcquisitionDataType& acqData)
 {
 	LOG_DEBUG << "ACQ txElement=" << txElement;
 
@@ -133,12 +133,12 @@ NetworkSTAAcquisition<FloatType>::execute(unsigned int txElement,
 			acq_->getSignal(signalBuffer_);
 			Util::addElements(signalBuffer_.begin(), acqData.begin(), acqData.end());
 		}
-		const FloatType factor = valueFactor_ / static_cast<FloatType>(averageN_);
+		const TFloat factor = valueFactor_ / static_cast<TFloat>(averageN_);
 		Util::multiply(acqData, factor);
 	} else {
 		acq_->getSignal(signalBuffer_);
 		std::copy(signalBuffer_.begin(), signalBuffer_.end(), acqData.begin());
-		Util::multiply(acqData, static_cast<FloatType>(valueFactor_));
+		Util::multiply(acqData, static_cast<TFloat>(valueFactor_));
 	}
 }
 

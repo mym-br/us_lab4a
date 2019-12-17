@@ -25,7 +25,7 @@
 namespace Lab {
 
 // Configuration for Synthetic Transmit Aperture - one medium.
-template<typename FloatType>
+template<typename TFloat>
 struct STAConfiguration {
 	STAConfiguration() = default;
 	STAConfiguration(const ParameterMap& pm) { load(pm); }
@@ -35,26 +35,26 @@ struct STAConfiguration {
 	unsigned int firstTxElem;
 	unsigned int lastTxElem;
 	unsigned int numPulses;
-	FloatType pitch; // m
-	FloatType centerFrequency; // Hz
-	FloatType maxFrequency; // Hz
-	FloatType acquisitionTime; // s
-	FloatType minGain; // dB
-	FloatType maxGain; // dB
-	FloatType propagationSpeed; // m/s
-	FloatType acquisitionDelay; // s
-	FloatType samplingFrequency; // Hz
-	FloatType deadZoneM; // m
-	FloatType valueScale;
+	TFloat pitch; // m
+	TFloat centerFrequency; // Hz
+	TFloat maxFrequency; // Hz
+	TFloat acquisitionTime; // s
+	TFloat minGain; // dB
+	TFloat maxGain; // dB
+	TFloat propagationSpeed; // m/s
+	TFloat acquisitionDelay; // s
+	TFloat samplingFrequency; // Hz
+	TFloat deadZoneM; // m
+	TFloat valueScale;
 
 	void load(const ParameterMap& pm);
 };
 
 
 
-template<typename FloatType>
+template<typename TFloat>
 void
-STAConfiguration<FloatType>::load(const ParameterMap& pm)
+STAConfiguration<TFloat>::load(const ParameterMap& pm)
 {
 	pm.getValue(numElementsMux   , "num_elements_mux"   ,       1,    1024);
 	pm.getValue(numElements      , "num_elements"       ,       1, numElementsMux);

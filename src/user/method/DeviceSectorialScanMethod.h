@@ -42,7 +42,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class DeviceSectorialScanMethod : public Method {
 public:
 	DeviceSectorialScanMethod(Project& project);
@@ -61,21 +61,21 @@ private:
 	void execTriggeredNetworkImaging();
 
 	Project& project_;
-	DeviceSectorialScanConfiguration<FloatType> config_;
+	DeviceSectorialScanConfiguration<TFloat> config_;
 };
 
 
 
-template<typename FloatType>
-DeviceSectorialScanMethod<FloatType>::DeviceSectorialScanMethod(Project& project)
+template<typename TFloat>
+DeviceSectorialScanMethod<TFloat>::DeviceSectorialScanMethod(Project& project)
 		: project_(project)
 {
 	config_.load(*project_.getParamMap("config-device_sectorial_scan_method.txt"));
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DeviceSectorialScanMethod<FloatType>::execute()
+DeviceSectorialScanMethod<TFloat>::execute()
 {
 	switch (project_.method()) {
 	case MethodEnum::device_sectorial_scan_sp_network:
@@ -95,20 +95,20 @@ DeviceSectorialScanMethod<FloatType>::execute()
 	}
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DeviceSectorialScanMethod<FloatType>::getSingleImageFromNetwork()
+DeviceSectorialScanMethod<TFloat>::getSingleImageFromNetwork()
 {
 	const ParameterMap& pm = project_.taskParamMap();
 	const auto outputDir = pm.value<std::string>("output_dir");
 
 	project_.createDirectory(outputDir, false);
 
-	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
-	Matrix<XZValue<FloatType>> acqImageData;
+	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<TFloat>>(project_, config_);
+	Matrix<XZValue<TFloat>> acqImageData;
 	acquisition->execute(acqImageData);
 
-	Matrix<XYZValue<FloatType>> imageData;
+	Matrix<XYZValue<TFloat>> imageData;
 	Util::copy(acqImageData, imageData);
 
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
@@ -120,14 +120,14 @@ DeviceSectorialScanMethod<FloatType>::getSingleImageFromNetwork()
 	project_.saveXYZToHDF5(imageData, outputDir);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DeviceSectorialScanMethod<FloatType>::showSavedImage()
+DeviceSectorialScanMethod<TFloat>::showSavedImage()
 {
 	const ParameterMap& pm = project_.taskParamMap();
 	const auto outputDir = pm.value<std::string>("output_dir");
 
-	Matrix<XYZValue<FloatType>> imageData;
+	Matrix<XYZValue<TFloat>> imageData;
 
 	project_.loadImageFromHDF5(outputDir, "image_value", "value", imageData);
 	project_.loadXYZFromHDF5(outputDir,
@@ -142,13 +142,13 @@ DeviceSectorialScanMethod<FloatType>::showSavedImage()
 				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DeviceSectorialScanMethod<FloatType>::execContinuousNetworkImaging()
+DeviceSectorialScanMethod<TFloat>::execContinuousNetworkImaging()
 {
-	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
-	Matrix<XZValue<FloatType>> acqImageData;
-	Matrix<XYZValue<FloatType>> imageData;
+	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<TFloat>>(project_, config_);
+	Matrix<XZValue<TFloat>> acqImageData;
+	Matrix<XYZValue<TFloat>> imageData;
 
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
@@ -170,18 +170,18 @@ DeviceSectorialScanMethod<FloatType>::execContinuousNetworkImaging()
 	} while (!project_.processingCancellationRequested());
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-DeviceSectorialScanMethod<FloatType>::execTriggeredNetworkImaging()
+DeviceSectorialScanMethod<TFloat>::execTriggeredNetworkImaging()
 {
 	project_.resetTrigger();
 
 	const ParameterMap& pm = project_.taskParamMap();
 	const auto outputDirPrefix = pm.value<std::string>("output_dir_prefix");
 
-	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<FloatType>>(project_, config_);
-	Matrix<XZValue<FloatType>> acqImageData;
-	Matrix<XYZValue<FloatType>> imageData;
+	auto acquisition = std::make_unique<NetworkDeviceSectorialScanAcquisition<TFloat>>(project_, config_);
+	Matrix<XZValue<TFloat>> acqImageData;
+	Matrix<XYZValue<TFloat>> imageData;
 
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 

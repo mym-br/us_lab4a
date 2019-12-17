@@ -31,7 +31,7 @@
 
 namespace Lab {
 
-template<typename FloatType>
+template<typename TFloat>
 class ComplexToRealIFFT {
 public:
 	ComplexToRealIFFT();
@@ -56,14 +56,14 @@ private:
 	unsigned int fftSize_;
 	unsigned int freqDataSize_;
 	FFTWPlan ifftPlan_;
-	FloatType (*frequencyData_)[2];  // pointer to array of size two
-	FloatType* timeData_;
+	TFloat (*frequencyData_)[2];  // pointer to array of size two
+	TFloat* timeData_;
 };
 
 
 
-template<typename FloatType>
-ComplexToRealIFFT<FloatType>::ComplexToRealIFFT()
+template<typename TFloat>
+ComplexToRealIFFT<TFloat>::ComplexToRealIFFT()
 		: initialized_()
 		, fftSize_()
 		, freqDataSize_()
@@ -73,21 +73,21 @@ ComplexToRealIFFT<FloatType>::ComplexToRealIFFT()
 {
 }
 
-template<typename FloatType>
-ComplexToRealIFFT<FloatType>::ComplexToRealIFFT(const ComplexToRealIFFT& o)
+template<typename TFloat>
+ComplexToRealIFFT<TFloat>::ComplexToRealIFFT(const ComplexToRealIFFT& o)
 {
 	*this = o;
 }
 
-template<typename FloatType>
-ComplexToRealIFFT<FloatType>::~ComplexToRealIFFT()
+template<typename TFloat>
+ComplexToRealIFFT<TFloat>::~ComplexToRealIFFT()
 {
 	clean();
 }
 
-template<typename FloatType>
-ComplexToRealIFFT<FloatType>&
-ComplexToRealIFFT<FloatType>::operator=(const ComplexToRealIFFT& o)
+template<typename TFloat>
+ComplexToRealIFFT<TFloat>&
+ComplexToRealIFFT<TFloat>::operator=(const ComplexToRealIFFT& o)
 {
 	if (&o != this) {
 		if (o.initialized_) {
@@ -99,9 +99,9 @@ ComplexToRealIFFT<FloatType>::operator=(const ComplexToRealIFFT& o)
 	return *this;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-ComplexToRealIFFT<FloatType>::clean()
+ComplexToRealIFFT<TFloat>::clean()
 {
 	{
 		FFTW fftw;
@@ -114,9 +114,9 @@ ComplexToRealIFFT<FloatType>::clean()
 	initialized_ = false;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 void
-ComplexToRealIFFT<FloatType>::prepare(unsigned int numInputSamples)
+ComplexToRealIFFT<TFloat>::prepare(unsigned int numInputSamples)
 {
 	//LOG_DEBUG << "[ComplexToRealIFFT::prepare] numInputSamples: " << numInputSamples;
 
@@ -126,8 +126,8 @@ ComplexToRealIFFT<FloatType>::prepare(unsigned int numInputSamples)
 	freqDataSize_ = fftSize_ / 2 + 1;
 
 	try {
-		frequencyData_ = FFTW::alloc_complex<FloatType>(freqDataSize_);
-		timeData_      = FFTW::alloc_real<FloatType>(fftSize_);
+		frequencyData_ = FFTW::alloc_complex<TFloat>(freqDataSize_);
+		timeData_      = FFTW::alloc_real<TFloat>(fftSize_);
 		FFTW fftw;
 		ifftPlan_ = fftw.plan_idft_c2r_1d(fftSize_, frequencyData_, timeData_);
 	} catch (std::exception& e) {
@@ -138,10 +138,10 @@ ComplexToRealIFFT<FloatType>::prepare(unsigned int numInputSamples)
 	initialized_ = true;
 }
 
-template<typename FloatType>
+template<typename TFloat>
 template<typename InputElementType, typename OutputElementType>
 void
-ComplexToRealIFFT<FloatType>::calculate(InputElementType* origData, unsigned int size, OutputElementType* destData)
+ComplexToRealIFFT<TFloat>::calculate(InputElementType* origData, unsigned int size, OutputElementType* destData)
 {
 	if (size == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of input samples (" << size << ") is = 0.");
@@ -162,8 +162,8 @@ ComplexToRealIFFT<FloatType>::calculate(InputElementType* origData, unsigned int
 	FFTW::execute(ifftPlan_);
 
 	// Get the output.
-	const FloatType coef = 1 / static_cast<FloatType>(fftSize_); // The values will be divided by fftSize because FFTW produces unnormalized results
-	Value::transformSequence(timeData_, timeData_ + fftSize_, destData, Value::ScaleOp<FloatType>(coef));
+	const TFloat coef = 1 / static_cast<TFloat>(fftSize_); // The values will be divided by fftSize because FFTW produces unnormalized results
+	Value::transformSequence(timeData_, timeData_ + fftSize_, destData, Value::ScaleOp<TFloat>(coef));
 }
 
 } // namespace Lab
