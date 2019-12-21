@@ -62,18 +62,6 @@ public:
 			: valuePtr_(baseValuePtr)
 			, increment_(increment) {
 		}
-		Dim1Iterator(const Dim1Iterator<U>& iter)
-			: valuePtr_(iter.valuePtr_)
-			, increment_(iter.increment_) {
-		}
-		Dim1Iterator& operator=(const Dim1Iterator<U>& iter) {
-			if (&iter != this) {
-				valuePtr_ = iter.valuePtr_;
-				increment_ = iter.increment_;
-			}
-			return *this;
-		}
-		~Dim1Iterator() = default;
 
 		bool operator==(const Dim1Iterator<U>& iter) const {
 			return valuePtr_ == iter.valuePtr_ && increment_ == iter.increment_;
@@ -94,9 +82,6 @@ public:
 			return *valuePtr_;
 		}
 	private:
-		Dim1Iterator(Dim1Iterator<U>&&) = delete;
-		Dim1Iterator& operator=(Dim1Iterator<U>&&) = delete;
-
 		U* valuePtr_;
 		const typename Matrix<T, Alloc>::SizeType increment_;
 	};

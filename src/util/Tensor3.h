@@ -60,18 +60,6 @@ public:
 			: valuePtr_(baseValuePtr)
 			, increment_(increment) {
 		}
-		Dim12Iterator(const Dim12Iterator<U>& iter)
-			: valuePtr_(iter.valuePtr_)
-			, increment_(iter.increment_) {
-		}
-		Dim12Iterator& operator=(const Dim12Iterator<U>& iter) {
-			if (&iter != this) {
-				valuePtr_ = iter.valuePtr_;
-				increment_ = iter.increment_;
-			}
-			return *this;
-		}
-		~Dim12Iterator() = default;
 
 		bool operator==(const Dim12Iterator<U>& iter) const {
 			return valuePtr_ == iter.valuePtr_ && increment_ == iter.increment_;
@@ -92,9 +80,6 @@ public:
 			return *valuePtr_;
 		}
 	private:
-		Dim12Iterator(Dim12Iterator<U>&&) = delete;
-		Dim12Iterator& operator=(Dim12Iterator<U>&&) = delete;
-
 		U* valuePtr_;
 		const typename Tensor3<T, Alloc>::SizeType increment_;
 	};

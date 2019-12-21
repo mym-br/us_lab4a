@@ -127,21 +127,18 @@ SingleAcquisitionMethod::execute()
 
 #else
 # define SIGNAL_LENGTH 1000000
-	std::vector<double> signal(SIGNAL_LENGTH), t(SIGNAL_LENGTH), b(SIGNAL_LENGTH);
+	std::vector<double> signal(SIGNAL_LENGTH), t(SIGNAL_LENGTH);
 	for (int i = 0; i < SIGNAL_LENGTH / 4; ++i) {
 		signal[i] = i;
 		t[i] = i * 1e-12;
-		b[i] = -signal[i] * 0.5;
 	}
 	for (int i = SIGNAL_LENGTH / 4; i < SIGNAL_LENGTH * 3 / 4; ++i) {
 		signal[i] = SIGNAL_LENGTH / 2 - i;
 		t[i] = i * 1e-12;
-		b[i] = -signal[i] * 0.5;
 	}
 	for (int i = SIGNAL_LENGTH * 3 / 4; i < SIGNAL_LENGTH; ++i) {
 		signal[i] = i - SIGNAL_LENGTH;
 		t[i] = i * 1e-12;
-		b[i] = -signal[i] * 0.5;
 	}
 #endif
 
@@ -151,19 +148,6 @@ SingleAcquisitionMethod::execute()
 					config_.txGroupElement, config_.rxGroupElement);
 
 	project_.showFigure2D(0, "A-scan", t, signal);
-
-#if 0
-	LOG_DEBUG << "Executing the plot script...";
-	std::vector<std::string> args;
-	std::ostringstream arg1;
-	arg1 << config_.savedAcqDir << '/' << config_.signalFile << ".h5";
-	args.push_back(arg1.str());
-	std::ostringstream arg2;
-	arg2.precision(SCIENTIFIC_NOTATION_NUM_DIGITS_AFTER_DECIMAL_POINT);
-	arg2 << std::scientific << config_.samplingFrequency;
-	args.push_back(arg2.str());
-	project_.executeProgram(config_.plotScript, args);
-#endif
 }
 
 } // namespace Lab
