@@ -31,6 +31,7 @@ constexpr int SPACING = 10;
 constexpr int TEXT_SPACING = 10;
 constexpr int TICK_SIZE = 5;
 constexpr int MIN_AXIS_DIV = 8;
+constexpr unsigned int MAX_X_LIST_SIZE_WITH_MARKER = 1000;
 constexpr double WHEEL_ZOOM_FACTOR = 0.01;
 constexpr double MOUSE_ZOOM_FACTOR = 0.002;
 constexpr double DEFAULT_Y_DELTA = 1.0;
@@ -85,6 +86,7 @@ void
 Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 {
 	if (xList_.empty() || xTicks_.empty()) return;
+	if (xList_.size() > MAX_X_LIST_SIZE_WITH_MARKER) drawPointMarker_ = false;
 
 	QPainter painter(this);
 	painter.setFont(QFont("monospace"));
