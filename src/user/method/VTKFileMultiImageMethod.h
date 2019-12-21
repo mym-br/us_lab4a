@@ -28,7 +28,7 @@ class Project;
 
 class VTKFileMultiImageMethod : public Method {
 public:
-	VTKFileMultiImageMethod(Project& project);
+	explicit VTKFileMultiImageMethod(Project& project);
 	virtual ~VTKFileMultiImageMethod() = default;
 
 	virtual void execute();

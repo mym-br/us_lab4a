@@ -36,7 +36,7 @@ struct SyncBindException : std::runtime_error {
  */
 class SyncServer {
 public:
-	SyncServer(unsigned short portNumber);
+	explicit SyncServer(unsigned short portNumber);
 	~SyncServer() = default;
 
 	bool waitForTrigger();

@@ -28,7 +28,7 @@ class Project;
 
 class ShowImageMethod : public Method {
 public:
-	ShowImageMethod(Project& project);
+	explicit ShowImageMethod(Project& project);
 	virtual ~ShowImageMethod() = default;
 
 	virtual void execute();

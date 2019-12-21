@@ -33,7 +33,7 @@ namespace Lab {
 class MultiLayer3DWindow : public QWidget {
 	Q_OBJECT
 public:
-	MultiLayer3DWindow(QWidget* parent=nullptr);
+	explicit MultiLayer3DWindow(QWidget* parent=nullptr);
 
 	void updateData(const std::vector<XYZValue<float>>& pointArray, const std::vector<unsigned int>& indexArray);
 private:

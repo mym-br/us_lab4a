@@ -33,7 +33,7 @@ class Project;
 
 class TestMethod : public Method {
 public:
-	TestMethod(Project& project);
+	explicit TestMethod(Project& project);
 	virtual ~TestMethod() = default;
 
 	virtual void execute();

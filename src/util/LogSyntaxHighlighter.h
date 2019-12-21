@@ -19,7 +19,7 @@ namespace Lab {
 class LogSyntaxHighlighter : public QSyntaxHighlighter {
 	Q_OBJECT
 public:
-	LogSyntaxHighlighter(QTextDocument* parent);
+	explicit LogSyntaxHighlighter(QTextDocument* parent);
 protected:
 	void highlightBlock(const QString& text);
 

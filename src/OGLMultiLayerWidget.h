@@ -32,7 +32,7 @@ namespace Lab {
 class OGLMultiLayerWidget : public QOpenGLWidget {
 	Q_OBJECT
 public:
-	OGLMultiLayerWidget(QWidget* parent=nullptr);
+	explicit OGLMultiLayerWidget(QWidget* parent=nullptr);
 
 	void updateData(const std::vector<XYZValue<float>>& pointArray, const std::vector<unsigned int>& indexArray);
 protected:

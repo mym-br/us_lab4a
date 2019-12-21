@@ -37,7 +37,7 @@ namespace Lab {
 class Figure3DWindow : public QWidget {
 	Q_OBJECT
 public:
-	Figure3DWindow(QWidget* parent=nullptr);
+	explicit Figure3DWindow(QWidget* parent=nullptr);
 
 	// *gridData will contain old data after the call.
 	void updateData(float valueScale,

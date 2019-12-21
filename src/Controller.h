@@ -32,7 +32,7 @@ class Project;
 class Controller : public QObject {
 	Q_OBJECT
 public:
-	Controller(Project& project);
+	explicit Controller(Project& project);
 	virtual ~Controller();
 
 	void connectProcessingNode(const ProcessingNode* node);

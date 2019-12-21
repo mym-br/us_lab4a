@@ -27,7 +27,7 @@ namespace Lab {
 
 class KeyValueFileReader {
 public:
-	KeyValueFileReader(const QString& filePath);
+	explicit KeyValueFileReader(const QString& filePath);
 	~KeyValueFileReader() = default;
 
 	const QHash<QString, QString>& map() const { return map_; }

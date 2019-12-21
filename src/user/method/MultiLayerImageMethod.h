@@ -28,7 +28,7 @@ class Project;
 
 class MultiLayerImageMethod : public Method {
 public:
-	MultiLayerImageMethod(Project& project);
+	explicit MultiLayerImageMethod(Project& project);
 	virtual ~MultiLayerImageMethod() = default;
 
 	virtual void execute();

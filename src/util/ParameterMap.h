@@ -33,7 +33,7 @@ namespace Lab {
 
 class ParameterMap {
 public:
-	ParameterMap(const QString& filePath);
+	explicit ParameterMap(const QString& filePath);
 	~ParameterMap() = default;
 
 	bool contains(const char* key) const;
