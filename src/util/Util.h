@@ -78,8 +78,8 @@ template<typename T> T maxAbsolute(const Matrix<T>& data);
 template<typename T, typename U> U maxValueField(const Matrix<T>& data);
 template<typename T, typename U> U maxAbsoluteValueField(const Matrix<T>& data);
 template<typename T> T maxAbsoluteValueField(const Matrix<XYZValueArray<T>>& data);
-template<typename T> void minMax(const std::vector<T>& list, T& min, T& max);
-template<typename T, typename U> void minMaxValueField(const Matrix<T>& data, U& min, U& max);
+template<typename T> void minMax(const std::vector<T>& list, T& minVal, T& maxVal);
+template<typename T, typename U> void minMaxValueField(const Matrix<T>& data, U& minVal, U& maxVal);
 template<typename T> void multiply(std::vector<T>& list, T coefficient);
 template<typename T> void multiply(Matrix<T>& data, T coefficient);
 template<typename T, typename U> void multiply(const std::vector<T>& factorList, std::vector<U>& data);
@@ -410,114 +410,114 @@ template<typename T>
 T
 max(const std::vector<T>& list)
 {
-	T max = minValue<T>();
+	T maxVal = minValue<T>();
 
 	for (auto iter = list.cbegin(); iter != list.cend(); ++iter) {
-		if (max < *iter) {
-			max = *iter;
+		if (maxVal < *iter) {
+			maxVal = *iter;
 		}
 	}
 
-	return max;
+	return maxVal;
 }
 
 template<typename T>
 T
 maxAbsolute(const std::vector<T>& list)
 {
-	T max = 0;
+	T maxVal = 0;
 	for (auto iter = list.cbegin(); iter != list.cend(); ++iter) {
 		const T a = std::abs(*iter);
-		if (max < a) max = a;
+		if (maxVal < a) maxVal = a;
 	}
-	return max;
+	return maxVal;
 }
 
 template<typename T>
 T
 maxAbsolute(const std::vector<std::complex<T>>& list)
 {
-	T max = 0;
+	T maxVal = 0;
 	for (auto iter = list.cbegin(); iter != list.cend(); ++iter) {
 		const T a = std::abs(*iter);
-		if (max < a) max = a;
+		if (maxVal < a) maxVal = a;
 	}
-	return max;
+	return maxVal;
 }
 
 template<typename T>
 T
 maxAbsolute(const Matrix<T>& data)
 {
-	T max = 0;
+	T maxVal = 0;
 	for (auto iter = data.cbegin(); iter != data.cend(); ++iter) {
 		const T a = std::abs(*iter);
-		if (max < a) max = a;
+		if (maxVal < a) maxVal = a;
 	}
-	return max;
+	return maxVal;
 }
 
 template<typename T, typename U>
 U
 maxValueField(const Matrix<T>& data)
 {
-	U max = minValue<U>();
+	U maxVal = minValue<U>();
 	for (auto iter = data.cbegin(); iter != data.cend(); ++iter) {
 		const U v = iter->value;
-		if (v > max) max = v;
+		if (v > maxVal) maxVal = v;
 	}
-	return max;
+	return maxVal;
 }
 
 template<typename T, typename U>
 U
 maxAbsoluteValueField(const Matrix<T>& data)
 {
-	U max = 0;
+	U maxVal = 0;
 	for (auto iter = data.cbegin(); iter != data.cend(); ++iter) {
 		const U a = std::abs(iter->value);
-		if (max < a) max = a;
+		if (maxVal < a) maxVal = a;
 	}
-	return max;
+	return maxVal;
 }
 
 template<typename T>
 T
 maxAbsoluteValueField(const Matrix<XYZValueArray<T>>& data)
 {
-	T max = 0;
+	T maxVal = 0;
 	for (auto iter = data.cbegin(); iter != data.cend(); ++iter) {
 		for (auto v : iter->values) {
 			const T a = std::abs(v);
-			if (max < a) max = a;
+			if (maxVal < a) maxVal = a;
 		}
 	}
-	return max;
+	return maxVal;
 }
 
 template<typename T>
 void
-minMax(const std::vector<T>& list, T& min, T& max)
+minMax(const std::vector<T>& list, T& minVal, T& maxVal)
 {
-	min = std::numeric_limits<T>::max();
-	max = minValue<T>();
+	minVal = std::numeric_limits<T>::max();
+	maxVal = minValue<T>();
 	for (auto iter = list.cbegin(); iter != list.cend(); ++iter) {
 		const T a = *iter;
-		if (max < a) max = a;
-		if (min > a) min = a;
+		if (maxVal < a) maxVal = a;
+		if (minVal > a) minVal = a;
 	}
 }
 
 template<typename T, typename U>
 void
-minMaxValueField(const Matrix<T>& data, U& min, U& max)
+minMaxValueField(const Matrix<T>& data, U& minVal, U& maxVal)
 {
-	min = std::numeric_limits<U>::max();
-	max = minValue<U>();
+	minVal = std::numeric_limits<U>::max();
+	maxVal = minValue<U>();
 	for (auto iter = data.cbegin(); iter != data.cend(); ++iter) {
 		const U v = iter->value;
-		if (v > max) max = v;
-		if (v < min) min = v;
+		if (v > maxVal) maxVal = v;
+		if (v < minVal) minVal = v;
 	}
 }
 
@@ -597,9 +597,9 @@ void
 linearToDecibels(std::vector<T>& data, T minDecibels)
 {
 	normalize(data);
-	auto minValue = decibelsToLinear(minDecibels);
+	auto minVal = decibelsToLinear(minDecibels);
 	for (auto& value : data) {
-		if (value <= minValue) {
+		if (value <= minVal) {
 			value = minDecibels;
 		} else {
 			value = linearToDecibels(value);
