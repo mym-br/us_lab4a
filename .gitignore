@@ -1,5 +1,5 @@
 *__OLD
-*.pro.user*
+CMakeLists.txt.user*
 *.pyc
 fftw_wisdom*
 *.h5
