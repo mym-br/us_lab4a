@@ -9,43 +9,27 @@ Features (partial list)
 
 - Acoustic field simulation of circular sources, rectangular sources and
   arrays of rectangular sources (analytic and numeric methods).
-  - Transient acoustic field.
-  - Impulse response.
+  - Acoustic field of transient waves.
+  - Spatial impulse response.
   - Transient propagation.
-  - Radiation pattern.
+  - Radiation pattern of transient waves.
 - Simulated and experimental ultrasound imaging using 1D or 2D arrays.
   - Synthetic Transmit Aperture (STA) / Total Focusing Method (TFM).
   - SAFT (one transmitter and one receiver in each acquisition).
   - Single virtual source.
 
-Goals
------
-
-- Provide basic infrastructure for C++ processing: simple 2D/3D graphics,
-  data file I/O, configuration files, logging, thread management,
-  DSP functions, etc.
-- Can be maintained by a single person.
-
-Non-goals
----------
-
-- Ultimate performance.
-
 Status
 ------
 
-Version 0.1
-
 - Some methods are stable, while others are experimental.
-- The structure and names in configuration files may change at any moment.
+- The structure and names in configuration files may change at any revision.
 - The documentation is very limited. In many cases the C++ code must be
   consulted.
 
 Requirements
 ------------
 
-The following libraries are required:
-
+- CMake
 - Boost
 - FFTW
 - HDF5
