@@ -83,6 +83,7 @@ private slots:
 	void on_openBatchFileAction_triggered();
 	void on_exitAction_triggered();
 	void on_closeAllFiguresAction_triggered();
+	void on_aboutAction_triggered();
 	void on_logLevelComboBox_activated(int index);
 	void on_enableTaskButton_clicked();
 	void on_scanProjectDirButton_clicked();

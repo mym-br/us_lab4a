@@ -292,7 +292,7 @@
      <x>0</x>
      <y>0</y>
      <width>1300</width>
-     <height>34</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -308,6 +308,7 @@
      <string>Wi&amp;ndow</string>
     </property>
     <addaction name="closeAllFiguresAction"/>
+    <addaction name="aboutAction"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuWindow"/>
@@ -345,6 +346,11 @@
   <action name="openBatchFileAction">
    <property name="text">
     <string>&amp;Open batch file</string>
+   </property>
+  </action>
+  <action name="aboutAction">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>

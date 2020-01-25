@@ -23,6 +23,8 @@
 #include <sstream>
 #include <string>
 
+#include <QDialog>
+#include <QDialogButtonBox>
 #include <QDir>
 #include <QFile>
 #include <QFileDialog>
@@ -33,8 +35,10 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QTextEdit>
 #include <QTextStream>
 #include <QTime>
+#include <QVBoxLayout>
 
 #include "Controller.h"
 #include "Exception.h"
@@ -47,6 +51,8 @@
 #include "MultiLayer3DWindow.h"
 #include "ParameterMap.h"
 #include "Util.h"
+
+#define PROGRAM_VERSION_STR "us_lab4a 0.1"
 
 namespace {
 
@@ -615,6 +621,44 @@ USLab4a::showMultiLayer3D(
 	} catch (...) {
 		LOG_ERROR << "[USLab4a::showMultiLayer3D] Caught an unknown exception.";
 	}
+}
+
+void
+USLab4a::on_aboutAction_triggered()
+{
+	QDialog aboutDialog(this);
+	QVBoxLayout* layout = new QVBoxLayout(&aboutDialog);
+
+	QTextEdit* textEdit = new QTextEdit(&aboutDialog);
+	textEdit->setReadOnly(true);
+	textEdit->setHtml(
+		"<pre>"
+		PROGRAM_VERSION_STR "\n\n"
+
+		"This program is free software: you can redistribute it and/or modify\n"
+		"it under the terms of the GNU General Public License as published by\n"
+		"the Free Software Foundation, either version 3 of the License, or\n"
+		"(at your option) any later version.\n\n"
+
+		"This program is distributed in the hope that it will be useful,\n"
+		"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+		"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n"
+		"GNU General Public License for more details.\n\n"
+
+		"You should have received a copy of the GNU General Public License\n"
+		"along with this program. If not, see http://www.gnu.org/licenses/.\n"
+		"</pre>"
+	);
+	layout->addWidget(textEdit);
+
+	QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok, Qt::Horizontal, &aboutDialog);
+	layout->addWidget(buttonBox);
+
+	connect(buttonBox, &QDialogButtonBox::accepted, &aboutDialog, &QDialog::accept);
+
+	aboutDialog.setWindowTitle(tr("About"));
+	aboutDialog.resize(900, 550);
+	aboutDialog.exec();
 }
 
 } // namespace Lab
