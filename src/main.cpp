@@ -25,6 +25,7 @@
 
 #include <QApplication>
 #include <QCoreApplication>
+#include <QIcon>
 
 #include "Log.h"
 #include "lzf_filter.h"
@@ -55,6 +56,7 @@ main(int argc, char* argv[])
 	Lab::Log::setLevel(Lab::Log::LEVEL_DEBUG);
 
 	QApplication a(argc, argv);
+	a.setWindowIcon(QIcon{":/img/window_icon.png"});
 
 	// For QSettings.
 	QCoreApplication::setOrganizationName("LUS EP USP");

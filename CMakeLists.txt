@@ -8,6 +8,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOUIC_SEARCH_PATHS ui)
+set(CMAKE_AUTORCC ON)
 
 find_package(Qt5 COMPONENTS Core Gui OpenGL Widgets REQUIRED)
 
@@ -189,6 +190,8 @@ set(us_lab4a_SRC
     ui/Figure3DWindow.ui
     ui/MultiLayer3DWindow.ui
     ui/USLab4a.ui
+
+    resource/us_lab4a.qrc
 )
 
 add_executable(us_lab4a ${us_lab4a_SRC})
