@@ -18,6 +18,7 @@
 #ifndef METHOD_INCLUDES_H
 #define METHOD_INCLUDES_H
 
+#include "CylinderDetectionAndFermatMethod.h"
 #include "DeviceSectorialScanMethod.h"
 #include "Exception.h"
 #include "MultiLayerImageMethod.h"

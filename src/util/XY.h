@@ -28,6 +28,9 @@ template<typename T>
 struct XY {
 	T x;
 	T y;
+
+	XY() : x(), y() {}
+	XY(T x, T y) : x(x), y(y) {}
 };
 
 template<typename T>

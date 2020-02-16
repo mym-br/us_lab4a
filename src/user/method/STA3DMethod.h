@@ -60,7 +60,7 @@ private:
 	STA3DMethod(STA3DMethod&&) = delete;
 	STA3DMethod& operator=(STA3DMethod&&) = delete;
 
-	void process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement, const std::string& outputDir);
+	void process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement, const std::string& outputDir);
 	void useCoherenceFactor(TFloat valueScale, const std::string& outputDir);
 
 	Project& project_;
@@ -93,7 +93,7 @@ STA3DMethod<TFloat>::useCoherenceFactor(TFloat valueScale, const std::string& ou
 
 template<typename TFloat>
 void
-STA3DMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement, const std::string& outputDir)
+STA3DMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement, const std::string& outputDir)
 {
 	Timer tProc;
 

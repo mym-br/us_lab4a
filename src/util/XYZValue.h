@@ -14,31 +14,23 @@
  *  You should have received a copy of the GNU General Public License      *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+
 #ifndef XYZVALUE_H
 #define XYZVALUE_H
 
 namespace Lab {
 
-template<typename TFloat>
+template<typename T>
 struct XYZValue {
-	XYZValue() = default;
-	XYZValue(TFloat x, TFloat y, TFloat z, TFloat value) : x(x), y(y), z(z), value(value) {}
+	T x;
+	T y;
+	T z;
+	T value;
 
-	TFloat x;
-	TFloat y;
-	TFloat z;
-	TFloat value;
+	XYZValue() : x(), y(), z(), value() {}
+	XYZValue(T x, T y, T z, T value) : x(x), y(y), z(z), value(value) {}
 
-	template<typename TFloat2> XYZValue<TFloat>& operator=(const XYZValue<TFloat2>& o) {
-		if (&o != this) {
-			this->x = o.x;
-			this->y = o.y;
-			this->z = o.z;
-			this->value = o.value;
-		}
-		return *this;
-	}
-	bool operator==(const XYZValue<TFloat>& o) const {
+	bool operator==(const XYZValue<T>& o) const {
 		return x == o.x && y == o.y && z == o.z && value == o.value;
 	}
 };

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2020 Marcelo Y. Matuda                                       *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -15,21 +15,22 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef XZVALUE_H_
-#define XZVALUE_H_
+#ifndef TEMPLATE_UTIL_H_
+#define TEMPLATE_UTIL_H_
+
+#include <type_traits>
+
+
 
 namespace Lab {
 
+// Primary template.
+template<typename, typename =void>
+struct has_y_member : std::false_type { };
+// Partial template specialization.
 template<typename T>
-struct XZValue {
-	T x;
-	T z;
-	T value;
-
-	XZValue() : x(), z(), value() {}
-	XZValue(T x, T z, T value) : x(x), z(z), value(value) {}
-};
+struct has_y_member<T, std::void_t<decltype(T::y)>> : std::true_type { };
 
 } // namespace Lab
 
-#endif /* XZVALUE_H_ */
+#endif /*TEMPLATE_UTIL_H_*/

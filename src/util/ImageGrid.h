@@ -23,7 +23,9 @@
 
 #include "Exception.h"
 #include "Log.h"
+#include "Matrix.h"
 #include "ParameterMap.h"
+#include "TemplateUtil.h"
 #include "Util.h"
 
 
@@ -34,90 +36,119 @@ template<typename TFloat>
 class ImageGrid {
 public:
 	template<typename T>
-		static void get(const ParameterMap& pm, TFloat lambda, T &grid);
+		static void get(const ParameterMap& pm, TFloat lambda, Matrix<T>& grid);
 private:
 	static constexpr TFloat minLambda = 1.0e-6;
 
 	ImageGrid() = delete;
 
 	template<typename T>
-		static void getRectangularGrid(const ParameterMap& pm, TFloat lambda, T& grid);
+		static void getRectangularGrid(const ParameterMap& pm, TFloat lambda, Matrix<T>& grid);
 	template<typename T>
-		static void getSectorialGrid(const ParameterMap& pm, TFloat lambda, T& grid);
+		static void getSectorialGrid(const ParameterMap& pm, TFloat lambda, Matrix<T>& grid);
 };
 
 template<typename TFloat>
 template<typename T>
 void
-ImageGrid<TFloat>::getRectangularGrid(const ParameterMap& pm, TFloat lambda, T& grid)
+ImageGrid<TFloat>::getRectangularGrid(const ParameterMap& pm, TFloat lambda, Matrix<T>& grid)
 {
-	const auto minX    = pm.value<TFloat>("rectangular_min_x"   , -10000.0, 10000.0);
-	const auto maxX    = pm.value<TFloat>("rectangular_max_x"   ,     minX, 10000.0);
-	const auto minY    = pm.value<TFloat>("rectangular_min_y"   , -10000.0, 10000.0);
-	const auto maxY    = pm.value<TFloat>("rectangular_max_y"   ,     minY, 10000.0);
-	const auto minZ    = pm.value<TFloat>("rectangular_min_z"   , -10000.0, 10000.0);
-	const auto maxZ    = pm.value<TFloat>("rectangular_max_z"   ,     minZ, 10000.0);
-	const auto stepDiv = pm.value<TFloat>("rectangular_step_div",   1.0e-2,  1000.0);
-	const auto originX = pm.value<TFloat>("rectangular_origin_x", -10000.0, 10000.0);
-	const auto originY = pm.value<TFloat>("rectangular_origin_y", -10000.0, 10000.0);
-	const auto originZ = pm.value<TFloat>("rectangular_origin_z", -10000.0, 10000.0);
+	if constexpr (has_y_member<T>::value) {
 
-	const TFloat maxStep = lambda / stepDiv;
-	const TFloat dx = maxX - minX;
-	const TFloat dy = maxY - minY;
-	const TFloat dz = maxZ - minZ;
+		const auto minX    = pm.value<TFloat>("rectangular_min_x"   , -10000.0, 10000.0);
+		const auto maxX    = pm.value<TFloat>("rectangular_max_x"   ,     minX, 10000.0);
+		const auto minY    = pm.value<TFloat>("rectangular_min_y"   , -10000.0, 10000.0);
+		const auto maxY    = pm.value<TFloat>("rectangular_max_y"   ,     minY, 10000.0);
+		const auto minZ    = pm.value<TFloat>("rectangular_min_z"   , -10000.0, 10000.0);
+		const auto maxZ    = pm.value<TFloat>("rectangular_max_z"   ,     minZ, 10000.0);
+		const auto stepDiv = pm.value<TFloat>("rectangular_step_div",   1.0e-2,  1000.0);
+		const auto originX = pm.value<TFloat>("rectangular_origin_x", -10000.0, 10000.0);
+		const auto originY = pm.value<TFloat>("rectangular_origin_y", -10000.0, 10000.0);
+		const auto originZ = pm.value<TFloat>("rectangular_origin_z", -10000.0, 10000.0);
 
-	if (dx == 0.0) { // z-y
-		std::vector<TFloat> zList;
-		std::vector<TFloat> yList;
-		Util::fillSequenceFromStartToEndWithMaximumStep(zList, minZ, maxZ, maxStep);
-		Util::fillSequenceFromStartToEndWithMaximumStep(yList, minY, maxY, maxStep);
-		grid.resize(zList.size(), yList.size());
-		const TFloat x = minX + originX;
-		for (std::size_t i = 0; i < zList.size(); ++i) {
-			for (std::size_t j = 0; j < yList.size(); ++j) {
-				grid(i, j).x = x;
-				grid(i, j).y = yList[j] + originY;
-				grid(i, j).z = zList[i] + originZ;
+		const TFloat maxStep = lambda / stepDiv;
+		const TFloat dx = maxX - minX;
+		const TFloat dy = maxY - minY;
+		const TFloat dz = maxZ - minZ;
+
+		if (dx == 0.0) { // z-y
+			std::vector<TFloat> zList;
+			std::vector<TFloat> yList;
+			Util::fillSequenceFromStartToEndWithMaximumStep(zList, minZ, maxZ, maxStep);
+			Util::fillSequenceFromStartToEndWithMaximumStep(yList, minY, maxY, maxStep);
+			grid.resize(zList.size(), yList.size());
+			const TFloat x = minX + originX;
+			for (std::size_t i = 0; i < zList.size(); ++i) {
+				for (std::size_t j = 0; j < yList.size(); ++j) {
+					grid(i, j).x = x;
+					grid(i, j).y = yList[j] + originY;
+					grid(i, j).z = zList[i] + originZ;
+				}
 			}
+		} else if (dy == 0.0) { // x-z
+			std::vector<TFloat> xList;
+			std::vector<TFloat> zList;
+			Util::fillSequenceFromStartToEndWithMaximumStep(xList, minX, maxX, maxStep);
+			Util::fillSequenceFromStartToEndWithMaximumStep(zList, minZ, maxZ, maxStep);
+			grid.resize(xList.size(), zList.size());
+			const TFloat y = minY + originY;
+			for (std::size_t i = 0; i < xList.size(); ++i) {
+				for (std::size_t j = 0; j < zList.size(); ++j) {
+					grid(i, j).x = xList[i] + originX;
+					grid(i, j).y = y;
+					grid(i, j).z = zList[j] + originZ;
+				}
+			}
+		} else if (dz == 0.0) { // x-y
+			std::vector<TFloat> xList;
+			std::vector<TFloat> yList;
+			Util::fillSequenceFromStartToEndWithMaximumStep(xList, minX, maxX, maxStep);
+			Util::fillSequenceFromStartToEndWithMaximumStep(yList, minY, maxY, maxStep);
+			grid.resize(xList.size(), yList.size());
+			const TFloat z = minZ + originZ;
+			for (std::size_t i = 0; i < xList.size(); ++i) {
+				for (std::size_t j = 0; j < yList.size(); ++j) {
+					grid(i, j).x = xList[i] + originX;
+					grid(i, j).y = yList[j] + originY;
+					grid(i, j).z = z;
+				}
+			}
+		} else {
+			THROW_EXCEPTION(InvalidParameterException, "Invalid grid configuration.");
 		}
-	} else if (dy == 0.0) { // x-z
+
+	} else {
+
+		const auto minX    = pm.value<TFloat>("rectangular_min_x"   , -10000.0, 10000.0);
+		const auto maxX    = pm.value<TFloat>("rectangular_max_x"   ,     minX, 10000.0);
+		const auto minZ    = pm.value<TFloat>("rectangular_min_z"   , -10000.0, 10000.0);
+		const auto maxZ    = pm.value<TFloat>("rectangular_max_z"   ,     minZ, 10000.0);
+		const auto stepDiv = pm.value<TFloat>("rectangular_step_div",   1.0e-2,  1000.0);
+		const auto originX = pm.value<TFloat>("rectangular_origin_x", -10000.0, 10000.0);
+		const auto originZ = pm.value<TFloat>("rectangular_origin_z", -10000.0, 10000.0);
+
+		const TFloat maxStep = lambda / stepDiv;
+
+		// x-z
 		std::vector<TFloat> xList;
 		std::vector<TFloat> zList;
 		Util::fillSequenceFromStartToEndWithMaximumStep(xList, minX, maxX, maxStep);
 		Util::fillSequenceFromStartToEndWithMaximumStep(zList, minZ, maxZ, maxStep);
 		grid.resize(xList.size(), zList.size());
-		const TFloat y = minY + originY;
 		for (std::size_t i = 0; i < xList.size(); ++i) {
 			for (std::size_t j = 0; j < zList.size(); ++j) {
 				grid(i, j).x = xList[i] + originX;
-				grid(i, j).y = y;
 				grid(i, j).z = zList[j] + originZ;
 			}
 		}
-	} else if (dz == 0.0) { // x-y
-		std::vector<TFloat> xList;
-		std::vector<TFloat> yList;
-		Util::fillSequenceFromStartToEndWithMaximumStep(xList, minX, maxX, maxStep);
-		Util::fillSequenceFromStartToEndWithMaximumStep(yList, minY, maxY, maxStep);
-		grid.resize(xList.size(), yList.size());
-		const TFloat z = minZ + originZ;
-		for (std::size_t i = 0; i < xList.size(); ++i) {
-			for (std::size_t j = 0; j < yList.size(); ++j) {
-				grid(i, j).x = xList[i] + originX;
-				grid(i, j).y = yList[j] + originY;
-				grid(i, j).z = z;
-			}
-		}
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid grid configuration.");
+
 	}
 }
 
 template<typename TFloat>
 template<typename T>
 void
-ImageGrid<TFloat>::getSectorialGrid(const ParameterMap& pm, TFloat lambda, T& grid)
+ImageGrid<TFloat>::getSectorialGrid(const ParameterMap& pm, TFloat lambda, Matrix<T>& grid)
 {
 	const auto minRadius     = pm.value<TFloat>("sectorial_min_radius"     ,             1.0e-4, 10000.0);
 	const auto maxRadius     = pm.value<TFloat>("sectorial_max_radius"     , minRadius + 1.0e-6, 10000.0);
@@ -144,7 +175,9 @@ ImageGrid<TFloat>::getSectorialGrid(const ParameterMap& pm, TFloat lambda, T& gr
 			const TFloat angle = angleList[i];
 			const TFloat r = radiusList[j];
 			grid(i, j).x = r * std::sin(angle) + originX;
-			grid(i, j).y = 0.0;
+			if constexpr (has_y_member<T>::value) {
+				grid(i, j).y = 0.0;
+			}
 			grid(i, j).z = r * std::cos(angle) + originZ;
 		}
 	}
@@ -153,7 +186,7 @@ ImageGrid<TFloat>::getSectorialGrid(const ParameterMap& pm, TFloat lambda, T& gr
 template<typename TFloat>
 template<typename T>
 void
-ImageGrid<TFloat>::get(const ParameterMap& pm, TFloat lambda, T& grid)
+ImageGrid<TFloat>::get(const ParameterMap& pm, TFloat lambda, Matrix<T>& grid)
 {
 	if (lambda < minLambda) {
 		THROW_EXCEPTION(InvalidParameterException, "Lambda is too small: " << lambda << '.');

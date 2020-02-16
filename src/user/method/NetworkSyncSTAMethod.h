@@ -127,7 +127,8 @@ NetworkSyncSTAMethod<TFloat>::execute()
 	AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 	bool coherenceFactorEnabled = coherenceFactor.enabled();
 	auto acquisition = std::make_unique<SavedSTAAcquisition<TFloat>>(project_, config.numElements, "");
-	auto processor = std::make_unique<VectorialSTAProcessor<TFloat>>(config, *acquisition,
+	auto processor = std::make_unique<VectorialSTAProcessor<TFloat, XYZValueFactor<TFloat>>>(
+					config, *acquisition,
 					upsamplingFactor, coherenceFactor, peakOffset,
 					vectorialProcessingWithEnvelope, txApod, rxApod);
 	Visualization::Value visual;

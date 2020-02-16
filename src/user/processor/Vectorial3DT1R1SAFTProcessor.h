@@ -48,7 +48,7 @@
 namespace Lab {
 
 template<typename TFloat>
-class Vectorial3DT1R1SAFTProcessor : public ArrayProcessor<TFloat> {
+class Vectorial3DT1R1SAFTProcessor : public ArrayProcessor<XYZValueFactor<TFloat>> {
 public:
 	Vectorial3DT1R1SAFTProcessor(
 			const SA3DConfiguration<TFloat>& config,

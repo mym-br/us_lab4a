@@ -66,17 +66,17 @@ private:
 	SingleVirtualSourceMethod(SingleVirtualSourceMethod&&) = delete;
 	SingleVirtualSourceMethod& operator=(SingleVirtualSourceMethod&&) = delete;
 
-	void process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement,
+	void process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement,
 			bool saveCoordinates, const std::string& outputDir);
 	void useCoherenceFactor(TFloat valueScale, const std::string& outputDir);
-	void execContinuousNetworkImaging(TFloat valueScale, ArrayProcessor<TFloat>& processor,
+	void execContinuousNetworkImaging(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor,
 						unsigned int baseElement, bool coherenceFactorEnabled);
 	void saveSignalSequence(const ParameterMap& taskPM, unsigned int baseElement,
 				const std::vector<TFloat>& txDelays,
 				TnRnAcquisition<TFloat>& acquisition);
 	void createImagesFromSavedSignalSequence(const ParameterMap& taskPM,
 							unsigned int baseElement, TFloat valueScale, bool coherenceFactorEnabled,
-							TnRnAcquisition<TFloat>& acq, ArrayProcessor<TFloat>& processor);
+							TnRnAcquisition<TFloat>& acq, ArrayProcessor<XYZValueFactor<TFloat>>& processor);
 
 	Project& project_;
 	Matrix<XYZValueFactor<TFloat>> gridData_;
@@ -108,7 +108,7 @@ SingleVirtualSourceMethod<TFloat>::useCoherenceFactor(TFloat valueScale, const s
 
 template<typename TFloat>
 void
-SingleVirtualSourceMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<TFloat>& processor,
+SingleVirtualSourceMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor,
 						unsigned int baseElement, bool saveCoordinates, const std::string& outputDir)
 {
 	Timer tProc;
@@ -129,7 +129,7 @@ SingleVirtualSourceMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<TFl
 
 template<typename TFloat>
 void
-SingleVirtualSourceMethod<TFloat>::execContinuousNetworkImaging(TFloat valueScale, ArrayProcessor<TFloat>& processor,
+SingleVirtualSourceMethod<TFloat>::execContinuousNetworkImaging(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor,
 									unsigned int baseElement, bool coherenceFactorEnabled)
 {
 	int n = 0;
@@ -196,7 +196,7 @@ template<typename TFloat>
 void
 SingleVirtualSourceMethod<TFloat>::createImagesFromSavedSignalSequence(const ParameterMap& taskPM,
 							unsigned int baseElement, TFloat valueScale, bool coherenceFactorEnabled,
-							TnRnAcquisition<TFloat>& acq, ArrayProcessor<TFloat>& processor)
+							TnRnAcquisition<TFloat>& acq, ArrayProcessor<XYZValueFactor<TFloat>>& processor)
 {
 	const auto dataDir   = taskPM.value<std::string>("data_dir");
 	const auto outputDir = taskPM.value<std::string>("output_dir");

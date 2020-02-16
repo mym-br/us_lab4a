@@ -64,7 +64,7 @@ private:
 	STAMethod(STAMethod&&) = delete;
 	STAMethod& operator=(STAMethod&&) = delete;
 
-	void process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement, const std::string& outputDir);
+	void process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement, const std::string& outputDir);
 	void useCoherenceFactor(TFloat valueScale, bool calculateEnvelope, const std::string& outputDir);
 
 	Project& project_;
@@ -103,7 +103,7 @@ STAMethod<TFloat>::useCoherenceFactor(TFloat valueScale, bool calculateEnvelope,
 
 template<typename TFloat>
 void
-STAMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement, const std::string& outputDir)
+STAMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement, const std::string& outputDir)
 {
 	Timer tProc;
 
@@ -195,7 +195,7 @@ STAMethod<TFloat>::execute()
 			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 			std::vector<TFloat> txApod(config.numElements, 1.0);
 			std::vector<TFloat> rxApod(config.numElements, 1.0);
-			auto processor = std::make_unique<VectorialSTAProcessor<TFloat>>(
+			auto processor = std::make_unique<VectorialSTAProcessor<TFloat, XYZValueFactor<TFloat>>>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset, processingWithEnvelope, txApod, rxApod);
 			process(config.valueScale, *processor, baseElement, outputDir);
@@ -207,8 +207,9 @@ STAMethod<TFloat>::execute()
 	default:
 		{
 			CoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
-			auto processor = std::make_unique<DefaultSTAProcessor<TFloat>>(config, *acquisition,
-												coherenceFactor, peakOffset);
+			auto processor = std::make_unique<DefaultSTAProcessor<TFloat, XYZValueFactor<TFloat>>>(
+							config, *acquisition,
+							coherenceFactor, peakOffset);
 			process(config.valueScale, *processor, baseElement, outputDir);
 			if (coherenceFactor.enabled()) {
 				useCoherenceFactor(config.valueScale, true, outputDir);

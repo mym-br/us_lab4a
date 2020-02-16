@@ -20,9 +20,12 @@
 
 #include <cmath> /* abs, sqrt */
 #include <complex>
+#include <vector>
 
 #include "XYZValue.h"
 #include "XYZValueFactor.h"
+#include "XZValue.h"
+#include "XZValueFactor.h"
 
 
 
@@ -31,9 +34,13 @@ namespace Value {
 
 template<typename TFloat> void copy(const XYZValue<TFloat>& orig, TFloat& dest);
 template<typename TFloat> void copy(const TFloat& orig, XYZValue<TFloat>& dest);
+template<typename TFloat> void copy(const XZValue<TFloat>& orig, TFloat& dest);
+template<typename TFloat> void copy(const TFloat& orig, XZValue<TFloat>& dest);
 
 template<typename TFloat> void copy(const XYZValueFactor<TFloat>& orig, TFloat& dest);
 template<typename TFloat> void copy(const TFloat& orig, XYZValueFactor<TFloat>& dest);
+template<typename TFloat> void copy(const XZValueFactor<TFloat>& orig, TFloat& dest);
+template<typename TFloat> void copy(const TFloat& orig, XZValueFactor<TFloat>& dest);
 
 // array of size two --> complex
 template<typename TFloat> void copy(const TFloat (&orig)[2], std::complex<TFloat>& dest);
@@ -55,6 +62,10 @@ template<typename InputIterator, typename OutputIterator>
 	void copyXYZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
 template<typename InputIterator, typename OutputIterator>
 	void copyXYZSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
+template<typename InputIterator, typename OutputIterator>
+	void copyXZSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
+template<typename InputIterator, typename OutputIterator>
+	void copyXZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest);
 
 
 
@@ -136,6 +147,20 @@ copy(const TFloat& orig, XYZValue<TFloat>& dest)
 
 template<typename TFloat>
 void
+copy(const XZValue<TFloat>& orig, TFloat& dest)
+{
+	dest = orig.value;
+}
+
+template<typename TFloat>
+void
+copy(const TFloat& orig, XZValue<TFloat>& dest)
+{
+	dest.value = orig;
+}
+
+template<typename TFloat>
+void
 copy(const XYZValueFactor<TFloat>& orig, TFloat& dest)
 {
 	dest = orig.value;
@@ -144,6 +169,20 @@ copy(const XYZValueFactor<TFloat>& orig, TFloat& dest)
 template<typename TFloat>
 void
 copy(const TFloat& orig, XYZValueFactor<TFloat>& dest)
+{
+	dest.value = orig;
+}
+
+template<typename TFloat>
+void
+copy(const XZValueFactor<TFloat>& orig, TFloat& dest)
+{
+	dest = orig.value;
+}
+
+template<typename TFloat>
+void
+copy(const TFloat& orig, XZValueFactor<TFloat>& dest)
 {
 	dest.value = orig;
 }
@@ -162,7 +201,6 @@ copy(const std::complex<TFloat>& orig, TFloat (&dest)[2])
 	dest[0] = orig.real();
 	dest[1] = orig.imag();
 }
-
 
 template<typename TFloat1, typename TFloat2>
 void
@@ -241,6 +279,27 @@ copyXYZSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest)
 		dest->x = orig->x;
 		dest->y = orig->y;
 		dest->z = orig->z;
+	}
+}
+
+template<typename InputIterator, typename OutputIterator>
+void
+copyXZSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest)
+{
+	for ( ; orig != origEnd; ++orig, ++dest) {
+		dest->x = orig->x;
+		dest->z = orig->z;
+	}
+}
+
+template<typename InputIterator, typename OutputIterator>
+void
+copyXZValueSequence(InputIterator orig, InputIterator origEnd, OutputIterator dest)
+{
+	for ( ; orig != origEnd; ++orig, ++dest) {
+		dest->x = orig->x;
+		dest->z = orig->z;
+		copy(orig->value, dest->value);
 	}
 }
 

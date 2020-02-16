@@ -59,7 +59,7 @@ private:
 	T1R1SAFT3DMethod(T1R1SAFT3DMethod&&) = delete;
 	T1R1SAFT3DMethod& operator=(T1R1SAFT3DMethod&&) = delete;
 
-	void process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement, const std::string& outputDir);
+	void process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement, const std::string& outputDir);
 	void useCoherenceFactor(TFloat valueScale, const std::string& outputDir);
 
 	Project& project_;
@@ -94,7 +94,7 @@ T1R1SAFT3DMethod<TFloat>::useCoherenceFactor(TFloat valueScale, const std::strin
 
 template<typename TFloat>
 void
-T1R1SAFT3DMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<TFloat>& processor, unsigned int baseElement, const std::string& outputDir)
+T1R1SAFT3DMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement, const std::string& outputDir)
 {
 	Timer tProc;
 

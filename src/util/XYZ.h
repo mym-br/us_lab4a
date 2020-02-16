@@ -14,6 +14,7 @@
  *  You should have received a copy of the GNU General Public License      *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
+
 #ifndef XYZ_H
 #define XYZ_H
 
@@ -26,6 +27,9 @@ struct XYZ {
 	T x;
 	T y;
 	T z;
+
+	XYZ() : x(), y(), z() {}
+	XYZ(T x, T y, T z) : x(x), y(y), z(z) {}
 };
 
 template<typename T>

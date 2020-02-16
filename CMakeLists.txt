@@ -76,10 +76,12 @@ set(us_lab4a_SRC
     src/util/DirectFFTWFilter.h
     src/util/Exception.h
     src/util/ExecutionTimeMeasurement.h
+    src/util/FermatPrinciple.h
     src/util/FFTWFilter.h
     src/util/FFTWFilter2.h
     src/util/FileUtil.cpp
     src/util/FileUtil.h
+    src/util/Fitting.h
     src/util/Geometry.h
     src/util/HDF5Util.cpp
     src/util/HDF5Util.h
@@ -106,8 +108,11 @@ set(us_lab4a_SRC
     src/util/PseudorandomNumberGenerator.cpp
     src/util/PseudorandomNumberGenerator.h
     src/util/RealToComplexFFT.h
+    src/util/SIMD.h
     src/util/Statistics.h
     src/util/Stream.h
+    src/util/String.h
+    src/util/TemplateUtil.h
     src/util/Tensor3.h
     src/util/Timer.h
     src/util/Util.cpp
@@ -123,7 +128,11 @@ set(us_lab4a_SRC
     src/util/XYZValue.h
     src/util/XYZValueArray.h
     src/util/XYZValueFactor.h
+    src/util/XZ.h
+    src/util/XZComplexValue.h
+    src/util/XZComplexValueFactor.h
     src/util/XZValue.h
+    src/util/XZValueFactor.h
     src/external/lzf/lzf.h
     src/external/lzf/lzf_c.c
     src/external/lzf/lzf_d.c
@@ -139,6 +148,8 @@ set(us_lab4a_SRC
     src/user/configuration/SA3DConfiguration.h
     src/user/configuration/STAConfiguration.h
     src/user/configuration/TnRnConfiguration.h
+    src/user/configuration/TwoMediumSTAConfiguration.h
+    src/user/method/CylinderDetectionAndFermatMethod.h
     src/user/method/DeviceSectorialScanMethod.h
     src/user/method/method_includes.h
     src/user/method/method_table.h
@@ -164,14 +175,26 @@ set(us_lab4a_SRC
     src/user/network_acquisition/NetworkDeviceSectorialScanAcquisition.h
     src/user/network_acquisition/NetworkSTAAcquisition.h
     src/user/network_acquisition/NetworkTnRnAcquisition.h
+    src/user/processor/ArcCylindricalWaveProcessor.h
     src/user/processor/ArrayProcessor.h
+    src/user/processor/CCBFPitchCatchProcessor.h
+    src/user/processor/CrossCorrArcCylindricalWaveProcessor.h
+    src/user/processor/CrossCorrelationSTAProcessor.h
+    src/user/processor/CylindricalWaveProcessor.h
     src/user/processor/DefaultSTAProcessor.h
     src/user/processor/SimpleSTAProcessor.h
     src/user/processor/SynthYVectorial3DTnRnProcessor.h
+    src/user/processor/TangentCurveGeometryProcessor.h
+    src/user/processor/TwoMediumSTAProcessor.h
     src/user/processor/Vectorial3DSTAProcessor.h
     src/user/processor/Vectorial3DT1R1SAFTProcessor.h
     src/user/processor/Vectorial3DTnRnProcessor.h
+    src/user/processor/VectorialCombinedTwoMediumImagingProcessor.h
+    src/user/processor/VectorialCombinedTwoMediumImagingProcessor2.h
+    src/user/processor/VectorialCombinedTwoMediumImagingProcessor3.h
+    src/user/processor/VectorialCombinedTwoMediumImagingProcessor4.h
     src/user/processor/VectorialSTAProcessor.h
+    src/user/processor/VectorialTwoMediumSTAProcessor.h
     src/user/simulator/AnalyticCircularSourceImpulseResponse.h
     src/user/simulator/AnalyticRectangularSourceImpulseResponse.h
     src/user/simulator/ArrayOfRectangularSourcesImpulseResponse.h

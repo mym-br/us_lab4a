@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -15,21 +15,24 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef XZVALUE_H_
-#define XZVALUE_H_
+#ifndef XZCOMPLEXVALUE_H
+#define XZCOMPLEXVALUE_H
+
+#include <complex>
+
+
 
 namespace Lab {
 
 template<typename T>
-struct XZValue {
+struct XZComplexValue {
 	T x;
 	T z;
-	T value;
+	std::complex<T> value;
 
-	XZValue() : x(), z(), value() {}
-	XZValue(T x, T z, T value) : x(x), z(z), value(value) {}
+	XZComplexValue() : x(), z(), value() {}
 };
 
 } // namespace Lab
 
-#endif /* XZVALUE_H_ */
+#endif // XZCOMPLEXVALUE_H

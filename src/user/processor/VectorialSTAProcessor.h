@@ -42,7 +42,6 @@
 #include "STAConfiguration.h"
 #include "Tensor3.h"
 #include "Util.h"
-#include "XYZValueFactor.h"
 
 
 
@@ -51,8 +50,8 @@ namespace Lab {
 // x = 0 is at the center of the element group.
 // y = 0
 // z = 0 is at the surface of the array.
-template<typename TFloat>
-class VectorialSTAProcessor : public ArrayProcessor<TFloat> {
+template<typename TFloat, typename TPoint>
+class VectorialSTAProcessor : public ArrayProcessor<TPoint> {
 public:
 	VectorialSTAProcessor(
 			const STAConfiguration<TFloat>& config,
@@ -66,7 +65,7 @@ public:
 	virtual ~VectorialSTAProcessor() = default;
 
 	virtual void prepare(unsigned int baseElement);
-	virtual void process(Matrix<XYZValueFactor<TFloat>>& gridData);
+	virtual void process(Matrix<TPoint>& gridData);
 private:
 	// Depends on the signal.
 	// 1.0 --> pi radian / sample at the original sampling rate.
@@ -103,8 +102,8 @@ private:
 
 
 
-template<typename TFloat>
-VectorialSTAProcessor<TFloat>::VectorialSTAProcessor(
+template<typename TFloat, typename TPoint>
+VectorialSTAProcessor<TFloat, TPoint>::VectorialSTAProcessor(
 			const STAConfiguration<TFloat>& config,
 			STAAcquisition<TFloat>& acquisition,
 			unsigned int upsamplingFactor,
@@ -131,16 +130,16 @@ VectorialSTAProcessor<TFloat>::VectorialSTAProcessor(
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * peakOffset / config_.centerFrequency;
 }
 
-template<typename TFloat>
+template<typename TFloat, typename TPoint>
 void
-VectorialSTAProcessor<TFloat>::prepare(unsigned int baseElement)
+VectorialSTAProcessor<TFloat, TPoint>::prepare(unsigned int baseElement)
 {
 	acquisition_.prepare(baseElement);
 }
 
-template<typename TFloat>
+template<typename TFloat, typename TPoint>
 void
-VectorialSTAProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridData)
+VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 {
 	LOG_DEBUG << "BEGIN ========== VectorialSTAProcessor::process ==========";
 
@@ -210,7 +209,7 @@ VectorialSTAProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridData)
 			for (std::size_t j = 0; j < numRows; ++j) {
 
 				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0));
-				XYZValueFactor<TFloat>& point = gridData(i, j);
+				TPoint& point = gridData(i, j);
 
 				// Calculate the delays.
 				for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
@@ -249,7 +248,7 @@ VectorialSTAProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridData)
 	});
 
 	std::for_each(gridData.begin(), gridData.end(),
-			Util::MultiplyValueBy<XYZValueFactor<TFloat>, TFloat>(TFloat(1) / numSignals));
+			Util::MultiplyValueBy<TPoint, TFloat>(TFloat(1) / numSignals));
 
 	LOG_DEBUG << "END ========== VectorialSTAProcessor::process ==========";
 }

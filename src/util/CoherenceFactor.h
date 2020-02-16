@@ -310,9 +310,9 @@ public:
 	virtual TFloat calculate(const std::complex<TFloat>* data, unsigned int size);
 private:
 	PRNGPhaseCoherenceFactor(const PRNGPhaseCoherenceFactor&) = delete;
-	PRNGPhaseCoherenceFactor& operator=(const PRNGPhaseCoherenceFactor&) = default;
-	PRNGPhaseCoherenceFactor(PRNGPhaseCoherenceFactor&&) = default;
-	PRNGPhaseCoherenceFactor& operator=(PRNGPhaseCoherenceFactor&&) = default;
+	PRNGPhaseCoherenceFactor& operator=(const PRNGPhaseCoherenceFactor&) = delete;
+	PRNGPhaseCoherenceFactor(PRNGPhaseCoherenceFactor&&) = delete;
+	PRNGPhaseCoherenceFactor& operator=(PRNGPhaseCoherenceFactor&&) = delete;
 
 	PseudorandomNumberGenerator prng_;
 	const TFloat gamma_;

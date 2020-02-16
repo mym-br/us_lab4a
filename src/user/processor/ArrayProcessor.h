@@ -19,20 +19,19 @@
 #define ARRAYPROCESSOR_H_
 
 #include "Matrix.h"
-#include "XYZValueFactor.h"
 
 
 
 namespace Lab {
 
-template<typename TFloat>
+template<typename TPoint>
 class ArrayProcessor {
 public:
 	ArrayProcessor() = default;
 	virtual ~ArrayProcessor() = default;
 
 	virtual void prepare(unsigned int /*baseElement*/) {}
-	virtual void process(Matrix<XYZValueFactor<TFloat>>& gridData) = 0;
+	virtual void process(Matrix<TPoint>& gridData) = 0;
 private:
 	ArrayProcessor(const ArrayProcessor&) = delete;
 	ArrayProcessor& operator=(const ArrayProcessor&) = delete;

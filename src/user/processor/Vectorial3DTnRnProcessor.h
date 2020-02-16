@@ -48,7 +48,7 @@
 namespace Lab {
 
 template<typename TFloat>
-class Vectorial3DTnRnProcessor : public ArrayProcessor<TFloat> {
+class Vectorial3DTnRnProcessor : public ArrayProcessor<XYZValueFactor<TFloat>> {
 public:
 	Vectorial3DTnRnProcessor(
 			const TnRnConfiguration<TFloat>& config,

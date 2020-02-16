@@ -38,6 +38,7 @@
 #include "Matrix.h"
 #include "Method.h"
 #include "ParameterMap.h"
+#include "TemplateUtil.h"
 #include "Util.h"
 #include "Value.h"
 #include "Visualization.h"
@@ -139,8 +140,8 @@ public:
 	template<typename T, typename U> void showFigure3D(
 						int id,
 						const char* figureName,
-						const T* gridData,
-						const U* pointList,
+						const Matrix<T>* gridData,
+						const std::vector<U>* pointList,
 						bool waitPending=true,
 						Visualization::Value visualization=Visualization::VALUE_DEFAULT,
 						Colormap::Id colormap=Colormap::DEFAULT,
@@ -502,8 +503,8 @@ void
 Project::showFigure3D(
 		int id,
 		const char* figureName,
-		const T* gridData,
-		const U* pointList,
+		const Matrix<T>* gridData,
+		const std::vector<U>* pointList,
 		bool waitPending,
 		Visualization::Value visualization,
 		Colormap::Id colormap,
@@ -526,14 +527,22 @@ Project::showFigure3D(
 	figure3DData_.figureName = figureName ? figureName : "Figure";
 	if (gridData) {
 		figure3DData_.gridData.resize(gridData->n1(), gridData->n2());
-		Value::copyXYZValueSequence(gridData->begin(), gridData->end(), figure3DData_.gridData.begin());
+		if constexpr (has_y_member<T>::value) {
+			Value::copyXYZValueSequence(gridData->begin(), gridData->end(), figure3DData_.gridData.begin());
+		} else {
+			Value::copyXZValueSequence(gridData->begin(), gridData->end(), figure3DData_.gridData.begin());
+		}
 		figure3DData_.newGridData = true;
 	} else {
 		figure3DData_.newGridData = false;
 	}
 	if (pointList) {
 		figure3DData_.pointList.resize(pointList->size());
-		Value::copyXYZSequence(pointList->begin(), pointList->end(), figure3DData_.pointList.begin());
+		if constexpr (has_y_member<U>::value) {
+			Value::copyXYZSequence(pointList->begin(), pointList->end(), figure3DData_.pointList.begin());
+		} else {
+			Value::copyXZSequence(pointList->begin(), pointList->end(), figure3DData_.pointList.begin());
+		}
 		figure3DData_.newPointList = true;
 	} else {
 		figure3DData_.newPointList = false;

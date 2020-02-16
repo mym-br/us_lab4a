@@ -48,7 +48,7 @@ namespace Lab {
 // y = 0
 // z = 0 is at the surface of the array.
 template<typename TFloat>
-class SimpleSTAProcessor : public ArrayProcessor<TFloat> {
+class SimpleSTAProcessor : public ArrayProcessor<XYZValueFactor<TFloat>> {
 public:
 	SimpleSTAProcessor(
 			const STAConfiguration<TFloat>& config,
