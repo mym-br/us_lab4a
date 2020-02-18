@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# This file is in the public domain.
 
 import sys
 import h5py
