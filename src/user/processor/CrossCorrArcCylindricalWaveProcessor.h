@@ -87,7 +87,7 @@ public:
 
 	void process(unsigned int baseElementIdx, std::vector<XZValueFactor<TFloat>>& gridData);
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tPartialPrepareData;
 	MeasurementList<double> tPartialProcess;
 #endif
@@ -283,7 +283,7 @@ CrossCorrArcCylindricalWaveProcessor<TFloat>::process(unsigned int baseElementId
 	const std::size_t samplesPerChannelLow = acqDataList_.n3();
 
 	// Prepare the signal list.
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer prepareDataTimer;
 #endif
 	PrepareData prepareDataOp = {
@@ -301,7 +301,7 @@ CrossCorrArcCylindricalWaveProcessor<TFloat>::process(unsigned int baseElementId
 	};
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(firstRxElem_, lastRxElem_ + 1), prepareDataOp);
 	//prepareDataOp(tbb::blocked_range<unsigned int>(firstRxElem_, lastRxElem_ + 1)); // single-thread
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tPartialPrepareData.put(prepareDataTimer.getTime());
 #endif
 
@@ -362,7 +362,7 @@ CrossCorrArcCylindricalWaveProcessor<TFloat>::process(unsigned int baseElementId
 # endif
 #endif
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer processTimer;
 #endif
 	// Find the radius of the center element arc using the center signal.
@@ -428,7 +428,7 @@ CrossCorrArcCylindricalWaveProcessor<TFloat>::process(unsigned int baseElementId
 	};
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, arcData.size()), processArcRangeOp);
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tPartialProcess.put(processTimer.getTime());
 #endif
 

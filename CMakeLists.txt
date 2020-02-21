@@ -27,6 +27,7 @@ endif()
 option(USE_SIMD "Use SIMD." ON)
 option(USE_OPENCL "Use OpenCL." OFF)
 set(OPENCL_LIB "/usr/lib/libOpenCL.so" CACHE FILEPATH "OpenCL library path." )
+option(USE_EXECUTION_TIME_MEASUREMENT "Use execution time measurement." OFF)
 
 set(us_lab4a_SRC
     src/Controller.cpp
@@ -257,6 +258,10 @@ if(USE_OPENCL)
         CL_HPP_MINIMUM_OPENCL_VERSION=120
         CL_HPP_TARGET_OPENCL_VERSION=120
         CL_HPP_CL_1_2_DEFAULT_BUILD)
+endif()
+
+if(USE_EXECUTION_TIME_MEASUREMENT)
+    add_compile_definitions(USE_EXECUTION_TIME_MEASUREMENT)
 endif()
 
 target_link_libraries(us_lab4a

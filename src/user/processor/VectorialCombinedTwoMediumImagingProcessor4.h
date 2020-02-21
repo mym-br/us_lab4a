@@ -112,7 +112,7 @@ public:
 		const Matrix<XZ<TFloat>>& gridXZ,
 		Matrix<std::complex<TFloat>>& gridValue);
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tMinRowIdx;
 	MeasurementList<double> tMedium1DelayMatrix;
 	MeasurementList<double> tCalculateDelays;
@@ -463,7 +463,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 	const unsigned int fermatBlockSize = FermatPrinciple::calcBlockSizeForTwoStepSearch(interfacePointList.size(), r, lambda2_, maxFermatBlockSize_);
 	LOG_DEBUG << "fermatBlockSize: " << fermatBlockSize;
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer minRowIdxTimer;
 #endif
 	//==================================================
@@ -499,7 +499,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 		gridPointIdx += gridXZ.n2() - minRowIdx_[col];
 	}
 	LOG_DEBUG << "number of valid grid points: " << gridPointIdx;
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tMinRowIdx.put(minRowIdxTimer.getTime());
 #endif
 
@@ -718,7 +718,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 
 	ArrayGeometry::getElementX2D(config_.numElementsMux, config_.pitch, TFloat(0) /* offset */, xArray_);
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer medium1DelayMatrixTimer;
 #endif
 	for (unsigned int elem = 0; elem < config_.numElementsMux; ++elem) {
@@ -734,7 +734,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 #endif
 		}
 	}
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tMedium1DelayMatrix.put(medium1DelayMatrixTimer.getTime());
 
 	Timer calculateDelaysTimer;
@@ -757,12 +757,12 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 	//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1()), calculateDelaysOp);
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1(), 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
 	//calculateDelaysOp(tbb::blocked_range<unsigned int>(0, gridXZ.n1())); // single-thread
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tCalculateDelays.put(calculateDelaysTimer.getTime());
 #endif
 
 	// Only one transmit element.
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer prepareDataTimer;
 #endif
 	unsigned int stepIdx = 0;
@@ -782,7 +782,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 
 		++stepIdx;
 	}
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tPrepareData.put(prepareDataTimer.getTime());
 
 	Timer processColumnTimer;
@@ -1184,7 +1184,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 # endif
 #endif
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tProcessColumn.put(processColumnTimer.getTime());
 #endif
 

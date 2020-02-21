@@ -823,7 +823,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCCBFPitchCatch()
 #endif
 			ascanStartOffset);
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tProcess;
 	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
 	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
@@ -842,7 +842,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCCBFPitchCatch()
 		p->process(baseElemIdx, baseElement, pointPositionList);
 	}
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tProcess.put(procTimer.getTime());
 	}
 
@@ -986,7 +986,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsInArcs()
 	Matrix<TFloat> statistics(baseElemList.size(), STAT_SIZE);
 #endif
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tProcess;
 	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
 	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
@@ -1111,7 +1111,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsInArcs()
 //		}
 	}
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tProcess.put(procTimer.getTime());
 	}
 
@@ -1249,7 +1249,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingTangentCurveGeometry(
 #endif
 			ascanStartOffset);
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tProcess;
 	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
 	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
@@ -1268,7 +1268,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingTangentCurveGeometry(
 		p->process(baseElemIdx, baseElement, pointPositionList);
 	}
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tProcess.put(procTimer.getTime());
 	}
 
@@ -1308,7 +1308,7 @@ CylinderDetectionAndFermatMethod<TFloat>::fitCircle()
 	TFloat centerInterfaceX, centerInterfaceZ, interfaceR;
 	unsigned int numPointsWithNaN;
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tProcess;
 	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
 	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
@@ -1340,7 +1340,7 @@ CylinderDetectionAndFermatMethod<TFloat>::fitCircle()
 		}
 	}
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tProcess.put(procTimer.getTime());
 	}
 
@@ -1769,7 +1769,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging2()
 	std::vector<XZ<TFloat>> interfacePointList;
 
 	Timer tProc;
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
 		if (n == 1U) tProc.reset(); // ignores the first iteration
 #endif
@@ -1811,7 +1811,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging2()
 			}
 		}
 	}
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	}
 	const double t = tProc.getTime() / EXECUTION_TIME_MEASUREMENT_ITERATIONS;
 #else
@@ -1972,7 +1972,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
 	std::vector<TFloat> interfaceAngleList;
 	std::vector<XZ<TFloat>> interfacePointList;
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tProcess;
 	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
 	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
@@ -2030,7 +2030,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
 		}
 	}
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tProcess.put(procTimer.getTime());
 	}
 
@@ -2176,7 +2176,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging4()
 	std::vector<TFloat> interfaceAngleList;
 	std::vector<XZ<TFloat>> interfacePointList;
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tProcess;
 	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
 	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
@@ -2230,7 +2230,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging4()
 		}
 	}
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tProcess.put(procTimer.getTime());
 	}
 

@@ -83,7 +83,7 @@ public:
 		unsigned int baseElement,
 		std::vector<std::pair<TFloat, TFloat>>& pointPositionList);
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tPartialPrepareData;
 	MeasurementList<double> tPartialProcess;
 #endif
@@ -198,7 +198,7 @@ CCBFPitchCatchProcessor<TFloat>::process(
 	const std::size_t samplesPerChannelLow = acqDataList_.n3();
 
 	// Obtain the traveled distances.
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer prepareDataTimer;
 #endif
 	PrepareData prepareDataOp = {
@@ -217,7 +217,7 @@ CCBFPitchCatchProcessor<TFloat>::process(
 #else
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(firstRxElem_, lastRxElem_ + 1), prepareDataOp);
 #endif
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tPartialPrepareData.put(prepareDataTimer.getTime());
 
 	Timer processTimer;
@@ -249,7 +249,7 @@ CCBFPitchCatchProcessor<TFloat>::process(
 		}
 	}
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tPartialProcess.put(processTimer.getTime());
 #endif
 	//LOG_DEBUG << "END ========== CCBFPitchCatchProcessor::process ==========";

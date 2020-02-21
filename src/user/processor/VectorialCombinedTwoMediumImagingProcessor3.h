@@ -104,7 +104,7 @@ public:
 #endif
 		);
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tMinRowIdx;
 	MeasurementList<double> tMedium1DelayMatrix;
 	MeasurementList<double> tCalculateDelays;
@@ -246,7 +246,7 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 	minRowIdx_.resize(gridXZ.n1() /* number of columns */);
 	delayMatrix_.resize(gridXZ.n1() /* number of columns */, gridXZ.n2() /* number of rows */, config_.numElementsMux);
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer minRowIdxTimer;
 #endif
 	//unsigned int numValidPixels = 0;
@@ -273,14 +273,14 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 		//numValidPixels += gridXZ.n2() - minRowIdx_[col];
 	}
 	//LOG_DEBUG << "numValidPixels: " << numValidPixels;
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tMinRowIdx.put(minRowIdxTimer.getTime());
 #endif
 	const TFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
 
 	ArrayGeometry::getElementX2D(config_.numElementsMux, config_.pitch, TFloat(0) /* offset */, xArray_);
 
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer medium1DelayMatrixTimer;
 #endif
 	medium1DelayMatrix_.resize(config_.numElementsMux, interfacePointList.size());
@@ -297,7 +297,7 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 #endif
 		}
 	}
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tMedium1DelayMatrix.put(medium1DelayMatrixTimer.getTime());
 
 	Timer calculateDelaysTimer;
@@ -320,13 +320,13 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 	//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1()), calculateDelaysOp);
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1(), 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
 	//calculateDelaysOp(tbb::blocked_range<unsigned int>(0, gridXZ.n1())); // single-thread
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tCalculateDelays.put(calculateDelaysTimer.getTime());
 #endif
 	const auto& firstStepConfig = stepConfigList.front();
 	if (firstStepConfig.firstTxElem == firstStepConfig.lastTxElem) {
 		// Only one transmit element.
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 		Timer t0;
 #endif
 		signalMatrix_.resize(
@@ -351,7 +351,7 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 
 			++stepIdx;
 		}
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 		tPrepareData.put(t0.getTime());
 
 		Timer t1;
@@ -372,7 +372,7 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 		//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridValue.n1()), processColumnOp);
 		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridValue.n1(), 1 /* grain size */), processColumnOp, tbb::simple_partitioner());
 		//processColumnOp(tbb::blocked_range<unsigned int>(0, gridValue.n1())); // single-thread
-#ifdef EXECUTION_TIME_MEASUREMENT_ACTIVE
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 		tProcessColumn.put(t1.getTime());
 #endif
 	} else {
