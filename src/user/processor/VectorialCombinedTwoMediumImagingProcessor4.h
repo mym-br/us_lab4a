@@ -38,7 +38,6 @@
 #include "Exception.h"
 #include "ExecutionTimeMeasurement.h"
 #include "FermatPrinciple.h"
-//#include "FileUtil.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Log.h"
@@ -291,38 +290,40 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::VectorialCombinedTwoMediumI
 		THROW_EXCEPTION(UnavailableResourceException, "Not enough platforms (n < 2).");
 	}
 # endif
-#if 0
-	try {
-		for (std::size_t i = 0; i < platforms.size(); ++i) {
-			std::string name = platforms[i].getInfo<CL_PLATFORM_NAME>();
-			LOG_DEBUG << "OpenCL platform: " << name;
 
-			std::vector<cl::Device> devices;
-			platforms[i].getDevices(CL_DEVICE_TYPE_ALL, &devices);
-			if (devices.empty()) {
-				THROW_EXCEPTION(UnavailableResourceException, "No OpenCL devices available for platform " << name << '.');
-			}
+	if (Log::isDebugEnabled()) {
+		try {
+			for (std::size_t i = 0; i < platforms.size(); ++i) {
+				std::string name = platforms[i].getInfo<CL_PLATFORM_NAME>();
+				LOG_DEBUG << "OpenCL platform: " << name;
 
-			for (std::size_t j = 0; j < devices.size(); ++j) {
-				cl_device_type deviceType = devices[i].getInfo<CL_DEVICE_TYPE>();
-				std::string devName = devices[i].getInfo<CL_DEVICE_NAME>();
-				LOG_DEBUG << "  device name: " << devName;
-				switch (deviceType) {
-				case CL_DEVICE_TYPE_CPU:
-					LOG_DEBUG << "         type: CPU";
-					break;
-				case CL_DEVICE_TYPE_GPU:
-					LOG_DEBUG << "         type: GPU";
-					break;
-				default:
-					LOG_DEBUG << "         type: other (" << deviceType << ").";
+				std::vector<cl::Device> devices;
+				platforms[i].getDevices(CL_DEVICE_TYPE_ALL, &devices);
+				if (devices.empty()) {
+					THROW_EXCEPTION(UnavailableResourceException, "No OpenCL devices available for platform " << name << '.');
+				}
+
+				for (std::size_t j = 0; j < devices.size(); ++j) {
+					cl_device_type deviceType = devices[i].getInfo<CL_DEVICE_TYPE>();
+					std::string devName = devices[i].getInfo<CL_DEVICE_NAME>();
+					LOG_DEBUG << "  device name: " << devName;
+					switch (deviceType) {
+					case CL_DEVICE_TYPE_CPU:
+						LOG_DEBUG << "         type: CPU";
+						break;
+					case CL_DEVICE_TYPE_GPU:
+						LOG_DEBUG << "         type: GPU";
+						break;
+					default:
+						LOG_DEBUG << "         type: other (" << deviceType << ").";
+					}
 				}
 			}
+		} catch (cl::Error& e) {
+			LOG_ERROR << "Error occurred while obtaining information about OpenCL devices: " << e.what() << " (" << e.err() << ").";
 		}
-	} catch (cl::Error& e) {
-		LOG_ERROR << "Error occurred while obtaining information about OpenCL devices: " << e.what() << " (" << e.err() << ").";
 	}
-#endif
+
 	cl_context_properties properties[] = {
 					CL_CONTEXT_PLATFORM,
 					(cl_context_properties)(platforms[VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_GPU_PLATFORM])(),
