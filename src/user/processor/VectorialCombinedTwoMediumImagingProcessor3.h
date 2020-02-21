@@ -51,12 +51,11 @@
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_UPSAMP_FILTER_HALF_TRANSITION_WIDTH 0.2
 
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL 1
-#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_SIMD 1
 
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
 # include <complex>
 #endif
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_SIMD
+#ifdef USE_SIMD
 # include "SIMD.h"
 #endif
 
@@ -289,7 +288,7 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 		TFloat* delays = &medium1DelayMatrix_(elem, 0);
 		for (unsigned int i = 0; i < interfacePointList.size(); ++i) {
 			const XZ<TFloat>& ifPoint = interfacePointList[i];
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_SIMD
+#ifdef USE_SIMD
 			delays[i] = SIMD::calcDistance(xArray_[elem], 0, ifPoint.x, ifPoint.z) * c2ByC1;
 #else
 			const TFloat dx = ifPoint.x - xArray_[elem];
@@ -445,7 +444,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::CalculateDelays {
 					// Fermat's principle. Find the fastest path.
 					TFloat tMin;
 					unsigned int idxMin;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_SIMD
+#ifdef USE_SIMD
 					FermatPrinciple::findMinTimeInTwoSteps2(
 							fermatBlockSize,
 							invC1, invC2,
@@ -472,7 +471,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::CalculateDelays {
 					TFloat tC2Min;
 					{
 						const XZ<TFloat>& ifPoint = interfacePointList[idxMin];
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_SIMD
+#ifdef USE_SIMD
 						tC2Min = medium1Delays[idxMin] + SIMD::calcDistance(ifPoint.x, ifPoint.z, point.x, point.z);
 #else
 						const TFloat dx2 = point.x - ifPoint.x;
@@ -482,7 +481,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::CalculateDelays {
 					}
 					for (unsigned int idxSearch = idxMin + 1, end = interfacePointList.size(); idxSearch < end; ++idxSearch) {
 						const XZ<TFloat>& ifPoint = interfacePointList[idxSearch];
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_SIMD
+#ifdef USE_SIMD
 						const TFloat tC2 = medium1Delays[idxSearch] + SIMD::calcDistance(ifPoint.x, ifPoint.z, point.x, point.z);
 #else
 						const TFloat dx2 = point.x - ifPoint.x;
@@ -499,7 +498,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::CalculateDelays {
 					if (idxMin == lastInterfaceIdx) { // if the previous search was not successful
 						for (int idxSearch = static_cast<int>(idxMin) - 1; idxSearch >= 0; --idxSearch) { // if idxMin = 0, idxSearch will start with -1
 							const XZ<TFloat>& ifPoint = interfacePointList[idxSearch];
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_SIMD
+#ifdef USE_SIMD
 							const TFloat tC2 = medium1Delays[idxSearch] + SIMD::calcDistance(ifPoint.x, ifPoint.z, point.x, point.z);
 #else
 							const TFloat dx2 = point.x - ifPoint.x;

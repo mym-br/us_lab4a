@@ -24,6 +24,7 @@ if(UNIX)
     endif()
 endif()
 
+option(USE_SIMD "Use SIMD." ON)
 set(us_lab4a_SRC
     src/Controller.cpp
     src/Controller.h
@@ -241,6 +242,9 @@ target_include_directories(us_lab4a PRIVATE
     ${HDF5_INCLUDE_DIRS}
 )
 
+if(USE_SIMD)
+    add_compile_definitions(USE_SIMD)
+endif()
 target_link_libraries(us_lab4a
     Qt5::Core
     Qt5::Gui
