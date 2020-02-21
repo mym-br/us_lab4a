@@ -134,6 +134,7 @@ public:
 
 	virtual std::unique_ptr<AnalyticSignalCoherenceFactor<TFloat>> clone() const = 0;
 	virtual TFloat calculate(const std::complex<TFloat>* data, unsigned int size) = 0;
+	virtual void getConstants(std::vector<TFloat>& list) const = 0;
 
 	static std::unique_ptr<AnalyticSignalCoherenceFactor<TFloat>> get(const ParameterMap& pm);
 private:
@@ -195,6 +196,7 @@ public:
 		}
 	}
 	bool enabled() const { return cf_.get() != nullptr; }
+	const AnalyticSignalCoherenceFactor<TFloat>& implementation() const { return *cf_; }
 private:
 	AnalyticSignalCoherenceFactorProcessor(AnalyticSignalCoherenceFactorProcessor&&) = delete;
 	AnalyticSignalCoherenceFactorProcessor& operator=(AnalyticSignalCoherenceFactorProcessor&&) = delete;
@@ -259,6 +261,7 @@ public:
 		return std::make_unique<PhaseCoherenceFactor>(gamma_);
 	}
 	virtual TFloat calculate(const std::complex<TFloat>* data, unsigned int size);
+	virtual void getConstants(std::vector<TFloat>& list) const;
 private:
 	PhaseCoherenceFactor(const PhaseCoherenceFactor&) = delete;
 	PhaseCoherenceFactor& operator=(const PhaseCoherenceFactor&) = delete;
@@ -293,6 +296,16 @@ PhaseCoherenceFactor<TFloat>::calculate(const std::complex<TFloat>* data, unsign
 	return std::max<TFloat>(0, 1 - factor_ * sf);
 }
 
+template<typename TFloat>
+void
+PhaseCoherenceFactor<TFloat>::getConstants(std::vector<TFloat>& list) const
+{
+	list.clear();
+	list.push_back(gamma_);
+	list.push_back(sigma0_);
+	list.push_back(factor_);
+}
+
 //=============================================================================
 
 template<typename TFloat>
@@ -308,6 +321,7 @@ public:
 		return std::make_unique<PRNGPhaseCoherenceFactor>(gamma_);
 	}
 	virtual TFloat calculate(const std::complex<TFloat>* data, unsigned int size);
+	virtual void getConstants(std::vector<TFloat>& list) const;
 private:
 	PRNGPhaseCoherenceFactor(const PRNGPhaseCoherenceFactor&) = delete;
 	PRNGPhaseCoherenceFactor& operator=(const PRNGPhaseCoherenceFactor&) = delete;
@@ -345,6 +359,16 @@ PRNGPhaseCoherenceFactor<TFloat>::calculate(const std::complex<TFloat>* data, un
 				Statistics::standardDeviation(&phi_[0]   , size),
 				Statistics::standardDeviation(&phiAux_[0], size));
 	return std::max<TFloat>(0, 1 - factor_ * sf);
+}
+
+template<typename TFloat>
+void
+PRNGPhaseCoherenceFactor<TFloat>::getConstants(std::vector<TFloat>& list) const
+{
+	list.clear();
+	list.push_back(gamma_);
+	list.push_back(sigma0_);
+	list.push_back(factor_);
 }
 
 } // namespace Lab

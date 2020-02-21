@@ -56,7 +56,6 @@
 // 1.0 --> pi radian / sample at the original sampling rate.
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_UPSAMP_FILTER_HALF_TRANSITION_WIDTH (0.2)
 
-//#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL 1
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_PINNED_MEMORY_FOR_GPU 1
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_DOUBLE_BUFFER_FOR_GPU 1
 //#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_TRANSPOSE 1
@@ -70,10 +69,8 @@
 # include "SIMD.h"
 #endif
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
-# define __CL_ENABLE_EXCEPTIONS
-# include <CL/cl.hpp>
-# define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_KERNEL_FILE_NAME "../us_lab4/opencl/vectorial_combined_two_medium_imaging_processor_4.cl"
+#ifdef USE_OPENCL
+# include <CL/cl2.hpp>
 # define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_PROGRAM_BUILD_OPTIONS "-D NUM_RX_ELEM=32"
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_DOUBLE_BUFFER_FOR_GPU
 #  ifndef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_PINNED_MEMORY_FOR_GPU
@@ -157,6 +154,8 @@ private:
 		return numGroups * groupSize;
 	}
 
+	std::string getKernel() const;
+
 	const TwoMediumSTAConfiguration<TFloat>& config_;
 	std::vector<Matrix<TFloat>>& acqDataList_;
 	unsigned int upsamplingFactor_;
@@ -176,7 +175,7 @@ private:
 	unsigned int rawDataN2_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
 	std::unique_ptr<tbb::enumerable_thread_specific<ProcessColumn2ThreadData>> processColumn2TLS_;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 	bool oclDataInitialized_;
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> gridValueRe_;
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> gridValueIm_;
@@ -245,7 +244,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::VectorialCombinedTwoMediumI
 		, lambda2_(config_.propagationSpeed2 / config_.centerFrequency)
 		, rawDataN1_()
 		, rawDataN2_()
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 		, oclDataInitialized_()
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_PINNED_MEMORY_FOR_GPU
 		, mappedRawData_()
@@ -281,7 +280,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::VectorialCombinedTwoMediumI
 	processColumn2ThreadData.coherenceFactor = coherenceFactor_;
 	processColumn2TLS_ = std::make_unique<tbb::enumerable_thread_specific<ProcessColumn2ThreadData>>(processColumn2ThreadData);
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 	std::vector<cl::Platform> platforms;
 	cl::Platform::get(&platforms);
 	if (platforms.empty()) {
@@ -329,13 +328,9 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::VectorialCombinedTwoMediumI
 					(cl_context_properties)(platforms[VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_GPU_PLATFORM])(),
 					0};
 	oclContext_ = cl::Context(CL_DEVICE_TYPE_GPU, properties);
-
-	std::string kernelSource = FileUtil::loadASCIIFileToString(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_KERNEL_FILE_NAME);
-	//LOG_DEBUG << "kernelSource:\n" << kernelSource;
-	cl::Program::Sources sources;
-	sources.push_back(std::make_pair(kernelSource.c_str(), kernelSource.size()));
-
-	oclProgram_ = cl::Program(oclContext_, sources);
+	std::vector<std::string> kernelStrings;
+	kernelStrings.push_back(getKernel());
+	oclProgram_ = cl::Program(oclContext_, kernelStrings);
 	std::vector<cl::Device> devices = oclContext_.getInfo<CL_CONTEXT_DEVICES>();
 	try {
 		oclProgram_.build(devices, VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_PROGRAM_BUILD_OPTIONS);
@@ -381,7 +376,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::VectorialCombinedTwoMediumI
 template<typename TFloat>
 VectorialCombinedTwoMediumImagingProcessor4<TFloat>::~VectorialCombinedTwoMediumImagingProcessor4()
 {
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_PINNED_MEMORY_FOR_GPU
 	if (oclPinnedRawData_() && mappedRawData_ != nullptr) {
 		LOG_DEBUG << "~VectorialCombinedTwoMediumImagingProcessor4: enqueueUnmapMemObject (GPU)";
@@ -507,7 +502,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 	tMinRowIdx.put(minRowIdxTimer.getTime());
 #endif
 
-#if defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_CPU
+#if defined USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_CPU
 	const unsigned int cpuCols = std::min(
 					static_cast<unsigned int>(gridXZ.n1()),
 					static_cast<unsigned int>(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_CPU_COEF * gridXZ.n1() + 0.5));
@@ -534,7 +529,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 	LOG_DEBUG << "cols: " << cols << " numGridPoints: " << numGridPoints;
 #endif
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_TRANSPOSE
 	if (cols > 0) {
 		const std::size_t transpNumGridPoints = roundUpToMultipleOfGroupSize(numGridPoints, OCL_TRANSPOSE_GROUP_SIZE_DIM_0);
@@ -574,7 +569,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 	rawDataMatrix_.resize(rawDataN1_, rawDataN2_);
 #endif
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 	if (cols > 0) {
 		gridValueRe_.resize(numGridPoints);
 		gridValueIm_.resize(numGridPoints);
@@ -716,7 +711,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 #else
 	rawDataMatrix_ = 0.0;
 	gridValue = std::complex<TFloat>(0.0);
-#endif // VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#endif // USE_OPENCL
 
 	const TFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
 
@@ -792,7 +787,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 	Timer processColumnTimer;
 #endif
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_TRANSPOSE
 	cl::Kernel kernel0;
 # endif
@@ -922,13 +917,13 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 		}
 	}
 # endif
-#endif // VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#endif // USE_OPENCL
 
 	//==================================================
 	// Step configuration loop.
 	//==================================================
 	bool evenIter = true;
-#if defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_DOUBLE_BUFFER_FOR_GPU
+#if defined USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_DOUBLE_BUFFER_FOR_GPU
 	for (unsigned int i = 0; i < stepConfigList.size(); ++i, evenIter = !evenIter) {
 #else
 	for (unsigned int i = 0; i < stepConfigList.size(); ++i) {
@@ -937,7 +932,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 		LOG_DEBUG << "stepConfig.baseElemIdx: " << stepConfig.baseElemIdx << " evenIter: " << evenIter;
 
 		if (cols > 0) {
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_DOUBLE_BUFFER_FOR_GPU
 			if (evenIter) {
 				if (writeBufferEvent() != nullptr) writeBufferEvent.wait();
@@ -963,7 +958,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 				minRowIdx_,
 				firstGridPointIdx_,
 				delayMatrix_,
-#if defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_PINNED_MEMORY_FOR_GPU
+#if defined USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_PINNED_MEMORY_FOR_GPU
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_DOUBLE_BUFFER_FOR_GPU
 				evenIter ? mappedRawData_ : mappedRawData2_,
 # else
@@ -982,7 +977,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 			LOG_DEBUG << "OCL DELAY-STORE " << delayStoreTimer.getTime();
 		}
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 		if (cols > 0) {
 			try {
 				Timer transfTimer;
@@ -1049,7 +1044,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 # endif
 #endif
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 		try {
 			cl::Event kernelEvent;
 
@@ -1143,7 +1138,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 		LOG_DEBUG << "CPU PROC " << procTimer.getTime();
 #endif
 	}
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL
+#ifdef USE_OPENCL
 	if (cols > 0) {
 		//==================================================
 		// [OpenCL] Read the formed image - GPU.
@@ -1381,7 +1376,7 @@ struct VectorialCombinedTwoMediumImagingProcessor4<TFloat>::ProcessColumnWithOne
 							const auto v0 = p[positionIdx];
 							const auto v1 = p[positionIdx + 1];
 							const std::complex<TFloat> v = v0 + k * (v1 - v0);
-#if defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_TRANSPOSE
+#if defined USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_TRANSPOSE
 							rawData[gridPointIdx * rawDataN2 + rxIdx    ] = v.real();
 							rawData[gridPointIdx * rawDataN2 + rxIdx + 1] = v.imag();
 #else
@@ -1389,7 +1384,7 @@ struct VectorialCombinedTwoMediumImagingProcessor4<TFloat>::ProcessColumnWithOne
 							rawData[(rxIdx + 1) * rawDataN2 + gridPointIdx] = v.imag();
 #endif
 						} else {
-#if defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_TRANSPOSE
+#if defined USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_TRANSPOSE
 							rawData[gridPointIdx * rawDataN2 + rxIdx    ] = 0;
 							rawData[gridPointIdx * rawDataN2 + rxIdx + 1] = 0;
 #else
@@ -1398,7 +1393,7 @@ struct VectorialCombinedTwoMediumImagingProcessor4<TFloat>::ProcessColumnWithOne
 #endif
 						}
 					} else {
-#if defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_TRANSPOSE
+#if defined USE_OPENCL && defined VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_TRANSPOSE
 						rawData[gridPointIdx * rawDataN2 + rxIdx    ] = 0;
 						rawData[gridPointIdx * rawDataN2 + rxIdx + 1] = 0;
 #else
@@ -1470,6 +1465,195 @@ struct VectorialCombinedTwoMediumImagingProcessor4<TFloat>::ProcessColumn2WithOn
 	tbb::enumerable_thread_specific<ProcessColumn2ThreadData>& processColumn2TLS;
 	Matrix<std::complex<TFloat>>& gridValue;
 };
+
+
+
+template<typename TFloat>
+std::string
+VectorialCombinedTwoMediumImagingProcessor4<TFloat>::getKernel() const
+{
+	return R"CLC(
+
+#define GROUP_SIZE 16
+
+//#define USE_PRNG 1
+
+#ifdef USE_PRNG
+# define PRNG_M (2147483647.0f)
+# define PRNG_INV_M (1.0f / PRNG_M)
+#endif
+
+// NVIDIA sm_12:
+//   - Local (shared) memory has 16 banks.
+__kernel
+void
+transposeKernel(
+		__global float* rawData,
+		__global float* rawDataT,
+		unsigned int oldSizeX,
+		unsigned int oldSizeY,
+		__local float* temp) // (GROUP_SIZE + 1) * GROUP_SIZE
+{
+	unsigned int iX = get_global_id(0);
+	unsigned int iY = get_global_id(1);
+	if (iX < oldSizeX && iY < oldSizeY) {
+		temp[get_local_id(0) + (GROUP_SIZE + 1) * get_local_id(1)] = rawData[iX + oldSizeX * iY];
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	iX = get_group_id(1) * GROUP_SIZE + get_local_id(0);
+	iY = get_group_id(0) * GROUP_SIZE + get_local_id(1);
+	if (iX < oldSizeY && iY < oldSizeX) {
+		rawDataT[iX + oldSizeY * iY] = temp[(GROUP_SIZE + 1) * get_local_id(0) + get_local_id(1)];
+	}
+}
+
+__kernel
+void
+processImageKernel(
+		__global float* rawData,
+		__global float* gridValueRe,
+		__global float* gridValueIm,
+		__constant float* rxApod,
+		unsigned int numGridPoints)
+{
+	float rxSignalListRe[NUM_RX_ELEM];
+	float rxSignalListIm[NUM_RX_ELEM];
+
+	const unsigned int point = get_global_id(0);
+	if (point >= numGridPoints) return;
+
+	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
+		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
+		//rxSignalListRe[i] = rawData[point * (NUM_RX_ELEM << 1) + (i << 1)];
+		//rxSignalListIm[i] = rawData[point * (NUM_RX_ELEM << 1) + ((i << 1) + 1)];
+	}
+
+	float sumRe = 0.0f;
+	float sumIm = 0.0f;
+	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+		sumRe += rxSignalListRe[i] * rxApod[i];
+		sumIm += rxSignalListIm[i] * rxApod[i];
+	}
+
+	gridValueRe[point] += sumRe;
+	gridValueIm[point] += sumIm;
+}
+
+float
+arithmeticMean(float* data)
+{
+	float sum = 0.0f;
+	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+		sum += data[i];
+	}
+	return sum * (1.0f / NUM_RX_ELEM);
+}
+
+float
+standardDeviation(float* data)
+{
+	float sum = 0.0f;
+	float mean = arithmeticMean(data);
+	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+		float e = data[i] - mean;
+		sum += e * e;
+	}
+	return sqrt(sum * (1.0f / NUM_RX_ELEM));
+}
+
+#ifdef USE_PRNG
+float
+minstdPRNG(int* x) // 1 <= x < m
+{
+	long a = 16807; // 7**5
+	long m = 2147483647; // 2**31-1 (prime)
+	*x = ((long) *x * a) % m;
+	return *x * PRNG_INV_M;
+}
+#endif
+
+float
+calcPCF(float* re, float* im, float factor
+#ifdef USE_PRNG
+		, int* prngX
+#endif
+		)
+{
+	float phi[NUM_RX_ELEM];
+	float phiAux[NUM_RX_ELEM];
+
+#pragma unroll
+	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+#ifdef USE_PRNG
+		if (re[i] == 0.0f && im[i] == 0.0f) {
+			float prn = minstdPRNG(prngX);
+			phi[i] = (2.0f * prn - 1.0f) * M_PI_F;
+		} else
+#endif
+		phi[i] = atan2(im[i], re[i]);
+	}
+	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+		phiAux[i] = phi[i] - copysign(M_PI_F, phi[i]);
+	}
+
+	float sf = fmin(standardDeviation(phi), standardDeviation(phiAux));
+	return fmax(0.0f, 1.0f - factor * sf);
+}
+
+__kernel
+void
+processImagePCFKernel(
+		__global float* rawData,
+		__global float* gridValueRe,
+		__global float* gridValueIm,
+		__constant float* rxApod,
+		unsigned int numGridPoints,
+		float pcfFactor
+#ifdef USE_PRNG
+		, __global int* prngState
+#endif
+		)
+{
+	float rxSignalListRe[NUM_RX_ELEM];
+	float rxSignalListIm[NUM_RX_ELEM];
+
+	const unsigned int point = get_global_id(0);
+	if (point >= numGridPoints) return;
+
+#ifdef USE_PRNG
+	int prngX = prngState[point];
+#endif
+	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
+		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
+	}
+
+	float pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor
+#ifdef USE_PRNG
+				, &prngX
+#endif
+				);
+
+	float sumRe = 0.0f;
+	float sumIm = 0.0f;
+	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+		sumRe += rxSignalListRe[i] * rxApod[i];
+		sumIm += rxSignalListIm[i] * rxApod[i];
+	}
+
+	gridValueRe[point] += sumRe * pcf;
+	gridValueIm[point] += sumIm * pcf;
+
+#ifdef USE_PRNG
+	prngState[point] = prngX;
+#endif
+}
+
+)CLC";
+}
 
 } // namespace Lab
 

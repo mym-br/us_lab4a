@@ -25,6 +25,9 @@ if(UNIX)
 endif()
 
 option(USE_SIMD "Use SIMD." ON)
+option(USE_OPENCL "Use OpenCL." OFF)
+set(OPENCL_LIB "/usr/lib/libOpenCL.so" CACHE FILEPATH "OpenCL library path." )
+
 set(us_lab4a_SRC
     src/Controller.cpp
     src/Controller.h
@@ -245,6 +248,17 @@ target_include_directories(us_lab4a PRIVATE
 if(USE_SIMD)
     add_compile_definitions(USE_SIMD)
 endif()
+
+if(USE_OPENCL)
+    set(OPENCL_LIB_VAR ${OPENCL_LIB})
+    add_compile_definitions(
+        USE_OPENCL
+        CL_HPP_ENABLE_EXCEPTIONS
+        CL_HPP_MINIMUM_OPENCL_VERSION=120
+        CL_HPP_TARGET_OPENCL_VERSION=120
+        CL_HPP_CL_1_2_DEFAULT_BUILD)
+endif()
+
 target_link_libraries(us_lab4a
     Qt5::Core
     Qt5::Gui
@@ -262,4 +276,6 @@ target_link_libraries(us_lab4a
     hdf5_cpp
     boost_system
     pthread
+
+    ${OPENCL_LIB_VAR}
 )
