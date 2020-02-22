@@ -843,7 +843,11 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 				kernel1b.setArg(1, oclGridValueRe_);
 				kernel1b.setArg(2, oclGridValueIm_);
 				kernel1b.setArg(3, oclRxApod_);
-				kernel1b.setArg(4, static_cast<unsigned int>(numGridPoints));
+# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_4_OPENCL_USE_TRANSPOSE
+				kernel1b.setArg(4, rawDataN1_);
+# else
+				kernel1b.setArg(4, rawDataN2_);
+# endif
 				kernel1 = kernel1b;
 			}
 		} catch (cl::Error& e) {
