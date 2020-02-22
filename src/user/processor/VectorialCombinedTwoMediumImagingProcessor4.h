@@ -804,7 +804,7 @@ VectorialCombinedTwoMediumImagingProcessor4<TFloat>::process(
 			kernel0.setArg(1, oclRawDataT_);
 			kernel0.setArg(2, rawDataN2_);
 			kernel0.setArg(3, rawDataN1_);
-			kernel0.setArg(4, cl::__local(OCL_TRANSPOSE_GROUP_SIZE_DIM_0 * (OCL_TRANSPOSE_GROUP_SIZE_DIM_0 + 1) * sizeof(TFloat))); // __local or Local
+			kernel0.setArg(4, cl::Local(OCL_TRANSPOSE_GROUP_SIZE_DIM_0 * (OCL_TRANSPOSE_GROUP_SIZE_DIM_0 + 1) * sizeof(TFloat)));
 # endif
 			if (coherenceFactor_.enabled()) {
 				std::vector<TFloat> cfConstants;
