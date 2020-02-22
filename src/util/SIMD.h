@@ -42,8 +42,7 @@ calcDistance(float dx, float dz)
 	__m128 v1 = _mm_set_ps(0, 0, dz, dx);
 	v1 = _mm_mul_ps(v1, v1);
 
-	__m128 dummy;
-	v1 = _mm_hadd_ps(v1, dummy); // v1[0] = v1[0] + v1[1]; v1[1] = v1[2] + v1[3]; v1[2] = dummy[0] + dummy[1]; v1[3] = dummy[2] + dummy[3]
+	v1 = _mm_hadd_ps(v1, v1); // v1[0] = v1[0] + v1[1]; v1[1] = v1[2] + v1[3]; v1[2] = v1[0] + v1[1]; v1[3] = v1[2] + v1[3]
 	v1 = _mm_sqrt_ss(v1);
 
 	float f;
@@ -71,10 +70,9 @@ calcDistance(double dx, double dz)
 //	__m128d v2 = _mm_load_sd(&d2[1]);
 //	v1 = _mm_add_pd(v1, v2);
 
-	__m128d dummy;
-	v1 = _mm_hadd_pd(v1, dummy); // v1[0] = v1[0] + v1[1]; v1[1] = dummy[0] + dummy[1]
+	v1 = _mm_hadd_pd(v1, v1); // v1[0] = v1[0] + v1[1]; v1[1] = v1[0] + v1[1]
 	//v1 = _mm_sqrt_pd(v1);
-	v1 = _mm_sqrt_sd(dummy, v1);
+	v1 = _mm_sqrt_sd(v1, v1);
 
 	double d;
 	_mm_store_sd(&d, v1);
@@ -91,8 +89,7 @@ calcDistance(float x1, float z1, float x2, float z2)
 	v1 = _mm_sub_ps(v1, v2); // v1 - v2
 	v1 = _mm_mul_ps(v1, v1);
 
-	__m128 dummy;
-	v1 = _mm_hadd_ps(v1, dummy); // v1[0] = v1[0] + v1[1]; v1[1] = v1[2] + v1[3]; v1[2] = dummy[0] + dummy[1]; v1[3] = dummy[2] + dummy[3]
+	v1 = _mm_hadd_ps(v1, v1); // v1[0] = v1[0] + v1[1]; v1[1] = v1[2] + v1[3]; v1[2] = v1[0] + v1[1]; v1[3] = v1[2] + v1[3]
 	v1 = _mm_sqrt_ss(v1);
 
 	float f;
@@ -110,9 +107,8 @@ calcDistance(double x1, double z1, double x2, double z2)
 	v1 = _mm_sub_pd(v1, v2); // v1 - v2
 	v1 = _mm_mul_pd(v1, v1);
 
-	__m128d dummy;
-	v1 = _mm_hadd_pd(v1, dummy); // v1[0] = v1[0] + v1[1]; v1[1] = dummy[0] + dummy[1];
-	v1 = _mm_sqrt_sd(dummy, v1);
+	v1 = _mm_hadd_pd(v1, v1); // v1[0] = v1[0] + v1[1]; v1[1] = v1[0] + v1[1];
+	v1 = _mm_sqrt_sd(v1, v1);
 
 	double d;
 	_mm_store_sd(&d, v1);
@@ -129,13 +125,12 @@ calcTwoMediumTravelTime(float x1, float z1, float xi, float zi, float x2, float 
 	v1 = _mm_sub_ps(v2, v1); // v2 - v1
 	v1 = _mm_mul_ps(v1, v1);
 
-	__m128 dummy;
-	v1 = _mm_hadd_ps(v1, dummy); // v1[0] = v1[0] + v1[1]; v1[1] = v1[2] + v1[3]; v1[2] = dummy[0] + dummy[1]; v1[3] = dummy[2] + dummy[3]
+	v1 = _mm_hadd_ps(v1, v1); // v1[0] = v1[0] + v1[1]; v1[1] = v1[2] + v1[3]; v1[2] = v1[0] + v1[1]; v1[3] = v1[2] + v1[3]
 	v1 = _mm_sqrt_ps(v1);
 
 	v2 = _mm_set_ps(0, 0, invC2, invC1);
 	v1 = _mm_mul_ps(v1, v2);
-	v1 = _mm_hadd_ps(v1, dummy); // v1[0] = v1[0] + v1[1]; v1[1] = v1[2] + v1[3]; v1[2] = dummy[0] + dummy[1]; v1[3] = dummy[2] + dummy[3]
+	v1 = _mm_hadd_ps(v1, v1); // v1[0] = v1[0] + v1[1]; v1[1] = v1[2] + v1[3]; v1[2] = v1[0] + v1[1]; v1[3] = v1[2] + v1[3]
 
 	float f;
 	_mm_store_ss(&f, v1);
@@ -161,8 +156,7 @@ calcTwoMediumTravelTime(double x1, double z1, double xi, double zi, double x2, d
 
 	v2 = _mm_set_pd(invC2, invC1);
 	v1 = _mm_mul_pd(v1, v2);
-	__m128d dummy;
-	v1 = _mm_hadd_pd(v1, dummy); // v1[0] = v1[0] + v1[1]; v1[1] = dummy[0] + dummy[1];
+	v1 = _mm_hadd_pd(v1, v1); // v1[0] = v1[0] + v1[1]; v1[1] = v1[0] + v1[1];
 
 	double d;
 	_mm_store_sd(&d, v1);
