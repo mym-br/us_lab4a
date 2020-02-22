@@ -376,11 +376,15 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 		tProcessColumn.put(t1.getTime());
 #endif
 	} else {
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+		double t0Sum = 0.0;
+		double t1Sum = 0.0;
+#endif
 		// Three or more transmit elements.
-
 		for (const auto& stepConfig : stepConfigList) {
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 			Timer t0;
-
+#endif
 			signalMatrix_.resize(
 					stepConfig.lastTxElem - stepConfig.firstTxElem + 1,
 					config_.numElements,
@@ -400,9 +404,11 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 				tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements), prepareDataOp);
 				//prepareDataOp(tbb::blocked_range<unsigned int>(0, config_.numElements)); // single-thread
 			}
-			LOG_DEBUG << "STEP PREP time = " << t0.getTime();
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+			t0Sum += t0.getTime();
 
 			Timer t1;
+#endif
 			ProcessColumn processColumnOp = {
 				gridValue.n2(),
 				config_,
@@ -417,8 +423,14 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 			};
 			tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridValue.n1()), processColumnOp);
 			//processColumnOp(tbb::blocked_range<unsigned int>(0, gridValue.n1())); // single-thread
-			LOG_DEBUG << "STEP PROC time = " << t1.getTime();
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+			t1Sum += t1.getTime();
+#endif
 		}
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+		tPrepareData.put(t0Sum);
+		tProcessColumn.put(t1Sum);
+#endif
 	}
 
 	//LOG_DEBUG << "END ========== VectorialCombinedTwoMediumImagingProcessor3::process ==========";
