@@ -62,7 +62,6 @@
 // Faster in GPU.
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE 1
 
-//#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PRNG 1
 //#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_CPU 1
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_CPU_COEF (0.0)
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_GPU_PLATFORM 0
@@ -196,10 +195,6 @@ private:
 	cl::Buffer oclGridValueRe_;
 	cl::Buffer oclGridValueIm_;
 	cl::Buffer oclRxApod_;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PRNG
-	std::vector<int, tbb::cache_aligned_allocator<int>> initialPrngState_;
-	cl::Buffer oclPrngState_;
-#endif
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_CPU
 	unsigned int cpuRawDataN1_;
 	unsigned int cpuRawDataN2_;
@@ -216,10 +211,6 @@ private:
 	cl::Buffer oclCpuGridValueRe_;
 	cl::Buffer oclCpuGridValueIm_;
 	cl::Buffer oclCpuRxApod_;
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PRNG
-	std::vector<int, tbb::cache_aligned_allocator<int>> initialCpuPrngState_;
-	cl::Buffer oclCpuPrngState_;
-# endif
 #endif
 };
 
@@ -588,11 +579,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			oclGridValueRe_ = cl::Buffer(oclContext_, CL_MEM_READ_WRITE, numGridPoints           * sizeof(TFloat));
 			oclGridValueIm_ = cl::Buffer(oclContext_, CL_MEM_READ_WRITE, numGridPoints           * sizeof(TFloat));
 			oclRxApod_ =      cl::Buffer(oclContext_, CL_MEM_READ_ONLY , rxApod.size()           * sizeof(TFloat));
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PRNG
-			if (coherenceFactor_.enabled()) {
-				oclPrngState_ = cl::Buffer(oclContext_, CL_MEM_READ_WRITE, numGridPoints * sizeof(int));
-			}
-#endif
 		}
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_CPU
 		if (cpuCols > 0) {
@@ -603,11 +589,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			oclCpuGridValueRe_ = cl::Buffer(oclCpuContext_, CL_MEM_READ_WRITE, numCpuGridPoints * sizeof(TFloat));
 			oclCpuGridValueIm_ = cl::Buffer(oclCpuContext_, CL_MEM_READ_WRITE, numCpuGridPoints * sizeof(TFloat));
 			oclCpuRxApod_      = cl::Buffer(oclCpuContext_, CL_MEM_READ_ONLY , rxApod.size()    * sizeof(TFloat));
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PRNG
-			if (coherenceFactor_.enabled()) {
-				oclCpuPrngState_ = cl::Buffer(oclCpuContext_, CL_MEM_READ_WRITE, numCpuGridPoints * sizeof(int));
-			}
-# endif
 		}
 #endif
 		oclDataInitialized_ = true;
@@ -633,24 +614,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		oclCommandQueue_.enqueueWriteBuffer(
 			oclRxApod_, CL_TRUE /* blocking */, 0 /* offset */,
 			rxApod.size() * sizeof(TFloat), &rxApod[0]);
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PRNG
-		if (coherenceFactor_.enabled()) {
-			MinstdPseudorandomNumberGenerator prng(1);
-			initialPrngState_.resize(numGridPoints);
-			for (auto& e : initialPrngState_) {
-				union {
-					float f;
-					int i;
-				} u;
-				u.f = prng.get();
-				int v = std::abs(u.i);
-				e = (v % 2147483646) + 1;
-			}
-			oclCommandQueue_.enqueueWriteBuffer(
-				oclPrngState_, CL_TRUE /* blocking */, 0 /* offset */,
-				initialPrngState_.size() * sizeof(int), &initialPrngState_[0]);
-		}
-#endif
 	}
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_CPU
 	if (cpuCols > 0) {
@@ -675,24 +638,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		oclCpuCommandQueue_.enqueueWriteBuffer(
 			oclCpuRxApod_, CL_TRUE /* blocking */, 0 /* offset */,
 			rxApod.size() * sizeof(TFloat), &rxApod[0]);
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PRNG
-		if (coherenceFactor_.enabled()) {
-			MinstdPseudorandomNumberGenerator prng(1);
-			initialCpuPrngState_.resize(numCpuGridPoints);
-			for (auto& e : initialPrngState_) {
-				union {
-					float f;
-					int i;
-				} u;
-				u.f = prng.get();
-				int v = std::abs(u.i);
-				e = (v % 2147483646) + 1;
-			}
-			oclCpuCommandQueue_.enqueueWriteBuffer(
-				oclCpuPrngState_, CL_TRUE /* blocking */, 0 /* offset */,
-				initialCpuPrngState_.size() * sizeof(int), &initialCpuPrngState_[0]);
-		}
-# endif
 	}
 #endif
 
@@ -806,9 +751,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 				kernel1a.setArg(4, rawDataN2_);
 #endif
 				kernel1a.setArg(5, cfConstants[2] /* factor */);
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PRNG
-				kernel1a.setArg(6, oclPrngState_);
-#endif
 				kernel1 = kernel1a;
 			} else {
 				cl::Kernel kernel1b(oclProgram_, "processImageKernel");
@@ -880,9 +822,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 				cpuKernel1a.setArg(4, cpuRawDataN2_);
 # endif
 				cpuKernel1a.setArg(5, cfConstants[2] /* factor */);
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PRNG
-				cpuKernel1a.setArg(6, oclCpuPrngState_);
-# endif
 				cpuKernel1 = cpuKernel1a;
 			} else {
 				cl::Kernel cpuKernel1b(oclCpuProgram_, "processImageKernel");
@@ -1386,13 +1325,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::getKernel() const
 
 #define GROUP_SIZE 16
 
-//#define USE_PRNG 1
-
-#ifdef USE_PRNG
-# define PRNG_M (2147483647.0f)
-# define PRNG_INV_M (1.0f / PRNG_M)
-#endif
-
 // NVIDIA sm_12:
 //   - Local (shared) memory has 16 banks.
 __kernel
@@ -1474,35 +1406,14 @@ standardDeviation(float* data)
 	return sqrt(sum * (1.0f / NUM_RX_ELEM));
 }
 
-#ifdef USE_PRNG
 float
-minstdPRNG(int* x) // 1 <= x < m
-{
-	long a = 16807; // 7**5
-	long m = 2147483647; // 2**31-1 (prime)
-	*x = ((long) *x * a) % m;
-	return *x * PRNG_INV_M;
-}
-#endif
-
-float
-calcPCF(float* re, float* im, float factor
-#ifdef USE_PRNG
-		, int* prngX
-#endif
-		)
+calcPCF(float* re, float* im, float factor)
 {
 	float phi[NUM_RX_ELEM];
 	float phiAux[NUM_RX_ELEM];
 
 #pragma unroll
 	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-#ifdef USE_PRNG
-		if (re[i] == 0.0f && im[i] == 0.0f) {
-			float prn = minstdPRNG(prngX);
-			phi[i] = (2.0f * prn - 1.0f) * M_PI_F;
-		} else
-#endif
 		phi[i] = atan2(im[i], re[i]);
 	}
 	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
@@ -1521,11 +1432,7 @@ processImagePCFKernel(
 		__global float* gridValueIm,
 		__constant float* rxApod,
 		unsigned int numGridPoints,
-		float pcfFactor
-#ifdef USE_PRNG
-		, __global int* prngState
-#endif
-		)
+		float pcfFactor)
 {
 	float rxSignalListRe[NUM_RX_ELEM];
 	float rxSignalListIm[NUM_RX_ELEM];
@@ -1533,19 +1440,12 @@ processImagePCFKernel(
 	const unsigned int point = get_global_id(0);
 	if (point >= numGridPoints) return;
 
-#ifdef USE_PRNG
-	int prngX = prngState[point];
-#endif
 	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
 		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
 		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
 	}
 
-	float pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor
-#ifdef USE_PRNG
-				, &prngX
-#endif
-				);
+	float pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor);
 
 	float sumRe = 0.0f;
 	float sumIm = 0.0f;
@@ -1556,10 +1456,6 @@ processImagePCFKernel(
 
 	gridValueRe[point] += sumRe * pcf;
 	gridValueIm[point] += sumIm * pcf;
-
-#ifdef USE_PRNG
-	prngState[point] = prngX;
-#endif
 }
 
 )CLC";
