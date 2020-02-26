@@ -60,7 +60,9 @@
 #include "VectorialCombinedTwoMediumImagingProcessor.h"
 #include "VectorialCombinedTwoMediumImagingProcessor2.h"
 #include "VectorialCombinedTwoMediumImagingProcessor3.h"
-#include "VectorialCombinedTwoMediumImagingProcessor4.h"
+#if USE_OPENCL
+# include "VectorialCombinedTwoMediumImagingProcessor4.h"
+#endif
 #include "VectorialSTAProcessor.h"
 #include "VectorialTwoMediumSTAProcessor.h"
 #include "XZComplexValueFactor.h"
@@ -135,7 +137,9 @@ private:
 	void execCombinedTwoMediumImaging();
 	void execCombinedTwoMediumImaging2();
 	void execCombinedTwoMediumImaging3();
-	void execCombinedTwoMediumImaging4();
+#if USE_OPENCL
+	void execCombinedTwoMediumImagingOCL();
+#endif
 	void measureSpeed1();
 	void measureSpeed1AndDistanceError();
 	void measureSpeed1AndDistanceError2();
@@ -2067,18 +2071,19 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
 				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_INVERTED_GRAY);
 }
 
+#ifdef USE_OPENCL
 template<typename TFloat>
 void
-CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging4()
+CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 {
 	const ParamMapPtr methodPM = project_.getSubParamMap("method_config_file");
 	const TwoMediumSTAConfiguration<TFloat> config(*project_.getSubParamMap("main_config_file"));
 	const auto savedAcqDir        = methodPM->value<std::string>( "saved_acquisition_dir");
 	const auto outputDir          = methodPM->value<std::string>( "output_dir");
-#ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
+# ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
 	const auto imageDir           = methodPM->value<std::string>( "image_dir");
 	project_.createDirectory(imageDir, false);
-#endif
+# endif
 	const auto rxApodFile         = methodPM->value<std::string>( "rx_apod_file");
 	const auto normalizationMinZ  = methodPM->value<TFloat>(      "normalization_min_z"  , -500.0e-3, 500.0e-3);
 
@@ -2176,7 +2181,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging4()
 	std::vector<TFloat> interfaceAngleList;
 	std::vector<XZ<TFloat>> interfacePointList;
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+# ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tProcess;
 	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
 	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
@@ -2188,7 +2193,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging4()
 		p->tProcessColumn.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
 	}
 	Timer procTimer;
-#endif
+# endif
 
 	Util::fillSequenceFromStartToEndWithMaximumStep(
 		interfaceAngleList,
@@ -2230,7 +2235,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging4()
 		}
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+# ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tProcess.put(procTimer.getTime());
 	}
 
@@ -2248,20 +2253,21 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging4()
 	}
 	out << "]";
 	LOG_INFO << out.str();
-#endif
+# endif
 
-#ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
+# ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
 	LOG_DEBUG << "Saving the final raw image...";
 	project_.saveHDF5(gridData, imageDir + "/final_raw_image", "image", Util::CopyAbsValueOp());
 	LOG_DEBUG << "Saving the X coordinates...";
 	project_.saveHDF5(gridData, imageDir + "/final_image_x", "x", Util::CopyXOp());
 	LOG_DEBUG << "Saving the Z coordinates...";
 	project_.saveHDF5(gridData, imageDir + "/final_image_z", "z", Util::CopyZOp());
-#endif
+# endif
 
 	project_.showFigure3D(1, "Raw", &gridData, &interfacePointList,
 				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_INVERTED_GRAY);
 }
+#endif
 
 template<typename TFloat>
 void
@@ -2808,9 +2814,11 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_3_sp:
 		execCombinedTwoMediumImaging3();
 		break;
+#if USE_OPENCL
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_4_sp:
-		execCombinedTwoMediumImaging4();
+		execCombinedTwoMediumImagingOCL();
 		break;
+#endif
 	case MethodEnum::cylinder_detection_and_fermat_speed_1_measurement:
 		measureSpeed1();
 		measureSpeed1AndDistanceError();

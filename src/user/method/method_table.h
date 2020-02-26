@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2019 Marcelo Y. Matuda                                       *
+ *  Copyright 2019, 2020 Marcelo Y. Matuda                                 *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,7 +18,15 @@
 #ifndef METHOD_TABLE_H
 #define METHOD_TABLE_H
 
+#ifdef USE_OPENCL
+# define OCL_METHOD_TABLE \
+METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_4_sp)
+#else
+# define OCL_METHOD_TABLE
+#endif
+
 #define METHOD_TABLE \
+OCL_METHOD_TABLE \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<double>, cylinder_detection_and_fermat_acquisition_simulated_dp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<double>, cylinder_detection_and_fermat_acquisition_network_dp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<double>, cylinder_detection_and_fermat_point_detection_dp) \
@@ -54,7 +62,6 @@ METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_ferm
 METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_sp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_2_sp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_3_sp) \
-METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_4_sp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_sta_sp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_sta_2_sp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_sta_3_sp) \

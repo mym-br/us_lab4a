@@ -29,6 +29,27 @@ option(USE_OPENCL "Use OpenCL." OFF)
 set(OPENCL_LIB "/usr/lib/libOpenCL.so" CACHE FILEPATH "OpenCL library path." )
 option(USE_EXECUTION_TIME_MEASUREMENT "Use execution time measurement." OFF)
 
+if(USE_SIMD)
+    add_compile_definitions(USE_SIMD)
+endif()
+
+if(USE_OPENCL)
+    set(OPENCL_LIB_VAR ${OPENCL_LIB})
+    set(OPENCL_SRC
+        src/user/processor/VectorialCombinedTwoMediumImagingProcessor4.h
+    )
+    add_compile_definitions(
+        USE_OPENCL
+        CL_HPP_ENABLE_EXCEPTIONS
+        CL_HPP_MINIMUM_OPENCL_VERSION=120
+        CL_HPP_TARGET_OPENCL_VERSION=120
+        CL_HPP_CL_1_2_DEFAULT_BUILD)
+endif()
+
+if(USE_EXECUTION_TIME_MEASUREMENT)
+    add_compile_definitions(USE_EXECUTION_TIME_MEASUREMENT)
+endif()
+
 set(us_lab4a_SRC
     src/Controller.cpp
     src/Controller.h
@@ -197,7 +218,6 @@ set(us_lab4a_SRC
     src/user/processor/VectorialCombinedTwoMediumImagingProcessor.h
     src/user/processor/VectorialCombinedTwoMediumImagingProcessor2.h
     src/user/processor/VectorialCombinedTwoMediumImagingProcessor3.h
-    src/user/processor/VectorialCombinedTwoMediumImagingProcessor4.h
     src/user/processor/VectorialSTAProcessor.h
     src/user/processor/VectorialTwoMediumSTAProcessor.h
     src/user/simulator/AnalyticCircularSourceImpulseResponse.h
@@ -220,6 +240,8 @@ set(us_lab4a_SRC
     ui/USLab4a.ui
 
     resource/us_lab4a.qrc
+
+    ${OPENCL_SRC}
 )
 
 add_executable(us_lab4a ${us_lab4a_SRC})
@@ -245,24 +267,6 @@ target_include_directories(us_lab4a PRIVATE
     ${GLU_INCLUDE_DIRS}
     ${HDF5_INCLUDE_DIRS}
 )
-
-if(USE_SIMD)
-    add_compile_definitions(USE_SIMD)
-endif()
-
-if(USE_OPENCL)
-    set(OPENCL_LIB_VAR ${OPENCL_LIB})
-    add_compile_definitions(
-        USE_OPENCL
-        CL_HPP_ENABLE_EXCEPTIONS
-        CL_HPP_MINIMUM_OPENCL_VERSION=120
-        CL_HPP_TARGET_OPENCL_VERSION=120
-        CL_HPP_CL_1_2_DEFAULT_BUILD)
-endif()
-
-if(USE_EXECUTION_TIME_MEASUREMENT)
-    add_compile_definitions(USE_EXECUTION_TIME_MEASUREMENT)
-endif()
 
 target_link_libraries(us_lab4a
     Qt5::Core
