@@ -71,7 +71,6 @@
 #define CYL_DETECT_AND_FERMAT_METHOD_SCF_LOW_PASS_LAMBDAS 2.0
 
 #define CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_GET_ENVELOPE 1
-//#define CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_FILTER_SCF_FACTORS 1
 #define CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_USE_SCF 1
 //#define CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_SAVE_DATA 1
 //#define CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_SHOW_PEAK_IMAGES 1
@@ -219,29 +218,6 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPoints()
 		std::make_unique<DefaultSTAProcessor<TFloat, XZValueFactor<TFloat>>>(
 				config, *acquisition, coherenceFactor, peakOffset);
 
-#ifdef CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_FILTER_SCF_FACTORS
-	// Create the SCF filter.
-	const TFloat radiusStep = config.radiusStep * lambda;
-	unsigned int filterLength = std::ceil(CYL_DETECT_AND_FERMAT_METHOD_SCF_LOW_PASS_LAMBDAS * lambda / radiusStep);
-	if (filterLength <= 1) {
-		THROW_EXCEPTION(InvalidValueException, "The SCF filter length is too small.");
-	}
-	if (!(filterLength & 1U)) { // must be odd
-		++filterLength;
-	}
-	const unsigned int filterOffset = (filterLength - 1) / 2;
-	LOG_DEBUG << "[SCF] filterLength=" << filterLength << " filterOffset=" << filterOffset;
-	std::vector<TFloat> hann(filterLength);
-	const TFloat k = 2.0 * PI / (filterLength - 1);
-	for (unsigned int i = 0; i < filterLength; ++i) {
-		hann[i] = 0.5 * (1.0 - std::cos(k * i));
-	}
-	FFTWFilter<TFloat> scfFilter;
-	scfFilter.setCoefficients(hann);
-
-	std::vector<TFloat> factorBuffer, filteredFactorBuffer;
-#endif
-
 	std::vector<std::pair<TFloat, TFloat>> peakPositionList(baseElemList.size()); // x, z
 	HilbertEnvelope<TFloat> envelope;
 
@@ -260,28 +236,6 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPoints()
 
 		LOG_DEBUG << "Saving the factors... baseElement = " << baseElement;
 		project_.saveHDF5(gridData, String::Begin() << outputDir << "/peak_factor_" << baseElement << String::End(), "factors", Util::CopyFactorOp());
-#endif
-#ifdef CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_FILTER_SCF_FACTORS
-		// Filter the SCF factors using a Hann window.
-		factorBuffer.resize(gridData.n2());
-		for (unsigned int i = 0, end = gridData.n1(); i < end; ++i) {
-			auto range = gridData.range2(i);
-			{	// gridData => factorBuffer
-				auto destIter = factorBuffer.begin();
-				for (auto origIter = range.begin(); origIter != range.end(); ++origIter) {
-					*destIter++ = origIter->factor;
-				}
-			}
-			scfFilter.filter(factorBuffer, filteredFactorBuffer);
-			{	// filteredFactorBuffer => gridData
-				typename std::vector<TFloat>::const_iterator origIter = filteredFactorBuffer.begin() + filterOffset;
-				for (typename Matrix<XZValueFactor<TFloat>>::Dim2Iterator destIter = interval.first; destIter != interval.second; ++destIter) {
-					destIter->factor = *origIter++;
-				}
-			}
-		}
-		LOG_DEBUG << "Saving the filtered factors... baseElement = " << baseElement;
-		project_.saveHDF5(gridData, String::Begin() << outputDir << "/peak_filtered_factor_" << baseElement << String::End(), "factors", Util::CopyFactorOp());
 #endif
 
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_USE_SCF
