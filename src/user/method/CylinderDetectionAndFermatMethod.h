@@ -404,7 +404,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingVectorSum()
 
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_SHOW_PEAK_IMAGES
 		project_.showFigure3D(1, "Peak detection", &gridData, Project::emptyPointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_JET);
+					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
 #endif
 		if (project_.processingCancellationRequested()) {
 			LOG_INFO  << "########## Processing cancelled.";
@@ -538,7 +538,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCrossCorrelation()
 
 		//project_.showFigure3D(baseElemIdx, "Peak detection", &gridData, &arc,
 		project_.showFigure3D(baseElemIdx, "Peak detection", &gridData, Project::emptyPointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_JET);
+					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
 #endif
 		if (project_.processingCancellationRequested()) {
 			LOG_INFO  << "########## Processing cancelled.";
@@ -1024,16 +1024,16 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsInArcs()
 		windowName << "Arc " << baseElemIdx;
 		project_.showFigure2D(baseElemIdx + 1, windowName.str().c_str(), figArcX, figArcY, true);
 
-		LOG_DEBUG << "##### Peak value: " << maxValue << " angle: " << angle[idxMax];
+		LOG_DEBUG << "##### Peak value: " << maxValue << " angle: " << angle[idxLobe];
 		statistics(baseElemIdx, PEAK_VALUE) = maxValue;
-		statistics(baseElemIdx, PEAK_ANGLE) = angle[idxMax];
+		statistics(baseElemIdx, PEAK_ANGLE) = angle[idxLobe];
 
 		const TFloat halfPeakValue = maxValue / 2;
 		unsigned int minMainLobeIdx = 0;
 		unsigned int maxMainLobeIdx = 0;
 		TFloat maxSideLobeLevel = 0;
 		for (unsigned int i = 0; i < arcData.size(); ++i) {
-			if (std::abs(angle[i] - angle[idxMax]) < TFloat(CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_ARC_MAIN_LOBE_HALF_RANGE)) {
+			if (std::abs(angle[i] - angle[idxLobe]) < TFloat(CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_ARC_MAIN_LOBE_HALF_RANGE)) {
 				if (arcData[i].value >= halfPeakValue) {
 					if (minMainLobeIdx == 0) {
 						minMainLobeIdx = i;
