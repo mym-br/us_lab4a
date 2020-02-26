@@ -36,7 +36,7 @@ endif()
 if(USE_OPENCL)
     set(OPENCL_LIB_VAR ${OPENCL_LIB})
     set(OPENCL_SRC
-        src/user/processor/VectorialCombinedTwoMediumImagingProcessor4.h
+        src/user/processor/VectorialCombinedTwoMediumImagingOCLProcessor.h
     )
     add_compile_definitions(
         USE_OPENCL

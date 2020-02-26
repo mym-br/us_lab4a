@@ -60,15 +60,13 @@
 #include "VectorialCombinedTwoMediumImagingProcessor.h"
 #include "VectorialCombinedTwoMediumImagingProcessor2.h"
 #include "VectorialCombinedTwoMediumImagingProcessor3.h"
-#if USE_OPENCL
-# include "VectorialCombinedTwoMediumImagingProcessor4.h"
-#endif
 #include "VectorialSTAProcessor.h"
 #include "VectorialTwoMediumSTAProcessor.h"
 #include "XZComplexValueFactor.h"
 #include "XZValueFactor.h"
-
-
+#if USE_OPENCL
+# include "VectorialCombinedTwoMediumImagingOCLProcessor.h"
+#endif
 
 #define CYL_DETECT_AND_FERMAT_METHOD_SCF_LOW_PASS_LAMBDAS 2.0
 
@@ -2121,10 +2119,10 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 	std::vector<unsigned int> baseElemList;
 	Util::fillSequenceFromStartToEndWithSize(baseElemList, 0U, config.numElementsMux - config.numElements, numBaseElemSteps);
 
-	std::vector<typename VectorialCombinedTwoMediumImagingProcessor4<TFloat>::StepConfiguration> stepConfigList;
-	if (project_.method() == MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_4_sp) {
+	std::vector<typename VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::StepConfiguration> stepConfigList;
+	if (project_.method() == MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp) {
 		for (unsigned int i = 0; i < baseElemList.size(); ++i) {
-			typename VectorialCombinedTwoMediumImagingProcessor4<TFloat>::StepConfiguration conf{i, baseElemList[i], txElem};
+			typename VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::StepConfiguration conf{i, baseElemList[i], txElem};
 			stepConfigList.push_back(conf);
 			LOG_DEBUG << "Step config: " << conf.baseElem << ' ' << conf.txElem;
 		}
@@ -2169,7 +2167,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 		}
 	}
 
-	auto p = std::make_unique<VectorialCombinedTwoMediumImagingProcessor4<TFloat>>(
+	auto p = std::make_unique<VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>>(
 			config,
 			acqDataList,
 			upsamplingFactor,
@@ -2815,7 +2813,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 		execCombinedTwoMediumImaging3();
 		break;
 #if USE_OPENCL
-	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_4_sp:
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp:
 		execCombinedTwoMediumImagingOCL();
 		break;
 #endif
