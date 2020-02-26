@@ -573,58 +573,58 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 #endif
 
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-	cl::Kernel kernel0;
+	cl::Kernel transpKernel;
 #endif
-	cl::Kernel kernel1;
+	cl::Kernel procImageKernel;
 	if (cols > 0) {
 		//==================================================
 		// [OpenCL] Kernel preparation.
 		//==================================================
 		try {
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-			kernel0 = cl::Kernel(oclProgram_, "transposeKernel");
-			kernel0.setArg(0, oclRawData_);
-			kernel0.setArg(1, oclRawDataT_);
-			kernel0.setArg(2, rawDataN2_);
-			kernel0.setArg(3, rawDataN1_);
-			kernel0.setArg(4, cl::Local(OCL_TRANSPOSE_GROUP_SIZE_DIM_0 * (OCL_TRANSPOSE_GROUP_SIZE_DIM_0 + 1) * sizeof(TFloat)));
+			transpKernel = cl::Kernel(oclProgram_, "transposeKernel");
+			transpKernel.setArg(0, oclRawData_);
+			transpKernel.setArg(1, oclRawDataT_);
+			transpKernel.setArg(2, rawDataN2_);
+			transpKernel.setArg(3, rawDataN1_);
+			transpKernel.setArg(4, cl::Local(OCL_TRANSPOSE_GROUP_SIZE_DIM_0 * (OCL_TRANSPOSE_GROUP_SIZE_DIM_0 + 1) * sizeof(TFloat)));
 #endif
 			if (coherenceFactor_.enabled()) {
 				std::vector<TFloat> cfConstants;
 				coherenceFactor_.implementation().getConstants(cfConstants);
 
-				cl::Kernel kernel1a(oclProgram_, "processImagePCFKernel");
+				cl::Kernel kernel(oclProgram_, "processImagePCFKernel");
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-				kernel1a.setArg(0, oclRawDataT_);
+				kernel.setArg(0, oclRawDataT_);
 #else
-				kernel1a.setArg(0, oclRawData_);
+				kernel.setArg(0, oclRawData_);
 #endif
-				kernel1a.setArg(1, oclGridValueRe_);
-				kernel1a.setArg(2, oclGridValueIm_);
-				kernel1a.setArg(3, oclRxApod_);
+				kernel.setArg(1, oclGridValueRe_);
+				kernel.setArg(2, oclGridValueIm_);
+				kernel.setArg(3, oclRxApod_);
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-				kernel1a.setArg(4, rawDataN1_);
+				kernel.setArg(4, rawDataN1_);
 #else
-				kernel1a.setArg(4, rawDataN2_);
+				kernel.setArg(4, rawDataN2_);
 #endif
-				kernel1a.setArg(5, cfConstants[2] /* factor */);
-				kernel1 = kernel1a;
+				kernel.setArg(5, cfConstants[2] /* factor */);
+				procImageKernel = kernel;
 			} else {
-				cl::Kernel kernel1b(oclProgram_, "processImageKernel");
+				cl::Kernel kernel(oclProgram_, "processImageKernel");
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-				kernel1b.setArg(0, oclRawDataT_);
+				kernel.setArg(0, oclRawDataT_);
 #else
-				kernel1b.setArg(0, oclRawData_);
+				kernel.setArg(0, oclRawData_);
 #endif
-				kernel1b.setArg(1, oclGridValueRe_);
-				kernel1b.setArg(2, oclGridValueIm_);
-				kernel1b.setArg(3, oclRxApod_);
+				kernel.setArg(1, oclGridValueRe_);
+				kernel.setArg(2, oclGridValueIm_);
+				kernel.setArg(3, oclRxApod_);
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-				kernel1b.setArg(4, rawDataN1_);
+				kernel.setArg(4, rawDataN1_);
 #else
-				kernel1b.setArg(4, rawDataN2_);
+				kernel.setArg(4, rawDataN2_);
 #endif
-				kernel1 = kernel1b;
+				procImageKernel = kernel;
 			}
 		} catch (cl::Error& e) {
 			LOG_ERROR << "[Kernel preparation] OpenCL error: " << e.what() << " (" << e.err() << ").";
@@ -736,7 +736,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 				// [OpenCL] Transpose kernel.
 				//==================================================
 				oclCommandQueue_.enqueueNDRangeKernel(
-					kernel0,
+					transpKernel,
 					cl::NullRange, /* offset range / must be null */
 					cl::NDRange(rawDataN2_, rawDataN1_), /* global range, defines the total number of work-items */
 					cl::NDRange(OCL_TRANSPOSE_GROUP_SIZE_DIM_0, OCL_TRANSPOSE_GROUP_SIZE_DIM_0), /* local range, defines the number of work-items in a work-group */
@@ -751,7 +751,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 				// [OpenCL] Final processing kernel.
 				//==================================================
 				oclCommandQueue_.enqueueNDRangeKernel(
-					kernel1,
+					procImageKernel,
 					cl::NullRange, /* offset range / must be null */
 					cl::NDRange(kernel1GlobalSize), /* global range, defines the total number of work-items */
 					cl::NDRange(OCL_WORK_ITEMS_PER_GROUP), /* local range, defines the number of work-items in a work-group */
