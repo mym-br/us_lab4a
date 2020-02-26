@@ -27,6 +27,8 @@ endif()
 option(USE_SIMD "Use SIMD." ON)
 option(USE_OPENCL "Use OpenCL." OFF)
 set(OPENCL_LIB "/usr/lib/libOpenCL.so" CACHE FILEPATH "OpenCL library path." )
+set(OPENCL_PLATFORM 0 CACHE STRING "OpenCL plataform index." )
+set(OPENCL_DEVICE 0 CACHE STRING "OpenCL device index." )
 option(USE_EXECUTION_TIME_MEASUREMENT "Use execution time measurement." OFF)
 
 if(USE_SIMD)
@@ -43,7 +45,9 @@ if(USE_OPENCL)
         CL_HPP_ENABLE_EXCEPTIONS
         CL_HPP_MINIMUM_OPENCL_VERSION=120
         CL_HPP_TARGET_OPENCL_VERSION=120
-        CL_HPP_CL_1_2_DEFAULT_BUILD)
+        CL_HPP_CL_1_2_DEFAULT_BUILD
+        OPENCL_PLATFORM=${OPENCL_PLATFORM}
+        OPENCL_DEVICE=${OPENCL_DEVICE})
 endif()
 
 if(USE_EXECUTION_TIME_MEASUREMENT)

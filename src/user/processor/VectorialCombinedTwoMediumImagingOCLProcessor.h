@@ -24,6 +24,7 @@
 #include <cstddef> /* std::size_t */
 #include <cstring> /* memset */
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility> /* make_pair */
 #include <vector>
@@ -61,8 +62,6 @@
 
 // Faster.
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE 1
-
-#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_OPENCL_PLATFORM 0
 
 #ifdef USE_SIMD
 # include "SIMD.h"
@@ -249,61 +248,64 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 	}
 
 	if (Log::isDebugEnabled()) {
-		try {
-			for (std::size_t i = 0; i < platforms.size(); ++i) {
-				std::string name = platforms[i].getInfo<CL_PLATFORM_NAME>();
-				LOG_DEBUG << "OpenCL platform: " << name;
+		for (auto& plat : platforms) {
+			std::string name = plat.getInfo<CL_PLATFORM_NAME>();
+			LOG_DEBUG << "OpenCL platform: " << name;
 
-				std::vector<cl::Device> devices;
-				platforms[i].getDevices(CL_DEVICE_TYPE_ALL, &devices);
-				if (devices.empty()) {
-					THROW_EXCEPTION(UnavailableResourceException, "No OpenCL devices available for platform " << name << '.');
-				}
+			std::vector<cl::Device> devices;
+			plat.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+			if (devices.empty()) {
+				THROW_EXCEPTION(UnavailableResourceException, "No OpenCL devices available for platform " << name << '.');
+			}
 
-				for (std::size_t j = 0; j < devices.size(); ++j) {
-					cl_device_type deviceType = devices[i].getInfo<CL_DEVICE_TYPE>();
-					std::string devName = devices[i].getInfo<CL_DEVICE_NAME>();
-					LOG_DEBUG << "  device name: " << devName;
-					switch (deviceType) {
-					case CL_DEVICE_TYPE_CPU:
-						LOG_DEBUG << "         type: CPU";
-						break;
-					case CL_DEVICE_TYPE_GPU:
-						LOG_DEBUG << "         type: GPU";
-						break;
-					default:
-						LOG_DEBUG << "         type: other (" << deviceType << ").";
-					}
+			for (auto& dev : devices) {
+				cl_device_type deviceType = dev.getInfo<CL_DEVICE_TYPE>();
+				std::string devName = dev.getInfo<CL_DEVICE_NAME>();
+				LOG_DEBUG << "  device name: " << devName;
+				switch (deviceType) {
+				case CL_DEVICE_TYPE_CPU:
+					LOG_DEBUG << "    type: CPU";
+					break;
+				case CL_DEVICE_TYPE_GPU:
+					LOG_DEBUG << "    type: GPU";
+					break;
+				default:
+					LOG_DEBUG << "    type: other (" << deviceType << ").";
 				}
 			}
-		} catch (cl::Error& e) {
-			LOG_ERROR << "Error occurred while obtaining information about OpenCL devices: " << e.what() << " (" << e.err() << ").";
 		}
 	}
 
-	cl_context_properties properties[] = {
-		CL_CONTEXT_PLATFORM,
-		(cl_context_properties)(platforms[VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_OPENCL_PLATFORM])(),
-		0};
-	oclContext_ = cl::Context(CL_DEVICE_TYPE_ALL, properties);
-	std::vector<std::string> kernelStrings;
-	kernelStrings.push_back(getKernel());
+	if (OPENCL_PLATFORM >= platforms.size()) {
+		THROW_EXCEPTION(UnavailableResourceException, "Invalid OpenCL platform: " << OPENCL_PLATFORM << '.');
+	}
+	cl::Platform chosenPlatform = platforms[OPENCL_PLATFORM];
+	cl_context_properties contextProp[] = {CL_CONTEXT_PLATFORM, (cl_context_properties) chosenPlatform(), 0 /* end of list */};
+	std::vector<cl::Device> devices;
+	chosenPlatform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+	if (devices.empty()) {
+		THROW_EXCEPTION(UnavailableResourceException, "No OpenCL devices available.");
+	}
+	if (OPENCL_DEVICE >= devices.size()) {
+		THROW_EXCEPTION(UnavailableResourceException, "Invalid OpenCL device: " << OPENCL_DEVICE << '.');
+	}
+	cl::Device chosenDevice = devices[OPENCL_DEVICE];
+	oclContext_ = cl::Context(chosenDevice, contextProp);
+	std::vector<std::string> kernelStrings = {getKernel()};
 	oclProgram_ = cl::Program(oclContext_, kernelStrings);
-	std::vector<cl::Device> devices = oclContext_.getInfo<CL_CONTEXT_DEVICES>();
 	try {
-		oclProgram_.build(devices, VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS);
-	} catch (cl::Error& e) {
-		try {
-			LOG_ERROR << "Error in cl::Program.build(): " << e.what();
-			std::string msg = oclProgram_.getBuildInfo<CL_PROGRAM_BUILD_OPTIONS>(devices[0]);
-			LOG_ERROR << "Build options:\n" << msg;
-			msg = oclProgram_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(devices[0]);
-			LOG_ERROR << "Build log:\n" << msg;
-		} catch (...) {} // ignore
-		THROW_EXCEPTION(Exception, "[oclContext_] Error in cl::Program.build(): " << e.what());
+		oclProgram_.build(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS);
+	} catch (...) {
+		std::ostringstream msg;
+		msg << "Error during OpenCL kernel compilation:\n";
+		auto buildInfo = oclProgram_.getBuildInfo<CL_PROGRAM_BUILD_LOG>();
+		for (auto& pair : buildInfo) {
+			msg << pair.second << "\n";
+		}
+		THROW_EXCEPTION(Exception, msg.str());
 	}
 
-	oclCommandQueue_ = cl::CommandQueue(oclContext_, devices[0]);
+	oclCommandQueue_ = cl::CommandQueue(oclContext_);
 }
 
 template<typename TFloat>
