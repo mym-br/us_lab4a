@@ -523,19 +523,6 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCrossCorrelation()
 		project_.showFigure2D(0, "Points", auxPeakX, auxPeakZ, true, true);
 
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_SHOW_PEAK_IMAGES
-		//TODO: remove test
-//		std::vector<XZ<float>> arc;
-//		if (baseElemIdx == 4) {
-//			std::vector<float> xArc, zArc;
-//			project_.loadHDF5("../../../us_lab4-data/lab4-cylinder_detection_and_fermat_arc/output/cyl_1/d20mm/9points/xArc", "x", xArc);
-//			project_.loadHDF5("../../../us_lab4-data/lab4-cylinder_detection_and_fermat_arc/output/cyl_1/d20mm/9points/zArc", "z", zArc);
-//			arc.resize(xArc.size());
-//			for (unsigned int i = 0; i < xArc.size(); ++i) {
-//				arc[i].x = xArc[i];
-//				arc[i].z = zArc[i];
-//			}
-//		}
-
 		//project_.showFigure3D(baseElemIdx, "Peak detection", &gridData, &arc,
 		project_.showFigure3D(baseElemIdx, "Peak detection", &gridData, Project::emptyPointList,
 					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
@@ -576,10 +563,6 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCCBFPulseEcho()
 
 	std::vector<unsigned int> baseElemList;
 	Util::fillSequenceFromStartToEndWithSize(baseElemList, 0U, config.numElementsMux - config.numElements, numBaseElemSteps);
-
-	//TODO: remove test? (the first and last groups produce points very far from the interface)
-//	baseElemList.erase(baseElemList.begin());
-//	baseElemList.pop_back();
 
 	std::unique_ptr<STAAcquisition<TFloat>> acquisition =
 		std::make_unique<SavedSTAAcquisition<TFloat>>(project_, config.numElements, savedAcqDir + '/');
@@ -1059,12 +1042,6 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsInArcs()
 		project_.saveHDF5(angle, String::Begin() << outputDir << "/arc_angle_base" << baseElement << String::End(), "angle");
 		project_.saveHDF5(arcData, String::Begin() << outputDir << "/arc_value_base" << baseElement << String::End(), "value", Util::CopyValueOp());
 #endif
-
-//		//TODO: remove test
-//		if (baseElemIdx == 4) {
-//			project_.saveHDF5(arcData, outputDir + "/xArc", "x", Util::CopyXOp());
-//			project_.saveHDF5(arcData, outputDir + "/zArc", "z", Util::CopyZOp());
-//		}
 	}
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
