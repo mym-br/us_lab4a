@@ -584,42 +584,24 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		transpKernel.setArg(3, rawDataN1_);
 		transpKernel.setArg(4, cl::Local(OCL_TRANSPOSE_GROUP_SIZE_DIM_0 * (OCL_TRANSPOSE_GROUP_SIZE_DIM_0 + 1) * sizeof(TFloat)));
 #endif
+		procImageKernel = cl::Kernel(oclProgram_, coherenceFactor_.enabled() ? "processImagePCFKernel" : "processImageKernel");
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
+		procImageKernel.setArg(0, oclRawDataT_);
+#else
+		procImageKernel.setArg(0, oclRawData_);
+#endif
+		procImageKernel.setArg(1, oclGridValueRe_);
+		procImageKernel.setArg(2, oclGridValueIm_);
+		procImageKernel.setArg(3, oclRxApod_);
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
+		procImageKernel.setArg(4, rawDataN1_);
+#else
+		procImageKernel.setArg(4, rawDataN2_);
+#endif
 		if (coherenceFactor_.enabled()) {
 			std::vector<TFloat> cfConstants;
 			coherenceFactor_.implementation().getConstants(cfConstants);
-
-			cl::Kernel kernel(oclProgram_, "processImagePCFKernel");
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-			kernel.setArg(0, oclRawDataT_);
-#else
-			kernel.setArg(0, oclRawData_);
-#endif
-			kernel.setArg(1, oclGridValueRe_);
-			kernel.setArg(2, oclGridValueIm_);
-			kernel.setArg(3, oclRxApod_);
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-			kernel.setArg(4, rawDataN1_);
-#else
-			kernel.setArg(4, rawDataN2_);
-#endif
-			kernel.setArg(5, cfConstants[2] /* factor */);
-			procImageKernel = kernel;
-		} else {
-			cl::Kernel kernel(oclProgram_, "processImageKernel");
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-			kernel.setArg(0, oclRawDataT_);
-#else
-			kernel.setArg(0, oclRawData_);
-#endif
-			kernel.setArg(1, oclGridValueRe_);
-			kernel.setArg(2, oclGridValueIm_);
-			kernel.setArg(3, oclRxApod_);
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-			kernel.setArg(4, rawDataN1_);
-#else
-			kernel.setArg(4, rawDataN2_);
-#endif
-			procImageKernel = kernel;
+			procImageKernel.setArg(5, cfConstants[2] /* factor */);
 		}
 	} catch (cl::Error& e) {
 		LOG_ERROR << "[Kernel preparation] OpenCL error: " << e.what() << " (" << e.err() << ").";
