@@ -46,7 +46,6 @@
 #include "Interpolator.h"
 #include "Log.h"
 #include "Matrix.h"
-#include "PseudorandomNumberGenerator.h"
 #include "Tensor3.h"
 #include "Timer.h"
 #include "TwoMediumSTAConfiguration.h"
