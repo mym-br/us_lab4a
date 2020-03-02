@@ -41,6 +41,7 @@
 #include "Exception.h"
 #include "ExecutionTimeMeasurement.h"
 #include "FermatPrinciple.h"
+#include "Geometry.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Log.h"
@@ -51,10 +52,6 @@
 #include "TwoMediumSTAConfiguration.h"
 #include "Util.h"
 #include "XZ.h"
-
-#ifdef USE_SIMD
-# include "SIMD.h"
-#endif
 
 
 
@@ -481,13 +478,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		TFloat* delays = &medium1DelayMatrix_(elem, 0);
 		for (unsigned int i = 0; i < interfacePointList.size(); ++i) {
 			const XZ<TFloat>& ifPoint = interfacePointList[i];
-#ifdef USE_SIMD
-			delays[i] = SIMD::calcDistance(xArray_[elem], 0, ifPoint.x, ifPoint.z) * c2ByC1;
-#else
-			const TFloat dx = ifPoint.x - xArray_[elem];
-			const TFloat dz = ifPoint.z;
-			delays[i] = std::sqrt(dx * dx + dz * dz) * c2ByC1;
-#endif
+			delays[i] = Geometry::distance2DY0(xArray_[elem], ifPoint.x, ifPoint.z) * c2ByC1;
 		}
 	}
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
@@ -745,21 +736,12 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::CalculateDelays {
 					// Fermat's principle. Find the fastest path.
 					TFloat tMin;
 					unsigned int idxMin;
-#ifdef USE_SIMD
-					FermatPrinciple::findMinTimeInTwoSteps2(
-							fermatBlockSize,
-							invC1, invC2,
-							interfacePointList,
-							xArray[elem], TFloat(0), point.x, point.z,
-							tMin, idxMin);
-#else
 					FermatPrinciple::findMinTimeInTwoSteps(
 							fermatBlockSize,
 							config.propagationSpeed1, config.propagationSpeed2,
 							interfacePointList,
 							xArray[elem], TFloat(0), point.x, point.z,
 							tMin, idxMin);
-#endif
 					delayMatrix(col, minRowIdx[col], elem) = tMin * fs;
 					lastInterfaceIdx = idxMin;
 				}
@@ -772,23 +754,11 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::CalculateDelays {
 					TFloat tC2Min;
 					{
 						const XZ<TFloat>& ifPoint = interfacePointList[idxMin];
-#ifdef USE_SIMD
-						tC2Min = medium1Delays[idxMin] + SIMD::calcDistance(ifPoint.x, ifPoint.z, point.x, point.z);
-#else
-						const TFloat dx2 = point.x - ifPoint.x;
-						const TFloat dz2 = point.z - ifPoint.z;
-						tC2Min = medium1Delays[idxMin] + std::sqrt(dx2 * dx2 + dz2 * dz2);
-#endif
+						tC2Min = medium1Delays[idxMin] + Geometry::distance2D(ifPoint.x, ifPoint.z, point.x, point.z);
 					}
 					for (unsigned int idxSearch = idxMin + 1, end = interfacePointList.size(); idxSearch < end; ++idxSearch) {
 						const XZ<TFloat>& ifPoint = interfacePointList[idxSearch];
-#ifdef USE_SIMD
-						const TFloat tC2 = medium1Delays[idxSearch] + SIMD::calcDistance(ifPoint.x, ifPoint.z, point.x, point.z);
-#else
-						const TFloat dx2 = point.x - ifPoint.x;
-						const TFloat dz2 = point.z - ifPoint.z;
-						const TFloat tC2 = medium1Delays[idxSearch] + std::sqrt(dx2 * dx2 + dz2 * dz2);
-#endif
+						const TFloat tC2 = medium1Delays[idxSearch] + Geometry::distance2D(ifPoint.x, ifPoint.z, point.x, point.z);
 						if (tC2 >= tC2Min) {
 							break;
 						} else {
@@ -799,13 +769,7 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::CalculateDelays {
 					if (idxMin == lastInterfaceIdx) { // if the previous search was not successful
 						for (int idxSearch = static_cast<int>(idxMin) - 1; idxSearch >= 0; --idxSearch) { // if idxMin = 0, idxSearch will start with -1
 							const XZ<TFloat>& ifPoint = interfacePointList[idxSearch];
-#ifdef USE_SIMD
-							const TFloat tC2 = medium1Delays[idxSearch] + SIMD::calcDistance(ifPoint.x, ifPoint.z, point.x, point.z);
-#else
-							const TFloat dx2 = point.x - ifPoint.x;
-							const TFloat dz2 = point.z - ifPoint.z;
-							const TFloat tC2 = medium1Delays[idxSearch] + std::sqrt(dx2 * dx2 + dz2 * dz2);
-#endif
+							const TFloat tC2 = medium1Delays[idxSearch] + Geometry::distance2D(ifPoint.x, ifPoint.z, point.x, point.z);
 							if (tC2 >= tC2Min) {
 								break;
 							} else {

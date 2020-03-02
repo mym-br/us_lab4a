@@ -31,11 +31,11 @@
 #include "CoherenceFactor.h"
 #include "Exception.h"
 #include "FermatPrinciple.h"
+#include "Geometry.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Log.h"
 #include "Matrix.h"
-#include "SIMD.h"
 #include "Tensor3.h"
 #include "TwoMediumSTAConfiguration.h"
 #include "Util.h"
@@ -282,11 +282,7 @@ VectorialCombinedTwoMediumImagingProcessor2<TFloat>::process(
 		for (unsigned int i = 0; i < interfacePointList.size(); ++i) {
 			for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
 				const XZ<TFloat>& ifPoint = interfacePointList[i];
-//				const TFloat dx = ifPoint.x - xArray_[elem];
-//				const TFloat dz = ifPoint.z;
-//				medium1DelayMatrix_(i, elem) = SIMD::calcDistance(dx, dz) * c2ByC1;
-//				medium1DelayMatrix_(i, elem) = std::sqrt(dx * dx + dz * dz) * c2ByC1;
-				medium1DelayMatrix_(i, elem) = SIMD::calcDistance(xArray_[elem], 0, ifPoint.x, ifPoint.z) * c2ByC1;
+				medium1DelayMatrix_(i, elem) = Geometry::distance2DY0(xArray_[elem], ifPoint.x, ifPoint.z) * c2ByC1;
 			}
 		}
 		LOG_DEBUG << "PREP tMedium1DelayMatrix time = " << tMedium1DelayMatrix.getTime();
@@ -390,15 +386,9 @@ struct VectorialCombinedTwoMediumImagingProcessor2<TFloat>::ProcessColumn {
 						// Fermat's principle. Find the fastest path.
 						TFloat tMin;
 						unsigned int idxMin;
-//						FermatPrinciple::findMinTimeInTwoSteps(
-//								fermatBlockSize,
-//								config.propagationSpeed1, config.propagationSpeed2,
-//								interfacePointList,
-//								xArray[elem], TFloat(0), point.x, point.z,
-//								tMin, idxMin);
-						FermatPrinciple::findMinTimeInTwoSteps2(
+						FermatPrinciple::findMinTimeInTwoSteps(
 								fermatBlockSize,
-								invC1, invC2,
+								config.propagationSpeed1, config.propagationSpeed2,
 								interfacePointList,
 								xArray[elem], TFloat(0), point.x, point.z,
 								tMin, idxMin);
@@ -411,19 +401,11 @@ struct VectorialCombinedTwoMediumImagingProcessor2<TFloat>::ProcessColumn {
 						TFloat tC2Min;
 						{
 							const XZ<TFloat>& ifPoint = interfacePointList[idxMin];
-//							const TFloat dx2 = point.x - ifPoint.x;
-//							const TFloat dz2 = point.z - ifPoint.z;
-//							tC2Min = medium1DelayMatrix(idxMin, elem) + SIMD::calcDistance(dx2, dz2);
-//							tC2Min = medium1DelayMatrix(idxMin, elem) + std::sqrt(dx2 * dx2 + dz2 * dz2);
-							tC2Min = medium1DelayMatrix(idxMin, elem) + SIMD::calcDistance(ifPoint.x, ifPoint.z, point.x, point.z);
+							tC2Min = medium1DelayMatrix(idxMin, elem) + Geometry::distance2D(ifPoint.x, ifPoint.z, point.x, point.z);
 						}
 						for (int idxSearch = static_cast<int>(idxMin) + 1, end = interfacePointList.size(); idxSearch < end; ++idxSearch) {
 							const XZ<TFloat>& ifPoint = interfacePointList[idxSearch];
-//							const TFloat dx2 = point.x - ifPoint.x;
-//							const TFloat dz2 = point.z - ifPoint.z;
-//							const TFloat tC2 = medium1DelayMatrix(idxSearch, elem) + SIMD::calcDistance(dx2, dz2);
-//							const TFloat tC2 = medium1DelayMatrix(idxSearch, elem) + std::sqrt(dx2 * dx2 + dz2 * dz2);
-							const TFloat tC2 = medium1DelayMatrix(idxSearch, elem) + SIMD::calcDistance(ifPoint.x, ifPoint.z, point.x, point.z);
+							const TFloat tC2 = medium1DelayMatrix(idxSearch, elem) + Geometry::distance2D(ifPoint.x, ifPoint.z, point.x, point.z);
 							if (tC2 >= tC2Min) {
 								break;
 							} else {
@@ -434,11 +416,7 @@ struct VectorialCombinedTwoMediumImagingProcessor2<TFloat>::ProcessColumn {
 						if (idxMin == local.lastInterfaceIdxList[elem]) { // if the previous search was not successful
 							for (int idxSearch = static_cast<int>(idxMin) - 1; idxSearch >= 0; --idxSearch) {
 								const XZ<TFloat>& ifPoint = interfacePointList[idxSearch];
-//								const TFloat dx2 = point.x - ifPoint.x;
-//								const TFloat dz2 = point.z - ifPoint.z;
-//								const TFloat tC2 = medium1DelayMatrix(idxSearch, elem) + SIMD::calcDistance(dx2, dz2);
-//								const TFloat tC2 = medium1DelayMatrix(idxSearch, elem) + std::sqrt(dx2 * dx2 + dz2 * dz2);
-								const TFloat tC2 = medium1DelayMatrix(idxSearch, elem) + SIMD::calcDistance(ifPoint.x, ifPoint.z, point.x, point.z);
+								const TFloat tC2 = medium1DelayMatrix(idxSearch, elem) + Geometry::distance2D(ifPoint.x, ifPoint.z, point.x, point.z);
 								if (tC2 >= tC2Min) {
 									break;
 								} else {

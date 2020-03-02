@@ -23,8 +23,11 @@
 #include <limits>
 #include <vector>
 
-#include "SIMD.h"
 #include "XZ.h"
+
+#if USE_SIMD
+# include "SIMD.h"
+#endif
 
 
 
@@ -56,13 +59,6 @@ template<typename TFloat> unsigned int calcBlockSizeForTwoStepSearch(
 template<typename TFloat> void findMinTimeInTwoSteps(
 						unsigned int blockSize,
 						TFloat c1, TFloat c2,
-						const std::vector<XZ<TFloat>>& interfacePointList,
-						TFloat x1, TFloat z1, TFloat x2, TFloat z2,
-						TFloat& tMin, unsigned int& idxMin);
-// Uses SIMD.
-template<typename TFloat> void findMinTimeInTwoSteps2(
-						unsigned int blockSize,
-						TFloat invC1, TFloat invC2,
 						const std::vector<XZ<TFloat>>& interfacePointList,
 						TFloat x1, TFloat z1, TFloat x2, TFloat z2,
 						TFloat& tMin, unsigned int& idxMin);
@@ -137,11 +133,15 @@ findMinTimeInTwoSteps(
 	idxMin = std::numeric_limits<unsigned int>::max();
 	for (unsigned int i = 0, end = interfacePointList.size(); i < end; i += blockSize) {
 		const XZ<TFloat>& point = interfacePointList[i];
+#if USE_SIMD
+		const TFloat t = SIMD::calcTwoMediumTravelTime(x1, z1, point.x, point.z, x2, z2, invC1, invC2);
+#else
 		const TFloat dx1 = point.x - x1;
 		const TFloat dz1 = point.z - z1;
 		const TFloat dx2 = x2 - point.x;
 		const TFloat dz2 = z2 - point.z;
 		const TFloat t = std::sqrt(dx1 * dx1 + dz1 * dz1) * invC1 + std::sqrt(dx2 * dx2 + dz2 * dz2) * invC2;
+#endif
 		if (t < tMin) {
 			tMin = t;
 			idxMin = i;
@@ -153,45 +153,15 @@ findMinTimeInTwoSteps(
 	const unsigned int iEnd = std::min<unsigned int>(idxMin + blockSize, interfacePointList.size());
 	for (unsigned int i = iBegin; i < iEnd; ++i) {
 		const XZ<TFloat>& point = interfacePointList[i];
+#if USE_SIMD
+		const TFloat t = SIMD::calcTwoMediumTravelTime(x1, z1, point.x, point.z, x2, z2, invC1, invC2);
+#else
 		const TFloat dx1 = point.x - x1;
 		const TFloat dz1 = point.z - z1;
 		const TFloat dx2 = x2 - point.x;
 		const TFloat dz2 = z2 - point.z;
 		const TFloat t = std::sqrt(dx1 * dx1 + dz1 * dz1) * invC1 + std::sqrt(dx2 * dx2 + dz2 * dz2) * invC2;
-		if (t < tMin) {
-			tMin = t;
-			idxMin = i;
-		}
-	}
-}
-
-template<typename TFloat>
-void
-findMinTimeInTwoSteps2(
-		unsigned int blockSize,
-		TFloat invC1, TFloat invC2,
-		const std::vector<XZ<TFloat>>& interfacePointList,
-		TFloat x1, TFloat z1, TFloat x2, TFloat z2,
-		TFloat& tMin, unsigned int& idxMin)
-{
-	// First step: step = blockSize
-	tMin = std::numeric_limits<TFloat>::max();
-	idxMin = std::numeric_limits<unsigned int>::max();
-	for (unsigned int i = 0, end = interfacePointList.size(); i < end; i += blockSize) {
-		const XZ<TFloat>& point = interfacePointList[i];
-		const TFloat t = SIMD::calcTwoMediumTravelTime(x1, z1, point.x, point.z, x2, z2, invC1, invC2);
-		if (t < tMin) {
-			tMin = t;
-			idxMin = i;
-		}
-	}
-
-	// Second step: step = 1
-	const unsigned int iBegin = (idxMin > (blockSize - 1)) ? idxMin - (blockSize - 1) : 0;
-	const unsigned int iEnd = std::min<unsigned int>(idxMin + blockSize, interfacePointList.size());
-	for (unsigned int i = iBegin; i < iEnd; ++i) {
-		const XZ<TFloat>& point = interfacePointList[i];
-		const TFloat t = SIMD::calcTwoMediumTravelTime(x1, z1, point.x, point.z, x2, z2, invC1, invC2);
+#endif
 		if (t < tMin) {
 			tMin = t;
 			idxMin = i;

@@ -281,7 +281,6 @@ struct VectorialCombinedTwoMediumImagingProcessor<TFloat>::ProcessColumn {
 								xArray[elem],
 								TFloat(0), point.x, point.z,
 								tMin, idxMin);
-
 						if (idxMin == 0 || idxMin == interfacePointList.size() - 1) {
 							// Ignore the points for which the interface is too short.
 							data.delayList[elem] = analyticSignalMatrix.n3(); // mark as invalid
