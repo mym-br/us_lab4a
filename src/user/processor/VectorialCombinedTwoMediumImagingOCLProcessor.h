@@ -162,6 +162,7 @@ private:
 	Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>> delayTensor_;
 	unsigned int rawDataN1_;
 	unsigned int rawDataN2_;
+	std::size_t rawDataSizeInBytes_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
 	std::unique_ptr<tbb::enumerable_thread_specific<ProcessColumn2ThreadData>> processColumn2TLS_;
 	bool clDataInitialized_;
@@ -200,6 +201,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 		, lambda2_(config_.propagationSpeed2 / config_.centerFrequency)
 		, rawDataN1_()
 		, rawDataN2_()
+		, rawDataSizeInBytes_()
 		, clDataInitialized_()
 		, pinnedRawDataCLBufferList_(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS)
 		, mappedRawDataPtrList_(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS)
@@ -413,44 +415,44 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	rawDataN1_ = 2 * config_.numElements /* real, imag */;
 	rawDataN2_ = numGridPoints;
 #endif
+	rawDataSizeInBytes_ = rawDataN1_ * rawDataN2_ * sizeof(TFloat);
 
 	gridValueRe_.resize(numGridPoints);
 	gridValueIm_.resize(numGridPoints);
 
 	if (!clDataInitialized_) {
 		for (unsigned int i = 0; i < pinnedRawDataCLBufferList_.size(); ++i) {
-			pinnedRawDataCLBufferList_[i] = cl::Buffer(clContext_, CL_MEM_ALLOC_HOST_PTR,
-									rawDataN1_ * rawDataN2_ * sizeof(TFloat));
+			pinnedRawDataCLBufferList_[i] = cl::Buffer(clContext_, CL_MEM_ALLOC_HOST_PTR, rawDataSizeInBytes_);
 			mappedRawDataPtrList_[i] = static_cast<TFloat*>(
 							clCommandQueue_.enqueueMapBuffer(
 								pinnedRawDataCLBufferList_[i], CL_TRUE /* blocking */, CL_MAP_WRITE,
-								0 /* offset */, rawDataN1_ * rawDataN2_ * sizeof(TFloat)));
+								0 /* offset */, rawDataSizeInBytes_));
 		}
-		rawDataCLBuffer_     = cl::Buffer(clContext_, CL_MEM_READ_ONLY , rawDataN1_ * rawDataN2_ * sizeof(TFloat));
+		rawDataCLBuffer_     = cl::Buffer(clContext_, CL_MEM_READ_ONLY , rawDataSizeInBytes_);
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-		rawDataTCLBuffer_    = cl::Buffer(clContext_, CL_MEM_READ_WRITE, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
+		rawDataTCLBuffer_    = cl::Buffer(clContext_, CL_MEM_READ_WRITE, rawDataSizeInBytes_);
 #endif
-		gridValueReCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, numGridPoints           * sizeof(TFloat));
-		gridValueImCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, numGridPoints           * sizeof(TFloat));
-		rxApodCLBuffer_ =      cl::Buffer(clContext_, CL_MEM_READ_ONLY , rxApod.size()           * sizeof(TFloat));
+		gridValueReCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, Util::sizeInBytes(gridValueRe_));
+		gridValueImCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, Util::sizeInBytes(gridValueIm_));
+		rxApodCLBuffer_ =      cl::Buffer(clContext_, CL_MEM_READ_ONLY , Util::sizeInBytes(rxApod));
 
 		clDataInitialized_ = true;
 	}
 
 	for (unsigned int i = 0; i < pinnedRawDataCLBufferList_.size(); ++i) {
-		std::memset(mappedRawDataPtrList_[i], 0, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
+		std::memset(mappedRawDataPtrList_[i], 0, rawDataSizeInBytes_);
 	}
-	std::memset(&gridValueRe_[0], 0, gridValueRe_.size() * sizeof(TFloat));
-	std::memset(&gridValueIm_[0], 0, gridValueIm_.size() * sizeof(TFloat));
+	std::memset(gridValueRe_.data(), 0, Util::sizeInBytes(gridValueRe_));
+	std::memset(gridValueIm_.data(), 0, Util::sizeInBytes(gridValueIm_));
 	clCommandQueue_.enqueueWriteBuffer(
 		gridValueReCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
-		gridValueRe_.size() * sizeof(TFloat), &gridValueRe_[0]);
+		Util::sizeInBytes(gridValueRe_), gridValueRe_.data());
 	clCommandQueue_.enqueueWriteBuffer(
 		gridValueImCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
-		gridValueIm_.size() * sizeof(TFloat), &gridValueIm_[0]);
+		Util::sizeInBytes(gridValueIm_), gridValueIm_.data());
 	clCommandQueue_.enqueueWriteBuffer(
 		rxApodCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
-		rxApod.size() * sizeof(TFloat), &rxApod[0]);
+		Util::sizeInBytes(rxApod), rxApod.data());
 
 	const TFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
 
@@ -608,7 +610,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			//==================================================
 			clCommandQueue_.enqueueWriteBuffer(
 				rawDataCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
-				rawDataN1_ * rawDataN2_ * sizeof(TFloat), mappedRawDataPtrList_[rawBufferIdx],
+				rawDataSizeInBytes_, mappedRawDataPtrList_[rawBufferIdx],
 				nullptr, &writeBufferEventList[rawBufferIdx]);
 
 			LOG_DEBUG << "OCL TRANSF " << transfTimer.getTime(); // useful only if the command was run with blocking activated
@@ -658,10 +660,10 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	//==================================================
 	clCommandQueue_.enqueueReadBuffer(
 		gridValueReCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
-		gridValueRe_.size() * sizeof(TFloat), &gridValueRe_[0]);
+		Util::sizeInBytes(gridValueRe_), gridValueRe_.data());
 	clCommandQueue_.enqueueReadBuffer(
 		gridValueImCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
-		gridValueIm_.size() * sizeof(TFloat), &gridValueIm_[0]);
+		Util::sizeInBytes(gridValueIm_), gridValueIm_.data());
 	for (unsigned int col = 0; col < cols; ++col) {
 		for (unsigned int row = 0; row < minRowIdx_[col]; ++row) {
 			gridValue(col, row) = 0;
@@ -783,17 +785,17 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::PrepareDataWithOne
 		for (unsigned int rxElem = r.begin(); rxElem != r.end(); ++rxElem) {
 			if (upsamplingFactor > 1) {
 				// Interpolate the signal.
-				local.interpolator.interpolate(&acqDataList[baseElementIdx](rxElem, 0), samplesPerChannelLow, &local.signal[0]);
+				local.interpolator.interpolate(&acqDataList[baseElementIdx](rxElem, 0), samplesPerChannelLow, local.signal.data());
 			} else {
 				auto range = acqDataList[baseElementIdx].range2(rxElem);
 				std::copy(range.begin(), range.end(), local.signal.begin());
 			}
 
-			Util::removeDC(&local.signal[0], local.signal.size());
+			Util::removeDC(local.signal.data(), local.signal.size());
 
 			// Obtain the analytic signal.
 			local.envelope.getAnalyticSignal(
-					&local.signal[0],
+					local.signal.data(),
 					local.signal.size(),
 					&signalTensor(stepIdx, rxElem, 0));
 		}

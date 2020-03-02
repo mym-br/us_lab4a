@@ -147,6 +147,8 @@ unsigned int numberOfDigits(unsigned int value);
 
 template<typename Iterator> void applyFactorToValue(Iterator iter, Iterator iterEnd);
 
+template<typename T, typename U> std::size_t sizeInBytes(const std::vector<T, U>& v);
+
 //#############################################################################
 
 template<typename T>
@@ -1052,6 +1054,13 @@ applyFactorToValue(Iterator iter, Iterator iterEnd)
 		iter->value *= iter->factor;
 		iter->factor = 1;
 	}
+}
+
+template<typename T, typename U>
+std::size_t
+sizeInBytes(const std::vector<T, U>& v)
+{
+	return v.size() * sizeof(typename std::vector<T, U>::value_type);
 }
 
 } // namespace Util
