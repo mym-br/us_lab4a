@@ -170,27 +170,27 @@ private:
 	unsigned int rawDataN2_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
 	std::unique_ptr<tbb::enumerable_thread_specific<ProcessColumn2ThreadData>> processColumn2TLS_;
-	bool oclDataInitialized_;
+	bool clDataInitialized_;
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> gridValueRe_;
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> gridValueIm_;
-	cl::Context oclContext_;
-	cl::Program oclProgram_;
-	cl::CommandQueue oclCommandQueue_;
+	cl::Context clContext_;
+	cl::Program clProgram_;
+	cl::CommandQueue clCommandQueue_;
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
-	cl::Buffer oclPinnedRawData_;
-	TFloat* mappedRawData_;
+	cl::Buffer pinnedRawDataCLBuffer_;
+	TFloat* mappedRawDataPtr_;
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
-	cl::Buffer oclPinnedRawData2_;
-	TFloat* mappedRawData2_;
+	cl::Buffer pinnedRawDataCLBuffer2_;
+	TFloat* mappedRawDataPtr2_;
 # endif
 #endif
-	cl::Buffer oclRawData_;
+	cl::Buffer rawDataCLBuffer_;
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-	cl::Buffer oclRawDataT_;
+	cl::Buffer rawDataTCLBuffer_;
 #endif
-	cl::Buffer oclGridValueRe_;
-	cl::Buffer oclGridValueIm_;
-	cl::Buffer oclRxApod_;
+	cl::Buffer gridValueReCLBuffer_;
+	cl::Buffer gridValueImCLBuffer_;
+	cl::Buffer rxApodCLBuffer_;
 };
 
 
@@ -212,11 +212,11 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 		, lambda2_(config_.propagationSpeed2 / config_.centerFrequency)
 		, rawDataN1_()
 		, rawDataN2_()
-		, oclDataInitialized_()
+		, clDataInitialized_()
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
-		, mappedRawData_()
+		, mappedRawDataPtr_()
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
-		, mappedRawData2_()
+		, mappedRawDataPtr2_()
 # endif
 #endif
 {
@@ -290,34 +290,34 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 		THROW_EXCEPTION(UnavailableResourceException, "Invalid OpenCL device: " << OPENCL_DEVICE << '.');
 	}
 	cl::Device chosenDevice = devices[OPENCL_DEVICE];
-	oclContext_ = cl::Context(chosenDevice, contextProp);
+	clContext_ = cl::Context(chosenDevice, contextProp);
 	std::vector<std::string> kernelStrings = {getKernel()};
-	oclProgram_ = cl::Program(oclContext_, kernelStrings);
+	clProgram_ = cl::Program(clContext_, kernelStrings);
 	try {
-		oclProgram_.build(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS);
+		clProgram_.build(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS);
 	} catch (...) {
 		std::ostringstream msg;
 		msg << "Error during OpenCL kernel compilation:\n";
-		auto buildInfo = oclProgram_.getBuildInfo<CL_PROGRAM_BUILD_LOG>();
+		auto buildInfo = clProgram_.getBuildInfo<CL_PROGRAM_BUILD_LOG>();
 		for (auto& pair : buildInfo) {
 			msg << pair.second << "\n";
 		}
 		THROW_EXCEPTION(Exception, msg.str());
 	}
 
-	oclCommandQueue_ = cl::CommandQueue(oclContext_);
+	clCommandQueue_ = cl::CommandQueue(clContext_);
 }
 
 template<typename TFloat>
 VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::~VectorialCombinedTwoMediumImagingOCLProcessor()
 {
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
-	if (oclPinnedRawData_() && mappedRawData_ != nullptr) {
+	if (pinnedRawDataCLBuffer_() && mappedRawDataPtr_ != nullptr) {
 		LOG_DEBUG << "~VectorialCombinedTwoMediumImagingOCLProcessor: enqueueUnmapMemObject (1)";
 		try {
-			if (oclCommandQueue_()) {
+			if (clCommandQueue_()) {
 				cl::Event event;
-				oclCommandQueue_.enqueueUnmapMemObject(oclPinnedRawData_, mappedRawData_, nullptr, &event);
+				clCommandQueue_.enqueueUnmapMemObject(pinnedRawDataCLBuffer_, mappedRawDataPtr_, nullptr, &event);
 				event.wait();
 			}
 		} catch (cl::Error& e) {
@@ -327,12 +327,12 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::~VectorialCombinedTwoMedi
 		}
 	}
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
-	if (oclPinnedRawData2_() && mappedRawData2_ != nullptr) {
+	if (pinnedRawDataCLBuffer2_() && mappedRawDataPtr2_ != nullptr) {
 		LOG_DEBUG << "~VectorialCombinedTwoMediumImagingOCLProcessor: enqueueUnmapMemObject (2)";
 		try {
-			if (oclCommandQueue_()) {
+			if (clCommandQueue_()) {
 				cl::Event event;
-				oclCommandQueue_.enqueueUnmapMemObject(oclPinnedRawData2_, mappedRawData2_, nullptr, &event);
+				clCommandQueue_.enqueueUnmapMemObject(pinnedRawDataCLBuffer2_, mappedRawDataPtr2_, nullptr, &event);
 				event.wait();
 			}
 		} catch (cl::Error& e) {
@@ -449,48 +449,48 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	gridValueRe_.resize(numGridPoints);
 	gridValueIm_.resize(numGridPoints);
 
-	if (!oclDataInitialized_) {
+	if (!clDataInitialized_) {
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
-		oclPinnedRawData_ = cl::Buffer(oclContext_, CL_MEM_ALLOC_HOST_PTR, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
-		mappedRawData_ = static_cast<TFloat*>(oclCommandQueue_.enqueueMapBuffer(
-								oclPinnedRawData_, CL_TRUE /* blocking */, CL_MAP_WRITE,
+		pinnedRawDataCLBuffer_ = cl::Buffer(clContext_, CL_MEM_ALLOC_HOST_PTR, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
+		mappedRawDataPtr_ = static_cast<TFloat*>(clCommandQueue_.enqueueMapBuffer(
+								pinnedRawDataCLBuffer_, CL_TRUE /* blocking */, CL_MAP_WRITE,
 								0 /* offset */, rawDataN1_ * rawDataN2_ * sizeof(TFloat)));
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
-		oclPinnedRawData2_ = cl::Buffer(oclContext_, CL_MEM_ALLOC_HOST_PTR, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
-		mappedRawData2_ = static_cast<TFloat*>(oclCommandQueue_.enqueueMapBuffer(
-								oclPinnedRawData2_, CL_TRUE /* blocking */, CL_MAP_WRITE,
+		pinnedRawDataCLBuffer2_ = cl::Buffer(clContext_, CL_MEM_ALLOC_HOST_PTR, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
+		mappedRawDataPtr2_ = static_cast<TFloat*>(clCommandQueue_.enqueueMapBuffer(
+								pinnedRawDataCLBuffer2_, CL_TRUE /* blocking */, CL_MAP_WRITE,
 								0 /* offset */, rawDataN1_ * rawDataN2_ * sizeof(TFloat)));
 # endif
 #endif
-		oclRawData_     = cl::Buffer(oclContext_, CL_MEM_READ_ONLY , rawDataN1_ * rawDataN2_ * sizeof(TFloat));
+		rawDataCLBuffer_     = cl::Buffer(clContext_, CL_MEM_READ_ONLY , rawDataN1_ * rawDataN2_ * sizeof(TFloat));
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-		oclRawDataT_    = cl::Buffer(oclContext_, CL_MEM_READ_WRITE, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
+		rawDataTCLBuffer_    = cl::Buffer(clContext_, CL_MEM_READ_WRITE, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
 #endif
-		oclGridValueRe_ = cl::Buffer(oclContext_, CL_MEM_READ_WRITE, numGridPoints           * sizeof(TFloat));
-		oclGridValueIm_ = cl::Buffer(oclContext_, CL_MEM_READ_WRITE, numGridPoints           * sizeof(TFloat));
-		oclRxApod_ =      cl::Buffer(oclContext_, CL_MEM_READ_ONLY , rxApod.size()           * sizeof(TFloat));
+		gridValueReCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, numGridPoints           * sizeof(TFloat));
+		gridValueImCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, numGridPoints           * sizeof(TFloat));
+		rxApodCLBuffer_ =      cl::Buffer(clContext_, CL_MEM_READ_ONLY , rxApod.size()           * sizeof(TFloat));
 
-		oclDataInitialized_ = true;
+		clDataInitialized_ = true;
 	}
 
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
-	std::memset(mappedRawData_, 0, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
+	std::memset(mappedRawDataPtr_, 0, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
-	std::memset(mappedRawData2_, 0, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
+	std::memset(mappedRawDataPtr2_, 0, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
 # endif
 #else
 	std::memset(&rawDataMatrix_(0, 0), 0, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
 #endif
 	std::memset(&gridValueRe_[0], 0, gridValueRe_.size() * sizeof(TFloat));
 	std::memset(&gridValueIm_[0], 0, gridValueIm_.size() * sizeof(TFloat));
-	oclCommandQueue_.enqueueWriteBuffer(
-		oclGridValueRe_, CL_TRUE /* blocking */, 0 /* offset */,
+	clCommandQueue_.enqueueWriteBuffer(
+		gridValueReCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
 		gridValueRe_.size() * sizeof(TFloat), &gridValueRe_[0]);
-	oclCommandQueue_.enqueueWriteBuffer(
-		oclGridValueIm_, CL_TRUE /* blocking */, 0 /* offset */,
+	clCommandQueue_.enqueueWriteBuffer(
+		gridValueImCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
 		gridValueIm_.size() * sizeof(TFloat), &gridValueIm_[0]);
-	oclCommandQueue_.enqueueWriteBuffer(
-		oclRxApod_, CL_TRUE /* blocking */, 0 /* offset */,
+	clCommandQueue_.enqueueWriteBuffer(
+		rxApodCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
 		rxApod.size() * sizeof(TFloat), &rxApod[0]);
 
 	const TFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
@@ -577,22 +577,22 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	//==================================================
 	try {
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-		transpKernel = cl::Kernel(oclProgram_, "transposeKernel");
-		transpKernel.setArg(0, oclRawData_);
-		transpKernel.setArg(1, oclRawDataT_);
+		transpKernel = cl::Kernel(clProgram_, "transposeKernel");
+		transpKernel.setArg(0, rawDataCLBuffer_);
+		transpKernel.setArg(1, rawDataTCLBuffer_);
 		transpKernel.setArg(2, rawDataN2_);
 		transpKernel.setArg(3, rawDataN1_);
 		transpKernel.setArg(4, cl::Local(OCL_TRANSPOSE_GROUP_SIZE_DIM_0 * (OCL_TRANSPOSE_GROUP_SIZE_DIM_0 + 1) * sizeof(TFloat)));
 #endif
-		procImageKernel = cl::Kernel(oclProgram_, coherenceFactor_.enabled() ? "processImagePCFKernel" : "processImageKernel");
+		procImageKernel = cl::Kernel(clProgram_, coherenceFactor_.enabled() ? "processImagePCFKernel" : "processImageKernel");
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-		procImageKernel.setArg(0, oclRawDataT_);
+		procImageKernel.setArg(0, rawDataTCLBuffer_);
 #else
 		procImageKernel.setArg(0, oclRawData_);
 #endif
-		procImageKernel.setArg(1, oclGridValueRe_);
-		procImageKernel.setArg(2, oclGridValueIm_);
-		procImageKernel.setArg(3, oclRxApod_);
+		procImageKernel.setArg(1, gridValueReCLBuffer_);
+		procImageKernel.setArg(2, gridValueImCLBuffer_);
+		procImageKernel.setArg(3, rxApodCLBuffer_);
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
 		procImageKernel.setArg(4, rawDataN1_);
 #else
@@ -653,7 +653,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			delayMatrix_,
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
-			evenIter ? mappedRawData_ : mappedRawData2_,
+			evenIter ? mappedRawDataPtr_ : mappedRawDataPtr2_,
 # else
 			mappedRawData_,
 # endif
@@ -676,10 +676,10 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			// [OpenCL] Memory transfer to device.
 			//==================================================
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
-			oclCommandQueue_.enqueueWriteBuffer(
-				oclRawData_, CL_FALSE /* blocking */, 0 /* offset */,
+			clCommandQueue_.enqueueWriteBuffer(
+				rawDataCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
 # ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
-				rawDataN1_ * rawDataN2_ * sizeof(TFloat), evenIter ? mappedRawData_ : mappedRawData2_,
+				rawDataN1_ * rawDataN2_ * sizeof(TFloat), evenIter ? mappedRawDataPtr_ : mappedRawDataPtr2_,
 				nullptr, evenIter ? &writeBufferEvent : &writeBufferEvent2);
 # else
 				rawDataN1_ * rawDataN2_ * sizeof(TFloat), mappedRawData_,
@@ -706,7 +706,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			//==================================================
 			// [OpenCL] Transpose kernel.
 			//==================================================
-			oclCommandQueue_.enqueueNDRangeKernel(
+			clCommandQueue_.enqueueNDRangeKernel(
 				transpKernel,
 				cl::NullRange, /* offset range / must be null */
 				cl::NDRange(rawDataN2_, rawDataN1_), /* global range, defines the total number of work-items */
@@ -719,7 +719,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			//==================================================
 			// [OpenCL] Final processing kernel.
 			//==================================================
-			oclCommandQueue_.enqueueNDRangeKernel(
+			clCommandQueue_.enqueueNDRangeKernel(
 				procImageKernel,
 				cl::NullRange, /* offset range / must be null */
 				cl::NDRange(kernel1GlobalSize), /* global range, defines the total number of work-items */
@@ -737,11 +737,11 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	//==================================================
 	// [OpenCL] Read the formed image.
 	//==================================================
-	oclCommandQueue_.enqueueReadBuffer(
-		oclGridValueRe_, CL_FALSE /* blocking */, 0 /* offset */,
+	clCommandQueue_.enqueueReadBuffer(
+		gridValueReCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
 		gridValueRe_.size() * sizeof(TFloat), &gridValueRe_[0]);
-	oclCommandQueue_.enqueueReadBuffer(
-		oclGridValueIm_, CL_TRUE /* blocking */, 0 /* offset */,
+	clCommandQueue_.enqueueReadBuffer(
+		gridValueImCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
 		gridValueIm_.size() * sizeof(TFloat), &gridValueIm_[0]);
 	for (unsigned int col = 0; col < cols; ++col) {
 		for (unsigned int row = 0; row < minRowIdx_[col]; ++row) {
