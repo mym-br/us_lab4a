@@ -219,8 +219,6 @@ set(us_lab4a_SRC
     src/user/processor/Vectorial3DSTAProcessor.h
     src/user/processor/Vectorial3DT1R1SAFTProcessor.h
     src/user/processor/Vectorial3DTnRnProcessor.h
-    src/user/processor/VectorialCombinedTwoMediumImagingProcessor.h
-    src/user/processor/VectorialCombinedTwoMediumImagingProcessor2.h
     src/user/processor/VectorialCombinedTwoMediumImagingProcessor3.h
     src/user/processor/VectorialSTAProcessor.h
     src/user/processor/VectorialTwoMediumSTAProcessor.h

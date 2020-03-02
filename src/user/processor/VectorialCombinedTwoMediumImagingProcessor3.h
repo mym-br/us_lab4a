@@ -61,7 +61,6 @@
 
 namespace Lab {
 
-// Faster version of VectorialCombinedTwoMediumImagingProcessor2.
 // The grid must be rectangular.
 template<typename TFloat>
 class VectorialCombinedTwoMediumImagingProcessor3 {
