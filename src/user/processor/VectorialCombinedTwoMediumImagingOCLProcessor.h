@@ -153,13 +153,13 @@ private:
 	TFloat maxFermatBlockSize_;
 	const TFloat lambda2_;
 	std::size_t signalLength_;
-	Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>> signalMatrix_;
+	Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>> signalTensor_;
 	TFloat signalOffset_;
 	std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>> minRowIdx_; // for each column
 	std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>> firstGridPointIdx_; // for each column
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> xArray_;
 	Matrix<TFloat, tbb::cache_aligned_allocator<TFloat>> medium1DelayMatrix_; // (interface_idx, element)
-	Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>> delayMatrix_;
+	Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>> delayTensor_;
 	unsigned int rawDataN1_;
 	unsigned int rawDataN2_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
@@ -341,8 +341,8 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 
 	minRowIdx_.resize(gridXZ.n1() /* number of columns */);
 	firstGridPointIdx_.resize(gridXZ.n1() /* number of columns */);
-	delayMatrix_.resize(gridXZ.n1() /* number of columns */, gridXZ.n2() /* number of rows */, config_.numElementsMux);
-	signalMatrix_.resize(stepConfigList.size(), config_.numElements, signalLength_);
+	delayTensor_.resize(gridXZ.n1() /* number of columns */, gridXZ.n2() /* number of rows */, config_.numElementsMux);
+	signalTensor_.resize(stepConfigList.size(), config_.numElements, signalLength_);
 	medium1DelayMatrix_.resize(config_.numElementsMux, interfacePointList.size());
 
 	XZ<TFloat> p1 = interfacePointList[0];
@@ -484,7 +484,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		minRowIdx_,
 		medium1DelayMatrix_,
 		gridXZ,
-		delayMatrix_
+		delayTensor_
 	};
 	//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1()), calculateDelaysOp);
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1(), 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
@@ -506,7 +506,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			stepIdx,
 			stepConfig.baseElemIdx,
 			*prepareDataTLS_,
-			signalMatrix_
+			signalTensor_
 		};
 		//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements), prepareDataOp);
 		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements, 1 /* grain size */), prepareDataOp, tbb::simple_partitioner());
@@ -562,8 +562,8 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	}
 
 	std::vector<cl::Event> writeBufferEventList(pinnedRawDataCLBufferList_.size());
-	std::size_t kernel1GlobalSize = roundUpToMultipleOfGroupSize(numGridPoints, OCL_WORK_ITEMS_PER_GROUP);
-	//LOG_DEBUG << numGridPoints << ':' << kernel1GlobalSize << ':' << OCL_WORK_ITEMS_PER_GROUP;
+	std::size_t procImageKernelGlobalSize = roundUpToMultipleOfGroupSize(numGridPoints, OCL_WORK_ITEMS_PER_GROUP);
+	//LOG_DEBUG << numGridPoints << ':' << procImageKernelGlobalSize << ':' << OCL_WORK_ITEMS_PER_GROUP;
 
 	//==================================================
 	// Step configuration loop.
@@ -585,11 +585,11 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			0,
 			config_,
 			signalOffset_,
-			signalMatrix_,
+			signalTensor_,
 			stepConfig,
 			minRowIdx_,
 			firstGridPointIdx_,
-			delayMatrix_,
+			delayTensor_,
 			mappedRawDataPtrList_[rawBufferIdx],
 			rawDataN2_,
 		};
@@ -641,7 +641,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			clCommandQueue_.enqueueNDRangeKernel(
 				procImageKernel,
 				cl::NullRange, /* offset range / must be null */
-				cl::NDRange(kernel1GlobalSize), /* global range, defines the total number of work-items */
+				cl::NDRange(procImageKernelGlobalSize), /* global range, defines the total number of work-items */
 				cl::NDRange(OCL_WORK_ITEMS_PER_GROUP), /* local range, defines the number of work-items in a work-group */
 				nullptr /* events */, &kernelEvent);
 			//kernelEvent.wait();
@@ -705,7 +705,7 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::CalculateDelays {
 							interfacePointList,
 							xArray[elem], TFloat(0), point.x, point.z,
 							tMin, idxMin);
-					delayMatrix(col, minRowIdx[col], elem) = tMin * fs;
+					delayTensor(col, minRowIdx[col], elem) = tMin * fs;
 					lastInterfaceIdx = idxMin;
 				}
 
@@ -749,7 +749,7 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::CalculateDelays {
 //						LOG_DEBUG << "########## DIFF " << diff << " idxMin: " << idxMin << " col: " << col << " row - minRowIdx[col]: " << row - minRowIdx[col];
 //					}
 
-					delayMatrix(col, row, elem) = tC2Min * fsInvC2;
+					delayTensor(col, row, elem) = tC2Min * fsInvC2;
 					lastInterfaceIdx = idxMin;
 				}
 
@@ -770,7 +770,7 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::CalculateDelays {
 	const std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>>& minRowIdx;
 	const Matrix<TFloat, tbb::cache_aligned_allocator<TFloat>>& medium1DelayMatrix;
 	const Matrix<XZ<TFloat>>& gridXZ;
-	Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>>& delayMatrix;
+	Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>>& delayTensor;
 };
 
 
@@ -795,7 +795,7 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::PrepareDataWithOne
 			local.envelope.getAnalyticSignal(
 					&local.signal[0],
 					local.signal.size(),
-					&signalMatrix(stepIdx, rxElem, 0));
+					&signalTensor(stepIdx, rxElem, 0));
 		}
 	}
 
@@ -806,7 +806,7 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::PrepareDataWithOne
 	const unsigned int stepIdx;
 	const unsigned int baseElementIdx;
 	tbb::enumerable_thread_specific<PrepareDataThreadData>& prepareDataTLS;
-	Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>>& signalMatrix;
+	Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>>& signalTensor;
 };
 
 
@@ -816,16 +816,16 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::ProcessColumnWithO
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		//LOG_DEBUG << "col = " << r.begin() << " n = " << (r.end() - r.begin());
 
-		const unsigned int signalLength = signalMatrix.n3();
+		const unsigned int signalLength = signalTensor.n3();
 		const unsigned int maxPosition = signalLength - 2;
 
 		for (unsigned int col = r.begin(); col != r.end(); ++col) {
 			unsigned int gridPointIdx = firstGridPointIdx[col] - firstGridPointIdx[firstCol];
 			for (unsigned int row = minRowIdx[col]; row < numRows; ++row, ++gridPointIdx) {
-				const TFloat* delays = &delayMatrix(col, row, stepConfig.baseElem);
+				const TFloat* delays = &delayTensor(col, row, stepConfig.baseElem);
 				const TFloat txDelay = delays[stepConfig.txElem];
 				const TFloat txOffset = signalOffset + txDelay;
-				const auto* p = &signalMatrix(stepConfig.baseElemIdx, 0 /* rxElem */, 0);
+				const auto* p = &signalTensor(stepConfig.baseElemIdx, 0 /* rxElem */, 0);
 				for (unsigned int rxElem = 0; rxElem < config.numElements; ++rxElem, p += signalLength) {
 					const unsigned int rxIdx = rxElem * 2;
 
@@ -873,11 +873,11 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::ProcessColumnWithO
 	const unsigned int firstCol;
 	const TwoMediumSTAConfiguration<TFloat>& config;
 	const TFloat signalOffset;
-	const Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>>& signalMatrix;
+	const Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>>& signalTensor;
 	const StepConfiguration stepConfig;
 	const std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>>& minRowIdx;
 	const std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>>& firstGridPointIdx;
-	const Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>>& delayMatrix;
+	const Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>>& delayTensor;
 	TFloat* rawData;
 	unsigned int rawDataN2;
 };
