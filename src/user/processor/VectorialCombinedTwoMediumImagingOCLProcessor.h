@@ -34,6 +34,8 @@
 #include <tbb/partitioner.h>
 #include <tbb/tbb.h>
 
+#include <CL/cl2.hpp>
+
 #include "ArrayGeometry.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
@@ -50,6 +52,10 @@
 #include "Util.h"
 #include "XZ.h"
 
+#ifdef USE_SIMD
+# include "SIMD.h"
+#endif
+
 
 
 // Depends on the signal.
@@ -62,11 +68,6 @@
 // Faster.
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE 1
 
-#ifdef USE_SIMD
-# include "SIMD.h"
-#endif
-
-#include <CL/cl2.hpp>
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS "-cl-std=CL1.2 -DNUM_RX_ELEM=32"
 
 
