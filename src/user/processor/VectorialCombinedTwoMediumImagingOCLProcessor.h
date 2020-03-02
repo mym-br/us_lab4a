@@ -57,7 +57,6 @@
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH (0.2)
 
 // Faster.
-#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY 1
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER 1
 
 // Faster.
@@ -69,11 +68,6 @@
 
 #include <CL/cl2.hpp>
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS "-cl-std=CL1.2 -DNUM_RX_ELEM=32"
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
-# ifndef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
-#  error Invalid configuration.
-# endif
-#endif
 
 
 
@@ -165,7 +159,6 @@ private:
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> xArray_;
 	Matrix<TFloat, tbb::cache_aligned_allocator<TFloat>> medium1DelayMatrix_; // (interface_idx, element)
 	Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>> delayMatrix_;
-	Matrix<TFloat, tbb::cache_aligned_allocator<TFloat>> rawDataMatrix_;
 	unsigned int rawDataN1_;
 	unsigned int rawDataN2_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
@@ -176,13 +169,12 @@ private:
 	cl::Context clContext_;
 	cl::Program clProgram_;
 	cl::CommandQueue clCommandQueue_;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
+
 	cl::Buffer pinnedRawDataCLBuffer_;
 	TFloat* mappedRawDataPtr_;
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
 	cl::Buffer pinnedRawDataCLBuffer2_;
 	TFloat* mappedRawDataPtr2_;
-# endif
 #endif
 	cl::Buffer rawDataCLBuffer_;
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
@@ -213,11 +205,9 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 		, rawDataN1_()
 		, rawDataN2_()
 		, clDataInitialized_()
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
 		, mappedRawDataPtr_()
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
 		, mappedRawDataPtr2_()
-# endif
 #endif
 {
 	if (sizeof(TFloat) != sizeof(float)) {
@@ -311,7 +301,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 template<typename TFloat>
 VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::~VectorialCombinedTwoMediumImagingOCLProcessor()
 {
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
 	if (pinnedRawDataCLBuffer_() && mappedRawDataPtr_ != nullptr) {
 		LOG_DEBUG << "~VectorialCombinedTwoMediumImagingOCLProcessor: enqueueUnmapMemObject (1)";
 		try {
@@ -326,7 +315,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::~VectorialCombinedTwoMedi
 			LOG_ERROR << "[mappedRawData_] Caught an unknown exception.";
 		}
 	}
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
 	if (pinnedRawDataCLBuffer2_() && mappedRawDataPtr2_ != nullptr) {
 		LOG_DEBUG << "~VectorialCombinedTwoMediumImagingOCLProcessor: enqueueUnmapMemObject (2)";
 		try {
@@ -341,7 +330,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::~VectorialCombinedTwoMedi
 			LOG_ERROR << "[mappedRawData2_] Caught an unknown exception.";
 		}
 	}
-# endif
 #endif
 }
 
@@ -435,32 +423,24 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	LOG_DEBUG << "numGridPoints: " << numGridPoints << " transpNumGridPoints: " << transpNumGridPoints;
 	rawDataN1_ = transpNumGridPoints;
 	rawDataN2_ = 2 * config_.numElements /* real, imag */;
-# ifndef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
-	rawDataMatrix_.resize(rawDataN1_, rawDataN2_);
-# endif
 #else
 	rawDataN1_ = 2 * config_.numElements /* real, imag */;
 	rawDataN2_ = numGridPoints;
-# ifndef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
-	rawDataMatrix_.resize(rawDataN1_, rawDataN2_);
-# endif
 #endif
 
 	gridValueRe_.resize(numGridPoints);
 	gridValueIm_.resize(numGridPoints);
 
 	if (!clDataInitialized_) {
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
 		pinnedRawDataCLBuffer_ = cl::Buffer(clContext_, CL_MEM_ALLOC_HOST_PTR, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
 		mappedRawDataPtr_ = static_cast<TFloat*>(clCommandQueue_.enqueueMapBuffer(
 								pinnedRawDataCLBuffer_, CL_TRUE /* blocking */, CL_MAP_WRITE,
 								0 /* offset */, rawDataN1_ * rawDataN2_ * sizeof(TFloat)));
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
 		pinnedRawDataCLBuffer2_ = cl::Buffer(clContext_, CL_MEM_ALLOC_HOST_PTR, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
 		mappedRawDataPtr2_ = static_cast<TFloat*>(clCommandQueue_.enqueueMapBuffer(
 								pinnedRawDataCLBuffer2_, CL_TRUE /* blocking */, CL_MAP_WRITE,
 								0 /* offset */, rawDataN1_ * rawDataN2_ * sizeof(TFloat)));
-# endif
 #endif
 		rawDataCLBuffer_     = cl::Buffer(clContext_, CL_MEM_READ_ONLY , rawDataN1_ * rawDataN2_ * sizeof(TFloat));
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
@@ -473,13 +453,9 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		clDataInitialized_ = true;
 	}
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
 	std::memset(mappedRawDataPtr_, 0, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
 	std::memset(mappedRawDataPtr2_, 0, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
-# endif
-#else
-	std::memset(&rawDataMatrix_(0, 0), 0, rawDataN1_ * rawDataN2_ * sizeof(TFloat));
 #endif
 	std::memset(&gridValueRe_[0], 0, gridValueRe_.size() * sizeof(TFloat));
 	std::memset(&gridValueIm_[0], 0, gridValueIm_.size() * sizeof(TFloat));
@@ -588,7 +564,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
 		procImageKernel.setArg(0, rawDataTCLBuffer_);
 #else
-		procImageKernel.setArg(0, oclRawData_);
+		procImageKernel.setArg(0, rawDataCLBuffer_);
 #endif
 		procImageKernel.setArg(1, gridValueReCLBuffer_);
 		procImageKernel.setArg(2, gridValueImCLBuffer_);
@@ -651,14 +627,10 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			minRowIdx_,
 			firstGridPointIdx_,
 			delayMatrix_,
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
 			evenIter ? mappedRawDataPtr_ : mappedRawDataPtr2_,
-# else
-			mappedRawData_,
-# endif
 #else
-			&rawDataMatrix_(0, 0),
+			mappedRawDataPtr_,
 #endif
 			rawDataN2_,
 		};
@@ -675,23 +647,15 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			//==================================================
 			// [OpenCL] Memory transfer to device.
 			//==================================================
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_PINNED_MEMORY
 			clCommandQueue_.enqueueWriteBuffer(
 				rawDataCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
 				rawDataN1_ * rawDataN2_ * sizeof(TFloat), evenIter ? mappedRawDataPtr_ : mappedRawDataPtr2_,
 				nullptr, evenIter ? &writeBufferEvent : &writeBufferEvent2);
-# else
-				rawDataN1_ * rawDataN2_ * sizeof(TFloat), mappedRawData_,
-				nullptr, &writeBufferEvent);
-# endif
 #else
-			oclCommandQueue_.enqueueWriteBuffer(
-				oclRawData_, CL_FALSE /* blocking */, 0 /* offset */,
-				rawDataN1_ * rawDataN2_ * sizeof(TFloat), &rawDataMatrix_(0, 0),
+				rawDataN1_ * rawDataN2_ * sizeof(TFloat), mappedRawDataPtr_,
 				nullptr, &writeBufferEvent);
 #endif
-
 			LOG_DEBUG << "OCL TRANSF " << transfTimer.getTime(); // useful only if the command was run with blocking activated
 		} catch (cl::Error& e) {
 			LOG_ERROR << "[oclCommandQueue_.enqueueWriteBuffer()] OpenCL error: " << e.what() << " (" << e.err() << ").";
