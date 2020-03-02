@@ -57,7 +57,7 @@
 #include "TwoMediumSTAConfiguration.h"
 #include "TwoMediumSTAProcessor.h"
 #include "Util.h"
-#include "VectorialCombinedTwoMediumImagingProcessor3.h"
+#include "VectorialCombinedTwoMediumImagingProcessor.h"
 #include "VectorialSTAProcessor.h"
 #include "VectorialTwoMediumSTAProcessor.h"
 #include "XZComplexValue.h"
@@ -130,7 +130,7 @@ private:
 	void detectPointsUsingTangentCurveGeometry();
 	void fitCircle();
 	void execTwoMediumImaging();
-	void execCombinedTwoMediumImaging3();
+	void execCombinedTwoMediumImaging();
 #ifdef USE_OPENCL
 	void execCombinedTwoMediumImagingOCL();
 #endif
@@ -1419,7 +1419,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execTwoMediumImaging()
 
 template<typename TFloat>
 void
-CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
+CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging()
 {
 	const ParamMapPtr methodPM = project_.getSubParamMap("method_config_file");
 	const TwoMediumSTAConfiguration<TFloat> config(*project_.getSubParamMap("main_config_file"));
@@ -1441,7 +1441,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
 	const auto interfaceAngle2    = methodPM->value<TFloat>(      "interface_angle_2"    ,      -170,    -10.0);
 	const auto txElem             = methodPM->value<unsigned int>("tx_element"           ,         0, config.numElements - 1);
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	Matrix<XZComplexValue<TFloat>> gridData;
 	Matrix<std::complex<TFloat>> gridValue;
 #else
@@ -1466,7 +1466,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
 	const TFloat centerInterfaceZ = xzr[1];
 	const TFloat interfaceR = xzr[2];
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 #else
 	CoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
@@ -1475,13 +1475,13 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
 	std::vector<unsigned int> baseElemList;
 	Util::fillSequenceFromStartToEndWithSize(baseElemList, 0U, config.numElementsMux - config.numElements, numBaseElemSteps);
 
-	std::vector<typename VectorialCombinedTwoMediumImagingProcessor3<TFloat>::StepConfiguration> stepConfigList;
+	std::vector<typename VectorialCombinedTwoMediumImagingProcessor<TFloat>::StepConfiguration> stepConfigList;
 	unsigned int numActiveTxElements = 0;
 	switch (project_.method()) {
-	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_3_dp:
-	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_3_sp:
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_dp:
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_sp:
 		for (unsigned int i = 0; i < baseElemList.size(); ++i) {
-			typename VectorialCombinedTwoMediumImagingProcessor3<TFloat>::StepConfiguration conf{
+			typename VectorialCombinedTwoMediumImagingProcessor<TFloat>::StepConfiguration conf{
 				i,
 				baseElemList[i],
 				txElem, txElem
@@ -1491,10 +1491,10 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
 		}
 		numActiveTxElements = 1;
 		break;
-	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_3_dp:
-	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_3_sp:
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_dp:
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_sp:
 		for (unsigned int i = 0; i < baseElemList.size(); ++i) {
-			typename VectorialCombinedTwoMediumImagingProcessor3<TFloat>::StepConfiguration conf{
+			typename VectorialCombinedTwoMediumImagingProcessor<TFloat>::StepConfiguration conf{
 				i,
 				baseElemList[i],
 				0, config.numElements - 1
@@ -1545,7 +1545,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
 		}
 	}
 
-	auto p = std::make_unique<VectorialCombinedTwoMediumImagingProcessor3<TFloat>>(
+	auto p = std::make_unique<VectorialCombinedTwoMediumImagingProcessor<TFloat>>(
 			config,
 			acqDataList,
 			upsamplingFactor,
@@ -1589,7 +1589,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
 
 	p->process(stepConfigList, interfacePointList, rxApod, gridXZ, gridValue);
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	Value::transformSequence(gridValue.begin(), gridValue.end(), gridData.begin(), Value::ScalarToValueFieldOp<std::complex<TFloat>, XZComplexValue<TFloat>>());
 #else
 	Value::transformSequence(gridValue.begin(), gridValue.end(), gridData.begin(), Value::ScalarToValueFieldOp<TFloat, XZValue<TFloat>>());
@@ -1637,7 +1637,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging3()
 
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
 	LOG_DEBUG << "Saving the final raw image...";
-# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+# ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	project_.saveHDF5(gridData, imageDir + "/final_raw_image", "image", Util::CopyAbsValueOp());
 # else
 	project_.saveHDF5(gridData, imageDir + "/final_raw_image", "image", Util::CopyValueOp());
@@ -2377,11 +2377,11 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_vectorial_sp:
 		execTwoMediumImaging();
 		break;
-	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_3_dp:
-	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_3_sp:
-	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_3_dp:
-	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_3_sp:
-		execCombinedTwoMediumImaging3();
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_dp:
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_sp:
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_dp:
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_sp:
+		execCombinedTwoMediumImaging();
 		break;
 #ifdef USE_OPENCL
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp:

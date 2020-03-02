@@ -15,8 +15,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef VECTORIALCOMBINEDTWOMEDIUMIMAGINGPROCESSOR3_H
-#define VECTORIALCOMBINEDTWOMEDIUMIMAGINGPROCESSOR3_H
+#ifndef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_H
+#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_H
 
 #include <algorithm> /* copy, fill */
 #include <cmath> /* ceil, sqrt */
@@ -49,11 +49,11 @@
 
 // Depends on the signal.
 // 1.0 --> pi radian / sample at the original sampling rate.
-#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_UPSAMP_FILTER_HALF_TRANSITION_WIDTH 0.2
+#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH 0.2
 
-#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL 1
+#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL 1
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 # include <complex>
 #endif
 
@@ -63,7 +63,7 @@ namespace Lab {
 
 // The grid must be rectangular.
 template<typename TFloat>
-class VectorialCombinedTwoMediumImagingProcessor3 {
+class VectorialCombinedTwoMediumImagingProcessor {
 public:
 	struct StepConfiguration {
 		unsigned int baseElemIdx;
@@ -72,11 +72,11 @@ public:
 		unsigned int lastTxElem;
 	};
 
-	VectorialCombinedTwoMediumImagingProcessor3(
+	VectorialCombinedTwoMediumImagingProcessor(
 			const TwoMediumSTAConfiguration<TFloat>& config,
 			std::vector<Tensor3<TFloat>>& acqDataList,
 			unsigned int upsamplingFactor,
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
 #else
 			CoherenceFactorProcessor<TFloat>& coherenceFactor,
@@ -84,7 +84,7 @@ public:
 			TFloat maxFermatBlockSize,
 			TFloat peakOffset,
 			unsigned int ascanStartOffset);
-	~VectorialCombinedTwoMediumImagingProcessor3() = default;
+	~VectorialCombinedTwoMediumImagingProcessor() = default;
 
 	// In stepConfigList, only two cases are allowed.
 	// One is with all the items using only one transmit element,
@@ -94,7 +94,7 @@ public:
 		const std::vector<XZ<TFloat>>& interfacePointList,
 		const std::vector<TFloat>& rxApod,
 		const Matrix<XZ<TFloat>>& gridXZ,
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 		Matrix<std::complex<TFloat>>& gridValue
 #else
 		Matrix<TFloat>& gridValue
@@ -123,7 +123,7 @@ private:
 	struct ProcessColumnWithOneTxElem;
 	struct ProcessColumn;
 	struct ProcessColumnThreadData {
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 		AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor;
 		std::vector<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>> rxSignalSumList;
 #else
@@ -132,15 +132,15 @@ private:
 #endif
 	};
 
-	VectorialCombinedTwoMediumImagingProcessor3(const VectorialCombinedTwoMediumImagingProcessor3&) = delete;
-	VectorialCombinedTwoMediumImagingProcessor3& operator=(const VectorialCombinedTwoMediumImagingProcessor3&) = delete;
-	VectorialCombinedTwoMediumImagingProcessor3(VectorialCombinedTwoMediumImagingProcessor3&&) = delete;
-	VectorialCombinedTwoMediumImagingProcessor3& operator=(VectorialCombinedTwoMediumImagingProcessor3&&) = delete;
+	VectorialCombinedTwoMediumImagingProcessor(const VectorialCombinedTwoMediumImagingProcessor&) = delete;
+	VectorialCombinedTwoMediumImagingProcessor& operator=(const VectorialCombinedTwoMediumImagingProcessor&) = delete;
+	VectorialCombinedTwoMediumImagingProcessor(VectorialCombinedTwoMediumImagingProcessor&&) = delete;
+	VectorialCombinedTwoMediumImagingProcessor& operator=(VectorialCombinedTwoMediumImagingProcessor&&) = delete;
 
 	const TwoMediumSTAConfiguration<TFloat>& config_;
 	std::vector<Tensor3<TFloat>>& acqDataList_;
 	unsigned int upsamplingFactor_;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor_;
 #else
 	CoherenceFactorProcessor<TFloat>& coherenceFactor_;
@@ -148,7 +148,7 @@ private:
 	TFloat maxFermatBlockSize_;
 	const TFloat lambda2_;
 	std::size_t signalLength_;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>> signalMatrix_;
 #else
 	Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>> signalMatrix_;
@@ -165,11 +165,11 @@ private:
 
 
 template<typename TFloat>
-VectorialCombinedTwoMediumImagingProcessor3<TFloat>::VectorialCombinedTwoMediumImagingProcessor3(
+VectorialCombinedTwoMediumImagingProcessor<TFloat>::VectorialCombinedTwoMediumImagingProcessor(
 			const TwoMediumSTAConfiguration<TFloat>& config,
 			std::vector<Tensor3<TFloat>>& acqDataList,
 			unsigned int upsamplingFactor,
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
 #else
 			CoherenceFactorProcessor<TFloat>& coherenceFactor,
@@ -192,7 +192,7 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::VectorialCombinedTwoMediumI
 
 	PrepareDataThreadData prepareDataThreadData;
 	if (upsamplingFactor_ > 1) {
-		prepareDataThreadData.interpolator.prepare(upsamplingFactor_, VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
+		prepareDataThreadData.interpolator.prepare(upsamplingFactor_, VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH);
 	}
 	prepareDataThreadData.signal.resize(signalLength_);
 	prepareDataTLS_ = std::make_unique<tbb::enumerable_thread_specific<PrepareDataThreadData>>(prepareDataThreadData);
@@ -204,19 +204,19 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::VectorialCombinedTwoMediumI
 
 template<typename TFloat>
 void
-VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
+VectorialCombinedTwoMediumImagingProcessor<TFloat>::process(
 							const std::vector<StepConfiguration>& stepConfigList,
 							const std::vector<XZ<TFloat>>& interfacePointList,
 							const std::vector<TFloat>& rxApod,
 							const Matrix<XZ<TFloat>>& gridXZ,
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 							Matrix<std::complex<TFloat>>& gridValue
 #else
 							Matrix<TFloat>& gridValue
 #endif
 							)
 {
-	//LOG_DEBUG << "BEGIN ========== VectorialCombinedTwoMediumImagingProcessor3::process ==========";
+	//LOG_DEBUG << "BEGIN ========== VectorialCombinedTwoMediumImagingProcessor::process ==========";
 
 	if (stepConfigList.empty()) {
 		THROW_EXCEPTION(InvalidParameterException, "The list of step configurations is empty.");
@@ -424,13 +424,13 @@ VectorialCombinedTwoMediumImagingProcessor3<TFloat>::process(
 #endif
 	}
 
-	//LOG_DEBUG << "END ========== VectorialCombinedTwoMediumImagingProcessor3::process ==========";
+	//LOG_DEBUG << "END ========== VectorialCombinedTwoMediumImagingProcessor::process ==========";
 }
 
 
 
 template<typename TFloat>
-struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::CalculateDelays {
+struct VectorialCombinedTwoMediumImagingProcessor<TFloat>::CalculateDelays {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		//LOG_DEBUG << "col = " << r.begin() << " n = " << (r.end() - r.begin());
 
@@ -524,7 +524,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::CalculateDelays {
 
 
 template<typename TFloat>
-struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::PrepareDataWithOneTxElem {
+struct VectorialCombinedTwoMediumImagingProcessor<TFloat>::PrepareDataWithOneTxElem {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		PrepareDataThreadData& local = prepareDataTLS.local();
 
@@ -539,7 +539,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::PrepareDataWithOneTx
 
 			Util::removeDC(&local.signal[0], local.signal.size());
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 			// Obtain the analytic signal.
 			local.envelope.getAnalyticSignal(
 					&local.signal[0],
@@ -558,7 +558,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::PrepareDataWithOneTx
 	const unsigned int stepIdx;
 	const unsigned int baseElementIdx;
 	tbb::enumerable_thread_specific<PrepareDataThreadData>& prepareDataTLS;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>>& signalMatrix;
 #else
 	Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>>& signalMatrix;
@@ -568,7 +568,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::PrepareDataWithOneTx
 
 
 template<typename TFloat>
-struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::PrepareData {
+struct VectorialCombinedTwoMediumImagingProcessor<TFloat>::PrepareData {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		PrepareDataThreadData& local = prepareDataTLS.local();
 
@@ -583,7 +583,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::PrepareData {
 
 			Util::removeDC(&local.signal[0], local.signal.size());
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 			// Obtain the analytic signal.
 			local.envelope.getAnalyticSignal(
 					&local.signal[0],
@@ -602,7 +602,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::PrepareData {
 	const unsigned int baseElementIdx;
 	const unsigned int txElemIdx;
 	tbb::enumerable_thread_specific<PrepareDataThreadData>& prepareDataTLS;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>>& signalMatrix;
 #else
 	Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>>& signalMatrix;
@@ -612,7 +612,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::PrepareData {
 
 
 template<typename TFloat>
-struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumnWithOneTxElem {
+struct VectorialCombinedTwoMediumImagingProcessor<TFloat>::ProcessColumnWithOneTxElem {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		//LOG_DEBUG << "col = " << r.begin() << " n = " << (r.end() - r.begin());
 		ProcessColumnThreadData& local = processColumnTLS.local();
@@ -623,7 +623,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumnWithOne
 
 		for (unsigned int col = r.begin(); col != r.end(); ++col) {
 			for (unsigned int row = minRowIdx[col]; row < numRows; ++row) {
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 				std::complex<TFloat> pointSum = 0.0;
 #else
 				TFloat pointSum = 0.0;
@@ -651,7 +651,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumnWithOne
 						}
 					}
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 					std::complex<TFloat> sum = 0.0;
 #else
 					TFloat sum = 0.0;
@@ -676,7 +676,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumnWithOne
 	const std::size_t numRows;
 	const TwoMediumSTAConfiguration<TFloat>& config;
 	const TFloat signalOffset;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	const Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>>& signalMatrix;
 #else
 	const Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>>& signalMatrix;
@@ -686,7 +686,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumnWithOne
 	const std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>>& minRowIdx;
 	const Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>>& delayMatrix;
 	tbb::enumerable_thread_specific<ProcessColumnThreadData>& processColumnTLS;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	Matrix<std::complex<TFloat>>& gridValue;
 #else
 	Matrix<TFloat>& gridValue;
@@ -696,7 +696,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumnWithOne
 
 
 template<typename TFloat>
-struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumn {
+struct VectorialCombinedTwoMediumImagingProcessor<TFloat>::ProcessColumn {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		//LOG_DEBUG << "col = " << r.begin() << " n = " << (r.end() - r.begin());
 		ProcessColumnThreadData& local = processColumnTLS.local();
@@ -707,7 +707,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumn {
 
 		for (unsigned int col = r.begin(); col != r.end(); ++col) {
 			for (unsigned int row = minRowIdx[col]; row < numRows; ++row) {
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0));
 #else
 				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), TFloat(0));
@@ -734,7 +734,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumn {
 					}
 				}
 
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 				std::complex<TFloat> sum = 0.0;
 #else
 				TFloat sum = 0.0;
@@ -756,7 +756,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumn {
 	const std::size_t numRows;
 	const TwoMediumSTAConfiguration<TFloat>& config;
 	const TFloat signalOffset;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	const Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>>& signalMatrix;
 #else
 	const Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>>& signalMatrix;
@@ -766,7 +766,7 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumn {
 	const std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>>& minRowIdx;
 	const Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>>& delayMatrix;
 	tbb::enumerable_thread_specific<ProcessColumnThreadData>& processColumnTLS;
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_3_USE_ANALYTIC_SIGNAL
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_USE_ANALYTIC_SIGNAL
 	Matrix<std::complex<TFloat>>& gridValue;
 #else
 	Matrix<TFloat>& gridValue;
@@ -775,4 +775,4 @@ struct VectorialCombinedTwoMediumImagingProcessor3<TFloat>::ProcessColumn {
 
 } // namespace Lab
 
-#endif // VECTORIALCOMBINEDTWOMEDIUMIMAGINGPROCESSOR3_H
+#endif // VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_PROCESSOR_H
