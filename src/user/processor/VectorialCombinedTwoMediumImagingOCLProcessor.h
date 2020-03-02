@@ -311,9 +311,9 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::~VectorialCombinedTwoMedi
 				event.wait();
 			}
 		} catch (cl::Error& e) {
-			LOG_ERROR << "[mappedRawData_] Error in cl::CommandQueue.enqueueUnmapMemObject(): " << e.what();
+			LOG_ERROR << "[mappedRawDataPtr_] Error in cl::CommandQueue.enqueueUnmapMemObject(): " << e.what();
 		} catch (...) {
-			LOG_ERROR << "[mappedRawData_] Caught an unknown exception.";
+			LOG_ERROR << "[mappedRawDataPtr_] Caught an unknown exception.";
 		}
 	}
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
@@ -326,9 +326,9 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::~VectorialCombinedTwoMedi
 				event.wait();
 			}
 		} catch (cl::Error& e) {
-			LOG_ERROR << "[mappedRawData2_] Error in cl::CommandQueue.enqueueUnmapMemObject(): " << e.what();
+			LOG_ERROR << "[mappedRawDataPtr2_] Error in cl::CommandQueue.enqueueUnmapMemObject(): " << e.what();
 		} catch (...) {
-			LOG_ERROR << "[mappedRawData2_] Caught an unknown exception.";
+			LOG_ERROR << "[mappedRawDataPtr2_] Caught an unknown exception.";
 		}
 	}
 #endif
@@ -606,12 +606,12 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_DOUBLE_BUFFER
 		if (evenIter) {
-			if (writeBufferEvent() != nullptr) writeBufferEvent.wait();
+			if (writeBufferEvent()) writeBufferEvent.wait();
 		} else {
-			if (writeBufferEvent2() != nullptr) writeBufferEvent2.wait();
+			if (writeBufferEvent2()) writeBufferEvent2.wait();
 		}
 #else
-		if (writeBufferEvent() != nullptr) writeBufferEvent.wait();
+		if (writeBufferEvent()) writeBufferEvent.wait();
 #endif
 		Timer delayStoreTimer;
 
@@ -676,7 +676,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 				cl::NullRange, /* offset range / must be null */
 				cl::NDRange(rawDataN2_, rawDataN1_), /* global range, defines the total number of work-items */
 				cl::NDRange(OCL_TRANSPOSE_GROUP_SIZE_DIM_0, OCL_TRANSPOSE_GROUP_SIZE_DIM_0), /* local range, defines the number of work-items in a work-group */
-				0 /* events */, &kernelEvent);
+				nullptr /* events */, &kernelEvent);
 			//kernelEvent.wait();
 			LOG_DEBUG << "OCL TRANSPOSE " << transpTimer.getTime(); // useful only with kernelEvent.wait()
 #endif
@@ -689,7 +689,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 				cl::NullRange, /* offset range / must be null */
 				cl::NDRange(kernel1GlobalSize), /* global range, defines the total number of work-items */
 				cl::NDRange(OCL_WORK_ITEMS_PER_GROUP), /* local range, defines the number of work-items in a work-group */
-				0 /* events */, &kernelEvent);
+				nullptr /* events */, &kernelEvent);
 			//kernelEvent.wait();
 			LOG_DEBUG << "OCL PROC " << procTimer.getTime(); // useful only with kernelEvent.wait()
 
