@@ -67,7 +67,7 @@
 // Faster.
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE 1
 
-#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS "-cl-std=CL1.2 -DNUM_RX_ELEM=32"
+#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS "-cl-std=CL1.2"
 
 
 
@@ -76,7 +76,8 @@ namespace Lab {
 // The grid must be rectangular.
 // Requirements:
 // - Single precision
-// - numElements = 32
+//
+// Tested only with numElements = 32.
 template<typename TFloat>
 class VectorialCombinedTwoMediumImagingOCLProcessor {
 public:
@@ -276,8 +277,11 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 	clContext_ = cl::Context(chosenDevice, contextProp);
 	std::vector<std::string> kernelStrings = {getKernel()};
 	clProgram_ = cl::Program(clContext_, kernelStrings);
+	std::ostringstream progOpt;
+	progOpt << VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS <<
+			" -DNUM_RX_ELEM=" << config.numElements;
 	try {
-		clProgram_.build(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS);
+		clProgram_.build(progOpt.str().c_str());
 	} catch (...) {
 		std::ostringstream msg;
 		msg << "Error during OpenCL kernel compilation:\n";
