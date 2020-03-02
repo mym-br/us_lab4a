@@ -56,6 +56,15 @@
 
 namespace Lab {
 
+// Camacho, J.
+// Cruza, J. F.
+// Brizuela, J.
+// Fritsch, C.
+// Automatic dynamic depth focusing for NDT.
+// IEEE Transactions on Ultrasonics, Ferroelectrics, and Frequency Control,
+// vol. 61, no. 4, pp. 673-684, 2014.
+// DOI: 10.1109/TUFFC.2014.2955
+//
 // x = 0 is at the center of the element group.
 // y = 0
 // z = 0 is at the surface of the array.
