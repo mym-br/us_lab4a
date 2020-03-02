@@ -19,7 +19,7 @@
 
 #include <cmath>
 
-#if USE_SIMD
+#ifdef USE_SIMD
 # include "SIMD.h"
 #endif
 
@@ -43,7 +43,7 @@ template<typename TFloat>
 TFloat
 distance2D(TFloat x0, TFloat y0, TFloat x1, TFloat y1)
 {
-#if USE_SIMD
+#ifdef USE_SIMD
 	return SIMD::calcDistance(x0, y0, x1, y1);
 #else
 	const TFloat dx = x1 - x0;
@@ -56,7 +56,7 @@ template<typename TFloat>
 TFloat
 distance2DY0(TFloat x0, TFloat x1, TFloat y1)
 {
-#if USE_SIMD
+#ifdef USE_SIMD
 	return SIMD::calcDistance(x0, TFloat(0), x1, y1);
 #else
 	const TFloat dx = x1 - x0;

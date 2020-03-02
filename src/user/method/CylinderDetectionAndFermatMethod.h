@@ -63,7 +63,7 @@
 #include "XZComplexValue.h"
 #include "XZComplexValueFactor.h"
 #include "XZValueFactor.h"
-#if USE_OPENCL
+#ifdef USE_OPENCL
 # include "VectorialCombinedTwoMediumImagingOCLProcessor.h"
 #endif
 
@@ -131,7 +131,7 @@ private:
 	void fitCircle();
 	void execTwoMediumImaging();
 	void execCombinedTwoMediumImaging3();
-#if USE_OPENCL
+#ifdef USE_OPENCL
 	void execCombinedTwoMediumImagingOCL();
 #endif
 	void measureSpeed1();
@@ -2383,7 +2383,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_3_sp:
 		execCombinedTwoMediumImaging3();
 		break;
-#if USE_OPENCL
+#ifdef USE_OPENCL
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp:
 		execCombinedTwoMediumImagingOCL();
 		break;
