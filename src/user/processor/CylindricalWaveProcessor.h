@@ -131,7 +131,7 @@ CylindricalWaveProcessor<TFloat>::CylindricalWaveProcessor(
 		, coherenceFactor_(coherenceFactor)
 		, signalLength_()
 {
-	// This acquisition is done to obtain the ascan length.
+	// This acquisition is done to obtain the signal length.
 	acquisition_.prepare(0);
 	acquisition_.execute(0, acqData_);
 	const std::size_t origSignalLength = acqData_.n2();

@@ -100,7 +100,7 @@ TwoMediumSTAProcessor<TFloat>::TwoMediumSTAProcessor(
 	signalOffset_ = (config_.samplingFrequency * UPSAMPLING_FACTOR) * peakOffset / config_.centerFrequency;
 	LOG_DEBUG << "signalOffset_=" << signalOffset_;
 
-	// This acquisition is done to obtain the ascan length.
+	// This acquisition is done to obtain the signal length.
 	acquisition_.prepare(0);
 	acquisition_.execute(0, acqData_);
 	const std::size_t signalLength = acqData_.n2() * UPSAMPLING_FACTOR;

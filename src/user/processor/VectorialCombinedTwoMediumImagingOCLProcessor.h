@@ -93,7 +93,7 @@ public:
 			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
 			TFloat maxFermatBlockSize,
 			TFloat peakOffset,
-			unsigned int ascanStartOffset);
+			unsigned int signalStartOffset);
 	~VectorialCombinedTwoMediumImagingOCLProcessor();
 
 	void process(
@@ -191,7 +191,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
 			TFloat maxFermatBlockSize,
 			TFloat peakOffset,
-			unsigned int ascanStartOffset)
+			unsigned int signalStartOffset)
 		: config_(config)
 		, acqDataList_(acqDataList)
 		, upsamplingFactor_(upsamplingFactor)
@@ -209,10 +209,10 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 		THROW_EXCEPTION(InvalidParameterException, "Only single precision is supported.");
 	}
 
-	const std::size_t ascanLength = acqDataList_[0].n2();
+	const std::size_t origSignalLength = acqDataList_[0].n2();
 
-	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * (peakOffset / config_.centerFrequency) - ascanStartOffset * upsamplingFactor_;
-	signalLength_ = ascanLength * upsamplingFactor_;
+	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * (peakOffset / config_.centerFrequency) - signalStartOffset * upsamplingFactor_;
+	signalLength_ = origSignalLength * upsamplingFactor_;
 	LOG_DEBUG << "signalOffset_: " << signalOffset_ << " signalLength_: " << signalLength_;
 
 	PrepareDataThreadData prepareDataThreadData;

@@ -81,7 +81,7 @@ public:
 			CoherenceFactorProcessor<TFloat>& coherenceFactor,
 #endif
 			const std::vector<TFloat>& refPulse,
-			unsigned int ascanStartOffset);
+			unsigned int signalStartOffset);
 
 	~CrossCorrArcCylindricalWaveProcessor() = default;
 
@@ -185,7 +185,7 @@ CrossCorrArcCylindricalWaveProcessor<TFloat>::CrossCorrArcCylindricalWaveProcess
 			CoherenceFactorProcessor<TFloat>& coherenceFactor,
 #endif
 			const std::vector<TFloat>& refPulse,
-			unsigned int ascanStartOffset)
+			unsigned int signalStartOffset)
 		: config_(config)
 		, acqDataList_(acqDataList)
 		, upsamplingFactor_(upsamplingFactor)
@@ -241,8 +241,8 @@ CrossCorrArcCylindricalWaveProcessor<TFloat>::CrossCorrArcCylindricalWaveProcess
 	}
 	centerRevRefPulseFilter_.setCoefficients(centerRevRefPulse);
 
-	signalOffset_ = (revRefPulse.size() - 1.0) - static_cast<TFloat>(ascanStartOffset) * upsamplingFactor_; // cross-correlation using convolution (revRefPulseFilter_)
-	centerSignalOffset_ = (centerRevRefPulse.size() - 1.0) - static_cast<TFloat>(ascanStartOffset) * highUpsamplingFactor_;
+	signalOffset_ = (revRefPulse.size() - 1.0) - static_cast<TFloat>(signalStartOffset) * upsamplingFactor_; // cross-correlation using convolution (revRefPulseFilter_)
+	centerSignalOffset_ = (centerRevRefPulse.size() - 1.0) - static_cast<TFloat>(signalStartOffset) * highUpsamplingFactor_;
 
 	const unsigned int numActiveRxElements = lastRxElem_ - firstRxElem_ + 1;
 #ifdef CROSS_CORR_ARC_CYLINDRICAL_WAVE_PROCESSOR_USE_ANALYTIC_SIGNAL_FOR_ANGLE

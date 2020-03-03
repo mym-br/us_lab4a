@@ -113,7 +113,7 @@ CrossCorrelationSTAProcessor<TFloat>::CrossCorrelationSTAProcessor(
 		THROW_EXCEPTION(InvalidParameterException, "The vector refPulse is empty.");
 	}
 
-	// This acquisition is done to obtain the ascan length.
+	// This acquisition is done to obtain the signal length.
 	acquisition_.execute(0, acqData_);
 	const std::size_t origSignalLength = acqData_.n2();
 

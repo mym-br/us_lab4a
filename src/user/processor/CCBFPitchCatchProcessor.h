@@ -83,7 +83,7 @@ public:
 #else
 			TFloat peakOffset,
 #endif
-			unsigned int ascanStartOffset);
+			unsigned int signalStartOffset);
 
 	~CCBFPitchCatchProcessor() = default;
 
@@ -143,7 +143,7 @@ CCBFPitchCatchProcessor<TFloat>::CCBFPitchCatchProcessor(
 #else
 			TFloat peakOffset,
 #endif
-			unsigned int ascanStartOffset)
+			unsigned int signalStartOffset)
 		: config_(config)
 		, acqDataList_(acqDataList)
 		, upsamplingFactor_(upsamplingFactor)
@@ -174,11 +174,11 @@ CCBFPitchCatchProcessor<TFloat>::CCBFPitchCatchProcessor(
 		std::reverse_copy(refPulse.begin(), refPulse.end(), revRefPulse.begin());
 	}
 
-	signalOffset_ = (revRefPulse.size() - 1.0) - static_cast<TFloat>(ascanStartOffset) * upsamplingFactor_; // cross-correlation using convolution (revRefPulseFilter_)
+	signalOffset_ = (revRefPulse.size() - 1.0) - static_cast<TFloat>(signalStartOffset) * upsamplingFactor_; // cross-correlation using convolution (revRefPulseFilter_)
 
 	LOG_DEBUG << "signalOffset_: " << signalOffset_ << " origSignalLength: " << origSignalLength << " signalLength: " << signalLength;
 #else
-	signalOffset_ = ((config_.samplingFrequency * upsamplingFactor_) * peakOffset / config_.centerFrequency) - static_cast<TFloat>(ascanStartOffset) * upsamplingFactor_;
+	signalOffset_ = ((config_.samplingFrequency * upsamplingFactor_) * peakOffset / config_.centerFrequency) - static_cast<TFloat>(signalStartOffset) * upsamplingFactor_;
 
 	LOG_DEBUG << "signalOffset_: " << signalOffset_ << " origSignalLength: " << origSignalLength;
 #endif

@@ -113,7 +113,7 @@ private:
 	CylinderDetectionAndFermatMethod(CylinderDetectionAndFermatMethod&&) = delete;
 	CylinderDetectionAndFermatMethod& operator=(CylinderDetectionAndFermatMethod&&) = delete;
 
-	void acquireAscans();
+	void acquireSignals();
 	// Detects points using the peaks in STA images.
 	void detectPoints();
 	// Detects points using the peaks in STA images. The images are formed using sums of analytic signals.
@@ -146,7 +146,7 @@ private:
 
 template<typename TFloat>
 void
-CylinderDetectionAndFermatMethod<TFloat>::acquireAscans()
+CylinderDetectionAndFermatMethod<TFloat>::acquireSignals()
 {
 	const ParamMapPtr methodPM = project_.getSubParamMap("method_config_file");
 	const STAConfiguration<TFloat> config(*project_.getSubParamMap("main_config_file"));
@@ -717,25 +717,25 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCCBFPitchCatch()
 		std::make_unique<SavedSTAAcquisition<TFloat>>(project_, config.numElements, savedAcqDir + '/');
 	typename STAAcquisition<TFloat>::AcquisitionDataType acqData;
 
-	// This acquisition is done to obtain the ascan length.
+	// This acquisition is done to obtain the signal length.
 	acquisition->prepare(baseElemList[0]);
 	acquisition->execute(txElem, acqData);
-	const unsigned int origAscanLength = acqData.n2();
-	const unsigned int requestedAscanLength = static_cast<unsigned int>(config.acquisitionTime * config.samplingFrequency + 0.5f); // rounds
-	const unsigned int ascanLength = std::min(origAscanLength, requestedAscanLength);
-	const unsigned int ascanStartOffset = static_cast<unsigned int>(config.samplingFrequency * (config.deadZoneM * 2.0f) / config.propagationSpeed + 0.5f); // rounds
-	if (ascanStartOffset >= ascanLength - 1) {
-		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: ascanStartOffset (" << ascanStartOffset <<
-							") >= ascanLength (" << ascanLength << ").");
+	const unsigned int origSignalLength = acqData.n2();
+	const unsigned int requestedSignalLength = static_cast<unsigned int>(config.acquisitionTime * config.samplingFrequency + 0.5f); // rounds
+	const unsigned int signalLength = std::min(origSignalLength, requestedSignalLength);
+	const unsigned int signalStartOffset = static_cast<unsigned int>(config.samplingFrequency * (config.deadZoneM * 2.0f) / config.propagationSpeed + 0.5f); // rounds
+	if (signalStartOffset >= signalLength - 1) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: signalStartOffset (" << signalStartOffset <<
+							") >= signalLength (" << signalLength << ").");
 	}
-	LOG_DEBUG << "origAscanLength: " << origAscanLength << " requestedAscanLength: " << requestedAscanLength <<
-			" ascanLength: " << ascanLength << " ascanStartOffset: " << ascanStartOffset;
+	LOG_DEBUG << "origSignalLength: " << origSignalLength << " requestedSignalLength: " << requestedSignalLength <<
+			" signalLength: " << signalLength << " signalStartOffset: " << signalStartOffset;
 
 	std::vector<std::pair<TFloat, TFloat>> pointPositionList; // x, z
 	pointPositionList.reserve(baseElemList.size() * (numActiveRxElements - 1));
 
 	// Store the acquisition data in memory.
-	Tensor3<TFloat> acqDataList(numBaseElemSteps, numActiveRxElements, ascanLength - ascanStartOffset);
+	Tensor3<TFloat> acqDataList(numBaseElemSteps, numActiveRxElements, signalLength - signalStartOffset);
 	for (unsigned int baseElemIdx = 0; baseElemIdx < baseElemList.size(); ++baseElemIdx) {
 		const unsigned int baseElement = baseElemList[baseElemIdx];
 		acquisition->prepare(baseElement);
@@ -744,8 +744,8 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCCBFPitchCatch()
 			auto srcRange = acqData.range2(rxElem);
 			auto destRange = acqDataList.range3(baseElemIdx, rxElem - firstRxElem);
 			std::copy(
-				srcRange.begin() + ascanStartOffset,
-				srcRange.end() - (origAscanLength - ascanLength),
+				srcRange.begin() + signalStartOffset,
+				srcRange.end() - (origSignalLength - signalLength),
 				destRange.begin());
 		}
 	}
@@ -765,7 +765,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCCBFPitchCatch()
 #else
 			peakOffset,
 #endif
-			ascanStartOffset);
+			signalStartOffset);
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tProcess;
@@ -853,22 +853,22 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsInArcs()
 		std::make_unique<SavedSTAAcquisition<TFloat>>(project_, config.numElements, savedAcqDir + '/');
 	typename STAAcquisition<TFloat>::AcquisitionDataType acqData;
 
-	// This acquisition is done to obtain the ascan length.
+	// This acquisition is done to obtain the signal length.
 	acquisition->prepare(baseElemList[0]);
 	acquisition->execute(txElem, acqData);
-	const unsigned int origAscanLength = acqData.n2();
-	const unsigned int requestedAscanlLength = static_cast<unsigned int>(config.acquisitionTime * config.samplingFrequency + 0.5f); // rounds
-	const unsigned int ascanLength = std::min(origAscanLength, requestedAscanlLength);
-	const unsigned int ascanStartOffset = static_cast<unsigned int>(config.samplingFrequency * (config.deadZoneM * 2.0f) / config.propagationSpeed + 0.5f); // rounds
-	if (ascanStartOffset >= ascanLength - 1) {
-		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: ascanStartOffset (" << ascanStartOffset <<
-							") >= ascanLength (" << ascanLength << ").");
+	const unsigned int origSignalLength = acqData.n2();
+	const unsigned int requestedSignalLength = static_cast<unsigned int>(config.acquisitionTime * config.samplingFrequency + 0.5f); // rounds
+	const unsigned int signalLength = std::min(origSignalLength, requestedSignalLength);
+	const unsigned int signalStartOffset = static_cast<unsigned int>(config.samplingFrequency * (config.deadZoneM * 2.0f) / config.propagationSpeed + 0.5f); // rounds
+	if (signalStartOffset >= signalLength - 1) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: signalStartOffset (" << signalStartOffset <<
+							") >= signalLength (" << signalLength << ").");
 	}
-	LOG_DEBUG << "origAscanLength: " << origAscanLength << " requestedAscanlLength: " << requestedAscanlLength <<
-			" ascanLength: " << ascanLength << " ascanStartOffset: " << ascanStartOffset;
+	LOG_DEBUG << "origSignalLength: " << origSignalLength << " requestedSignalLength: " << requestedSignalLength <<
+			" signalLength: " << signalLength << " signalStartOffset: " << signalStartOffset;
 
 	// Store the acquisition data in memory.
-	Tensor3<TFloat> acqDataList(numBaseElemSteps, numActiveRxElements, ascanLength - ascanStartOffset);
+	Tensor3<TFloat> acqDataList(numBaseElemSteps, numActiveRxElements, signalLength - signalStartOffset);
 	for (unsigned int baseElemIdx = 0; baseElemIdx < baseElemList.size(); ++baseElemIdx) {
 		const unsigned int baseElement = baseElemList[baseElemIdx];
 		acquisition->prepare(baseElement);
@@ -877,8 +877,8 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsInArcs()
 			auto srcRange = acqData.range2(rxElem);
 			auto destRange = acqDataList.range3(baseElemIdx, rxElem - firstRxElem);
 			std::copy(
-				srcRange.begin() + ascanStartOffset,
-				srcRange.end() - (origAscanLength - ascanLength),
+				srcRange.begin() + signalStartOffset,
+				srcRange.end() - (origSignalLength - signalLength),
 				destRange.begin());
 		}
 	}
@@ -897,7 +897,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsInArcs()
 			maxArcAngle,
 			coherenceFactor,
 			refPulse,
-			ascanStartOffset);
+			signalStartOffset);
 #else
 	auto p = std::make_unique<ArcCylindricalWaveProcessor<TFloat>>(
 			config,
@@ -912,7 +912,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsInArcs()
 			maxArcAngle,
 			coherenceFactor,
 			peakOffset,
-			ascanStartOffset);
+			signalStartOffset);
 #endif
 
 	std::vector<XZValueFactor<TFloat>> arcData;
@@ -1137,24 +1137,24 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingTangentCurveGeometry(
 		std::make_unique<SavedSTAAcquisition<TFloat>>(project_, config.numElements, savedAcqDir + '/');
 	typename STAAcquisition<TFloat>::AcquisitionDataType acqData;
 
-	// This acquisition is done to obtain the ascan length.
+	// This acquisition is done to obtain the signal length.
 	acquisition->prepare(baseElemList[0]);
 	acquisition->execute(txElem, acqData);
-	const unsigned int origAscanLength = acqData.n2();
-	const unsigned int requestedAscanLength = static_cast<unsigned int>(config.acquisitionTime * config.samplingFrequency + 0.5f); // rounds
-	const unsigned int ascanLength = std::min(origAscanLength, requestedAscanLength);
-	const unsigned int ascanStartOffset = static_cast<unsigned int>(config.samplingFrequency * (config.deadZoneM * 2.0f) / config.propagationSpeed + 0.5f); // rounds
-	if (ascanStartOffset >= ascanLength - 1) {
-		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: ascanStartOffset (" << ascanStartOffset <<
-							") >= ascanLength (" << ascanLength << ").");
+	const unsigned int origSignalLength = acqData.n2();
+	const unsigned int requestedSignalLength = static_cast<unsigned int>(config.acquisitionTime * config.samplingFrequency + 0.5f); // rounds
+	const unsigned int signalLength = std::min(origSignalLength, requestedSignalLength);
+	const unsigned int signalStartOffset = static_cast<unsigned int>(config.samplingFrequency * (config.deadZoneM * 2.0f) / config.propagationSpeed + 0.5f); // rounds
+	if (signalStartOffset >= signalLength - 1) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: signalStartOffset (" << signalStartOffset <<
+							") >= signalLength (" << signalLength << ").");
 	}
-	LOG_DEBUG << "origAscanLength: " << origAscanLength << " requestedAscanLength: " << requestedAscanLength <<
-			" ascanLength: " << ascanLength << " ascanStartOffset: " << ascanStartOffset;
+	LOG_DEBUG << "origSignalLength: " << origSignalLength << " requestedSignalLength: " << requestedSignalLength <<
+			" signalLength: " << signalLength << " signalStartOffset: " << signalStartOffset;
 
 	std::vector<std::pair<TFloat, TFloat>> pointPositionList; // x, z
 
 	// Store the acquisition data in memory.
-	Tensor3<TFloat> acqDataList(numBaseElemSteps, numActiveRxElements, ascanLength - ascanStartOffset);
+	Tensor3<TFloat> acqDataList(numBaseElemSteps, numActiveRxElements, signalLength - signalStartOffset);
 	for (unsigned int baseElemIdx = 0; baseElemIdx < baseElemList.size(); ++baseElemIdx) {
 		const unsigned int baseElement = baseElemList[baseElemIdx];
 		acquisition->prepare(baseElement);
@@ -1163,8 +1163,8 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingTangentCurveGeometry(
 			auto srcRange = acqData.range2(rxElem);
 			auto destRange = acqDataList.range3(baseElemIdx, rxElem - firstRxElem);
 			std::copy(
-				srcRange.begin() + ascanStartOffset,
-				srcRange.end() - (origAscanLength - ascanLength),
+				srcRange.begin() + signalStartOffset,
+				srcRange.end() - (origSignalLength - signalLength),
 				destRange.begin());
 		}
 	}
@@ -1185,7 +1185,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingTangentCurveGeometry(
 #else
 			peakOffset,
 #endif
-			ascanStartOffset);
+			signalStartOffset);
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tProcess;
@@ -1519,24 +1519,24 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging()
 		std::make_unique<SavedSTAAcquisition<TFloat>>(project_, config.numElements, savedAcqDir + '/');
 	typename STAAcquisition<TFloat>::AcquisitionDataType acqData;
 
-	// This acquisition is done to obtain the ascan length.
+	// This acquisition is done to obtain the signal length.
 	acquisition->prepare(baseElemList[0]);
 	acquisition->execute(txElem, acqData);
-	const unsigned int origAscanLength = acqData.n2();
-	const unsigned int requestedAscanlLength = static_cast<unsigned int>(config.acquisitionTime * config.samplingFrequency + 0.5f); // rounds
-	const unsigned int ascanLength = std::min(origAscanLength, requestedAscanlLength);
-	const unsigned int ascanStartOffset = static_cast<unsigned int>(config.samplingFrequency * (config.deadZoneM * 2.0f) / config.propagationSpeed1 + 0.5f); // rounds
-	if (ascanStartOffset >= ascanLength - 1) {
-		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: ascanStartOffset (" << ascanStartOffset <<
-							") >= ascanLength (" << ascanLength << ").");
+	const unsigned int origSignalLength = acqData.n2();
+	const unsigned int requestedSignalLength = static_cast<unsigned int>(config.acquisitionTime * config.samplingFrequency + 0.5f); // rounds
+	const unsigned int signalLength = std::min(origSignalLength, requestedSignalLength);
+	const unsigned int signalStartOffset = static_cast<unsigned int>(config.samplingFrequency * (config.deadZoneM * 2.0f) / config.propagationSpeed1 + 0.5f); // rounds
+	if (signalStartOffset >= signalLength - 1) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: signalStartOffset (" << signalStartOffset <<
+							") >= signalLength (" << signalLength << ").");
 	}
-	LOG_DEBUG << "origAscanLength: " << origAscanLength << " requestedAscanlLength: " << requestedAscanlLength <<
-			" ascanLength: " << ascanLength << " ascanStartOffset: " << ascanStartOffset;
+	LOG_DEBUG << "origSignalLength: " << origSignalLength << " requestedSignalLength: " << requestedSignalLength <<
+			" signalLength: " << signalLength << " signalStartOffset: " << signalStartOffset;
 
 	// Store the acquisition data in memory.
 	std::vector<Tensor3<TFloat>> acqDataList(numBaseElemSteps);
 	for (auto& d : acqDataList) {
-		d.resize(numActiveTxElements, config.numElements, ascanLength - ascanStartOffset);
+		d.resize(numActiveTxElements, config.numElements, signalLength - signalStartOffset);
 	}
 	for (const auto& stepConfig : stepConfigList) {
 		acquisition->prepare(stepConfig.baseElem);
@@ -1546,8 +1546,8 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging()
 				auto srcRange = acqData.range2(rxElem);
 				auto destRange = acqDataList[stepConfig.baseElemIdx].range3(txElem - stepConfig.firstTxElem, rxElem);
 				std::copy(
-					srcRange.begin() + ascanStartOffset,
-					srcRange.end() - (origAscanLength - ascanLength),
+					srcRange.begin() + signalStartOffset,
+					srcRange.end() - (origSignalLength - signalLength),
 					destRange.begin());
 			}
 		}
@@ -1560,7 +1560,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging()
 			coherenceFactor,
 			maxFermatBlockSize,
 			peakOffset,
-			ascanStartOffset);
+			signalStartOffset);
 
 	std::vector<TFloat> interfaceAngleList;
 	std::vector<XZ<TFloat>> interfacePointList;
@@ -1725,24 +1725,24 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 		std::make_unique<SavedSTAAcquisition<TFloat>>(project_, config.numElements, savedAcqDir + '/');
 	typename STAAcquisition<TFloat>::AcquisitionDataType acqData;
 
-	// This acquisition is done to obtain the ascan length.
+	// This acquisition is done to obtain the signal length.
 	acquisition->prepare(baseElemList[0]);
 	acquisition->execute(txElem, acqData);
-	const unsigned int origAscanLength = acqData.n2();
-	const unsigned int requestedAscanlLength = static_cast<unsigned int>(config.acquisitionTime * config.samplingFrequency + 0.5f); // rounds
-	const unsigned int ascanLength = std::min(origAscanLength, requestedAscanlLength);
-	const unsigned int ascanStartOffset = static_cast<unsigned int>(config.samplingFrequency * (config.deadZoneM * 2.0f) / config.propagationSpeed1 + 0.5f); // rounds
-	if (ascanStartOffset >= ascanLength - 1) {
-		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: ascanStartOffset (" << ascanStartOffset <<
-							") >= ascanLength (" << ascanLength << ").");
+	const unsigned int origSignalLength = acqData.n2();
+	const unsigned int requestedSignalLength = static_cast<unsigned int>(config.acquisitionTime * config.samplingFrequency + 0.5f); // rounds
+	const unsigned int signalLength = std::min(origSignalLength, requestedSignalLength);
+	const unsigned int signalStartOffset = static_cast<unsigned int>(config.samplingFrequency * (config.deadZoneM * 2.0f) / config.propagationSpeed1 + 0.5f); // rounds
+	if (signalStartOffset >= signalLength - 1) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid dead zone: signalStartOffset (" << signalStartOffset <<
+							") >= signalLength (" << signalLength << ").");
 	}
-	LOG_DEBUG << "origAscanLength: " << origAscanLength << " requestedAscanlLength: " << requestedAscanlLength <<
-			" ascanLength: " << ascanLength << " ascanStartOffset: " << ascanStartOffset;
+	LOG_DEBUG << "origSignalLength: " << origSignalLength << " requestedSignalLength: " << requestedSignalLength <<
+			" signalLength: " << signalLength << " signalStartOffset: " << signalStartOffset;
 
 	// Store the acquisition data in memory.
 	std::vector<Matrix<TFloat>> acqDataList(numBaseElemSteps);
 	for (auto& d : acqDataList) {
-		d.resize(config.numElements, ascanLength - ascanStartOffset);
+		d.resize(config.numElements, signalLength - signalStartOffset);
 	}
 	for (const auto& stepConfig : stepConfigList) {
 		const unsigned int txElem = stepConfig.txElem;
@@ -1752,8 +1752,8 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 			auto srcRange = acqData.range2(rxElem);
 			auto destRange = acqDataList[stepConfig.baseElemIdx].range2(rxElem);
 			std::copy(
-				srcRange.begin() + ascanStartOffset,
-				srcRange.end() - (origAscanLength - ascanLength),
+				srcRange.begin() + signalStartOffset,
+				srcRange.end() - (origSignalLength - signalLength),
 				destRange.begin());
 		}
 	}
@@ -1765,7 +1765,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 			coherenceFactor,
 			maxFermatBlockSize,
 			peakOffset,
-			ascanStartOffset);
+			signalStartOffset);
 
 	std::vector<TFloat> interfaceAngleList;
 	std::vector<XZ<TFloat>> interfacePointList;
@@ -2345,7 +2345,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 	case MethodEnum::cylinder_detection_and_fermat_acquisition_simulated_sp:
 	case MethodEnum::cylinder_detection_and_fermat_acquisition_network_dp:
 	case MethodEnum::cylinder_detection_and_fermat_acquisition_network_sp:
-		acquireAscans();
+		acquireSignals();
 		break;
 	case MethodEnum::cylinder_detection_and_fermat_point_detection_dp:
 	case MethodEnum::cylinder_detection_and_fermat_point_detection_sp:

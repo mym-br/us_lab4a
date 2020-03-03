@@ -79,7 +79,7 @@ public:
 			CoherenceFactorProcessor<TFloat>& coherenceFactor,
 #endif
 			TFloat peakOffset,
-			unsigned int ascanStartOffset);
+			unsigned int signalStartOffset);
 
 	~ArcCylindricalWaveProcessor() = default;
 
@@ -170,7 +170,7 @@ ArcCylindricalWaveProcessor<TFloat>::ArcCylindricalWaveProcessor(
 			CoherenceFactorProcessor<TFloat>& coherenceFactor,
 #endif
 			TFloat peakOffset,
-			unsigned int ascanStartOffset)
+			unsigned int signalStartOffset)
 		: config_(config)
 		, acqDataList_(acqDataList)
 		, upsamplingFactor_(upsamplingFactor)
@@ -203,8 +203,8 @@ ArcCylindricalWaveProcessor<TFloat>::ArcCylindricalWaveProcessor(
 
 	prepareDataThreadData.tempSignal1.resize(origSignalLength * upsamplingFactor_);
 
-	signalOffset_ = ((config.samplingFrequency * upsamplingFactor_) * peakOffset / config.centerFrequency) - static_cast<TFloat>(ascanStartOffset) * upsamplingFactor_;
-	centerSignalOffset_ = ((config.samplingFrequency * highUpsamplingFactor_) * peakOffset / config.centerFrequency) - static_cast<TFloat>(ascanStartOffset) * highUpsamplingFactor_;
+	signalOffset_ = ((config.samplingFrequency * upsamplingFactor_) * peakOffset / config.centerFrequency) - static_cast<TFloat>(signalStartOffset) * upsamplingFactor_;
+	centerSignalOffset_ = ((config.samplingFrequency * highUpsamplingFactor_) * peakOffset / config.centerFrequency) - static_cast<TFloat>(signalStartOffset) * highUpsamplingFactor_;
 
 	const unsigned int numActiveRxElements = lastRxElem_ - firstRxElem_ + 1;
 #ifdef ARC_CYLINDRICAL_WAVE_PROCESSOR_USE_ANALYTIC_SIGNAL_FOR_ANGLE

@@ -83,7 +83,7 @@ public:
 #endif
 			TFloat maxFermatBlockSize,
 			TFloat peakOffset,
-			unsigned int ascanStartOffset);
+			unsigned int signalStartOffset);
 	~VectorialCombinedTwoMediumImagingProcessor() = default;
 
 	// In stepConfigList, only two cases are allowed.
@@ -176,7 +176,7 @@ VectorialCombinedTwoMediumImagingProcessor<TFloat>::VectorialCombinedTwoMediumIm
 #endif
 			TFloat maxFermatBlockSize,
 			TFloat peakOffset,
-			unsigned int ascanStartOffset)
+			unsigned int signalStartOffset)
 		: config_(config)
 		, acqDataList_(acqDataList)
 		, upsamplingFactor_(upsamplingFactor)
@@ -184,10 +184,10 @@ VectorialCombinedTwoMediumImagingProcessor<TFloat>::VectorialCombinedTwoMediumIm
 		, maxFermatBlockSize_(maxFermatBlockSize)
 		, lambda2_(config_.propagationSpeed2 / config_.centerFrequency)
 {
-	const std::size_t ascanLength = acqDataList_[0].n3();
+	const std::size_t origSignalLength = acqDataList_[0].n3();
 
-	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * (peakOffset / config_.centerFrequency) - ascanStartOffset * upsamplingFactor_;
-	signalLength_ = ascanLength * upsamplingFactor_;
+	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * (peakOffset / config_.centerFrequency) - signalStartOffset * upsamplingFactor_;
+	signalLength_ = origSignalLength * upsamplingFactor_;
 	LOG_DEBUG << "signalOffset_: " << signalOffset_ << " signalLength_: " << signalLength_;
 
 	PrepareDataThreadData prepareDataThreadData;
