@@ -58,20 +58,19 @@
 // 1.0 --> pi radian / sample at the original sampling rate.
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_UPSAMP_FILTER_HALF_TRANSITION_WIDTH (0.2)
 
-// 1: single buffer (slowest)
-// 2: double buffer (fastest)
-// 3: triple buffer (middle)
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS 2
-
-// Faster.
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE 1
-
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS "-cl-std=CL1.2"
 
 
 
 namespace Lab {
 
+// Without PCF, this class is slower than VectorialCombinedTwoMediumImagingProcessor,
+// using a Core i5-3470. With PCF, this class is faster.
+//
+// Uses OpenCL in part of the processing.
+//
 // The grid must be rectangular.
 // Requirements:
 // - Single precision
