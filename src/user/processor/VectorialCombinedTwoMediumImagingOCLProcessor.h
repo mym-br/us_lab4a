@@ -127,11 +127,6 @@ private:
 
 	struct ProcessColumnWithOneTxElem;
 
-	struct ProcessColumn2ThreadData {
-		AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor;
-		std::vector<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>> rxSignalSumList;
-	};
-
 	VectorialCombinedTwoMediumImagingOCLProcessor(const VectorialCombinedTwoMediumImagingOCLProcessor&) = delete;
 	VectorialCombinedTwoMediumImagingOCLProcessor& operator=(const VectorialCombinedTwoMediumImagingOCLProcessor&) = delete;
 	VectorialCombinedTwoMediumImagingOCLProcessor(VectorialCombinedTwoMediumImagingOCLProcessor&&) = delete;
@@ -162,7 +157,6 @@ private:
 	unsigned int rawDataN2_;
 	std::size_t rawDataSizeInBytes_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
-	std::unique_ptr<tbb::enumerable_thread_specific<ProcessColumn2ThreadData>> processColumn2TLS_;
 	bool clDataInitialized_;
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> gridValueRe_;
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> gridValueIm_;
@@ -220,10 +214,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 	}
 	prepareDataThreadData.signal.resize(signalLength_);
 	prepareDataTLS_ = std::make_unique<tbb::enumerable_thread_specific<PrepareDataThreadData>>(prepareDataThreadData);
-
-	ProcessColumn2ThreadData processColumn2ThreadData;
-	processColumn2ThreadData.coherenceFactor = coherenceFactor_;
-	processColumn2TLS_ = std::make_unique<tbb::enumerable_thread_specific<ProcessColumn2ThreadData>>(processColumn2ThreadData);
 
 	std::vector<cl::Platform> platforms;
 	cl::Platform::get(&platforms);
