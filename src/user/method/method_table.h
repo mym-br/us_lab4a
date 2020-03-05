@@ -25,8 +25,16 @@ METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_ferm
 # define OCL_METHOD_TABLE
 #endif
 
+#ifdef USE_CUDA
+# define CUDA_METHOD_TABLE \
+METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_cuda_sp)
+#else
+# define CUDA_METHOD_TABLE
+#endif
+
 #define METHOD_TABLE \
 OCL_METHOD_TABLE \
+CUDA_METHOD_TABLE \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<double>, cylinder_detection_and_fermat_acquisition_simulated_dp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<double>, cylinder_detection_and_fermat_acquisition_network_dp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<double>, cylinder_detection_and_fermat_point_detection_dp) \

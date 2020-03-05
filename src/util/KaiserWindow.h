@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "Exception.h"
+#include "Math.h"
 #include "Util.h"
 
 
@@ -82,12 +83,12 @@ getWindow(unsigned int size, TFloat beta, std::vector<TFloat>& window)
 	window.resize(size);
 
 	const TFloat c1 = 2 / static_cast<TFloat>(size - 1U);
-	const TFloat c2 = 1 / std::cyl_bessel_i(0, beta);
+	const TFloat c2 = 1 / Math::cyl_bessel_i(0, beta);
 	for (unsigned int n = 0; n < size; ++n) {
 		const TFloat k = c1 * n - 1;
 		TFloat x = 1 - k * k;
 		if (x < 0.0) x = 0.0;
-		window[n] = c2 * std::cyl_bessel_i(0, beta * std::sqrt(x));
+		window[n] = c2 * Math::cyl_bessel_i(0, beta * std::sqrt(x));
 	}
 }
 

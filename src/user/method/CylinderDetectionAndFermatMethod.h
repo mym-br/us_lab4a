@@ -23,6 +23,7 @@
 #include <cstddef> /* std::size_t */
 #include <iomanip> /* setprecision */
 #include <sstream>
+#include <type_traits> /* is_same */
 #include <utility> /* make_pair, pair */
 #include <vector>
 
@@ -65,6 +66,9 @@
 #include "XZValueFactor.h"
 #ifdef USE_OPENCL
 # include "VectorialCombinedTwoMediumImagingOCLProcessor.h"
+#endif
+#ifdef USE_CUDA
+# include "VectorialCombinedTwoMediumImagingCUDAProcessor.h"
 #endif
 
 #define CYL_DETECT_AND_FERMAT_METHOD_SCF_LOW_PASS_LAMBDAS 2.0
@@ -131,9 +135,8 @@ private:
 	void fitCircle();
 	void execTwoMediumImaging();
 	void execCombinedTwoMediumImaging();
-#ifdef USE_OPENCL
-	void execCombinedTwoMediumImagingOCL();
-#endif
+	template<typename Proc> void execCombinedTwoMediumImagingCyl();
+
 	void measureSpeed1();
 	void measureSpeed1AndDistanceError();
 	void measureSpeed1AndDistanceError2();
@@ -1660,19 +1663,19 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging()
 				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_INVERTED_GRAY);
 }
 
-#ifdef USE_OPENCL
 template<typename TFloat>
+template<typename Proc>
 void
-CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
+CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingCyl()
 {
 	const ParamMapPtr methodPM = project_.getSubParamMap("method_config_file");
 	const TwoMediumSTAConfiguration<TFloat> config(*project_.getSubParamMap("main_config_file"));
 	const auto savedAcqDir        = methodPM->value<std::string>( "saved_acquisition_dir");
 	const auto outputDir          = methodPM->value<std::string>( "output_dir");
-# ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
+#ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
 	const auto imageDir           = methodPM->value<std::string>( "image_dir");
 	project_.createDirectory(imageDir, false);
-# endif
+#endif
 	const auto rxApodFile         = methodPM->value<std::string>( "rx_apod_file");
 	const auto normalizationMinZ  = methodPM->value<TFloat>(      "normalization_min_z"  , -500.0e-3, 500.0e-3);
 
@@ -1710,15 +1713,11 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 	std::vector<unsigned int> baseElemList;
 	Util::fillSequenceFromStartToEndWithSize(baseElemList, 0U, config.numElementsMux - config.numElements, numBaseElemSteps);
 
-	std::vector<typename VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::StepConfiguration> stepConfigList;
-	if (project_.method() == MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp) {
-		for (unsigned int i = 0; i < baseElemList.size(); ++i) {
-			typename VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::StepConfiguration conf{i, baseElemList[i], txElem};
-			stepConfigList.push_back(conf);
-			LOG_DEBUG << "Step config: " << conf.baseElem << ' ' << conf.txElem;
-		}
-	} else {
-		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
+	std::vector<typename Proc::StepConfiguration> stepConfigList;
+	for (unsigned int i = 0; i < baseElemList.size(); ++i) {
+		typename Proc::StepConfiguration conf{i, baseElemList[i], txElem};
+		stepConfigList.push_back(conf);
+		LOG_DEBUG << "Step config: " << conf.baseElem << ' ' << conf.txElem;
 	}
 
 	std::unique_ptr<STAAcquisition<TFloat>> acquisition =
@@ -1758,7 +1757,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 		}
 	}
 
-	auto p = std::make_unique<VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>>(
+	auto p = std::make_unique<Proc>(
 			config,
 			acqDataList,
 			upsamplingFactor,
@@ -1770,7 +1769,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 	std::vector<TFloat> interfaceAngleList;
 	std::vector<XZ<TFloat>> interfacePointList;
 
-# ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tProcess;
 	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
 	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
@@ -1782,7 +1781,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 		p->tProcessColumn.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
 	}
 	Timer procTimer;
-# endif
+#endif
 
 	Util::fillSequenceFromStartToEndWithMaximumStep(
 		interfaceAngleList,
@@ -1824,7 +1823,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 		}
 	}
 
-# ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tProcess.put(procTimer.getTime());
 	}
 
@@ -1842,21 +1841,20 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingOCL()
 	}
 	out << "]";
 	LOG_INFO << out.str();
-# endif
+#endif
 
-# ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
+#ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
 	LOG_DEBUG << "Saving the final raw image...";
 	project_.saveHDF5(gridData, imageDir + "/final_raw_image", "image", Util::CopyAbsValueOp());
 	LOG_DEBUG << "Saving the X coordinates...";
 	project_.saveHDF5(gridData, imageDir + "/final_image_x", "x", Util::CopyXOp());
 	LOG_DEBUG << "Saving the Z coordinates...";
 	project_.saveHDF5(gridData, imageDir + "/final_image_z", "z", Util::CopyZOp());
-# endif
+#endif
 
 	project_.showFigure3D(1, "Raw", &gridData, &interfacePointList,
 				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_INVERTED_GRAY);
 }
-#endif
 
 template<typename TFloat>
 void
@@ -2393,7 +2391,20 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 		break;
 #ifdef USE_OPENCL
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp:
-		execCombinedTwoMediumImagingOCL();
+		if constexpr (std::is_same<TFloat, float>::value) {
+			execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>>();
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+		break;
+#endif
+#ifdef USE_CUDA
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_cuda_sp:
+		if constexpr (std::is_same<TFloat, float>::value) {
+			execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingCUDAProcessor>();
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
 		break;
 #endif
 	case MethodEnum::cylinder_detection_and_fermat_speed_1_measurement:

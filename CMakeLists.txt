@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
-project(us_lab4a)
+project(us_lab4a LANGUAGES C CXX CUDA)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -29,6 +29,7 @@ option(USE_OPENCL "Use OpenCL." OFF)
 set(OPENCL_LIB "/usr/lib/libOpenCL.so" CACHE FILEPATH "OpenCL library path." )
 set(OPENCL_PLATFORM 0 CACHE STRING "OpenCL plataform index." )
 set(OPENCL_DEVICE 0 CACHE STRING "OpenCL device index." )
+option(USE_CUDA "Use CUDA." OFF)
 option(USE_EXECUTION_TIME_MEASUREMENT "Use execution time measurement." OFF)
 
 if(USE_SIMD)
@@ -42,12 +43,15 @@ if(USE_OPENCL)
     )
     add_compile_definitions(
         USE_OPENCL
+    )
+    set(OPENCL_TARGET_DEFS
         CL_HPP_ENABLE_EXCEPTIONS
         CL_HPP_MINIMUM_OPENCL_VERSION=120
         CL_HPP_TARGET_OPENCL_VERSION=120
         CL_HPP_CL_1_2_DEFAULT_BUILD
         OPENCL_PLATFORM=${OPENCL_PLATFORM}
-        OPENCL_DEVICE=${OPENCL_DEVICE})
+        OPENCL_DEVICE=${OPENCL_DEVICE}
+    )
 endif()
 
 if(USE_EXECUTION_TIME_MEASUREMENT)
@@ -130,6 +134,8 @@ set(us_lab4a_SRC
     src/util/Log.h
     src/util/LogSyntaxHighlighter.cpp
     src/util/LogSyntaxHighlighter.h
+    src/util/Math.cpp
+    src/util/Math.h
     src/util/Matrix.h
     src/util/MeasurementList.h
     src/util/OGL.h
@@ -246,7 +252,34 @@ set(us_lab4a_SRC
     ${OPENCL_SRC}
 )
 
+if(USE_CUDA)
+    add_compile_definitions(
+        USE_CUDA
+    )
+    add_library(usercuda STATIC
+        src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.cu
+        src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.h
+        src/util/CUDAUtil.h
+    )
+    set(USER_CUDA_LIB usercuda)
+    target_include_directories(usercuda PRIVATE
+        src/fft
+        src/util
+        src/user/configuration
+        ${Qt5Core_INCLUDE_DIRS}
+        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    )
+    set_target_properties(usercuda PROPERTIES
+        CUDA_SEPARABLE_COMPILATION ON
+        POSITION_INDEPENDENT_CODE ON)
+    target_compile_features(usercuda PUBLIC cxx_std_14)
+    #target_compile_options(usercuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-arch compute_75 -code sm_75 --optimize 0 --compiler-options=-mavx>)
+    target_compile_options(usercuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-arch compute_75 -code sm_75 --compiler-options=-mavx,-O3>)
+endif()
+
 add_executable(us_lab4a ${us_lab4a_SRC})
+
+target_compile_definitions(us_lab4a PRIVATE ${OPENCL_TARGET_DEFS})
 
 target_include_directories(us_lab4a PRIVATE
     src
@@ -289,4 +322,5 @@ target_link_libraries(us_lab4a
     pthread
 
     ${OPENCL_LIB_VAR}
+    ${USER_CUDA_LIB}
 )
