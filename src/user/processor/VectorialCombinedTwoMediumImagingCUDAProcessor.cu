@@ -68,8 +68,8 @@ void
 transposeKernel(
 		float* rawData,
 		float* rawDataT,
-		unsigned int oldSizeX,
-		unsigned int oldSizeY)
+		int oldSizeX,
+		int oldSizeY)
 {
 	// sharedArray: TRANSP_BLOCK_SIZE * TRANSP_BLOCK_SIZE
 
@@ -472,15 +472,15 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::~VectorialCombinedTwoMediumImagi
 	if (data_) {
 		LOG_DEBUG << "~VectorialCombinedTwoMediumImagingCUDAProcessor";
 		try {
-			exec(cudaFree(data_->gridValueIm));
-			exec(cudaFree(data_->gridValueRe));
+			exec(cudaFreeHost(data_->gridValueIm));
+			exec(cudaFreeHost(data_->gridValueRe));
 #ifdef USE_TRANSPOSE
-			exec(cudaFree(data_->rawDataT));
+			exec(cudaFreeHost(data_->rawDataT));
 #endif
 			for (auto p : data_->rawDataList) {
-				exec(cudaFree(p));
+				exec(cudaFreeHost(p));
 			}
-			exec(cudaFree(data_->rxApod));
+			exec(cudaFreeHost(data_->rxApod));
 		} catch (std::exception& e) {
 			LOG_ERROR << "[~VectorialCombinedTwoMediumImagingCUDAProcessor] Error: " << e.what();
 		} catch (...) {
@@ -584,15 +584,15 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	rawDataSizeInBytes_ = rawDataN1_ * rawDataN2_ * sizeof(MFloat);
 
 	if (!data_->cudaDataInitialized) {
-		exec(cudaMallocManaged(&data_->rxApod, Util::sizeInBytes(rxApod)));
+		exec(cudaHostAlloc(&data_->rxApod, Util::sizeInBytes(rxApod), cudaHostAllocMapped));
 		for (auto& p : data_->rawDataList) {
-			exec(cudaMallocManaged(&p, rawDataSizeInBytes_));
+			exec(cudaHostAlloc(&p, rawDataSizeInBytes_, cudaHostAllocMapped));
 		}
 #ifdef USE_TRANSPOSE
-		exec(cudaMallocManaged(&data_->rawDataT, rawDataSizeInBytes_));
+		exec(cudaHostAlloc(&data_->rawDataT, rawDataSizeInBytes_, cudaHostAllocMapped));
 #endif
-		exec(cudaMallocManaged(&data_->gridValueRe, numGridPoints * sizeof(MFloat)));
-		exec(cudaMallocManaged(&data_->gridValueIm, numGridPoints * sizeof(MFloat)));
+		exec(cudaHostAlloc(&data_->gridValueRe, numGridPoints * sizeof(MFloat), cudaHostAllocMapped));
+		exec(cudaHostAlloc(&data_->gridValueIm, numGridPoints * sizeof(MFloat), cudaHostAllocMapped));
 		data_->cudaDataInitialized = true;
 	}
 
