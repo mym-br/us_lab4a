@@ -41,6 +41,9 @@ namespace Lab {
 
 struct VectorialCombinedTwoMediumImagingCUDAProcessorData;
 
+// Without PCF, this class is slower than VectorialCombinedTwoMediumImagingProcessor,
+// using a Core i5-3470. With PCF, this class is faster.
+//
 // Uses CUDA in part of the processing.
 //
 // The grid must be rectangular.

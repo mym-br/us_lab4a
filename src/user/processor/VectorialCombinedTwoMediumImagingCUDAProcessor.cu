@@ -43,7 +43,7 @@
 #define UPSAMP_FILTER_HALF_TRANSITION_WIDTH (0.2)
 
 #define NUM_RAW_DATA_BUFFERS 2
-//#define USE_TRANSPOSE 1
+#define USE_TRANSPOSE 1
 
 #define BLOCK_SIZE 64
 
@@ -203,23 +203,29 @@ processImagePCFKernel(
 
 struct VectorialCombinedTwoMediumImagingCUDAProcessorData {
 	bool cudaDataInitialized;
-	MFloat* rxApod;
+	MFloat* rxApodDev;
 	std::vector<MFloat*> rawDataList;
+	std::vector<MFloat*> rawDataDevList;
 #ifdef USE_TRANSPOSE
-	MFloat* rawDataT;
+	MFloat* rawDataTDev;
 #endif
 	MFloat* gridValueRe;
+	MFloat* gridValueReDev;
 	MFloat* gridValueIm;
+	MFloat* gridValueImDev;
 
 	VectorialCombinedTwoMediumImagingCUDAProcessorData()
 		: cudaDataInitialized()
-		, rxApod()
+		, rxApodDev()
 		, rawDataList(NUM_RAW_DATA_BUFFERS)
+		, rawDataDevList(NUM_RAW_DATA_BUFFERS)
 #ifdef USE_TRANSPOSE
-		, rawDataT()
+		, rawDataTDev()
 #endif
 		, gridValueRe()
+		, gridValueReDev()
 		, gridValueIm()
+		, gridValueImDev()
 	{}
 };
 
@@ -472,15 +478,20 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::~VectorialCombinedTwoMediumImagi
 	if (data_) {
 		LOG_DEBUG << "~VectorialCombinedTwoMediumImagingCUDAProcessor";
 		try {
+			exec(cudaFree(data_->gridValueImDev));
 			exec(cudaFreeHost(data_->gridValueIm));
+			exec(cudaFree(data_->gridValueReDev));
 			exec(cudaFreeHost(data_->gridValueRe));
 #ifdef USE_TRANSPOSE
-			exec(cudaFreeHost(data_->rawDataT));
+			exec(cudaFree(data_->rawDataTDev));
 #endif
+			for (auto p : data_->rawDataDevList) {
+				exec(cudaFree(p));
+			}
 			for (auto p : data_->rawDataList) {
 				exec(cudaFreeHost(p));
 			}
-			exec(cudaFreeHost(data_->rxApod));
+			exec(cudaFree(data_->rxApodDev));
 		} catch (std::exception& e) {
 			LOG_ERROR << "[~VectorialCombinedTwoMediumImagingCUDAProcessor] Error: " << e.what();
 		} catch (...) {
@@ -584,28 +595,27 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	rawDataSizeInBytes_ = rawDataN1_ * rawDataN2_ * sizeof(MFloat);
 
 	if (!data_->cudaDataInitialized) {
-		exec(cudaHostAlloc(&data_->rxApod, Util::sizeInBytes(rxApod), cudaHostAllocMapped));
+		exec(cudaMalloc(&data_->rxApodDev, Util::sizeInBytes(rxApod)));
 		for (auto& p : data_->rawDataList) {
-			exec(cudaHostAlloc(&p, rawDataSizeInBytes_, cudaHostAllocMapped));
+			exec(cudaMallocHost(&p, rawDataSizeInBytes_));
+		}
+		for (auto& p : data_->rawDataDevList) {
+			exec(cudaMalloc(&p, rawDataSizeInBytes_));
 		}
 #ifdef USE_TRANSPOSE
-		exec(cudaHostAlloc(&data_->rawDataT, rawDataSizeInBytes_, cudaHostAllocMapped));
+		exec(cudaMalloc(&data_->rawDataTDev, rawDataSizeInBytes_));
 #endif
-		exec(cudaHostAlloc(&data_->gridValueRe, numGridPoints * sizeof(MFloat), cudaHostAllocMapped));
-		exec(cudaHostAlloc(&data_->gridValueIm, numGridPoints * sizeof(MFloat), cudaHostAllocMapped));
+		exec(cudaMallocHost(&data_->gridValueRe, numGridPoints * sizeof(MFloat)));
+		exec(cudaMalloc(&data_->gridValueReDev, numGridPoints * sizeof(MFloat)));
+		exec(cudaMallocHost(&data_->gridValueIm, numGridPoints * sizeof(MFloat)));
+		exec(cudaMalloc(&data_->gridValueImDev, numGridPoints * sizeof(MFloat)));
 		data_->cudaDataInitialized = true;
 	}
 
-	// Clear buffers.
-//	for (auto p : data_->rawDataList) {
-//		std::memset(p, 0, rawDataSizeInBytes_);
-//	}
-	std::memset(data_->gridValueRe, 0, numGridPoints * sizeof(MFloat));
-	std::memset(data_->gridValueIm, 0, numGridPoints * sizeof(MFloat));
-
-	for (std::size_t i = 0; i < rxApod.size(); ++i) {
-		data_->rxApod[i] = rxApod[i];
-	}
+	// Prepare buffers.
+	exec(cudaMemset(data_->gridValueReDev, 0, numGridPoints * sizeof(MFloat)));
+	exec(cudaMemset(data_->gridValueImDev, 0, numGridPoints * sizeof(MFloat)));
+	exec(cudaMemcpy(data_->rxApodDev, rxApod.data(), Util::sizeInBytes(rxApod), cudaMemcpyHostToDevice));
 
 	const MFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
 
@@ -715,6 +725,9 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		if (data_->rawDataList.size() > 1) {
 			exec(cudaDeviceSynchronize());
 		}
+
+		exec(cudaMemcpyAsync(data_->rawDataDevList[rawBufferIdx], data_->rawDataList[rawBufferIdx], rawDataSizeInBytes_, cudaMemcpyHostToDevice));
+
 #ifdef USE_TRANSPOSE
 		{
 			dim3 gridDim(rawDataN2_ / TRANSP_BLOCK_SIZE, rawDataN1_ / TRANSP_BLOCK_SIZE);
@@ -722,8 +735,8 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 			const unsigned int sharedMemSize = TRANSP_BLOCK_SIZE * TRANSP_BLOCK_SIZE * sizeof(MFloat);
 
 			transposeKernel<<<gridDim, blockDim, sharedMemSize>>>(
-							data_->rawDataList[rawBufferIdx],
-							data_->rawDataT,
+							data_->rawDataDevList[rawBufferIdx],
+							data_->rawDataTDev,
 							rawDataN2_,
 							rawDataN1_);
 			checkKernelLaunchError();
@@ -735,34 +748,35 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 
 			processImagePCFKernel<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
 #ifdef USE_TRANSPOSE
-							data_->rawDataT,
+							data_->rawDataTDev,
 							rawDataN1_,
 #else
-							data_->rawDataList[rawBufferIdx],
+							data_->rawDataDevList[rawBufferIdx],
 							rawDataN2_,
 #endif
-							data_->gridValueRe,
-							data_->gridValueIm,
-							data_->rxApod,
+							data_->gridValueReDev,
+							data_->gridValueImDev,
+							data_->rxApodDev,
 							cfConstants[2] /* factor */);
 			checkKernelLaunchError();
 		} else {
 			processImageKernel<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
 #ifdef USE_TRANSPOSE
-							data_->rawDataT,
+							data_->rawDataTDev,
 							rawDataN1_,
 #else
-							data_->rawDataList[rawBufferIdx],
+							data_->rawDataDevList[rawBufferIdx],
 							rawDataN2_,
 #endif
-							data_->gridValueRe,
-							data_->gridValueIm,
-							data_->rxApod);
+							data_->gridValueReDev,
+							data_->gridValueImDev,
+							data_->rxApodDev);
 			checkKernelLaunchError();
 		}
 	}
 
-	exec(cudaDeviceSynchronize());
+	exec(cudaMemcpy(data_->gridValueRe, data_->gridValueReDev, numGridPoints * sizeof(MFloat), cudaMemcpyDeviceToHost));
+	exec(cudaMemcpy(data_->gridValueIm, data_->gridValueImDev, numGridPoints * sizeof(MFloat), cudaMemcpyDeviceToHost));
 
 	//==================================================
 	// Read the formed image.
