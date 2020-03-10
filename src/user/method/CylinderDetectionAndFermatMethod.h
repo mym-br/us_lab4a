@@ -1432,14 +1432,14 @@ template<typename TFloat>
 void
 CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging()
 {
+#ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
+	const auto imageDir = project_.taskParamMap().value<std::string>("image_dir");
+	project_.createDirectory(imageDir, false);
+#endif
 	const ParamMapPtr methodPM = project_.getSubParamMap("method_config_file");
 	const TwoMediumSTAConfiguration<TFloat> config(*project_.getSubParamMap("main_config_file"));
 	const auto savedAcqDir        = methodPM->value<std::string>( "saved_acquisition_dir");
 	const auto outputDir          = methodPM->value<std::string>( "output_dir");
-#ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
-	const auto imageDir           = methodPM->value<std::string>( "image_dir");
-	project_.createDirectory(imageDir, false);
-#endif
 	const auto rxApodFile         = methodPM->value<std::string>( "rx_apod_file");
 	const auto normalizationMinZ  = methodPM->value<TFloat>(      "normalization_min_z"  , -500.0e-3, 500.0e-3);
 
@@ -1668,14 +1668,14 @@ template<typename Proc>
 void
 CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingCyl()
 {
+#ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
+	const auto imageDir = project_.taskParamMap().value<std::string>("image_dir");
+	project_.createDirectory(imageDir, false);
+#endif
 	const ParamMapPtr methodPM = project_.getSubParamMap("method_config_file");
 	const TwoMediumSTAConfiguration<TFloat> config(*project_.getSubParamMap("main_config_file"));
 	const auto savedAcqDir        = methodPM->value<std::string>( "saved_acquisition_dir");
 	const auto outputDir          = methodPM->value<std::string>( "output_dir");
-#ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
-	const auto imageDir           = methodPM->value<std::string>( "image_dir");
-	project_.createDirectory(imageDir, false);
-#endif
 	const auto rxApodFile         = methodPM->value<std::string>( "rx_apod_file");
 	const auto normalizationMinZ  = methodPM->value<TFloat>(      "normalization_min_z"  , -500.0e-3, 500.0e-3);
 
