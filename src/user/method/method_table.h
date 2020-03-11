@@ -27,7 +27,8 @@ METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_ferm
 
 #ifdef USE_CUDA
 # define CUDA_METHOD_TABLE \
-METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_cuda_sp)
+METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_cuda_sp) \
+METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_cuda_2_sp)
 #else
 # define CUDA_METHOD_TABLE
 #endif

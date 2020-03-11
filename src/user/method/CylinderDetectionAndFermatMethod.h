@@ -69,6 +69,7 @@
 #endif
 #ifdef USE_CUDA
 # include "VectorialCombinedTwoMediumImagingCUDAProcessor.h"
+# include "VectorialCombinedTwoMediumImagingCUDAProcessor2.h"
 #endif
 
 #define CYL_DETECT_AND_FERMAT_METHOD_SCF_LOW_PASS_LAMBDAS 2.0
@@ -2402,6 +2403,13 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_cuda_sp:
 		if constexpr (std::is_same<TFloat, float>::value) {
 			execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingCUDAProcessor>();
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+		break;
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_cuda_2_sp:
+		if constexpr (std::is_same<TFloat, float>::value) {
+			execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingCUDAProcessor2>();
 		} else {
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}

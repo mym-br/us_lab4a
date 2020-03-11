@@ -259,6 +259,8 @@ if(USE_CUDA)
     add_library(usercuda STATIC
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.cu
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.h
+        src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.cu
+        src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.h
         src/util/CUDAUtil.h
     )
     set(USER_CUDA_LIB usercuda)
