@@ -61,8 +61,6 @@ namespace Lab {
 #define TRANSP_BLOCK_SIZE 16
 #define NUM_RX_ELEM 32
 
-extern __shared__ float sharedArray[];
-
 // Defined in VectorialCombinedTwoMediumImagingCUDAProcessor.cu.
 extern __global__ void transposeKernel(float* rawData, float* rawDataT, int oldSizeX, int oldSizeY);
 extern __global__ void processImageKernel(float* rawData, int numGridPoints, float* gridValueRe,
@@ -603,9 +601,8 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 		{
 			dim3 gridDim(rawDataN2_ / TRANSP_BLOCK_SIZE, rawDataN1_ / TRANSP_BLOCK_SIZE);
 			dim3 blockDim(TRANSP_BLOCK_SIZE, TRANSP_BLOCK_SIZE);
-			const unsigned int sharedMemSize = TRANSP_BLOCK_SIZE * TRANSP_BLOCK_SIZE * sizeof(MFloat);
 
-			transposeKernel<<<gridDim, blockDim, sharedMemSize>>>(
+			transposeKernel<<<gridDim, blockDim>>>(
 							data_->rawDataDevList[rawBufferIdx],
 							data_->rawDataTDev,
 							rawDataN2_,
