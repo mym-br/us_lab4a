@@ -525,7 +525,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		transpKernel.setArg(1, rawDataTCLBuffer_);
 		transpKernel.setArg(2, rawDataN2_);
 		transpKernel.setArg(3, rawDataN1_);
-		transpKernel.setArg(4, cl::Local(OCL_TRANSPOSE_GROUP_SIZE_DIM_0 * OCL_TRANSPOSE_GROUP_SIZE_DIM_0 * sizeof(TFloat)));
+		transpKernel.setArg(4, cl::Local(OCL_TRANSPOSE_GROUP_SIZE_DIM_0 * (OCL_TRANSPOSE_GROUP_SIZE_DIM_0 + 1) * sizeof(TFloat)));
 #endif
 		procImageKernel = cl::Kernel(clProgram_, coherenceFactor_.enabled() ? "processImagePCFKernel" : "processImageKernel");
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
@@ -882,8 +882,8 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::getKernel() const
 
 #define GROUP_SIZE 16
 
-// NVIDIA sm_12:
-//   - Local (shared) memory has 16 banks.
+// NVIDIA sm_50 or newer:
+//   - Local (shared) memory has 32 banks of 32 bits.
 __kernel
 void
 transposeKernel(
@@ -891,12 +891,12 @@ transposeKernel(
 		__global float* rawDataT,
 		unsigned int oldSizeX,
 		unsigned int oldSizeY,
-		__local float* temp) // GROUP_SIZE * GROUP_SIZE
+		__local float* temp) // GROUP_SIZE * (GROUP_SIZE + 1) -- +1 to avoid bank conflicts
 {
 	unsigned int iX = get_global_id(0);
 	unsigned int iY = get_global_id(1);
 	if (iX < oldSizeX && iY < oldSizeY) {
-		temp[get_local_id(0) + GROUP_SIZE * get_local_id(1)] = rawData[iX + oldSizeX * iY];
+		temp[get_local_id(0) + (GROUP_SIZE + 1) * get_local_id(1)] = rawData[iX + oldSizeX * iY];
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -904,7 +904,7 @@ transposeKernel(
 	iX = get_group_id(1) * GROUP_SIZE + get_local_id(0);
 	iY = get_group_id(0) * GROUP_SIZE + get_local_id(1);
 	if (iX < oldSizeY && iY < oldSizeX) {
-		rawDataT[iX + oldSizeY * iY] = temp[GROUP_SIZE * get_local_id(0) + get_local_id(1)];
+		rawDataT[iX + oldSizeY * iY] = temp[(GROUP_SIZE + 1) * get_local_id(0) + get_local_id(1)];
 	}
 }
 
