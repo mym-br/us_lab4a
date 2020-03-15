@@ -55,8 +55,8 @@
 
 namespace Lab {
 
-// NVIDIA sm_12:
-//   - Local (shared) memory has 16 banks.
+// NVIDIA sm_50 or newer:
+//   - Shared memory has 32 banks of 32 bits.
 
 #define TRANSP_BLOCK_SIZE 16
 #define NUM_RX_ELEM 32
@@ -69,13 +69,13 @@ transposeKernel(
 		int oldSizeX,
 		int oldSizeY)
 {
-	__shared__ float sharedArray[TRANSP_BLOCK_SIZE * TRANSP_BLOCK_SIZE];
+	__shared__ float temp[TRANSP_BLOCK_SIZE][TRANSP_BLOCK_SIZE + 1]; // +1 to avoid bank conflicts
 
 	int iX = blockIdx.x * blockDim.x + threadIdx.x;
 	int iY = blockIdx.y * blockDim.y + threadIdx.y;
 
 	if (iX < oldSizeX && iY < oldSizeY) {
-		sharedArray[threadIdx.x + TRANSP_BLOCK_SIZE * threadIdx.y] = rawData[iX + oldSizeX * iY];
+		temp[threadIdx.y][threadIdx.x] = rawData[iX + oldSizeX * iY];
 	}
 
 	__syncthreads();
@@ -83,7 +83,7 @@ transposeKernel(
 	iX = blockIdx.y * TRANSP_BLOCK_SIZE + threadIdx.x;
 	iY = blockIdx.x * TRANSP_BLOCK_SIZE + threadIdx.y;
 	if (iX < oldSizeY && iY < oldSizeX) {
-		rawDataT[iX + oldSizeY * iY] = sharedArray[TRANSP_BLOCK_SIZE * threadIdx.x + threadIdx.y];
+		rawDataT[iX + oldSizeY * iY] = temp[threadIdx.x][threadIdx.y];
 	}
 }
 

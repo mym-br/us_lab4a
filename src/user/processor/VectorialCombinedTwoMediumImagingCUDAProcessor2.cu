@@ -55,8 +55,8 @@
 
 namespace Lab {
 
-// NVIDIA sm_12:
-//   - Local (shared) memory has 16 banks.
+// NVIDIA sm_50 or newer:
+//   - Shared memory has 32 banks of 32 bits.
 
 #define TRANSP_BLOCK_SIZE 16
 #define NUM_RX_ELEM 32
