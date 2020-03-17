@@ -119,7 +119,7 @@ private:
 	Tensor3<float, tbb::cache_aligned_allocator<float>> delayTensor_;
 	unsigned int rawDataN1_;
 	unsigned int rawDataN2_;
-	std::size_t rawDataSizeInBytes_;
+	std::size_t rawDataSize_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData<float>>> prepareDataTLS_;
 	std::unique_ptr<VectorialCombinedTwoMediumImagingCUDAProcessorData> data_;
 };

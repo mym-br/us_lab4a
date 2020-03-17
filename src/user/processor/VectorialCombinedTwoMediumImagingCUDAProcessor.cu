@@ -201,29 +201,17 @@ processImagePCFKernel(
 
 struct VectorialCombinedTwoMediumImagingCUDAProcessorData {
 	bool cudaDataInitialized;
-	MFloat* rxApodDev;
-	std::vector<MFloat*> rawDataList;
-	std::vector<MFloat*> rawDataDevList;
+	CUDADevMem<MFloat> rxApod;
+	std::vector<CUDAHostDevMem<MFloat>> rawDataList;
 #ifdef USE_TRANSPOSE
-	MFloat* rawDataTDev;
+	CUDADevMem<MFloat> rawDataT;
 #endif
-	MFloat* gridValueRe;
-	MFloat* gridValueReDev;
-	MFloat* gridValueIm;
-	MFloat* gridValueImDev;
+	CUDAHostDevMem<MFloat> gridValueRe;
+	CUDAHostDevMem<MFloat> gridValueIm;
 
 	VectorialCombinedTwoMediumImagingCUDAProcessorData()
 		: cudaDataInitialized()
-		, rxApodDev()
 		, rawDataList(NUM_RAW_DATA_BUFFERS)
-		, rawDataDevList(NUM_RAW_DATA_BUFFERS)
-#ifdef USE_TRANSPOSE
-		, rawDataTDev()
-#endif
-		, gridValueRe()
-		, gridValueReDev()
-		, gridValueIm()
-		, gridValueImDev()
 	{}
 };
 
@@ -440,7 +428,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::VectorialCombinedTwoMediumImagin
 		, lambda2_(config_.propagationSpeed2 / config_.centerFrequency)
 		, rawDataN1_()
 		, rawDataN2_()
-		, rawDataSizeInBytes_()
+		, rawDataSize_()
 {
 	if (NUM_RAW_DATA_BUFFERS < 1) {
 		THROW_EXCEPTION(InvalidValueException, "The number of raw data buffers must be >= 1.");
@@ -471,31 +459,9 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::VectorialCombinedTwoMediumImagin
 	}
 }
 
+// This destructor can't be inline.
 VectorialCombinedTwoMediumImagingCUDAProcessor::~VectorialCombinedTwoMediumImagingCUDAProcessor()
 {
-	if (data_) {
-		LOG_DEBUG << "~VectorialCombinedTwoMediumImagingCUDAProcessor";
-		try {
-			exec(cudaFree(data_->gridValueImDev));
-			exec(cudaFreeHost(data_->gridValueIm));
-			exec(cudaFree(data_->gridValueReDev));
-			exec(cudaFreeHost(data_->gridValueRe));
-#ifdef USE_TRANSPOSE
-			exec(cudaFree(data_->rawDataTDev));
-#endif
-			for (auto p : data_->rawDataDevList) {
-				exec(cudaFree(p));
-			}
-			for (auto p : data_->rawDataList) {
-				exec(cudaFreeHost(p));
-			}
-			exec(cudaFree(data_->rxApodDev));
-		} catch (std::exception& e) {
-			LOG_ERROR << "[~VectorialCombinedTwoMediumImagingCUDAProcessor] Error: " << e.what();
-		} catch (...) {
-			LOG_ERROR << "[~VectorialCombinedTwoMediumImagingCUDAProcessor] Caught an unknown exception.";
-		}
-	}
 }
 
 void
@@ -590,30 +556,26 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	rawDataN1_ = 2 * config_.numElements /* real, imag */;
 	rawDataN2_ = numGridPoints;
 #endif
-	rawDataSizeInBytes_ = rawDataN1_ * rawDataN2_ * sizeof(MFloat);
+	rawDataSize_ = rawDataN1_ * rawDataN2_;
 
 	if (!data_->cudaDataInitialized) {
-		exec(cudaMalloc(&data_->rxApodDev, Util::sizeInBytes(rxApod)));
-		for (auto& p : data_->rawDataList) {
-			exec(cudaMallocHost(&p, rawDataSizeInBytes_));
-		}
-		for (auto& p : data_->rawDataDevList) {
-			exec(cudaMalloc(&p, rawDataSizeInBytes_));
+		data_->rxApod = CUDADevMem<MFloat>(rxApod.size());
+		for (auto& m : data_->rawDataList) {
+			m = CUDAHostDevMem<MFloat>(rawDataSize_);
 		}
 #ifdef USE_TRANSPOSE
-		exec(cudaMalloc(&data_->rawDataTDev, rawDataSizeInBytes_));
+		data_->rawDataT = CUDADevMem<MFloat>(rawDataSize_);
 #endif
-		exec(cudaMallocHost(&data_->gridValueRe, numGridPoints * sizeof(MFloat)));
-		exec(cudaMalloc(&data_->gridValueReDev, numGridPoints * sizeof(MFloat)));
-		exec(cudaMallocHost(&data_->gridValueIm, numGridPoints * sizeof(MFloat)));
-		exec(cudaMalloc(&data_->gridValueImDev, numGridPoints * sizeof(MFloat)));
+		data_->gridValueRe = CUDAHostDevMem<MFloat>(numGridPoints);
+		data_->gridValueIm = CUDAHostDevMem<MFloat>(numGridPoints);
+
 		data_->cudaDataInitialized = true;
 	}
 
 	// Prepare buffers.
-	exec(cudaMemset(data_->gridValueReDev, 0, numGridPoints * sizeof(MFloat)));
-	exec(cudaMemset(data_->gridValueImDev, 0, numGridPoints * sizeof(MFloat)));
-	exec(cudaMemcpy(data_->rxApodDev, rxApod.data(), Util::sizeInBytes(rxApod), cudaMemcpyHostToDevice));
+	exec(cudaMemset(data_->gridValueRe.devPtr, 0, data_->gridValueRe.sizeInBytes));
+	exec(cudaMemset(data_->gridValueIm.devPtr, 0, data_->gridValueIm.sizeInBytes));
+	exec(cudaMemcpy(data_->rxApod.devPtr, rxApod.data(), Util::sizeInBytes(rxApod), cudaMemcpyHostToDevice));
 
 	const MFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
 
@@ -711,7 +673,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 			minRowIdx_,
 			firstGridPointIdx_,
 			delayTensor_,
-			data_->rawDataList[rawBufferIdx],
+			data_->rawDataList[rawBufferIdx].hostPtr,
 			rawDataN2_,
 		};
 
@@ -724,7 +686,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 			exec(cudaDeviceSynchronize());
 		}
 
-		exec(cudaMemcpyAsync(data_->rawDataDevList[rawBufferIdx], data_->rawDataList[rawBufferIdx], rawDataSizeInBytes_, cudaMemcpyHostToDevice));
+		exec(data_->rawDataList[rawBufferIdx].copyHostToDeviceAsync());
 
 #ifdef USE_TRANSPOSE
 		{
@@ -732,8 +694,8 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 			dim3 blockDim(TRANSP_BLOCK_SIZE, TRANSP_BLOCK_SIZE);
 
 			transposeKernel<<<gridDim, blockDim>>>(
-							data_->rawDataDevList[rawBufferIdx],
-							data_->rawDataTDev,
+							data_->rawDataList[rawBufferIdx].devPtr,
+							data_->rawDataT.devPtr,
 							rawDataN2_,
 							rawDataN1_);
 			checkKernelLaunchError();
@@ -745,35 +707,35 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 
 			processImagePCFKernel<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
 #ifdef USE_TRANSPOSE
-							data_->rawDataTDev,
+							data_->rawDataT.devPtr,
 							rawDataN1_,
 #else
-							data_->rawDataDevList[rawBufferIdx],
+							data_->rawDataList[rawBufferIdx].devPtr,
 							rawDataN2_,
 #endif
-							data_->gridValueReDev,
-							data_->gridValueImDev,
-							data_->rxApodDev,
+							data_->gridValueRe.devPtr,
+							data_->gridValueIm.devPtr,
+							data_->rxApod.devPtr,
 							cfConstants[2] /* factor */);
 			checkKernelLaunchError();
 		} else {
 			processImageKernel<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
 #ifdef USE_TRANSPOSE
-							data_->rawDataTDev,
+							data_->rawDataT.devPtr,
 							rawDataN1_,
 #else
-							data_->rawDataDevList[rawBufferIdx],
+							data_->rawDataList[rawBufferIdx].devPtr,
 							rawDataN2_,
 #endif
-							data_->gridValueReDev,
-							data_->gridValueImDev,
-							data_->rxApodDev);
+							data_->gridValueRe.devPtr,
+							data_->gridValueIm.devPtr,
+							data_->rxApod.devPtr);
 			checkKernelLaunchError();
 		}
 	}
 
-	exec(cudaMemcpy(data_->gridValueRe, data_->gridValueReDev, numGridPoints * sizeof(MFloat), cudaMemcpyDeviceToHost));
-	exec(cudaMemcpy(data_->gridValueIm, data_->gridValueImDev, numGridPoints * sizeof(MFloat), cudaMemcpyDeviceToHost));
+	exec(data_->gridValueRe.copyDeviceToHost());
+	exec(data_->gridValueIm.copyDeviceToHost());
 
 	//==================================================
 	// Read the formed image.
@@ -785,8 +747,8 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		unsigned int gridPointIdx = firstGridPointIdx_[col];
 		for (unsigned int row = minRowIdx_[col]; row < gridXZ.n2(); ++row, ++gridPointIdx) {
 			gridValue(col, row) = std::complex<MFloat>(
-							data_->gridValueRe[gridPointIdx],
-							data_->gridValueIm[gridPointIdx]);
+							data_->gridValueRe.hostPtr[gridPointIdx],
+							data_->gridValueIm.hostPtr[gridPointIdx]);
 		}
 	}
 
