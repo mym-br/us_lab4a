@@ -23,6 +23,7 @@
 #include <complex>
 #include <cstddef> /* std::size_t */
 #include <cstring> /* memset */
+#include <iostream>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -289,7 +290,6 @@ template<typename TFloat>
 VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::~VectorialCombinedTwoMediumImagingOCLProcessor()
 {
 	if (clCommandQueue_()) {
-		LOG_DEBUG << "~VectorialCombinedTwoMediumImagingOCLProcessor: enqueueUnmapMemObject";
 		try {
 			for (unsigned int i = 0; i < pinnedRawDataCLBufferList_.size(); ++i) {
 				if (pinnedRawDataCLBufferList_[i]() && mappedRawDataPtrList_[i]) {
@@ -302,9 +302,9 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::~VectorialCombinedTwoMedi
 				}
 			}
 		} catch (cl::Error& e) {
-			LOG_ERROR << "[~VectorialCombinedTwoMediumImagingOCLProcessor: Unmap mappedRawDataPtrList_] Error: " << e.what();
+			std::cerr << "[~VectorialCombinedTwoMediumImagingOCLProcessor: Unmap mappedRawDataPtrList_] Error: " << e.what() << std::endl;
 		} catch (...) {
-			LOG_ERROR << "[~VectorialCombinedTwoMediumImagingOCLProcessor: Unmap mappedRawDataPtrList_] Caught an unknown exception.";
+			std::cerr << "[~VectorialCombinedTwoMediumImagingOCLProcessor: Unmap mappedRawDataPtrList_] Caught an unknown exception." << std::endl;
 		}
 	}
 }

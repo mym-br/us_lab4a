@@ -141,7 +141,6 @@ template<typename TFloat>
 void
 FFTWFilter<TFloat>::clean()
 {
-//	LOG_DEBUG << "FFTWFilter::clean()";
 	{
 		FFTW fftw;
 		fftw.destroy_plan(ifftPlan_);
