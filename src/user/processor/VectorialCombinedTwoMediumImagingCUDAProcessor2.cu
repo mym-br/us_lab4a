@@ -63,10 +63,72 @@ namespace Lab {
 
 // Defined in VectorialCombinedTwoMediumImagingCUDAProcessor.cu.
 extern __global__ void transposeKernel(float* rawData, float* rawDataT, int oldSizeX, int oldSizeY);
-extern __global__ void processImageKernel(float* rawData, int numGridPoints, float* gridValueRe,
-						float* gridValueIm, float* rxApod);
-extern __global__ void processImagePCFKernel(float* rawData, int numGridPoints, float* gridValueRe,
-						float* gridValueIm, float* rxApod, float pcfFactor);
+extern __device__ float calcPCF(float* re, float* im, float factor);
+
+__global__
+void
+processImageKernel2(
+		float* rawData,
+		int numGridPoints,
+		float (*gridValue)[2],
+		float* rxApod)
+{
+	float rxSignalListRe[NUM_RX_ELEM];
+	float rxSignalListIm[NUM_RX_ELEM];
+
+	const int point = blockIdx.x * blockDim.x + threadIdx.x;
+	if (point >= numGridPoints) return;
+
+	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
+		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
+		//rxSignalListRe[i] = rawData[point * (NUM_RX_ELEM << 1) + (i << 1)];
+		//rxSignalListIm[i] = rawData[point * (NUM_RX_ELEM << 1) + ((i << 1) + 1)];
+	}
+
+	float sumRe = 0.0;
+	float sumIm = 0.0;
+	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+		sumRe += rxSignalListRe[i] * rxApod[i];
+		sumIm += rxSignalListIm[i] * rxApod[i];
+	}
+
+	gridValue[point][0] += sumRe;
+	gridValue[point][1] += sumIm;
+}
+
+__global__
+void
+processImagePCFKernel2(
+		float* rawData,
+		int numGridPoints,
+		float (*gridValue)[2],
+		float* rxApod,
+		float pcfFactor)
+{
+	float rxSignalListRe[NUM_RX_ELEM];
+	float rxSignalListIm[NUM_RX_ELEM];
+
+	const int point = blockIdx.x * blockDim.x + threadIdx.x;
+	if (point >= numGridPoints) return;
+
+	for (int i = 0; i < NUM_RX_ELEM; ++i) {
+		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
+		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
+	}
+
+	float pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor);
+
+	float sumRe = 0.0;
+	float sumIm = 0.0;
+	for (int i = 0; i < NUM_RX_ELEM; ++i) {
+		sumRe += rxSignalListRe[i] * rxApod[i];
+		sumIm += rxSignalListIm[i] * rxApod[i];
+	}
+
+	gridValue[point][0] += sumRe * pcf;
+	gridValue[point][1] += sumIm * pcf;
+}
 
 //=============================================================================
 
@@ -77,8 +139,7 @@ struct VectorialCombinedTwoMediumImagingCUDAProcessor2Data {
 #ifdef USE_TRANSPOSE
 	CUDADevMem<MFloat> rawDataT;
 #endif
-	CUDAHostDevMem<MFloat> gridValueRe;
-	CUDAHostDevMem<MFloat> gridValueIm;
+	CUDAHostDevMem<MFloat[2]> gridValue;
 
 	VectorialCombinedTwoMediumImagingCUDAProcessor2Data()
 		: cudaDataInitialized()
@@ -437,15 +498,13 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 #ifdef USE_TRANSPOSE
 		data_->rawDataT = CUDADevMem<MFloat>(rawDataSize_);
 #endif
-		data_->gridValueRe = CUDAHostDevMem<MFloat>(numGridPoints);
-		data_->gridValueIm = CUDAHostDevMem<MFloat>(numGridPoints);
+		data_->gridValue = CUDAHostDevMem<MFloat[2]>(numGridPoints);
 
 		data_->cudaDataInitialized = true;
 	}
 
 	// Prepare buffers.
-	exec(cudaMemset(data_->gridValueRe.devPtr, 0, data_->gridValueRe.sizeInBytes));
-	exec(cudaMemset(data_->gridValueIm.devPtr, 0, data_->gridValueIm.sizeInBytes));
+	exec(cudaMemset(data_->gridValue.devPtr, 0, data_->gridValue.sizeInBytes));
 	exec(cudaMemcpy(data_->rxApod.devPtr, rxApod.data(), Util::sizeInBytes(rxApod), cudaMemcpyHostToDevice));
 
 	const MFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
@@ -576,7 +635,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 			std::vector<MFloat> cfConstants;
 			coherenceFactor_.implementation().getConstants(cfConstants);
 
-			processImagePCFKernel<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
+			processImagePCFKernel2<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
 #ifdef USE_TRANSPOSE
 							data_->rawDataT.devPtr,
 							rawDataN1_,
@@ -584,13 +643,12 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 							data_->rawDataList[rawBufferIdx].devPtr,
 							rawDataN2_,
 #endif
-							data_->gridValueRe.devPtr,
-							data_->gridValueIm.devPtr,
+							data_->gridValue.devPtr,
 							data_->rxApod.devPtr,
 							cfConstants[2] /* factor */);
 			checkKernelLaunchError();
 		} else {
-			processImageKernel<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
+			processImageKernel2<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
 #ifdef USE_TRANSPOSE
 							data_->rawDataT.devPtr,
 							rawDataN1_,
@@ -598,15 +656,13 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 							data_->rawDataList[rawBufferIdx].devPtr,
 							rawDataN2_,
 #endif
-							data_->gridValueRe.devPtr,
-							data_->gridValueIm.devPtr,
+							data_->gridValue.devPtr,
 							data_->rxApod.devPtr);
 			checkKernelLaunchError();
 		}
 	}
 
-	exec(data_->gridValueRe.copyDeviceToHost());
-	exec(data_->gridValueIm.copyDeviceToHost());
+	exec(data_->gridValue.copyDeviceToHost());
 
 	//==================================================
 	// Read the formed image.
@@ -618,8 +674,8 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 		unsigned int gridPointIdx = firstGridPointIdx_[col];
 		for (unsigned int row = minRowIdx_[col]; row < gridXZ.n2(); ++row, ++gridPointIdx) {
 			gridValue(col, row) = std::complex<MFloat>(
-							data_->gridValueRe.hostPtr[gridPointIdx],
-							data_->gridValueIm.hostPtr[gridPointIdx]);
+							data_->gridValue.hostPtr[gridPointIdx][0],
+							data_->gridValue.hostPtr[gridPointIdx][1]);
 		}
 	}
 
