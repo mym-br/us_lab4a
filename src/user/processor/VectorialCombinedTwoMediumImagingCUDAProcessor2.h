@@ -98,11 +98,6 @@ private:
 	VectorialCombinedTwoMediumImagingCUDAProcessor2(VectorialCombinedTwoMediumImagingCUDAProcessor2&&) = delete;
 	VectorialCombinedTwoMediumImagingCUDAProcessor2& operator=(VectorialCombinedTwoMediumImagingCUDAProcessor2&&) = delete;
 
-	static std::size_t roundUpToMultipleOfGroupSize(std::size_t n, std::size_t groupSize) {
-		std::size_t numGroups = (n + (groupSize - 1)) / groupSize;
-		return numGroups * groupSize;
-	}
-
 	const TwoMediumSTAConfiguration<float>& config_;
 	std::vector<Matrix<float>>& acqDataList_;
 	unsigned int upsamplingFactor_;

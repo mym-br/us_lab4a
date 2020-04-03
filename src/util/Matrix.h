@@ -96,6 +96,8 @@ public:
 	SizeType size() const { return data_.size(); }
 	SizeType n1() const { return n1_; }
 	SizeType n2() const { return n2_; }
+	const ValueType* data() const { return data_.data(); }
+	ValueType* data() { return data_.data(); }
 
 	Reference operator()(SizeType i1, SizeType i2);
 	ConstReference operator()(SizeType i1, SizeType i2) const;

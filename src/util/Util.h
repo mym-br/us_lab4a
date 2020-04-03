@@ -32,6 +32,7 @@
 
 #include "Exception.h"
 #include "Matrix.h"
+#include "Tensor3.h"
 #include "XYZValue.h"
 #include "XYZValueArray.h"
 #include "XZValue.h"
@@ -148,6 +149,8 @@ unsigned int numberOfDigits(unsigned int value);
 template<typename Iterator> void applyFactorToValue(Iterator iter, Iterator iterEnd);
 
 template<typename T, typename U> std::size_t sizeInBytes(const std::vector<T, U>& v);
+template<typename T, typename U> std::size_t sizeInBytes(const Matrix<T, U>& m);
+template<typename T, typename U> std::size_t sizeInBytes(const Tensor3<T, U>& t);
 
 //#############################################################################
 
@@ -1061,6 +1064,20 @@ std::size_t
 sizeInBytes(const std::vector<T, U>& v)
 {
 	return v.size() * sizeof(typename std::vector<T, U>::value_type);
+}
+
+template<typename T, typename U>
+std::size_t
+sizeInBytes(const Matrix<T, U>& m)
+{
+	return m.size() * sizeof(typename Matrix<T, U>::ValueType);
+}
+
+template<typename T, typename U>
+std::size_t
+sizeInBytes(const Tensor3<T, U>& t)
+{
+	return t.size() * sizeof(typename Tensor3<T, U>::ValueType);
 }
 
 } // namespace Util

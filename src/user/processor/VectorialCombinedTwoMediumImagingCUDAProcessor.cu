@@ -548,7 +548,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	LOG_DEBUG << "cols: " << cols << " numGridPoints: " << numGridPoints;
 
 #ifdef USE_TRANSPOSE
-	const std::size_t transpNumGridPoints = roundUpToMultipleOfGroupSize(numGridPoints, TRANSP_BLOCK_SIZE);
+	const std::size_t transpNumGridPoints = CUDAUtil::roundUpToMultipleOfBlockSize(numGridPoints, TRANSP_BLOCK_SIZE);
 	LOG_DEBUG << "numGridPoints: " << numGridPoints << " transpNumGridPoints: " << transpNumGridPoints;
 	rawDataN1_ = transpNumGridPoints;
 	rawDataN2_ = 2 * config_.numElements /* real, imag */;
@@ -643,7 +643,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 
 	Timer processColumnTimer;
 #endif
-	std::size_t procImageKernelGlobalSize = roundUpToMultipleOfGroupSize(numGridPoints, BLOCK_SIZE);
+	std::size_t procImageKernelGlobalSize = CUDAUtil::roundUpToMultipleOfBlockSize(numGridPoints, BLOCK_SIZE);
 	LOG_DEBUG << numGridPoints << ':' << procImageKernelGlobalSize << ':' << BLOCK_SIZE;
 
 	//==================================================

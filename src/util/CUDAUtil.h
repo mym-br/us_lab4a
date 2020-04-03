@@ -108,6 +108,21 @@ struct CUDADevMem {
 	}
 };
 
+namespace CUDAUtil {
+
+inline
+std::size_t
+numberOfBlocks(std::size_t n, std::size_t blockSize) {
+	return (n + (blockSize - 1U)) / blockSize;
+}
+
+inline
+std::size_t
+roundUpToMultipleOfBlockSize(std::size_t n, std::size_t blockSize) {
+	return numberOfBlocks(n, blockSize) * blockSize;
+}
+
+} // namespace CUDAUtil
 } // namespace Lab
 
 #endif // LAB_CUDA_UTIL_H
