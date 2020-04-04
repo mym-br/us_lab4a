@@ -605,13 +605,13 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 		{
 			Timer delayStoreTimer;
 
-			// xBlockSize * yBlockSize must be <= maximum number of threads per block.
-			const std::size_t xBlockSize = 32;
-			const std::size_t yBlockSize = 32;
-			const std::size_t xNumBlocks = CUDAUtil::numberOfBlocks(config_.numElements, xBlockSize);
-			const std::size_t yNumBlocks = CUDAUtil::numberOfBlocks(gridXZ.n1(), yBlockSize);
-			const dim3 gridDim(xNumBlocks, yNumBlocks);
-			const dim3 blockDim(xBlockSize, yBlockSize);
+			// rxElemBlockSize * colBlockSize must be <= maximum number of threads per block.
+			const std::size_t rxElemBlockSize = 32;
+			const std::size_t colBlockSize    = 32;
+			const std::size_t rxElemNumBlocks = CUDAUtil::numberOfBlocks(config_.numElements, rxElemBlockSize);
+			const std::size_t colNumBlocks    = CUDAUtil::numberOfBlocks(gridXZ.n1(), colBlockSize);
+			const dim3 gridDim(rxElemNumBlocks, colNumBlocks);
+			const dim3 blockDim(rxElemBlockSize, colBlockSize);
 
 			processColumnWithOneTxElemKernel<<<gridDim, blockDim>>>(
 					gridXZ.n1(),
