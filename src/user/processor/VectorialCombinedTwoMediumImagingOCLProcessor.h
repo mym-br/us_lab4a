@@ -835,24 +835,16 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::ProcessColumnWithO
 							rawData[ rxIdx      * rawDataN2 + gridPointIdx] = v.real();
 							rawData[(rxIdx + 1) * rawDataN2 + gridPointIdx] = v.imag();
 #endif
-						} else {
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-							rawData[gridPointIdx * rawDataN2 + rxIdx    ] = 0;
-							rawData[gridPointIdx * rawDataN2 + rxIdx + 1] = 0;
-#else
-							rawData[ rxIdx      * rawDataN2 + gridPointIdx] = 0;
-							rawData[(rxIdx + 1) * rawDataN2 + gridPointIdx] = 0;
-#endif
+							continue;
 						}
-					} else {
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-						rawData[gridPointIdx * rawDataN2 + rxIdx    ] = 0;
-						rawData[gridPointIdx * rawDataN2 + rxIdx + 1] = 0;
-#else
-						rawData[ rxIdx      * rawDataN2 + gridPointIdx] = 0;
-						rawData[(rxIdx + 1) * rawDataN2 + gridPointIdx] = 0;
-#endif
 					}
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
+					rawData[gridPointIdx * rawDataN2 + rxIdx    ] = 0;
+					rawData[gridPointIdx * rawDataN2 + rxIdx + 1] = 0;
+#else
+					rawData[ rxIdx      * rawDataN2 + gridPointIdx] = 0;
+					rawData[(rxIdx + 1) * rawDataN2 + gridPointIdx] = 0;
+#endif
 				}
 			}
 		}
