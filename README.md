@@ -18,11 +18,14 @@ Features (partial list)
   - SAFT (one transmitter and one receiver in each acquisition).
   - Single virtual source.
 
+![Screenshot](img/screenshot.png "Screenshot")
+
 Status
 ------
 
-- Some methods are stable, while others are experimental.
-- The structure and names in configuration files may change at any revision.
+- The software is experimental.
+- The structure of the configuration files and the parameter names may change
+  in future revisions.
 - The documentation is very limited. In many cases the C++ code must be
   consulted.
 

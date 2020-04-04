@@ -9,6 +9,7 @@ fftw_wisdom*
 *.vtk
 *.obj
 
-!data/**
-!test/*.h5
-!python/data/**
+!/data/**
+!/test/*.h5
+!/python/data/**
+!/img/*
