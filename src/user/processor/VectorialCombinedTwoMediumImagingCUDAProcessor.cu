@@ -71,19 +71,20 @@ transposeKernel(
 {
 	__shared__ float temp[TRANSP_BLOCK_SIZE][TRANSP_BLOCK_SIZE + 1]; // +1 to avoid bank conflicts
 
-	int iX = blockIdx.x * blockDim.x + threadIdx.x;
-	int iY = blockIdx.y * blockDim.y + threadIdx.y;
+	int iX = blockIdx.y * TRANSP_BLOCK_SIZE + threadIdx.x;
+	int iY = blockIdx.x * TRANSP_BLOCK_SIZE + threadIdx.y;
 
-	if (iX < oldSizeX && iY < oldSizeY) {
-		temp[threadIdx.y][threadIdx.x] = rawData[iX + oldSizeX * iY];
+	if (iX < oldSizeY && iY < oldSizeX) {
+		temp[threadIdx.x][threadIdx.y] = rawData[iX + oldSizeY * iY];
 	}
 
 	__syncthreads();
 
-	iX = blockIdx.y * TRANSP_BLOCK_SIZE + threadIdx.x;
-	iY = blockIdx.x * TRANSP_BLOCK_SIZE + threadIdx.y;
-	if (iX < oldSizeY && iY < oldSizeX) {
-		rawDataT[iX + oldSizeY * iY] = temp[threadIdx.x][threadIdx.y];
+	iX = blockIdx.x * blockDim.x + threadIdx.x;
+	iY = blockIdx.y * blockDim.y + threadIdx.y;
+
+	if (iX < oldSizeX && iY < oldSizeY) {
+		rawDataT[iX + oldSizeX * iY] = temp[threadIdx.y][threadIdx.x];
 	}
 }
 
@@ -682,15 +683,20 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 
 #ifdef USE_TRANSPOSE
 		{
-			dim3 gridDim(rawDataN2_ / TRANSP_BLOCK_SIZE, rawDataN1_ / TRANSP_BLOCK_SIZE);
+			//Timer transposeTimer;
+
+			dim3 gridDim(rawDataN1_ / TRANSP_BLOCK_SIZE, rawDataN2_ / TRANSP_BLOCK_SIZE);
 			dim3 blockDim(TRANSP_BLOCK_SIZE, TRANSP_BLOCK_SIZE);
 
 			transposeKernel<<<gridDim, blockDim>>>(
 							data_->rawDataList[rawBufferIdx].devPtr,
 							data_->rawDataT.devPtr,
-							rawDataN2_,
-							rawDataN1_);
+							rawDataN1_,
+							rawDataN2_);
 			checkKernelLaunchError();
+
+			//exec(cudaDeviceSynchronize());
+			//LOG_DEBUG << "TRANSPOSE " << transposeTimer.getTime();
 		}
 #endif
 		if (coherenceFactor_.enabled()) {

@@ -639,15 +639,20 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 
 #ifdef USE_TRANSPOSE
 		{
-			const dim3 gridDim(rawDataN2_ / TRANSP_BLOCK_SIZE, rawDataN1_ / TRANSP_BLOCK_SIZE);
+			//Timer transposeTimer;
+
+			const dim3 gridDim(rawDataN1_ / TRANSP_BLOCK_SIZE, rawDataN2_ / TRANSP_BLOCK_SIZE);
 			const dim3 blockDim(TRANSP_BLOCK_SIZE, TRANSP_BLOCK_SIZE);
 
 			transposeKernel<<<gridDim, blockDim>>>(
 							data_->rawData.devPtr,
 							data_->rawDataT.devPtr,
-							rawDataN2_,
-							rawDataN1_);
+							rawDataN1_,
+							rawDataN2_);
 			checkKernelLaunchError();
+
+			//exec(cudaDeviceSynchronize());
+			//LOG_DEBUG << "TRANSPOSE " << transposeTimer.getTime();
 		}
 #endif
 		if (coherenceFactor_.enabled()) {
