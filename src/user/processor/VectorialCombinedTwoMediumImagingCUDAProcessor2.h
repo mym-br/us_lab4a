@@ -47,11 +47,7 @@ struct VectorialCombinedTwoMediumImagingCUDAProcessor2Data;
 // Uses CUDA in part of the processing.
 //
 // The grid must be rectangular.
-// Requirements:
-// - Single precision
 //
-// numElements must be multiple of 16.
-// Tested only with numElements = 32.
 class VectorialCombinedTwoMediumImagingCUDAProcessor2 {
 public:
 	struct StepConfiguration {

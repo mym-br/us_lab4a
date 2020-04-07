@@ -369,6 +369,11 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::VectorialCombinedTwoMediumImagi
 		, rawDataN2_()
 		, rawDataSize_()
 {
+	if (config_.numElements != NUM_RX_ELEM) {
+		THROW_EXCEPTION(InvalidParameterException, "The number of elements (" << config_.numElements <<
+				") is not equal to " << NUM_RX_ELEM << '.');
+	}
+
 	const std::size_t origSignalLength = acqDataList_[0].n2();
 
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * (peakOffset / config_.centerFrequency) - signalStartOffset * upsamplingFactor_;

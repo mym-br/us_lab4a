@@ -423,6 +423,10 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::VectorialCombinedTwoMediumImagin
 		, rawDataN2_()
 		, rawDataSize_()
 {
+	if (config_.numElements != NUM_RX_ELEM) {
+		THROW_EXCEPTION(InvalidParameterException, "The number of elements (" << config_.numElements <<
+				") is not equal to " << NUM_RX_ELEM << '.');
+	}
 	if (NUM_RAW_DATA_BUFFERS < 1) {
 		THROW_EXCEPTION(InvalidValueException, "The number of raw data buffers must be >= 1.");
 	}
