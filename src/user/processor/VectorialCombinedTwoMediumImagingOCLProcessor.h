@@ -68,10 +68,19 @@
 
 namespace Lab {
 
+// Two-medium image formation, using analytic signals (each sample is a real-imag vector).
+// The final image is a combination of sub-images, using apodization.
+//
 // Without PCF, this class is slower than VectorialCombinedTwoMediumImagingProcessor,
 // using a Core i5-3470. With PCF, this class is faster.
 //
-// Uses OpenCL in part of the processing.
+// Processing steps:
+//   Find row at the interface                               - CPU
+//   Calculate delays at the interface                       - CPU
+//   Calculate delays in the grid above the interface        - CPU
+//   Signal preparation                                      - CPU
+//   Apply delays and store the sample                       - CPU
+//   Use apodization, [apply PCF] and accumulate the samples - OpenCL
 //
 // The grid must be rectangular.
 //

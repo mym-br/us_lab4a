@@ -41,7 +41,16 @@ namespace Lab {
 
 struct VectorialCombinedTwoMediumImagingCUDAProcessor2Data;
 
-// Uses CUDA in part of the processing.
+// Two-medium image formation, using analytic signals (each sample is a real-imag vector).
+// The final image is a combination of sub-images, using apodization.
+//
+// Processing steps:
+//   Find row at the interface                               - CPU
+//   Calculate delays at the interface                       - CPU
+//   Calculate delays in the grid above the interface        - CPU
+//   Signal preparation                                      - CPU
+//   Apply delays and store the sample                       - CUDA
+//   Use apodization, [apply PCF] and accumulate the samples - CUDA
 //
 // The grid must be rectangular.
 //

@@ -61,7 +61,11 @@
 
 namespace Lab {
 
+// Two-medium image formation, using analytic signals (each sample is a real-imag vector).
+// The final image is a combination of sub-images, using apodization.
+//
 // The grid must be rectangular.
+//
 template<typename TFloat>
 class VectorialCombinedTwoMediumImagingProcessor {
 public:
