@@ -27,6 +27,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <type_traits> /* is_same */
 #include <utility> /* make_pair */
 #include <vector>
 
@@ -73,10 +74,9 @@ namespace Lab {
 // Uses OpenCL in part of the processing.
 //
 // The grid must be rectangular.
-// Requirements:
-// - Single precision
 //
 // Tested only with numElements = 32.
+//
 template<typename TFloat>
 class VectorialCombinedTwoMediumImagingOCLProcessor {
 public:
@@ -199,7 +199,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 		, pinnedRawDataCLBufferList_(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS)
 		, mappedRawDataPtrList_(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS)
 {
-	if (sizeof(TFloat) != sizeof(float)) {
+	if constexpr (!std::is_same<TFloat, float>::value) {
 		THROW_EXCEPTION(InvalidParameterException, "Only single precision is supported.");
 	}
 
