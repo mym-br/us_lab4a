@@ -45,12 +45,11 @@ struct VectorialCombinedTwoMediumImagingCUDAProcessor2Data;
 // The final image is a combination of sub-images, using apodization.
 //
 // Processing steps:
-//   Find row at the interface                               - CPU
-//   Calculate delays at the interface                       - CPU
-//   Calculate delays in the grid above the interface        - CPU
-//   Signal preparation                                      - CPU
-//   Apply delays and store the sample                       - CUDA
-//   Use apodization, [apply PCF] and accumulate the samples - CUDA
+//   Find row at the interface                                             - CPU
+//   Calculate delays at the interface                                     - CPU
+//   Calculate delays in the grid above the interface                      - CPU
+//   Signal preparation                                                    - CPU
+//   Apply delays, use apodization, [apply PCF] and accumulate the samples - CUDA
 //
 // The grid must be rectangular.
 //
@@ -110,13 +109,9 @@ private:
 	Tensor3<std::complex<float>, tbb::cache_aligned_allocator<std::complex<float>>> signalTensor_;
 	float signalOffset_;
 	std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>> minRowIdx_; // for each column
-	std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>> firstGridPointIdx_; // for each column
 	std::vector<float, tbb::cache_aligned_allocator<float>> xArray_;
 	Matrix<float, tbb::cache_aligned_allocator<float>> medium1DelayMatrix_; // (interface_idx, element)
 	Tensor3<float, tbb::cache_aligned_allocator<float>> delayTensor_;
-	unsigned int rawDataN1_;
-	unsigned int rawDataN2_;
-	std::size_t rawDataSize_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData<float>>> prepareDataTLS_;
 	std::unique_ptr<VectorialCombinedTwoMediumImagingCUDAProcessor2Data> data_;
 };

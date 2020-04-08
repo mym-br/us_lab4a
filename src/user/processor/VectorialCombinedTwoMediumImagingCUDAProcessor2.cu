@@ -42,10 +42,6 @@
 // 1.0 --> pi radian / sample at the original sampling rate.
 #define UPSAMP_FILTER_HALF_TRANSITION_WIDTH (0.2)
 
-#define USE_TRANSPOSE 1
-
-#define BLOCK_SIZE 64
-
 #ifndef MFloat
 # define MFloat float
 #endif
@@ -57,19 +53,16 @@ namespace Lab {
 // NVIDIA sm_50 or newer:
 //   - Shared memory has 32 banks of 32 bits.
 
-#define TRANSP_BLOCK_SIZE 16
 #define NUM_RX_ELEM 32
 
 // Defined in VectorialCombinedTwoMediumImagingCUDAProcessor.cu.
-extern __global__ void transposeKernel(float* rawData, float* rawDataT, int oldSizeX, int oldSizeY);
 extern __device__ float calcPCF(float* re, float* im, float factor);
 
 __global__
 void
-processColumnWithOneTxElemKernel(
+processRowColumnWithOneTxElemKernel(
 		unsigned int numCols,
 		unsigned int numRows,
-		unsigned int firstCol,
 		unsigned int numElements,
 		float signalOffset,
 		float (*signalTensor)[2],
@@ -79,12 +72,11 @@ processColumnWithOneTxElemKernel(
 		unsigned int baseElemIdx,
 		unsigned int txElem,
 		const unsigned int* minRowIdx,
-		const unsigned int* firstGridPointIdx,
 		const float* delayTensor,
 		unsigned int delayTensorN2,
 		unsigned int delayTensorN3,
-		float* rawData,
-		unsigned int rawDataN2) {
+		float (*gridValue)[2],
+		float* rxApod) {
 
 	const unsigned int signalLength = signalTensorN3;
 	const unsigned int maxPosition = signalLength - 2;
@@ -92,19 +84,19 @@ processColumnWithOneTxElemKernel(
 	const unsigned int col = blockIdx.y * blockDim.y + threadIdx.y;
 	if (col >= numCols) return;
 
-	const unsigned int rxElem = blockIdx.x * blockDim.x + threadIdx.x;
-	if (rxElem >= numElements) return;
+	const unsigned int row = blockIdx.x * blockDim.x + threadIdx.x;
+	if (row < minRowIdx[col] || row >= numRows) return;
 
-	unsigned int gridPointIdx = firstGridPointIdx[col] - firstGridPointIdx[firstCol];
-	for (unsigned int row = minRowIdx[col]; row < numRows; ++row, ++gridPointIdx) {
-		const float* delays = delayTensor + (col * delayTensorN2 + row) * delayTensorN3 + baseElem;
+	const float* delays = delayTensor + (col * delayTensorN2 + row) * delayTensorN3 + baseElem;
 
-		const float txDelay = delays[txElem];
-		const float txOffset = signalOffset + txDelay;
+	const float txDelay = delays[txElem];
+	const float txOffset = signalOffset + txDelay;
+
+	float rxSignalSumRe = 0;
+	float rxSignalSumIm = 0;
+	for (unsigned int rxElem = 0; rxElem < numElements; ++rxElem) {
 		const float (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
 					+ rxElem * signalLength;
-		const unsigned int rxIdx = rxElem * 2;
-
 		// Linear interpolation.
 		const float position = txOffset + delays[rxElem];
 		if (position >= 0.0f) {
@@ -120,87 +112,88 @@ processColumnWithOneTxElemKernel(
 				float v[2]; // complex
 				v[0] = v0[0] + k * (v1[0] - v0[0]);
 				v[1] = v0[1] + k * (v1[1] - v0[1]);
-#ifdef USE_TRANSPOSE
-				rawData[gridPointIdx * rawDataN2 + rxIdx    ] = v[0];
-				rawData[gridPointIdx * rawDataN2 + rxIdx + 1] = v[1];
-#else
-				rawData[ rxIdx      * rawDataN2 + gridPointIdx] = v[0];
-				rawData[(rxIdx + 1) * rawDataN2 + gridPointIdx] = v[1];
-#endif
-				continue;
+
+				rxSignalSumRe += v[0] * rxApod[rxElem];
+				rxSignalSumIm += v[1] * rxApod[rxElem];
 			}
 		}
-#ifdef USE_TRANSPOSE
-		rawData[gridPointIdx * rawDataN2 + rxIdx    ] = 0;
-		rawData[gridPointIdx * rawDataN2 + rxIdx + 1] = 0;
-#else
-		rawData[ rxIdx      * rawDataN2 + gridPointIdx] = 0;
-		rawData[(rxIdx + 1) * rawDataN2 + gridPointIdx] = 0;
-#endif
 	}
+	const unsigned int point = col * numRows + row;
+	gridValue[point][0] += rxSignalSumRe;
+	gridValue[point][1] += rxSignalSumIm;
 }
 
 __global__
 void
-processImageKernel2(
-		float* rawData,
-		int numGridPoints,
-		float (*gridValue)[2],
-		float* rxApod)
-{
-	float rxSignalListRe[NUM_RX_ELEM];
-	float rxSignalListIm[NUM_RX_ELEM];
-
-	const int point = blockIdx.x * blockDim.x + threadIdx.x;
-	if (point >= numGridPoints) return;
-
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
-		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
-		//rxSignalListRe[i] = rawData[point * (NUM_RX_ELEM << 1) + (i << 1)];
-		//rxSignalListIm[i] = rawData[point * (NUM_RX_ELEM << 1) + ((i << 1) + 1)];
-	}
-
-	float sumRe = 0.0;
-	float sumIm = 0.0;
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		sumRe += rxSignalListRe[i] * rxApod[i];
-		sumIm += rxSignalListIm[i] * rxApod[i];
-	}
-
-	gridValue[point][0] += sumRe;
-	gridValue[point][1] += sumIm;
-}
-
-__global__
-void
-processImagePCFKernel2(
-		float* rawData,
-		int numGridPoints,
+processRowColumnWithOneTxElemPCFKernel(
+		unsigned int numCols,
+		unsigned int numRows,
+		unsigned int numElements,
+		float signalOffset,
+		float (*signalTensor)[2],
+		unsigned int signalTensorN2,
+		unsigned int signalTensorN3,
+		unsigned int baseElem,
+		unsigned int baseElemIdx,
+		unsigned int txElem,
+		const unsigned int* minRowIdx,
+		const float* delayTensor,
+		unsigned int delayTensorN2,
+		unsigned int delayTensorN3,
 		float (*gridValue)[2],
 		float* rxApod,
-		float pcfFactor)
-{
+		float pcfFactor) {
+
+	const unsigned int signalLength = signalTensorN3;
+	const unsigned int maxPosition = signalLength - 2;
+
+	const unsigned int col = blockIdx.y * blockDim.y + threadIdx.y;
+	if (col >= numCols) return;
+
+	const unsigned int row = blockIdx.x * blockDim.x + threadIdx.x;
+	if (row < minRowIdx[col] || row >= numRows) return;
+
+	const float* delays = delayTensor + (col * delayTensorN2 + row) * delayTensorN3 + baseElem;
+
+	const float txDelay = delays[txElem];
+	const float txOffset = signalOffset + txDelay;
+
 	float rxSignalListRe[NUM_RX_ELEM];
 	float rxSignalListIm[NUM_RX_ELEM];
+	for (unsigned int rxElem = 0; rxElem < numElements; ++rxElem) {
+		const float (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
+					+ rxElem * signalLength;
+		// Linear interpolation.
+		const float position = txOffset + delays[rxElem];
+		if (position >= 0.0f) {
+			const unsigned int positionIdx = static_cast<unsigned int>(position);
+			if (positionIdx <= maxPosition) {
+				const float k = position - positionIdx;
+				float v0[2]; // complex
+				v0[0] = p[positionIdx][0];
+				v0[1] = p[positionIdx][1];
+				float v1[2]; // complex
+				v1[0] = p[positionIdx + 1][0];
+				v1[1] = p[positionIdx + 1][1];
+				float v[2]; // complex
+				v[0] = v0[0] + k * (v1[0] - v0[0]);
+				v[1] = v0[1] + k * (v1[1] - v0[1]);
 
-	const int point = blockIdx.x * blockDim.x + threadIdx.x;
-	if (point >= numGridPoints) return;
-
-	for (int i = 0; i < NUM_RX_ELEM; ++i) {
-		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
-		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
+				rxSignalListRe[rxElem] = v[0];
+				rxSignalListIm[rxElem] = v[1];
+			}
+		}
 	}
 
-	float pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor);
-
-	float sumRe = 0.0;
-	float sumIm = 0.0;
+	const float pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor);
+	float sumRe = 0;
+	float sumIm = 0;
 	for (int i = 0; i < NUM_RX_ELEM; ++i) {
 		sumRe += rxSignalListRe[i] * rxApod[i];
 		sumIm += rxSignalListIm[i] * rxApod[i];
 	}
 
+	const unsigned int point = col * numRows + row;
 	gridValue[point][0] += sumRe * pcf;
 	gridValue[point][1] += sumIm * pcf;
 }
@@ -211,13 +204,8 @@ struct VectorialCombinedTwoMediumImagingCUDAProcessor2Data {
 	bool cudaDataInitialized;
 	CUDADevMem<MFloat> rxApod;
 	CUDADevMem<MFloat[2]> signalTensor;
-	CUDADevMem<unsigned int> firstGridPointIdx;
 	CUDADevMem<unsigned int> minRowIdx;
 	CUDADevMem<MFloat> delayTensor;
-	CUDADevMem<MFloat> rawData;
-#ifdef USE_TRANSPOSE
-	CUDADevMem<MFloat> rawDataT;
-#endif
 	CUDAHostDevMem<MFloat[2]> gridValue;
 
 	VectorialCombinedTwoMediumImagingCUDAProcessor2Data()
@@ -365,9 +353,6 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::VectorialCombinedTwoMediumImagi
 		, coherenceFactor_(coherenceFactor)
 		, maxFermatBlockSize_(maxFermatBlockSize)
 		, lambda2_(config_.propagationSpeed2 / config_.centerFrequency)
-		, rawDataN1_()
-		, rawDataN2_()
-		, rawDataSize_()
 {
 	if (config_.numElements != NUM_RX_ELEM) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of elements (" << config_.numElements <<
@@ -424,7 +409,6 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 	const std::size_t samplesPerChannelLow = acqDataList_[0].n2();
 
 	minRowIdx_.resize(gridXZ.n1() /* number of columns */);
-	firstGridPointIdx_.resize(gridXZ.n1() /* number of columns */);
 	delayTensor_.resize(gridXZ.n1() /* number of columns */, gridXZ.n2() /* number of rows */, config_.numElementsMux);
 	signalTensor_.resize(stepConfigList.size(), config_.numElements, signalLength_);
 	medium1DelayMatrix_.resize(config_.numElementsMux, interfacePointList.size());
@@ -448,7 +432,6 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 	unsigned int gridPointIdx = 0;
 	for (unsigned int col = 0; col < gridXZ.n1(); ++col) {
 		auto& point = gridXZ(col, 0);
-		firstGridPointIdx_[col] = gridPointIdx; // the points below the interface are not considered
 
 		// Find the z coordinate of the interface.
 		MFloat zIdxMin;
@@ -480,35 +463,13 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 	if (cols == 0) {
 		THROW_EXCEPTION(InvalidValueException, "Zero columns in the grid.");
 	}
-	std::size_t pointSum = 0;
-	for (unsigned int col = 0; col < cols; ++col) {
-		pointSum += gridXZ.n2() - minRowIdx_[col];
-	}
-	const std::size_t numGridPoints = pointSum;
-	LOG_DEBUG << "cols: " << cols << " numGridPoints: " << numGridPoints;
-
-#ifdef USE_TRANSPOSE
-	const std::size_t transpNumGridPoints = CUDAUtil::roundUpToMultipleOfBlockSize(numGridPoints, TRANSP_BLOCK_SIZE);
-	LOG_DEBUG << "numGridPoints: " << numGridPoints << " transpNumGridPoints: " << transpNumGridPoints;
-	rawDataN1_ = transpNumGridPoints;
-	rawDataN2_ = 2 * config_.numElements /* real, imag */;
-#else
-	rawDataN1_ = 2 * config_.numElements /* real, imag */;
-	rawDataN2_ = numGridPoints;
-#endif
-	rawDataSize_ = rawDataN1_ * rawDataN2_;
 
 	if (!data_->cudaDataInitialized) {
-		data_->rxApod            = CUDADevMem<MFloat>(rxApod.size());
-		data_->signalTensor      = CUDADevMem<MFloat[2]>(signalTensor_.n1() * signalTensor_.n2() * signalTensor_.n3());
-		data_->firstGridPointIdx = CUDADevMem<unsigned int>(firstGridPointIdx_.size());
-		data_->minRowIdx         = CUDADevMem<unsigned int>(minRowIdx_.size());
-		data_->delayTensor       = CUDADevMem<MFloat>(delayTensor_.n1() * delayTensor_.n2() * delayTensor_.n3());
-		data_->rawData           = CUDADevMem<MFloat>(rawDataSize_);
-#ifdef USE_TRANSPOSE
-		data_->rawDataT          = CUDADevMem<MFloat>(rawDataSize_);
-#endif
-		data_->gridValue         = CUDAHostDevMem<MFloat[2]>(numGridPoints);
+		data_->rxApod       = CUDADevMem<MFloat>(rxApod.size());
+		data_->signalTensor = CUDADevMem<MFloat[2]>(signalTensor_.n1() * signalTensor_.n2() * signalTensor_.n3());
+		data_->minRowIdx    = CUDADevMem<unsigned int>(minRowIdx_.size());
+		data_->delayTensor  = CUDADevMem<MFloat>(delayTensor_.n1() * delayTensor_.n2() * delayTensor_.n3());
+		data_->gridValue    = CUDAHostDevMem<MFloat[2]>(gridXZ.n1() * gridXZ.n2());
 
 		data_->cudaDataInitialized = true;
 	}
@@ -583,17 +544,13 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 
 	Timer processColumnTimer;
 #endif
-	std::size_t procImageKernelGlobalSize = CUDAUtil::roundUpToMultipleOfBlockSize(numGridPoints, BLOCK_SIZE);
-	LOG_DEBUG << numGridPoints << ':' << procImageKernelGlobalSize << ':' << BLOCK_SIZE;
 
-	exec(cudaMemcpy(data_->firstGridPointIdx.devPtr, firstGridPointIdx_.data(),
-				Util::sizeInBytes(firstGridPointIdx_), cudaMemcpyHostToDevice));
-	exec(cudaMemcpy(data_->minRowIdx.devPtr        ,         minRowIdx_.data(),
-				Util::sizeInBytes(minRowIdx_)        , cudaMemcpyHostToDevice));
-	exec(cudaMemcpy(data_->signalTensor.devPtr     ,      signalTensor_.data(),
-				Util::sizeInBytes(signalTensor_)     , cudaMemcpyHostToDevice));
-	exec(cudaMemcpy(data_->delayTensor.devPtr      ,       delayTensor_.data(),
-				Util::sizeInBytes(delayTensor_)      , cudaMemcpyHostToDevice));
+	exec(cudaMemcpy(data_->minRowIdx.devPtr        ,    minRowIdx_.data(),
+				Util::sizeInBytes(minRowIdx_)   , cudaMemcpyHostToDevice));
+	exec(cudaMemcpy(data_->signalTensor.devPtr     , signalTensor_.data(),
+				Util::sizeInBytes(signalTensor_), cudaMemcpyHostToDevice));
+	exec(cudaMemcpy(data_->delayTensor.devPtr      ,  delayTensor_.data(),
+				Util::sizeInBytes(delayTensor_) , cudaMemcpyHostToDevice));
 
 	//==================================================
 	// Step configuration loop.
@@ -605,23 +562,25 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 		exec(cudaDeviceSynchronize());
 
 		//==================================================
-		// Delay and store.
+		// Delay and sum.
 		//==================================================
-		{
-			Timer delayStoreTimer;
 
-			// rxElemBlockSize * colBlockSize must be <= maximum number of threads per block.
-			const std::size_t rxElemBlockSize = 32;
-			const std::size_t colBlockSize    = 32;
-			const std::size_t rxElemNumBlocks = CUDAUtil::numberOfBlocks(config_.numElements, rxElemBlockSize);
-			const std::size_t colNumBlocks    = CUDAUtil::numberOfBlocks(gridXZ.n1(), colBlockSize);
-			const dim3 gridDim(rxElemNumBlocks, colNumBlocks);
-			const dim3 blockDim(rxElemBlockSize, colBlockSize);
+		Timer delaySumTimer;
 
-			processColumnWithOneTxElemKernel<<<gridDim, blockDim>>>(
-					gridXZ.n1(),
-					gridXZ.n2(),
-					0,
+		const std::size_t rowBlockSize = 32;
+		const std::size_t colBlockSize = 8;
+		const std::size_t rowNumBlocks = CUDAUtil::numberOfBlocks(gridXZ.n2(), rowBlockSize);
+		const std::size_t colNumBlocks = CUDAUtil::numberOfBlocks(gridXZ.n1(), colBlockSize);
+		const dim3 gridDim(rowNumBlocks, colNumBlocks);
+		const dim3 blockDim(rowBlockSize, colBlockSize);
+
+		if (coherenceFactor_.enabled()) {
+			std::vector<MFloat> cfConstants;
+			coherenceFactor_.implementation().getConstants(cfConstants);
+
+			processRowColumnWithOneTxElemPCFKernel<<<gridDim, blockDim>>>(
+					gridXZ.n1(), // number of columns
+					gridXZ.n2(), // number of rows
 					config_.numElements,
 					signalOffset_,
 					data_->signalTensor.devPtr,
@@ -631,64 +590,35 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 					stepConfig.baseElemIdx,
 					stepConfig.txElem,
 					data_->minRowIdx.devPtr,
-					data_->firstGridPointIdx.devPtr,
 					data_->delayTensor.devPtr,
 					delayTensor_.n2(),
 					delayTensor_.n3(),
-					data_->rawData.devPtr,
-					rawDataN2_);
-			checkKernelLaunchError();
-
-			LOG_DEBUG << "DELAY-STORE " << delayStoreTimer.getTime();
-		}
-
-#ifdef USE_TRANSPOSE
-		{
-			//Timer transposeTimer;
-
-			const dim3 gridDim(rawDataN1_ / TRANSP_BLOCK_SIZE, rawDataN2_ / TRANSP_BLOCK_SIZE);
-			const dim3 blockDim(TRANSP_BLOCK_SIZE, TRANSP_BLOCK_SIZE);
-
-			transposeKernel<<<gridDim, blockDim>>>(
-							data_->rawData.devPtr,
-							data_->rawDataT.devPtr,
-							rawDataN1_,
-							rawDataN2_);
-			checkKernelLaunchError();
-
-			//exec(cudaDeviceSynchronize());
-			//LOG_DEBUG << "TRANSPOSE " << transposeTimer.getTime();
-		}
-#endif
-		if (coherenceFactor_.enabled()) {
-			std::vector<MFloat> cfConstants;
-			coherenceFactor_.implementation().getConstants(cfConstants);
-
-			processImagePCFKernel2<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
-#ifdef USE_TRANSPOSE
-							data_->rawDataT.devPtr,
-							rawDataN1_,
-#else
-							data_->rawData.devPtr,
-							rawDataN2_,
-#endif
-							data_->gridValue.devPtr,
-							data_->rxApod.devPtr,
-							cfConstants[2] /* factor */);
+					data_->gridValue.devPtr,
+					data_->rxApod.devPtr,
+					cfConstants[2] /* factor */);
 			checkKernelLaunchError();
 		} else {
-			processImageKernel2<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
-#ifdef USE_TRANSPOSE
-							data_->rawDataT.devPtr,
-							rawDataN1_,
-#else
-							data_->rawData.devPtr,
-							rawDataN2_,
-#endif
-							data_->gridValue.devPtr,
-							data_->rxApod.devPtr);
+			processRowColumnWithOneTxElemKernel<<<gridDim, blockDim>>>(
+					gridXZ.n1(), // number of columns
+					gridXZ.n2(), // number of rows
+					config_.numElements,
+					signalOffset_,
+					data_->signalTensor.devPtr,
+					signalTensor_.n2(),
+					signalTensor_.n3(),
+					stepConfig.baseElem,
+					stepConfig.baseElemIdx,
+					stepConfig.txElem,
+					data_->minRowIdx.devPtr,
+					data_->delayTensor.devPtr,
+					delayTensor_.n2(),
+					delayTensor_.n3(),
+					data_->gridValue.devPtr,
+					data_->rxApod.devPtr);
 			checkKernelLaunchError();
 		}
+
+		LOG_DEBUG << "DELAY-SUM " << delaySumTimer.getTime();
 	}
 
 	exec(data_->gridValue.copyDeviceToHost());
@@ -700,7 +630,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 		for (unsigned int row = 0; row < minRowIdx_[col]; ++row) {
 			gridValue(col, row) = 0;
 		}
-		unsigned int gridPointIdx = firstGridPointIdx_[col];
+		unsigned int gridPointIdx = col * gridXZ.n2() + minRowIdx_[col];
 		for (unsigned int row = minRowIdx_[col]; row < gridXZ.n2(); ++row, ++gridPointIdx) {
 			gridValue(col, row) = std::complex<MFloat>(
 							data_->gridValue.hostPtr[gridPointIdx][0],
