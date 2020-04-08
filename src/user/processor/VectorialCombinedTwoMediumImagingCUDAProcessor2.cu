@@ -63,7 +63,6 @@ void
 processRowColumnWithOneTxElemKernel(
 		unsigned int numCols,
 		unsigned int numRows,
-		unsigned int numElements,
 		float signalOffset,
 		float (*signalTensor)[2],
 		unsigned int signalTensorN2,
@@ -94,7 +93,7 @@ processRowColumnWithOneTxElemKernel(
 
 	float rxSignalSumRe = 0;
 	float rxSignalSumIm = 0;
-	for (unsigned int rxElem = 0; rxElem < numElements; ++rxElem) {
+	for (unsigned int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
 		const float (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
 					+ rxElem * signalLength;
 		// Linear interpolation.
@@ -128,7 +127,6 @@ void
 processRowColumnWithOneTxElemPCFKernel(
 		unsigned int numCols,
 		unsigned int numRows,
-		unsigned int numElements,
 		float signalOffset,
 		float (*signalTensor)[2],
 		unsigned int signalTensorN2,
@@ -160,7 +158,7 @@ processRowColumnWithOneTxElemPCFKernel(
 
 	float rxSignalListRe[NUM_RX_ELEM];
 	float rxSignalListIm[NUM_RX_ELEM];
-	for (unsigned int rxElem = 0; rxElem < numElements; ++rxElem) {
+	for (unsigned int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
 		const float (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
 					+ rxElem * signalLength;
 		// Linear interpolation.
@@ -581,7 +579,6 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 			processRowColumnWithOneTxElemPCFKernel<<<gridDim, blockDim>>>(
 					gridXZ.n1(), // number of columns
 					gridXZ.n2(), // number of rows
-					config_.numElements,
 					signalOffset_,
 					data_->signalTensor.devPtr,
 					signalTensor_.n2(),
@@ -601,7 +598,6 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 			processRowColumnWithOneTxElemKernel<<<gridDim, blockDim>>>(
 					gridXZ.n1(), // number of columns
 					gridXZ.n2(), // number of rows
-					config_.numElements,
 					signalOffset_,
 					data_->signalTensor.devPtr,
 					signalTensor_.n2(),
