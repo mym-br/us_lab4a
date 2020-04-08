@@ -537,11 +537,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	if (cols == 0) {
 		THROW_EXCEPTION(InvalidValueException, "Zero columns in the grid.");
 	}
-	std::size_t pointSum = 0;
-	for (unsigned int col = 0; col < cols; ++col) {
-		pointSum += gridXZ.n2() - minRowIdx_[col];
-	}
-	const std::size_t numGridPoints = pointSum;
+	const std::size_t numGridPoints = gridPointIdx;
 	LOG_DEBUG << "cols: " << cols << " numGridPoints: " << numGridPoints;
 
 #ifdef USE_TRANSPOSE
