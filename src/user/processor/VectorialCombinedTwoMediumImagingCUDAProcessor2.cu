@@ -559,7 +559,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 		// Delay and sum.
 		//==================================================
 
-		Timer delaySumTimer;
+		//Timer delaySumTimer;
 
 		const std::size_t rowBlockSize = 32;
 		const std::size_t colBlockSize = 1;
@@ -610,7 +610,8 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 			checkKernelLaunchError();
 		}
 
-		LOG_DEBUG << "DELAY-SUM " << delaySumTimer.getTime();
+		//exec(cudaDeviceSynchronize());
+		//LOG_DEBUG << "DELAY-SUM " << delaySumTimer.getTime();
 	}
 
 	exec(data_->gridValue.copyDeviceToHost());
