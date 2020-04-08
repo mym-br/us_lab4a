@@ -86,9 +86,7 @@ processRowColumnWithOneTxElemKernel(
 	const unsigned int row = blockIdx.x * blockDim.x + threadIdx.x;
 	if (row < minRowIdx[col] || row >= numRows) return;
 
-	const float* delays = delayTensor + (col * delayTensorN2 + row) * delayTensorN3 + baseElem;
-
-	const float txDelay = delays[txElem];
+	const float txDelay = delayTensor[((baseElem + txElem) * delayTensorN2 + col) * delayTensorN3 + row];
 	const float txOffset = signalOffset + txDelay;
 
 	float rxSignalSumRe = 0;
@@ -97,7 +95,7 @@ processRowColumnWithOneTxElemKernel(
 		const float (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
 					+ rxElem * signalLength;
 		// Linear interpolation.
-		const float position = txOffset + delays[rxElem];
+		const float position = txOffset + delayTensor[((baseElem + rxElem) * delayTensorN2 + col) * delayTensorN3 + row];
 		if (position >= 0.0f) {
 			const unsigned int positionIdx = static_cast<unsigned int>(position);
 			if (positionIdx <= maxPosition) {
@@ -151,9 +149,7 @@ processRowColumnWithOneTxElemPCFKernel(
 	const unsigned int row = blockIdx.x * blockDim.x + threadIdx.x;
 	if (row < minRowIdx[col] || row >= numRows) return;
 
-	const float* delays = delayTensor + (col * delayTensorN2 + row) * delayTensorN3 + baseElem;
-
-	const float txDelay = delays[txElem];
+	const float txDelay = delayTensor[((baseElem + txElem) * delayTensorN2 + col) * delayTensorN3 + row];
 	const float txOffset = signalOffset + txDelay;
 
 	float rxSignalListRe[NUM_RX_ELEM];
@@ -162,7 +158,7 @@ processRowColumnWithOneTxElemPCFKernel(
 		const float (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
 					+ rxElem * signalLength;
 		// Linear interpolation.
-		const float position = txOffset + delays[rxElem];
+		const float position = txOffset + delayTensor[((baseElem + rxElem) * delayTensorN2 + col) * delayTensorN3 + row];
 		if (position >= 0.0f) {
 			const unsigned int positionIdx = static_cast<unsigned int>(position);
 			if (positionIdx <= maxPosition) {
@@ -235,7 +231,7 @@ struct CalculateDelays2 {
 							interfacePointList,
 							xArray[elem], TFloat(0), point.x, point.z,
 							tMin, idxMin);
-					delayTensor(col, minRowIdx[col], elem) = tMin * fs;
+					delayTensor(elem, col, minRowIdx[col]) = tMin * fs;
 					lastInterfaceIdx = idxMin;
 				}
 
@@ -279,7 +275,7 @@ struct CalculateDelays2 {
 //						LOG_DEBUG << "########## DIFF " << diff << " idxMin: " << idxMin << " col: " << col << " row - minRowIdx[col]: " << row - minRowIdx[col];
 //					}
 
-					delayTensor(col, row, elem) = tC2Min * fsInvC2;
+					delayTensor(elem, col, row) = tC2Min * fsInvC2;
 					lastInterfaceIdx = idxMin;
 				}
 
@@ -407,7 +403,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 	const std::size_t samplesPerChannelLow = acqDataList_[0].n2();
 
 	minRowIdx_.resize(gridXZ.n1() /* number of columns */);
-	delayTensor_.resize(gridXZ.n1() /* number of columns */, gridXZ.n2() /* number of rows */, config_.numElementsMux);
+	delayTensor_.resize(config_.numElementsMux, gridXZ.n1() /* number of columns */, gridXZ.n2() /* number of rows */);
 	signalTensor_.resize(stepConfigList.size(), config_.numElements, signalLength_);
 	medium1DelayMatrix_.resize(config_.numElementsMux, interfacePointList.size());
 
@@ -566,7 +562,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 		Timer delaySumTimer;
 
 		const std::size_t rowBlockSize = 32;
-		const std::size_t colBlockSize = 8;
+		const std::size_t colBlockSize = 1;
 		const std::size_t rowNumBlocks = CUDAUtil::numberOfBlocks(gridXZ.n2(), rowBlockSize);
 		const std::size_t colNumBlocks = CUDAUtil::numberOfBlocks(gridXZ.n1(), colBlockSize);
 		const dim3 gridDim(rowNumBlocks, colNumBlocks);
