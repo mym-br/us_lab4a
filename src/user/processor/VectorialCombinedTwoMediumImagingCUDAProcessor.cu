@@ -287,7 +287,6 @@ struct CalculateDelays {
 					delayTensor(col, row, elem) = tC2Min * fsInvC2;
 					lastInterfaceIdx = idxMin;
 				}
-
 			}
 		}
 	}
@@ -297,8 +296,6 @@ struct CalculateDelays {
 	const TwoMediumSTAConfiguration<TFloat>& config;
 	const TFloat fs;
 	const TFloat fsInvC2;
-	const TFloat invC1;
-	const TFloat invC2;
 	const unsigned int fermatBlockSize;
 	const std::vector<XZ<TFloat>>& interfacePointList;
 	const std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>>& xArray;
@@ -594,8 +591,6 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		config_,
 		config_.samplingFrequency * upsamplingFactor_,
 		config_.samplingFrequency * upsamplingFactor_ / config_.propagationSpeed2,
-		1 / config_.propagationSpeed1,
-		1 / config_.propagationSpeed2,
 		fermatBlockSize,
 		interfacePointList,
 		xArray_,
