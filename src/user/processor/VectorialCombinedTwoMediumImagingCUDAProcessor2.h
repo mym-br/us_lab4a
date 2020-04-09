@@ -105,14 +105,19 @@ private:
 	AnalyticSignalCoherenceFactorProcessor<float>& coherenceFactor_;
 	float maxFermatBlockSize_;
 	const float lambda2_;
-	std::size_t signalLength_;
-	Tensor3<std::complex<float>, tbb::cache_aligned_allocator<std::complex<float>>> signalTensor_;
+	unsigned int signalLength_;
 	float signalOffset_;
 	std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>> minRowIdx_; // for each column
 	std::vector<float, tbb::cache_aligned_allocator<float>> xArray_;
 	Matrix<float, tbb::cache_aligned_allocator<float>> medium1DelayMatrix_; // (interface_idx, element)
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData<float>>> prepareDataTLS_;
 	std::unique_ptr<VectorialCombinedTwoMediumImagingCUDAProcessor2Data> data_;
+
+	unsigned int stepConfigListSize_;
+	unsigned int interfacePointListSize_;
+	unsigned int rxApodSize_;
+	unsigned int gridXZN1_;
+	unsigned int gridXZN2_;
 };
 
 } // namespace Lab

@@ -338,7 +338,7 @@ struct VectorialCombinedTwoMediumImagingCUDAProcessor2Data {
 	CUDADevMem<MFloat[2]> gridXZ;
 	CUDADevMem<MFloat> rxApod;
 	CUDADevMem<MFloat> xArray;
-	CUDADevMem<MFloat[2]> signalTensor;
+	CUDAHostDevMem<MFloat[2]> signalTensor;
 	CUDADevMem<unsigned int> minRowIdx;
 	CUDADevMem<MFloat[2]> interfacePointList;
 	CUDADevMem<MFloat> medium1DelayMatrix;
@@ -370,7 +370,7 @@ struct PrepareDataWithOneTxElem2 {
 			local.envelope.getAnalyticSignal(
 					local.signal.data(),
 					local.signal.size(),
-					&signalTensor(stepIdx, rxElem, 0));
+					signalTensor + ((stepIdx * signalTensorN2) + rxElem) * signalTensorN3);
 		}
 	}
 
@@ -381,7 +381,9 @@ struct PrepareDataWithOneTxElem2 {
 	const unsigned int stepIdx;
 	const unsigned int baseElementIdx;
 	tbb::enumerable_thread_specific<typename VectorialCombinedTwoMediumImagingCUDAProcessor2::PrepareDataThreadData<TFloat>>& prepareDataTLS;
-	Tensor3<std::complex<TFloat>, tbb::cache_aligned_allocator<std::complex<TFloat>>>& signalTensor;
+	TFloat (*signalTensor)[2];
+	const unsigned int signalTensorN2;
+	const unsigned int signalTensorN3;
 };
 
 VectorialCombinedTwoMediumImagingCUDAProcessor2::VectorialCombinedTwoMediumImagingCUDAProcessor2(
@@ -398,6 +400,11 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::VectorialCombinedTwoMediumImagi
 		, coherenceFactor_(coherenceFactor)
 		, maxFermatBlockSize_(maxFermatBlockSize)
 		, lambda2_(config_.propagationSpeed2 / config_.centerFrequency)
+		, stepConfigListSize_()
+		, interfacePointListSize_()
+		, rxApodSize_()
+		, gridXZN1_()
+		, gridXZN2_()
 {
 	if (config_.numElements != NUM_RX_ELEM) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of elements (" << config_.numElements <<
@@ -460,7 +467,6 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 	}
 
 	minRowIdx_.resize(numCols);
-	signalTensor_.resize(stepConfigList.size(), config_.numElements, signalLength_);
 	medium1DelayMatrix_.resize(config_.numElementsMux, interfacePointList.size());
 
 	XZ<MFloat> p1 = interfacePointList[0];
@@ -510,20 +516,36 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 	tMinRowIdx.put(minRowIdxTimer.getTime());
 #endif
 
-	ArrayGeometry::getElementX2D(config_.numElementsMux, config_.pitch, MFloat(0) /* offset */, xArray_);
+	if (xArray_.empty()) {
+		ArrayGeometry::getElementX2D(config_.numElementsMux, config_.pitch, MFloat(0) /* offset */, xArray_);
+	}
 
 	if (!data_->cudaDataInitialized) {
-		data_->gridXZ             = CUDADevMem<MFloat[2]>(gridXZ.n1() * gridXZ.n2());
-		data_->rxApod             = CUDADevMem<MFloat>(rxApod.size());
+		stepConfigListSize_     = stepConfigList.size();
+		interfacePointListSize_ = interfacePointList.size();
+		rxApodSize_             = rxApod.size();
+		gridXZN1_               = gridXZ.n1();
+		gridXZN2_               = gridXZ.n2();
+
+		data_->gridXZ             = CUDADevMem<MFloat[2]>(gridXZN1_ * gridXZN2_);
+		data_->rxApod             = CUDADevMem<MFloat>(rxApodSize_);
 		data_->xArray             = CUDADevMem<MFloat>(xArray_.size());
-		data_->signalTensor       = CUDADevMem<MFloat[2]>(signalTensor_.n1() * signalTensor_.n2() * signalTensor_.n3());
+		data_->signalTensor       = CUDAHostDevMem<MFloat[2]>(stepConfigListSize_ * config_.numElements * signalLength_);
 		data_->minRowIdx          = CUDADevMem<unsigned int>(minRowIdx_.size());
-		data_->interfacePointList = CUDADevMem<MFloat[2]>(interfacePointList.size());
+		data_->interfacePointList = CUDADevMem<MFloat[2]>(interfacePointListSize_);
 		data_->medium1DelayMatrix = CUDADevMem<MFloat>(medium1DelayMatrix_.n1() * medium1DelayMatrix_.n2());
 		data_->delayTensor        = CUDADevMem<MFloat>(config_.numElementsMux * numCols * numRows);
 		data_->gridValue          = CUDAHostDevMem<MFloat[2]>(numCols * numRows);
 
 		data_->cudaDataInitialized = true;
+	} else {
+		if (stepConfigListSize_     != stepConfigList.size()     ||
+		    interfacePointListSize_ != interfacePointList.size() ||
+		    rxApodSize_             != rxApod.size()             ||
+		    gridXZN1_               != gridXZ.n1()               ||
+		    gridXZN2_               != gridXZ.n2()) {
+			THROW_EXCEPTION(InvalidParameterException, "Data size mismatch.");
+		}
 	}
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
@@ -604,7 +626,9 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 			stepIdx,
 			stepConfig.baseElemIdx,
 			*prepareDataTLS_,
-			signalTensor_
+			data_->signalTensor.hostPtr,
+			config_.numElements,
+			signalLength_
 		};
 		//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements), prepareDataOp);
 		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements, 1 /* grain size */), prepareDataOp, tbb::simple_partitioner());
@@ -617,8 +641,13 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 
 	Timer processColumnTimer;
 #endif
-	exec(cudaMemcpy(data_->signalTensor.devPtr, signalTensor_.data(),
-				Util::sizeInBytes(signalTensor_), cudaMemcpyHostToDevice));
+
+	//exec(cudaDeviceSynchronize());
+	//Timer signalTransferTimer;
+
+	exec(data_->signalTensor.copyHostToDevice());
+
+	//LOG_DEBUG << "SIGNAL TRANSFER " << signalTransferTimer.getTime();
 
 	//==================================================
 	// Step configuration loop.
@@ -651,8 +680,8 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 					numRows,
 					signalOffset_,
 					data_->signalTensor.devPtr,
-					signalTensor_.n2(),
-					signalTensor_.n3(),
+					config_.numElements,
+					signalLength_,
 					stepConfig.baseElem,
 					stepConfig.baseElemIdx,
 					stepConfig.txElem,
@@ -668,8 +697,8 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 					numRows,
 					signalOffset_,
 					data_->signalTensor.devPtr,
-					signalTensor_.n2(),
-					signalTensor_.n3(),
+					config_.numElements,
+					signalLength_,
 					stepConfig.baseElem,
 					stepConfig.baseElemIdx,
 					stepConfig.txElem,
@@ -683,6 +712,9 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 		//exec(cudaDeviceSynchronize());
 		//LOG_DEBUG << "DELAY-SUM " << delaySumTimer.getTime();
 	}
+
+	//exec(cudaDeviceSynchronize());
+	//Timer gridValueTransferTimer;
 
 	exec(data_->gridValue.copyDeviceToHost());
 
@@ -700,6 +732,8 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 							data_->gridValue.hostPtr[gridPointIdx][1]);
 		}
 	}
+
+	//LOG_DEBUG << "GRID VALUE TRANSFER " << gridValueTransferTimer.getTime();
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tProcessColumn.put(processColumnTimer.getTime());
