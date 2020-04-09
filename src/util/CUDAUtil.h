@@ -68,14 +68,26 @@ struct CUDAHostDevMem {
 	cudaError_t copyHostToDevice() {
 		return cudaMemcpy(devPtr, hostPtr, sizeInBytes, cudaMemcpyHostToDevice);
 	}
+	cudaError_t copyHostToDevice(std::size_t size) {
+		return cudaMemcpy(devPtr, hostPtr, (size < sizeInBytes) ? size : sizeInBytes, cudaMemcpyHostToDevice);
+	}
 	cudaError_t copyHostToDeviceAsync() {
 		return cudaMemcpyAsync(devPtr, hostPtr, sizeInBytes, cudaMemcpyHostToDevice);
+	}
+	cudaError_t copyHostToDeviceAsync(std::size_t size) {
+		return cudaMemcpyAsync(devPtr, hostPtr, (size < sizeInBytes) ? size : sizeInBytes, cudaMemcpyHostToDevice);
 	}
 	cudaError_t copyDeviceToHost() {
 		return cudaMemcpy(hostPtr, devPtr, sizeInBytes, cudaMemcpyDeviceToHost);
 	}
+	cudaError_t copyDeviceToHost(std::size_t size) {
+		return cudaMemcpy(hostPtr, devPtr, (size < sizeInBytes) ? size : sizeInBytes, cudaMemcpyDeviceToHost);
+	}
 	cudaError_t copyDeviceToHostAsync() {
 		return cudaMemcpyAsync(hostPtr, devPtr, sizeInBytes, cudaMemcpyDeviceToHost);
+	}
+	cudaError_t copyDeviceToHostAsync(std::size_t size) {
+		return cudaMemcpyAsync(hostPtr, devPtr, (size < sizeInBytes) ? size : sizeInBytes, cudaMemcpyDeviceToHost);
 	}
 };
 
