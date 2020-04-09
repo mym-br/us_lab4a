@@ -47,7 +47,7 @@ struct VectorialCombinedTwoMediumImagingCUDAProcessor2Data;
 // Processing steps:
 //   Find row at the interface                                             - CPU
 //   Calculate delays at the interface                                     - CPU
-//   Calculate delays in the grid above the interface                      - CPU
+//   Calculate delays in the grid above the interface                      - CUDA
 //   Signal preparation                                                    - CPU
 //   Apply delays, use apodization, [apply PCF] and accumulate the samples - CUDA
 //
@@ -111,7 +111,6 @@ private:
 	std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>> minRowIdx_; // for each column
 	std::vector<float, tbb::cache_aligned_allocator<float>> xArray_;
 	Matrix<float, tbb::cache_aligned_allocator<float>> medium1DelayMatrix_; // (interface_idx, element)
-	Tensor3<float, tbb::cache_aligned_allocator<float>> delayTensor_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData<float>>> prepareDataTLS_;
 	std::unique_ptr<VectorialCombinedTwoMediumImagingCUDAProcessor2Data> data_;
 };
