@@ -46,6 +46,8 @@ template<typename TFloat> void copy(const TFloat& orig, XZValueFactor<TFloat>& d
 template<typename TFloat> void copy(const TFloat (&orig)[2], std::complex<TFloat>& dest);
 // complex --> array of size two
 template<typename TFloat> void copy(const std::complex<TFloat>& orig, TFloat (&dest)[2]);
+// array of size two --> array of size two
+template<typename TFloat> void copy(const TFloat (&orig)[2], TFloat (&dest)[2]);
 
 template<typename TFloat1, typename TFloat2> void copy(const TFloat1& orig, TFloat2& dest);
 template<typename TFloat1, typename TFloat2> void copy(const std::complex<TFloat1>& orig, TFloat2 &dest);
@@ -200,6 +202,13 @@ copy(const std::complex<TFloat>& orig, TFloat (&dest)[2])
 {
 	dest[0] = orig.real();
 	dest[1] = orig.imag();
+}
+
+template<typename TFloat>
+void copy(const TFloat (&orig)[2], TFloat (&dest)[2])
+{
+	dest[0] = orig[0];
+	dest[1] = orig[1];
 }
 
 template<typename TFloat1, typename TFloat2>
