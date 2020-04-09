@@ -107,11 +107,11 @@ public:
 	}
 	void operator()(const std::complex<TFloat>& orig, TFloat (&dest)[2]) {
 		dest[0] = orig.real() * scale_;
-		dest[0] = orig.imag() * scale_;
+		dest[1] = orig.imag() * scale_;
 	}
 	void operator()(const TFloat (&orig)[2], TFloat (&dest)[2]) {
 		dest[0] = orig[0] * scale_;
-		dest[0] = orig[1] * scale_;
+		dest[1] = orig[1] * scale_;
 	}
 private:
 	TFloat scale_;
