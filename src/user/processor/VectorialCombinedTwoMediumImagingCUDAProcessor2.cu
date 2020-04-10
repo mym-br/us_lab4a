@@ -667,16 +667,17 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 
 		//Timer delaySumTimer;
 
-		const std::size_t rowBlockSize = 32;
-		const std::size_t colBlockSize = 1;
-		const std::size_t rowNumBlocks = CUDAUtil::numberOfBlocks(numRows, rowBlockSize);
-		const std::size_t colNumBlocks = CUDAUtil::numberOfBlocks(numCols, colBlockSize);
-		const dim3 gridDim(rowNumBlocks, colNumBlocks);
-		const dim3 blockDim(rowBlockSize, colBlockSize);
-
 		if (coherenceFactor_.enabled()) {
 			std::vector<MFloat> cfConstants;
 			coherenceFactor_.implementation().getConstants(cfConstants);
+
+			// Adjusted for GTX-1660.
+			const std::size_t rowBlockSize = 16;
+			const std::size_t colBlockSize = 16;
+			const std::size_t rowNumBlocks = CUDAUtil::numberOfBlocks(numRows, rowBlockSize);
+			const std::size_t colNumBlocks = CUDAUtil::numberOfBlocks(numCols, colBlockSize);
+			const dim3 gridDim(rowNumBlocks, colNumBlocks);
+			const dim3 blockDim(rowBlockSize, colBlockSize);
 
 			processRowColumnWithOneTxElemPCFKernel<<<gridDim, blockDim>>>(
 					numCols,
@@ -695,6 +696,14 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 					cfConstants[2] /* factor */);
 			checkKernelLaunchError();
 		} else {
+			// Adjusted for GTX-1660.
+			const std::size_t rowBlockSize = 64;
+			const std::size_t colBlockSize = 2;
+			const std::size_t rowNumBlocks = CUDAUtil::numberOfBlocks(numRows, rowBlockSize);
+			const std::size_t colNumBlocks = CUDAUtil::numberOfBlocks(numCols, colBlockSize);
+			const dim3 gridDim(rowNumBlocks, colNumBlocks);
+			const dim3 blockDim(rowBlockSize, colBlockSize);
+
 			processRowColumnWithOneTxElemKernel<<<gridDim, blockDim>>>(
 					numCols,
 					numRows,
