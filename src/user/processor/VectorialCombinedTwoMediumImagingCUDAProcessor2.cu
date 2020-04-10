@@ -584,10 +584,13 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 		Timer calculateDelaysTimer;
 #endif
-		const std::size_t colBlockSize = 32;
-		const std::size_t colNumBlocks = CUDAUtil::numberOfBlocks(numCols, colBlockSize);
-		const dim3 gridDim(colNumBlocks, config_.numElementsMux);
-		const dim3 blockDim(colBlockSize, 1);
+		// Adjusted for GTX-1660.
+		const std::size_t colBlockSize = 2;
+		const std::size_t elemBlockSize = 8;
+		const std::size_t colNumBlocks  = CUDAUtil::numberOfBlocks(numCols, colBlockSize);
+		const std::size_t elemNumBlocks = CUDAUtil::numberOfBlocks(config_.numElementsMux, elemBlockSize);
+		const dim3 gridDim(colNumBlocks, elemNumBlocks);
+		const dim3 blockDim(colBlockSize, elemBlockSize);
 
 		calculateDelaysTwoMediumKernel<<<gridDim, blockDim>>>(
 			numCols,
