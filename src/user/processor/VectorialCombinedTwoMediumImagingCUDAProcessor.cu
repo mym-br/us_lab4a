@@ -419,6 +419,9 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::VectorialCombinedTwoMediumImagin
 		, rawDataN1_()
 		, rawDataN2_()
 		, rawDataSize_()
+		, rxApodSize_()
+		, gridXZN1_()
+		, gridXZN2_()
 {
 	if (config_.numElements != NUM_RX_ELEM) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of elements (" << config_.numElements <<
@@ -477,9 +480,15 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 
 	const std::size_t samplesPerChannelLow = acqDataList_[0].n2();
 
-	minRowIdx_.resize(gridXZ.n1() /* number of columns */);
-	firstGridPointIdx_.resize(gridXZ.n1() /* number of columns */);
-	delayTensor_.resize(gridXZ.n1() /* number of columns */, gridXZ.n2() /* number of rows */, config_.numElementsMux);
+	const unsigned int numCols = gridXZ.n1();
+	const unsigned int numRows = gridXZ.n2();
+	if (numCols == 0) {
+		THROW_EXCEPTION(InvalidValueException, "Zero columns in the grid.");
+	}
+
+	minRowIdx_.resize(numCols);
+	firstGridPointIdx_.resize(numCols);
+	delayTensor_.resize(numCols, numRows, config_.numElementsMux);
 	signalTensor_.resize(stepConfigList.size(), config_.numElements, signalLength_);
 	medium1DelayMatrix_.resize(config_.numElementsMux, interfacePointList.size());
 
@@ -500,7 +509,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	//==================================================
 	const MFloat zStepGrid = gridXZ(0, 1).z - gridXZ(0, 0).z;
 	unsigned int gridPointIdx = 0;
-	for (unsigned int col = 0; col < gridXZ.n1(); ++col) {
+	for (unsigned int col = 0; col < numCols; ++col) {
 		auto& point = gridXZ(col, 0);
 		firstGridPointIdx_[col] = gridPointIdx; // the points below the interface are not considered
 
@@ -530,16 +539,13 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tMinRowIdx.put(minRowIdxTimer.getTime());
 #endif
-	const unsigned int cols = gridXZ.n1();
-	if (cols == 0) {
-		THROW_EXCEPTION(InvalidValueException, "Zero columns in the grid.");
-	}
+
 	const std::size_t numGridPoints = gridPointIdx;
-	LOG_DEBUG << "cols: " << cols << " numGridPoints: " << numGridPoints;
+	LOG_DEBUG << "numCols: " << numCols << " numRows: " << numRows;
 
 #ifdef USE_TRANSPOSE
 	const std::size_t transpNumGridPoints = CUDAUtil::roundUpToMultipleOfBlockSize(numGridPoints, TRANSP_BLOCK_SIZE);
-	LOG_DEBUG << "numGridPoints: " << numGridPoints << " transpNumGridPoints: " << transpNumGridPoints;
+	LOG_DEBUG << "transpNumGridPoints: " << transpNumGridPoints;
 	rawDataN1_ = transpNumGridPoints;
 	rawDataN2_ = 2 * config_.numElements /* real, imag */;
 #else
@@ -549,17 +555,33 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	rawDataSize_ = rawDataN1_ * rawDataN2_;
 
 	if (!data_->cudaDataInitialized) {
-		data_->rxApod = CUDADevMem<MFloat>(rxApod.size());
+		rxApodSize_ = rxApod.size();
+		gridXZN1_   = gridXZ.n1();
+		gridXZN2_   = gridXZ.n2();
+#ifdef USE_TRANSPOSE
+		const std::size_t reservedGridPoints = CUDAUtil::roundUpToMultipleOfBlockSize(numCols * numRows, TRANSP_BLOCK_SIZE);
+#else
+		const std::size_t reservedGridPoints = numCols * numRows;
+#endif
+		LOG_DEBUG << "reservedGridPoints: " << reservedGridPoints;
+
+		data_->rxApod = CUDADevMem<MFloat>(rxApodSize_);
 		for (auto& m : data_->rawDataList) {
-			m = CUDAHostDevMem<MFloat>(rawDataSize_);
+			m = CUDAHostDevMem<MFloat>(reservedGridPoints * 2 * config_.numElements);
 		}
 #ifdef USE_TRANSPOSE
-		data_->rawDataT = CUDADevMem<MFloat>(rawDataSize_);
+		data_->rawDataT = CUDADevMem<MFloat>(reservedGridPoints * 2 * config_.numElements);
 #endif
-		data_->gridValueRe = CUDAHostDevMem<MFloat>(numGridPoints);
-		data_->gridValueIm = CUDAHostDevMem<MFloat>(numGridPoints);
+		data_->gridValueRe = CUDAHostDevMem<MFloat>(numCols * numRows);
+		data_->gridValueIm = CUDAHostDevMem<MFloat>(numCols * numRows);
 
 		data_->cudaDataInitialized = true;
+	} else {
+		if (rxApodSize_ != rxApod.size() ||
+		    gridXZN1_   != gridXZ.n1()   ||
+		    gridXZN2_   != gridXZ.n2()) {
+			THROW_EXCEPTION(InvalidParameterException, "Data size mismatch.");
+		}
 	}
 
 	// Prepare buffers.
@@ -587,7 +609,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	Timer calculateDelaysTimer;
 #endif
 	CalculateDelays<MFloat> calculateDelaysOp = {
-		gridXZ.n2(),
+		numRows,
 		config_,
 		config_.samplingFrequency * upsamplingFactor_,
 		config_.samplingFrequency * upsamplingFactor_ / config_.propagationSpeed2,
@@ -599,9 +621,9 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		gridXZ,
 		delayTensor_
 	};
-	//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1()), calculateDelaysOp);
-	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1(), 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
-	//calculateDelaysOp(tbb::blocked_range<unsigned int>(0, gridXZ.n1())); // single-thread
+	//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols), calculateDelaysOp);
+	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols, 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
+	//calculateDelaysOp(tbb::blocked_range<unsigned int>(0, numCols)); // single-thread
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tCalculateDelays.put(calculateDelaysTimer.getTime());
 #endif
@@ -632,7 +654,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	Timer processColumnTimer;
 #endif
 	std::size_t procImageKernelGlobalSize = CUDAUtil::roundUpToMultipleOfBlockSize(numGridPoints, BLOCK_SIZE);
-	LOG_DEBUG << numGridPoints << ':' << procImageKernelGlobalSize << ':' << BLOCK_SIZE;
+	LOG_DEBUG << "procImageKernelGlobalSize: " << procImageKernelGlobalSize << " BLOCK_SIZE: " << BLOCK_SIZE;
 
 	//==================================================
 	// Step configuration loop.
@@ -652,7 +674,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		// Delay and store.
 		//==================================================
 		ProcessColumnWithOneTxElem<MFloat> processColumnOp = {
-			static_cast<unsigned int>(gridXZ.n2()),
+			static_cast<unsigned int>(numRows),
 			0,
 			config_,
 			signalOffset_,
@@ -665,16 +687,16 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 			rawDataN2_,
 		};
 
-		//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, cols), processColumnOp);
-		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, cols, 1 /* grain size */), processColumnOp, tbb::simple_partitioner());
-		//processColumnOp(tbb::blocked_range<unsigned int>(0, cols)); // single-thread
+		//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols), processColumnOp);
+		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols, 1 /* grain size */), processColumnOp, tbb::simple_partitioner());
+		//processColumnOp(tbb::blocked_range<unsigned int>(0, numCols)); // single-thread
 		LOG_DEBUG << "DELAY-STORE " << delayStoreTimer.getTime();
 
 		if (data_->rawDataList.size() > 1) {
 			exec(cudaDeviceSynchronize());
 		}
 
-		exec(data_->rawDataList[rawBufferIdx].copyHostToDeviceAsync());
+		exec(data_->rawDataList[rawBufferIdx].copyHostToDeviceAsync(rawDataSize_ * sizeof(MFloat)));
 
 #ifdef USE_TRANSPOSE
 		{
@@ -727,18 +749,18 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		}
 	}
 
-	exec(data_->gridValueRe.copyDeviceToHost());
-	exec(data_->gridValueIm.copyDeviceToHost());
+	exec(data_->gridValueRe.copyDeviceToHost(numGridPoints * sizeof(MFloat)));
+	exec(data_->gridValueIm.copyDeviceToHost(numGridPoints * sizeof(MFloat)));
 
 	//==================================================
 	// Read the formed image.
 	//==================================================
-	for (unsigned int col = 0; col < cols; ++col) {
+	for (unsigned int col = 0; col < numCols; ++col) {
 		for (unsigned int row = 0; row < minRowIdx_[col]; ++row) {
 			gridValue(col, row) = 0;
 		}
 		unsigned int gridPointIdx = firstGridPointIdx_[col];
-		for (unsigned int row = minRowIdx_[col]; row < gridXZ.n2(); ++row, ++gridPointIdx) {
+		for (unsigned int row = minRowIdx_[col]; row < numRows; ++row, ++gridPointIdx) {
 			gridValue(col, row) = std::complex<MFloat>(
 							data_->gridValueRe.hostPtr[gridPointIdx],
 							data_->gridValueIm.hostPtr[gridPointIdx]);

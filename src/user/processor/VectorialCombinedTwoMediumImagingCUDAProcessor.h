@@ -122,6 +122,10 @@ private:
 	std::size_t rawDataSize_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData<float>>> prepareDataTLS_;
 	std::unique_ptr<VectorialCombinedTwoMediumImagingCUDAProcessorData> data_;
+
+	unsigned int rxApodSize_;
+	unsigned int gridXZN1_;
+	unsigned int gridXZN2_;
 };
 
 } // namespace Lab
