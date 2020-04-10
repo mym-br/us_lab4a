@@ -182,6 +182,10 @@ private:
 	cl::Buffer gridValueReCLBuffer_;
 	cl::Buffer gridValueImCLBuffer_;
 	cl::Buffer rxApodCLBuffer_;
+
+	unsigned int rxApodSize_;
+	unsigned int gridXZN1_;
+	unsigned int gridXZN2_;
 };
 
 
@@ -207,6 +211,9 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 		, clDataInitialized_()
 		, pinnedRawDataCLBufferList_(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS)
 		, mappedRawDataPtrList_(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS)
+		, rxApodSize_()
+		, gridXZN1_()
+		, gridXZN2_()
 {
 	if constexpr (!std::is_same<TFloat, float>::value) {
 		THROW_EXCEPTION(InvalidParameterException, "Only single precision is supported.");
@@ -338,9 +345,16 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 
 	const std::size_t samplesPerChannelLow = acqDataList_[0].n2();
 
-	minRowIdx_.resize(gridXZ.n1() /* number of columns */);
-	firstGridPointIdx_.resize(gridXZ.n1() /* number of columns */);
-	delayTensor_.resize(gridXZ.n1() /* number of columns */, gridXZ.n2() /* number of rows */, config_.numElementsMux);
+	const unsigned int numCols = gridXZ.n1();
+	const unsigned int numRows = gridXZ.n2();
+	if (numCols == 0) {
+		THROW_EXCEPTION(InvalidValueException, "Zero columns in the grid.");
+	}
+	LOG_DEBUG << "numCols: " << numCols << " numRows: " << numRows;
+
+	minRowIdx_.resize(numCols);
+	firstGridPointIdx_.resize(numCols);
+	delayTensor_.resize(numCols, numRows, config_.numElementsMux);
 	signalTensor_.resize(stepConfigList.size(), config_.numElements, signalLength_);
 	medium1DelayMatrix_.resize(config_.numElementsMux, interfacePointList.size());
 
@@ -361,7 +375,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	//==================================================
 	const TFloat zStepGrid = gridXZ(0, 1).z - gridXZ(0, 0).z;
 	unsigned int gridPointIdx = 0;
-	for (unsigned int col = 0; col < gridXZ.n1(); ++col) {
+	for (unsigned int col = 0; col < numCols; ++col) {
 		auto& point = gridXZ(col, 0);
 		firstGridPointIdx_[col] = gridPointIdx; // the points below the interface are not considered
 
@@ -388,24 +402,14 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		gridPointIdx += gridXZ.n2() - minRowIdx_[col];
 	}
 	LOG_DEBUG << "number of valid grid points: " << gridPointIdx;
+	const std::size_t numGridPoints = gridPointIdx;
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tMinRowIdx.put(minRowIdxTimer.getTime());
 #endif
 
-	const unsigned int cols = gridXZ.n1();
-	if (cols == 0) {
-		THROW_EXCEPTION(InvalidValueException, "Zero columns in the grid.");
-	}
-	std::size_t pointSum = 0;
-	for (unsigned int col = 0; col < cols; ++col) {
-		pointSum += gridXZ.n2() - minRowIdx_[col];
-	}
-	const std::size_t numGridPoints = pointSum;
-	LOG_DEBUG << "cols: " << cols << " numGridPoints: " << numGridPoints;
-
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
 	const std::size_t transpNumGridPoints = roundUpToMultipleOfGroupSize(numGridPoints, OCL_TRANSPOSE_GROUP_SIZE_DIM_0);
-	LOG_DEBUG << "numGridPoints: " << numGridPoints << " transpNumGridPoints: " << transpNumGridPoints;
+	LOG_DEBUG << "transpNumGridPoints: " << transpNumGridPoints;
 	rawDataN1_ = transpNumGridPoints;
 	rawDataN2_ = 2 * config_.numElements /* real, imag */;
 #else
@@ -418,22 +422,39 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	gridValueIm_.resize(numGridPoints);
 
 	if (!clDataInitialized_) {
+		rxApodSize_ = rxApod.size();
+		gridXZN1_   = gridXZ.n1();
+		gridXZN2_   = gridXZ.n2();
+#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
+		const std::size_t reservedGridPoints = roundUpToMultipleOfGroupSize(numCols * numRows, OCL_TRANSPOSE_GROUP_SIZE_DIM_0);
+#else
+		const std::size_t reservedGridPoints = numCols * numRows;
+#endif
+		const std::size_t reservedRawDataSizeInBytes = reservedGridPoints * 2 * config_.numElements * sizeof(TFloat);
+		LOG_DEBUG << "reservedGridPoints: " << reservedGridPoints;
+
 		for (unsigned int i = 0; i < pinnedRawDataCLBufferList_.size(); ++i) {
-			pinnedRawDataCLBufferList_[i] = cl::Buffer(clContext_, CL_MEM_ALLOC_HOST_PTR, rawDataSizeInBytes_);
+			pinnedRawDataCLBufferList_[i] = cl::Buffer(clContext_, CL_MEM_ALLOC_HOST_PTR, reservedRawDataSizeInBytes);
 			mappedRawDataPtrList_[i] = static_cast<TFloat*>(
 							clCommandQueue_.enqueueMapBuffer(
 								pinnedRawDataCLBufferList_[i], CL_TRUE /* blocking */, CL_MAP_WRITE,
-								0 /* offset */, rawDataSizeInBytes_));
+								0 /* offset */, reservedRawDataSizeInBytes));
 		}
-		rawDataCLBuffer_     = cl::Buffer(clContext_, CL_MEM_READ_ONLY , rawDataSizeInBytes_);
+		rawDataCLBuffer_     = cl::Buffer(clContext_, CL_MEM_READ_ONLY , reservedRawDataSizeInBytes);
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-		rawDataTCLBuffer_    = cl::Buffer(clContext_, CL_MEM_READ_WRITE, rawDataSizeInBytes_);
+		rawDataTCLBuffer_    = cl::Buffer(clContext_, CL_MEM_READ_WRITE, reservedRawDataSizeInBytes);
 #endif
-		gridValueReCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, Util::sizeInBytes(gridValueRe_));
-		gridValueImCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, Util::sizeInBytes(gridValueIm_));
+		gridValueReCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, numCols * numRows * sizeof(TFloat));
+		gridValueImCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, numCols * numRows * sizeof(TFloat));
 		rxApodCLBuffer_ =      cl::Buffer(clContext_, CL_MEM_READ_ONLY , Util::sizeInBytes(rxApod));
 
 		clDataInitialized_ = true;
+	} else {
+		if (rxApodSize_ != rxApod.size() ||
+		    gridXZN1_   != gridXZ.n1()   ||
+		    gridXZN2_   != gridXZ.n2()) {
+			THROW_EXCEPTION(InvalidParameterException, "Data size mismatch.");
+		}
 	}
 
 	for (unsigned int i = 0; i < pinnedRawDataCLBufferList_.size(); ++i) {
@@ -453,7 +474,9 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 
 	const TFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
 
-	ArrayGeometry::getElementX2D(config_.numElementsMux, config_.pitch, TFloat(0) /* offset */, xArray_);
+	if (xArray_.empty()) {
+		ArrayGeometry::getElementX2D(config_.numElementsMux, config_.pitch, TFloat(0) /* offset */, xArray_);
+	}
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer medium1DelayMatrixTimer;
@@ -471,7 +494,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	Timer calculateDelaysTimer;
 #endif
 	CalculateDelays calculateDelaysOp = {
-		gridXZ.n2(),
+		numRows,
 		config_,
 		config_.samplingFrequency * upsamplingFactor_,
 		config_.samplingFrequency * upsamplingFactor_ / config_.propagationSpeed2,
@@ -485,9 +508,9 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		gridXZ,
 		delayTensor_
 	};
-	//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1()), calculateDelaysOp);
-	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1(), 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
-	//calculateDelaysOp(tbb::blocked_range<unsigned int>(0, gridXZ.n1())); // single-thread
+	//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols), calculateDelaysOp);
+	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols, 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
+	//calculateDelaysOp(tbb::blocked_range<unsigned int>(0, numCols)); // single-thread
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tCalculateDelays.put(calculateDelaysTimer.getTime());
 #endif
@@ -580,7 +603,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		// Delay and store.
 		//==================================================
 		ProcessColumnWithOneTxElem processColumnOp = {
-			static_cast<unsigned int>(gridXZ.n2()),
+			static_cast<unsigned int>(numRows),
 			0,
 			config_,
 			signalOffset_,
@@ -593,9 +616,9 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			rawDataN2_,
 		};
 
-		//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, cols), processColumnOp);
-		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, cols, 1 /* grain size */), processColumnOp, tbb::simple_partitioner());
-		//processColumnOp(tbb::blocked_range<unsigned int>(0, cols)); // single-thread
+		//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols), processColumnOp);
+		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols, 1 /* grain size */), processColumnOp, tbb::simple_partitioner());
+		//processColumnOp(tbb::blocked_range<unsigned int>(0, numCols)); // single-thread
 
 		LOG_DEBUG << "OCL DELAY-STORE " << delayStoreTimer.getTime();
 
@@ -661,12 +684,12 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	clCommandQueue_.enqueueReadBuffer(
 		gridValueImCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
 		Util::sizeInBytes(gridValueIm_), gridValueIm_.data());
-	for (unsigned int col = 0; col < cols; ++col) {
+	for (unsigned int col = 0; col < numCols; ++col) {
 		for (unsigned int row = 0; row < minRowIdx_[col]; ++row) {
 			gridValue(col, row) = 0;
 		}
 		unsigned int gridPointIdx = firstGridPointIdx_[col];
-		for (unsigned int row = minRowIdx_[col]; row < gridXZ.n2(); ++row, ++gridPointIdx) {
+		for (unsigned int row = minRowIdx_[col]; row < numRows; ++row, ++gridPointIdx) {
 			gridValue(col, row) = std::complex<TFloat>(gridValueRe_[gridPointIdx], gridValueIm_[gridPointIdx]);
 		}
 	}

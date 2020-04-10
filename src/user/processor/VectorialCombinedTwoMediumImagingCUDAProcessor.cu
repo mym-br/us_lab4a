@@ -485,6 +485,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	if (numCols == 0) {
 		THROW_EXCEPTION(InvalidValueException, "Zero columns in the grid.");
 	}
+	LOG_DEBUG << "numCols: " << numCols << " numRows: " << numRows;
 
 	minRowIdx_.resize(numCols);
 	firstGridPointIdx_.resize(numCols);
@@ -536,12 +537,10 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		gridPointIdx += gridXZ.n2() - minRowIdx_[col];
 	}
 	LOG_DEBUG << "number of valid grid points: " << gridPointIdx;
+	const std::size_t numGridPoints = gridPointIdx;
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tMinRowIdx.put(minRowIdxTimer.getTime());
 #endif
-
-	const std::size_t numGridPoints = gridPointIdx;
-	LOG_DEBUG << "numCols: " << numCols << " numRows: " << numRows;
 
 #ifdef USE_TRANSPOSE
 	const std::size_t transpNumGridPoints = CUDAUtil::roundUpToMultipleOfBlockSize(numGridPoints, TRANSP_BLOCK_SIZE);
@@ -591,7 +590,9 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 
 	const MFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
 
-	ArrayGeometry::getElementX2D(config_.numElementsMux, config_.pitch, MFloat(0) /* offset */, xArray_);
+	if (xArray_.empty()) {
+		ArrayGeometry::getElementX2D(config_.numElementsMux, config_.pitch, MFloat(0) /* offset */, xArray_);
+	}
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer medium1DelayMatrixTimer;
