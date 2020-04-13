@@ -539,7 +539,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	LOG_DEBUG << "number of valid grid points: " << gridPointIdx;
 	const std::size_t numGridPoints = gridPointIdx;
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tMinRowIdx.put(minRowIdxTimer.getTime());
+	tMinRowIdxML.put(minRowIdxTimer.getTime());
 #endif
 
 #ifdef USE_TRANSPOSE
@@ -605,7 +605,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		}
 	}
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tMedium1DelayMatrix.put(medium1DelayMatrixTimer.getTime());
+	tMedium1DelayMatrixML.put(medium1DelayMatrixTimer.getTime());
 
 	Timer calculateDelaysTimer;
 #endif
@@ -626,7 +626,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols, 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
 	//calculateDelaysOp(tbb::blocked_range<unsigned int>(0, numCols)); // single-thread
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tCalculateDelays.put(calculateDelaysTimer.getTime());
+	tCalculateDelaysML.put(calculateDelaysTimer.getTime());
 #endif
 	// Only one transmit element.
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
@@ -650,7 +650,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		++stepIdx;
 	}
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tPrepareData.put(prepareDataTimer.getTime());
+	tPrepareDataML.put(prepareDataTimer.getTime());
 
 	Timer processColumnTimer;
 #endif
@@ -769,7 +769,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	}
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tProcessColumn.put(processColumnTimer.getTime());
+	tProcessColumnML.put(processColumnTimer.getTime());
 #endif
 	//LOG_DEBUG << "END ========== VectorialCombinedTwoMediumImagingCUDAProcessor::process ==========";
 }

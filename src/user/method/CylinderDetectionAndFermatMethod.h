@@ -21,7 +21,6 @@
 #include <algorithm> /* copy, min, reverse */
 #include <cmath>
 #include <cstddef> /* std::size_t */
-#include <iomanip> /* setprecision */
 #include <sstream>
 #include <type_traits> /* is_same */
 #include <utility> /* make_pair, pair */
@@ -771,15 +770,8 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCCBFPitchCatch()
 #endif
 			signalStartOffset);
 
+	BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(p, baseElemList.size())
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	MeasurementList<double> tProcess;
-	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
-	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
-		tProcess.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tPartialPrepareData.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS * baseElemList.size());
-		p->tPartialProcess.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS * baseElemList.size());
-	}
-	Timer procTimer;
 	pointPositionList.clear();
 #endif
 
@@ -790,14 +782,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCCBFPitchCatch()
 		p->process(baseElemIdx, baseElement, pointPositionList);
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tProcess.put(procTimer.getTime());
-	}
-
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tPrepareData:", p->tPartialPrepareData, baseElemList.size());
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tProcess:    ", p->tPartialProcess, baseElemList.size());
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES(    "process:     ", tProcess);
-#endif
+	END_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(p, baseElemList.size())
 
 	std::vector<TFloat> figPointX(pointPositionList.size()), figPointZ(pointPositionList.size());
 	for (unsigned int i = 0; i < pointPositionList.size(); ++i) {
@@ -934,16 +919,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsInArcs()
 	Matrix<TFloat> statistics(baseElemList.size(), STAT_SIZE);
 #endif
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
-	MeasurementList<double> tProcess;
-	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
-	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
-		tProcess.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tPartialPrepareData.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS * baseElemList.size());
-		p->tPartialProcess.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS * baseElemList.size());
-	}
-	Timer procTimer;
-#endif
+	BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(p, baseElemList.size())
 
 	for (unsigned int baseElemIdx = 0; baseElemIdx < baseElemList.size(); ++baseElemIdx) {
 		const unsigned int baseElement = baseElemList[baseElemIdx];
@@ -1053,14 +1029,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsInArcs()
 #endif
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tProcess.put(procTimer.getTime());
-	}
-
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tPrepareData:", p->tPartialPrepareData, baseElemList.size());
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tProcess:    ", p->tPartialProcess, baseElemList.size());
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES(    "process:     ", tProcess);
-#endif
+	END_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(p, baseElemList.size())
 
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_SHOW_ARCS
 	std::ostringstream out;
@@ -1191,15 +1160,8 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingTangentCurveGeometry(
 #endif
 			signalStartOffset);
 
+	BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(p, baseElemList.size())
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	MeasurementList<double> tProcess;
-	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
-	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
-		tProcess.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tPartialPrepareData.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS * baseElemList.size());
-		p->tPartialProcess.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS * baseElemList.size());
-	}
-	Timer procTimer;
 	pointPositionList.clear();
 #endif
 
@@ -1210,14 +1172,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingTangentCurveGeometry(
 		p->process(baseElemIdx, baseElement, pointPositionList);
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tProcess.put(procTimer.getTime());
-	}
-
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tPrepareData:", p->tPartialPrepareData, baseElemList.size());
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tProcess:    ", p->tPartialProcess, baseElemList.size());
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES(    "process:     ", tProcess);
-#endif
+	END_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(p, baseElemList.size())
 
 	std::vector<TFloat> figPointX(pointPositionList.size()), figPointZ(pointPositionList.size());
 	for (unsigned int i = 0; i < pointPositionList.size(); ++i) {
@@ -1250,14 +1205,7 @@ CylinderDetectionAndFermatMethod<TFloat>::fitCircle()
 	TFloat centerInterfaceX, centerInterfaceZ, interfaceR;
 	unsigned int numPointsWithNaN;
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
-	MeasurementList<double> tProcess;
-	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
-	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
-		tProcess.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-	}
-	Timer procTimer;
-#endif
+	BEGIN_EXECUTION_TIME_MEASUREMENT
 
 	// Execute a circle fitting.
 	if (numBaseElemSteps > pointPositionList.size()) {
@@ -1282,12 +1230,7 @@ CylinderDetectionAndFermatMethod<TFloat>::fitCircle()
 		}
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tProcess.put(procTimer.getTime());
-	}
-
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("process:", tProcess);
-#endif
+	END_EXECUTION_TIME_MEASUREMENT
 
 	LOG_DEBUG << "centerInterfaceX = " << centerInterfaceX << " centerInterfaceZ = " << centerInterfaceZ << " interfaceR = " << interfaceR;
 
@@ -1569,19 +1512,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging()
 	std::vector<TFloat> interfaceAngleList;
 	std::vector<XZ<TFloat>> interfacePointList;
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
-	MeasurementList<double> tProcess;
-	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
-	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
-		tProcess.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tMinRowIdx.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tMedium1DelayMatrix.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tCalculateDelays.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tPrepareData.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tProcessColumn.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-	}
-	Timer procTimer;
-#endif
+	BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL(p)
 
 	Util::fillSequenceFromStartToEndWithMaximumStep(
 		interfaceAngleList,
@@ -1627,25 +1558,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging()
 		}
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tProcess.put(procTimer.getTime());
-	}
-
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tMinRowIdx:         ", p->tMinRowIdx);
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tMedium1DelayMatrix:", p->tMedium1DelayMatrix);
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tCalculateDelays:   ", p->tCalculateDelays);
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tPrepareData:       ", p->tPrepareData);
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tProcessColumn:     ", p->tProcessColumn);
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("process:            ", tProcess);
-
-	std::ostringstream out;
-	out << std::setprecision(15) << "t = [";
-	for (auto v: tProcess.list()) {
-		out << v << ", ";
-	}
-	out << "]";
-	LOG_INFO << out.str();
-#endif
+	END_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL(p)
 
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
 	LOG_DEBUG << "Saving the final raw image...";
@@ -1770,19 +1683,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingCyl()
 	std::vector<TFloat> interfaceAngleList;
 	std::vector<XZ<TFloat>> interfacePointList;
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
-	MeasurementList<double> tProcess;
-	for (unsigned int n = 0; n < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++n) {
-	if (n <= 1U) { // n = 0: initial reset, n = 1: ignores the first iteration
-		tProcess.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tMinRowIdx.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tMedium1DelayMatrix.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tCalculateDelays.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tPrepareData.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-		p->tProcessColumn.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
-	}
-	Timer procTimer;
-#endif
+	BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL(p)
 
 	Util::fillSequenceFromStartToEndWithMaximumStep(
 		interfaceAngleList,
@@ -1824,25 +1725,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingCyl()
 		}
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tProcess.put(procTimer.getTime());
-	}
-
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tMinRowIdx:         ", p->tMinRowIdx);
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tMedium1DelayMatrix:", p->tMedium1DelayMatrix);
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tCalculateDelays:   ", p->tCalculateDelays);
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tPrepareData:       ", p->tPrepareData);
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tProcessColumn:     ", p->tProcessColumn);
-	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("process:            ", tProcess);
-
-	std::ostringstream out;
-	out << std::setprecision(15) << "t = [";
-	for (auto v: tProcess.list()) {
-		out << v << ", ";
-	}
-	out << "]";
-	LOG_INFO << out.str();
-#endif
+	END_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL(p)
 
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
 	LOG_DEBUG << "Saving the final raw image...";

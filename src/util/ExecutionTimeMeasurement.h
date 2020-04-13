@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,7 +18,11 @@
 #ifndef EXECUTIONTIMEMEASUREMENT_H
 #define EXECUTIONTIMEMEASUREMENT_H
 
-#define EXECUTION_TIME_MEASUREMENT_ITERATIONS 10
+#include <iomanip> /* setprecision */
+
+
+
+#define EXECUTION_TIME_MEASUREMENT_ITERATIONS 10U
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 # include "Log.h"
@@ -39,6 +43,54 @@
 	" min=" << (OBJ.minimum() * (N)) << \
 	" max=" << (OBJ.maximum() * (N)) << \
 	" std/mean=" << OBJ.standardDeviation() / OBJ.arithmeticMean()
+#endif
+
+
+
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+# define BEGIN_EXECUTION_TIME_MEASUREMENT \
+	{ MeasurementList<double> execTimeMeasML; \
+	for (unsigned int nExecTimeMeas = 0; nExecTimeMeas < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++nExecTimeMeas) { \
+	if (nExecTimeMeas <= 1U) { /* nExecTimeMeas = 0: initial reset, nExecTimeMeas = 1: ignores the first iteration */ \
+		execTimeMeasML.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS); \
+	} \
+	Timer execTimeMeasTimer;
+# define END_EXECUTION_TIME_MEASUREMENT \
+	execTimeMeasML.put(execTimeMeasTimer.getTime()); } \
+	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("total:", execTimeMeasML); }
+
+# define BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL(OBJ) \
+	{ MeasurementList<double> execTimeMeasML; \
+	for (unsigned int nExecTimeMeas = 0; nExecTimeMeas < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++nExecTimeMeas) { \
+	if (nExecTimeMeas <= 1U) { /* nExecTimeMeas = 0: initial reset, nExecTimeMeas = 1: ignores the first iteration */ \
+		execTimeMeasML.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS); \
+		(OBJ)->execTimeMeasReset(); \
+	} \
+	Timer execTimeMeasTimer;
+# define END_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL(OBJ) \
+	execTimeMeasML.put(execTimeMeasTimer.getTime()); } \
+	(OBJ)->execTimeMeasShowResults(); \
+	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("total:", execTimeMeasML); }
+
+# define BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(OBJ, N) \
+	{ MeasurementList<double> execTimeMeasML; \
+	for (unsigned int nExecTimeMeas = 0; nExecTimeMeas < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++nExecTimeMeas) { \
+	if (nExecTimeMeas <= 1U) { /* nExecTimeMeas = 0: initial reset, nExecTimeMeas = 1: ignores the first iteration */ \
+		execTimeMeasML.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS); \
+		(OBJ)->execTimeMeasReset(N); \
+	} \
+	Timer execTimeMeasTimer;
+# define END_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(OBJ, N) \
+	execTimeMeasML.put(execTimeMeasTimer.getTime()); } \
+	(OBJ)->execTimeMeasShowResults(N); \
+	EXECUTION_TIME_MEASUREMENT_LOG_TIMES("total:", execTimeMeasML); }
+#else
+# define BEGIN_EXECUTION_TIME_MEASUREMENT
+# define END_EXECUTION_TIME_MEASUREMENT
+# define BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL(OBJ)
+# define END_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL(OBJ)
+# define BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(OBJ, N)
+# define END_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(OBJ, N)
 #endif
 
 #endif // EXECUTIONTIMEMEASUREMENT_H

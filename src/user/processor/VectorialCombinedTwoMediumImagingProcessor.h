@@ -106,11 +106,25 @@ public:
 		);
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	MeasurementList<double> tMinRowIdx;
-	MeasurementList<double> tMedium1DelayMatrix;
-	MeasurementList<double> tCalculateDelays;
-	MeasurementList<double> tPrepareData;
-	MeasurementList<double> tProcessColumn;
+	MeasurementList<double> tMinRowIdxML;
+	MeasurementList<double> tMedium1DelayMatrixML;
+	MeasurementList<double> tCalculateDelaysML;
+	MeasurementList<double> tPrepareDataML;
+	MeasurementList<double> tProcessColumnML;
+	void execTimeMeasReset() {
+		tMinRowIdxML.reset(         EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+		tMedium1DelayMatrixML.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+		tCalculateDelaysML.reset(   EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+		tPrepareDataML.reset(       EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+		tProcessColumnML.reset(     EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+	}
+	void execTimeMeasShowResults() {
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tMinRowIdx:         ", tMinRowIdxML);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tMedium1DelayMatrix:", tMedium1DelayMatrixML);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tCalculateDelays:   ", tCalculateDelaysML);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tPrepareData:       ", tPrepareDataML);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tProcessColumn:     ", tProcessColumnML);
+	}
 #endif
 
 private:
@@ -275,7 +289,7 @@ VectorialCombinedTwoMediumImagingProcessor<TFloat>::process(
 	}
 	//LOG_DEBUG << "numValidPixels: " << numValidPixels;
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tMinRowIdx.put(minRowIdxTimer.getTime());
+	tMinRowIdxML.put(minRowIdxTimer.getTime());
 #endif
 	const TFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
 
@@ -293,7 +307,7 @@ VectorialCombinedTwoMediumImagingProcessor<TFloat>::process(
 		}
 	}
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tMedium1DelayMatrix.put(medium1DelayMatrixTimer.getTime());
+	tMedium1DelayMatrixML.put(medium1DelayMatrixTimer.getTime());
 
 	Timer calculateDelaysTimer;
 #endif
@@ -316,7 +330,7 @@ VectorialCombinedTwoMediumImagingProcessor<TFloat>::process(
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridXZ.n1(), 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
 	//calculateDelaysOp(tbb::blocked_range<unsigned int>(0, gridXZ.n1())); // single-thread
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tCalculateDelays.put(calculateDelaysTimer.getTime());
+	tCalculateDelaysML.put(calculateDelaysTimer.getTime());
 #endif
 	const auto& firstStepConfig = stepConfigList.front();
 	if (firstStepConfig.firstTxElem == firstStepConfig.lastTxElem) {
@@ -347,7 +361,7 @@ VectorialCombinedTwoMediumImagingProcessor<TFloat>::process(
 			++stepIdx;
 		}
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-		tPrepareData.put(t0.getTime());
+		tPrepareDataML.put(t0.getTime());
 
 		Timer t1;
 #endif
@@ -368,7 +382,7 @@ VectorialCombinedTwoMediumImagingProcessor<TFloat>::process(
 		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, gridValue.n1(), 1 /* grain size */), processColumnOp, tbb::simple_partitioner());
 		//processColumnOp(tbb::blocked_range<unsigned int>(0, gridValue.n1())); // single-thread
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-		tProcessColumn.put(t1.getTime());
+		tProcessColumnML.put(t1.getTime());
 #endif
 	} else {
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
@@ -423,8 +437,8 @@ VectorialCombinedTwoMediumImagingProcessor<TFloat>::process(
 #endif
 		}
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-		tPrepareData.put(t0Sum);
-		tProcessColumn.put(t1Sum);
+		tPrepareDataML.put(t0Sum);
+		tProcessColumnML.put(t1Sum);
 #endif
 	}
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -27,6 +27,7 @@
 #include "Colormap.h"
 #include "DefaultSTAProcessor.h"
 #include "Exception.h"
+#include "ExecutionTimeMeasurement.h"
 #include "FileUtil.h"
 #include "ImageGrid.h"
 #include "Log.h"
@@ -108,7 +109,12 @@ STAMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFlo
 	Timer tProc;
 
 	processor.prepare(baseElement);
+
+	BEGIN_EXECUTION_TIME_MEASUREMENT
+
 	processor.process(gridData_);
+
+	END_EXECUTION_TIME_MEASUREMENT
 
 	project_.saveImageToHDF5(gridData_, outputDir);
 	project_.saveXYZToHDF5(gridData_, outputDir);

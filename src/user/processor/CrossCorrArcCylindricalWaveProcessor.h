@@ -88,8 +88,16 @@ public:
 	void process(unsigned int baseElementIdx, std::vector<XZValueFactor<TFloat>>& gridData);
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	MeasurementList<double> tPartialPrepareData;
-	MeasurementList<double> tPartialProcess;
+	MeasurementList<double> tPartialPrepareDataML;
+	MeasurementList<double> tPartialProcessML;
+	void execTimeMeasReset(unsigned int n) {
+		tPartialPrepareDataML.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS * n);
+		tPartialProcessML.reset(    EXECUTION_TIME_MEASUREMENT_ITERATIONS * n);
+	}
+	void execTimeMeasShowResults(unsigned int n) {
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tPrepareData:", tPartialPrepareDataML, n);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tProcess:    ", tPartialProcessML, n);
+	}
 #endif
 
 private:
@@ -302,7 +310,7 @@ CrossCorrArcCylindricalWaveProcessor<TFloat>::process(unsigned int baseElementId
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(firstRxElem_, lastRxElem_ + 1), prepareDataOp);
 	//prepareDataOp(tbb::blocked_range<unsigned int>(firstRxElem_, lastRxElem_ + 1)); // single-thread
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tPartialPrepareData.put(prepareDataTimer.getTime());
+	tPartialPrepareDataML.put(prepareDataTimer.getTime());
 #endif
 
 #ifdef CROSS_CORR_ARC_CYLINDRICAL_WAVE_PROCESSOR_USE_ANALYTIC_SIGNAL_FOR_RANGE
@@ -429,7 +437,7 @@ CrossCorrArcCylindricalWaveProcessor<TFloat>::process(unsigned int baseElementId
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, arcData.size()), processArcRangeOp);
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tPartialProcess.put(processTimer.getTime());
+	tPartialProcessML.put(processTimer.getTime());
 #endif
 
 	//LOG_DEBUG << "END ========== CrossCorrArcCylindricalWaveProcessor::process ==========";

@@ -85,8 +85,16 @@ public:
 		std::vector<std::pair<TFloat, TFloat>>& pointPositionList);
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	MeasurementList<double> tPartialPrepareData;
-	MeasurementList<double> tPartialProcess;
+	MeasurementList<double> tPartialPrepareDataML;
+	MeasurementList<double> tPartialProcessML;
+	void execTimeMeasReset(unsigned int n) {
+		tPartialPrepareDataML.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS * n);
+		tPartialProcessML.reset(    EXECUTION_TIME_MEASUREMENT_ITERATIONS * n);
+	}
+	void execTimeMeasShowResults(unsigned int n) {
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tPrepareData:", tPartialPrepareDataML, n);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tProcess:    ", tPartialProcessML, n);
+	}
 #endif
 
 private:
@@ -225,7 +233,7 @@ TangentCurveGeometryProcessor<TFloat>::process(
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(firstRxElem_, lastRxElem_ + 1), prepareDataOp);
 #endif
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tPartialPrepareData.put(prepareDataTimer.getTime());
+	tPartialPrepareDataML.put(prepareDataTimer.getTime());
 
 	Timer processTimer;
 #endif
@@ -317,7 +325,7 @@ TangentCurveGeometryProcessor<TFloat>::process(
 	}
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tPartialProcess.put(processTimer.getTime());
+	tPartialProcessML.put(processTimer.getTime());
 #endif
 
 	//LOG_DEBUG << "END ========== TangentCurveGeometryProcessor::process ==========";

@@ -113,11 +113,25 @@ public:
 		Matrix<std::complex<TFloat>>& gridValue);
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	MeasurementList<double> tMinRowIdx;
-	MeasurementList<double> tMedium1DelayMatrix;
-	MeasurementList<double> tCalculateDelays;
-	MeasurementList<double> tPrepareData;
-	MeasurementList<double> tProcessColumn;
+	MeasurementList<double> tMinRowIdxML;
+	MeasurementList<double> tMedium1DelayMatrixML;
+	MeasurementList<double> tCalculateDelaysML;
+	MeasurementList<double> tPrepareDataML;
+	MeasurementList<double> tProcessColumnML;
+	void execTimeMeasReset() {
+		tMinRowIdxML.reset(         EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+		tMedium1DelayMatrixML.reset(EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+		tCalculateDelaysML.reset(   EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+		tPrepareDataML.reset(       EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+		tProcessColumnML.reset(     EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+	}
+	void execTimeMeasShowResults() {
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tMinRowIdx:         ", tMinRowIdxML);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tMedium1DelayMatrix:", tMedium1DelayMatrixML);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tCalculateDelays:   ", tCalculateDelaysML);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tPrepareData:       ", tPrepareDataML);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES("tProcessColumn:     ", tProcessColumnML);
+	}
 #endif
 
 private:
@@ -404,7 +418,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	LOG_DEBUG << "number of valid grid points: " << gridPointIdx;
 	const std::size_t numGridPoints = gridPointIdx;
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tMinRowIdx.put(minRowIdxTimer.getTime());
+	tMinRowIdxML.put(minRowIdxTimer.getTime());
 #endif
 
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
@@ -489,7 +503,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		}
 	}
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tMedium1DelayMatrix.put(medium1DelayMatrixTimer.getTime());
+	tMedium1DelayMatrixML.put(medium1DelayMatrixTimer.getTime());
 
 	Timer calculateDelaysTimer;
 #endif
@@ -512,7 +526,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols, 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
 	//calculateDelaysOp(tbb::blocked_range<unsigned int>(0, numCols)); // single-thread
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tCalculateDelays.put(calculateDelaysTimer.getTime());
+	tCalculateDelaysML.put(calculateDelaysTimer.getTime());
 #endif
 
 	// Only one transmit element.
@@ -537,7 +551,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		++stepIdx;
 	}
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tPrepareData.put(prepareDataTimer.getTime());
+	tPrepareDataML.put(prepareDataTimer.getTime());
 
 	Timer processColumnTimer;
 #endif
@@ -695,7 +709,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	}
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
-	tProcessColumn.put(processColumnTimer.getTime());
+	tProcessColumnML.put(processColumnTimer.getTime());
 #endif
 
 	//LOG_DEBUG << "END ========== VectorialCombinedTwoMediumImagingOCLProcessor::process ==========";
