@@ -175,7 +175,7 @@ private:
 	std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>> minRowIdx_; // for each column
 	std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>> firstGridPointIdx_; // for each column
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> xArray_;
-	Matrix<TFloat, tbb::cache_aligned_allocator<TFloat>> medium1DelayMatrix_; // (interface_idx, element)
+	Matrix<TFloat, tbb::cache_aligned_allocator<TFloat>> medium1DelayMatrix_;
 	Tensor3<TFloat, tbb::cache_aligned_allocator<TFloat>> delayTensor_;
 	unsigned int rawDataN1_;
 	unsigned int rawDataN2_;

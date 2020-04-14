@@ -123,7 +123,7 @@ private:
 	float signalOffset_;
 	std::vector<unsigned int, tbb::cache_aligned_allocator<unsigned int>> minRowIdx_; // for each column
 	std::vector<float, tbb::cache_aligned_allocator<float>> xArray_;
-	Matrix<float, tbb::cache_aligned_allocator<float>> medium1DelayMatrix_; // (interface_idx, element)
+	Matrix<float, tbb::cache_aligned_allocator<float>> medium1DelayMatrix_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData<float>>> prepareDataTLS_;
 	std::unique_ptr<VectorialCombinedTwoMediumImagingCUDAProcessor2Data> data_;
 
