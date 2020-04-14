@@ -34,6 +34,8 @@
 #include "Timer.h"
 #include "Util.h"
 
+#include "CUDACoherenceFactor.cuh"
+#include "CUDAGeometry.cuh"
 #include "CUDAUtil.h"
 
 
@@ -54,18 +56,6 @@ namespace Lab {
 //   - Shared memory has 32 banks of 32 bits.
 
 #define NUM_RX_ELEM 32
-
-// Defined in VectorialCombinedTwoMediumImagingCUDAProcessor.cu.
-extern __device__ float calcPCF(float* re, float* im, float factor);
-
-__device__
-float
-distance2D(float x0, float y0, float x1, float y1)
-{
-	const float dx = x1 - x0;
-	const float dy = y1 - y0;
-	return sqrtf(dx * dx + dy * dy);
-}
 
 __device__
 float
@@ -279,6 +269,11 @@ processRowColumnWithOneTxElemPCFKernel(
 		const float* rxApod,
 		float pcfFactor)
 {
+	float rxSignalListRe[NUM_RX_ELEM];
+	float rxSignalListIm[NUM_RX_ELEM];
+	float phi[NUM_RX_ELEM];
+	float phiAux[NUM_RX_ELEM];
+
 	const unsigned int signalLength = signalTensorN3;
 	const unsigned int maxPosition = signalLength - 2;
 
@@ -291,8 +286,6 @@ processRowColumnWithOneTxElemPCFKernel(
 	const float txDelay = delayTensor[((baseElem + txElem) * numCols + col) * numRows + row];
 	const float txOffset = signalOffset + txDelay;
 
-	float rxSignalListRe[NUM_RX_ELEM];
-	float rxSignalListIm[NUM_RX_ELEM];
 	for (unsigned int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
 		const float (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
 					+ rxElem * signalLength;
@@ -318,7 +311,7 @@ processRowColumnWithOneTxElemPCFKernel(
 		}
 	}
 
-	const float pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor);
+	const float pcf = calcPCF(rxSignalListRe, rxSignalListIm, NUM_RX_ELEM, pcfFactor, phi, phiAux);
 	float sumRe = 0;
 	float sumIm = 0;
 	for (int i = 0; i < NUM_RX_ELEM; ++i) {

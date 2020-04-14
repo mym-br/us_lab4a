@@ -34,6 +34,7 @@
 #include "Timer.h"
 #include "Util.h"
 
+#include "CUDACoherenceFactor.cuh"
 #include "CUDAUtil.h"
 
 
@@ -121,49 +122,6 @@ processImageKernel(
 	gridValueIm[point] += sumIm;
 }
 
-__device__
-float
-arithmeticMean(float* data)
-{
-	float sum = 0.0;
-	for (int i = 0; i < NUM_RX_ELEM; ++i) {
-		sum += data[i];
-	}
-	return sum * (1.0f / NUM_RX_ELEM);
-}
-
-__device__
-float
-standardDeviation(float* data)
-{
-	float sum = 0.0;
-	float mean = arithmeticMean(data);
-	for (int i = 0; i < NUM_RX_ELEM; ++i) {
-		float e = data[i] - mean;
-		sum += e * e;
-	}
-	return sqrtf(sum * (1.0f / NUM_RX_ELEM));
-}
-
-__device__
-float
-calcPCF(float* re, float* im, float factor)
-{
-	float phi[NUM_RX_ELEM];
-	float phiAux[NUM_RX_ELEM];
-
-#pragma unroll
-	for (int i = 0; i < NUM_RX_ELEM; ++i) {
-		phi[i] = atan2f(im[i], re[i]);
-	}
-	for (int i = 0; i < NUM_RX_ELEM; ++i) {
-		phiAux[i] = phi[i] - copysignf(M_PI, phi[i]);
-	}
-
-	float sf = fminf(standardDeviation(phi), standardDeviation(phiAux));
-	return fmaxf(0.0, 1.0f - factor * sf);
-}
-
 __global__
 void
 processImagePCFKernel(
@@ -176,6 +134,8 @@ processImagePCFKernel(
 {
 	float rxSignalListRe[NUM_RX_ELEM];
 	float rxSignalListIm[NUM_RX_ELEM];
+	float phi[NUM_RX_ELEM];
+	float phiAux[NUM_RX_ELEM];
 
 	const int point = blockIdx.x * blockDim.x + threadIdx.x;
 	if (point >= numGridPoints) return;
@@ -185,7 +145,7 @@ processImagePCFKernel(
 		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
 	}
 
-	float pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor);
+	float pcf = calcPCF(rxSignalListRe, rxSignalListIm, NUM_RX_ELEM, pcfFactor, phi, phiAux);
 
 	float sumRe = 0.0;
 	float sumIm = 0.0;

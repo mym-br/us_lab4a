@@ -261,6 +261,9 @@ if(USE_CUDA)
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.h
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.cu
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.h
+        src/util/CUDACoherenceFactor.cuh
+        src/util/CUDAGeometry.cuh
+        src/util/CUDAStatistics.cuh
         src/util/CUDAUtil.h
     )
     set(USER_CUDA_LIB usercuda)
