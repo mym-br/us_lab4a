@@ -56,17 +56,6 @@ namespace Lab {
 template<typename TFloat, typename TPoint>
 class VectorialSTAProcessor : public ArrayProcessor<TPoint> {
 public:
-	struct PrepareDataThreadData {
-		Interpolator<TFloat> interpolator;
-		HilbertEnvelope<TFloat> envelope;
-		std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> signal;
-	};
-	struct DelaySumThreadData {
-		AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor;
-		std::vector<std::complex<TFloat>> rxSignalSumList;
-		std::vector<TFloat> delayList;
-	};
-
 	VectorialSTAProcessor(
 			const STAConfiguration<TFloat>& config,
 			STAAcquisition<TFloat>& acquisition,
@@ -103,6 +92,17 @@ private:
 	static constexpr TFloat upsampFilterHalfTransitionWidth = 0.2;
 
 	struct PrepareData;
+	struct PrepareDataThreadData {
+		Interpolator<TFloat> interpolator;
+		HilbertEnvelope<TFloat> envelope;
+		std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> signal;
+	};
+
+	struct DelaySumThreadData {
+		AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor;
+		std::vector<std::complex<TFloat>> rxSignalSumList;
+		std::vector<TFloat> delayList;
+	};
 
 	VectorialSTAProcessor(const VectorialSTAProcessor&) = delete;
 	VectorialSTAProcessor& operator=(const VectorialSTAProcessor&) = delete;
@@ -124,6 +124,7 @@ private:
 	std::vector<TFloat> rxApod_;
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> xArray_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
+	std::unique_ptr<tbb::enumerable_thread_specific<DelaySumThreadData>> delaySumTLS_;
 };
 
 
@@ -165,7 +166,7 @@ template<typename TFloat, typename TPoint>
 void
 VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 {
-	LOG_DEBUG << "BEGIN ========== VectorialSTAProcessor::process ==========";
+	//LOG_DEBUG << "BEGIN ========== VectorialSTAProcessor::process ==========";
 
 	Util::resetValueFactor(gridData.begin(), gridData.end());
 
@@ -198,6 +199,10 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 			}
 			prepareDataThreadData.signal.resize(signalLength_);
 			prepareDataTLS_ = std::make_unique<tbb::enumerable_thread_specific<PrepareDataThreadData>>(prepareDataThreadData);
+
+			DelaySumThreadData delaySumThreadData;
+			delaySumThreadData.coherenceFactor = coherenceFactor_;
+			delaySumTLS_ = std::make_unique<tbb::enumerable_thread_specific<DelaySumThreadData>>(delaySumThreadData);
 
 			analyticSignalTensor_.resize(
 						config_.lastTxElem - config_.firstTxElem + 1,
@@ -235,29 +240,26 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 		ArrayGeometry::getElementXCentered2D(config_.numElements, config_.pitch, xArray_);
 	}
 
-	DelaySumThreadData threadData;
-	threadData.coherenceFactor = coherenceFactor_;
-	tbb::enumerable_thread_specific<DelaySumThreadData> tls(threadData);
-
 	const TFloat invCT = (config_.samplingFrequency * upsamplingFactor_) / config_.propagationSpeed;
-	const std::size_t numRows = gridData.n2();
+	const unsigned int numCols = gridData.n1();
+	const unsigned int numRows = gridData.n2();
 
-	IterationCounter::reset(gridData.n1());
+	IterationCounter::reset(numCols);
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer delaySumTimer;
 #endif
-	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n1()),
-	[&, invCT, numRows](const tbb::blocked_range<std::size_t>& r) {
-		auto& local = tls.local();
+	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols),
+	[&, invCT, numRows](const tbb::blocked_range<unsigned int>& r) {
+		auto& local = delaySumTLS_->local();
 
 		local.rxSignalSumList.resize(config_.numElements);
 		local.delayList.resize(config_.numElements);
 
 		// For each column:
-		for (std::size_t i = r.begin(); i != r.end(); ++i) {
+		for (unsigned int i = r.begin(); i != r.end(); ++i) {
 			// For each row:
-			for (std::size_t j = 0; j < numRows; ++j) {
+			for (unsigned int j = 0; j < numRows; ++j) {
 
 				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0));
 				TPoint& point = gridData(i, j);
@@ -304,13 +306,13 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 	std::for_each(gridData.begin(), gridData.end(),
 			Util::MultiplyValueBy<TPoint, TFloat>(TFloat(1) / numSignals));
 
-	LOG_DEBUG << "END ========== VectorialSTAProcessor::process ==========";
+	//LOG_DEBUG << "END ========== VectorialSTAProcessor::process ==========";
 }
 
 template<typename TFloat, typename TPoint>
 struct VectorialSTAProcessor<TFloat, TPoint>::PrepareData {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
-		typename VectorialSTAProcessor::PrepareDataThreadData& local = prepareDataTLS.local();
+		typename VectorialSTAProcessor::PrepareDataThreadData& local = tls.local();
 
 		for (unsigned int rxElem = r.begin(); rxElem != r.end(); ++rxElem) {
 			if (upsamplingFactor > 1) {
@@ -334,7 +336,7 @@ struct VectorialSTAProcessor<TFloat, TPoint>::PrepareData {
 	const unsigned int samplesPerChannelLow;
 	const Matrix<TFloat>& acqData;
 	const unsigned int upsamplingFactor;
-	tbb::enumerable_thread_specific<typename VectorialSTAProcessor::PrepareDataThreadData>& prepareDataTLS;
+	tbb::enumerable_thread_specific<typename VectorialSTAProcessor::PrepareDataThreadData>& tls;
 	std::complex<TFloat>* signalTensor;
 	const unsigned int signalTensorN2;
 	const unsigned int signalTensorN3;
