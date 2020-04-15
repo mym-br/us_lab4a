@@ -282,8 +282,8 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 							if (delayIdx + 1U < analyticSignalTensor_.n3()) {
 								const std::complex<TFloat>* p = &analyticSignalTensor_(localTxElem, rxElem, delayIdx);
 								local.rxSignalSumList[rxElem] +=
-										txApod_[txElem] * rxApod_[rxElem]
-										* ((1 - k) * *p + k * *(p + 1));
+										((1 - k) * *p + k * *(p + 1))
+										* txApod_[txElem] * rxApod_[rxElem];
 							}
 						}
 					}
@@ -308,8 +308,6 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 			for (unsigned int i = r.begin(); i != r.end(); ++i) {
 				// For each row:
 				for (unsigned int j = 0; j < numRows; ++j) {
-
-					std::complex<TFloat> rxSignalSum;
 					TPoint& point = gridData(i, j);
 
 					// Calculate the delays.
@@ -317,9 +315,11 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 						local.delayList[elem] = Geometry::distance2DY0(xArray_[elem], point.x, point.z) * invCT;
 					}
 
+					std::complex<TFloat> signalSum;
 					for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 						const TFloat txDelay = local.delayList[txElem];
 						const unsigned int localTxElem = txElem - config_.firstTxElem;
+						std::complex<TFloat> rxSignalSum;
 						for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 							// Linear interpolation.
 							const TFloat delay = signalOffset_ + txDelay + local.delayList[rxElem];
@@ -327,13 +327,12 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 							const TFloat k = delay - delayIdx;
 							if (delayIdx + 1U < analyticSignalTensor_.n3()) {
 								const std::complex<TFloat>* p = &analyticSignalTensor_(localTxElem, rxElem, delayIdx);
-								rxSignalSum += txApod_[txElem] * rxApod_[rxElem]
-										* ((1 - k) * *p + k * *(p + 1));
+								rxSignalSum += ((1 - k) * *p + k * *(p + 1)) * rxApod_[rxElem];
 							}
 						}
+						signalSum += rxSignalSum * txApod_[txElem];
 					}
-
-					point.value = std::abs(rxSignalSum);
+					point.value = std::abs(signalSum);
 				}
 			}
 

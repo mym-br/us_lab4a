@@ -101,11 +101,13 @@ processRowColumnSTAKernel(
 	const unsigned int col = blockIdx.y * blockDim.y + threadIdx.y;
 	if (col >= numCols) return;
 
-	float rxSignalSumRe = 0;
-	float rxSignalSumIm = 0;
+	float sumRe = 0;
+	float sumIm = 0;
 	for (unsigned int txElem = firstTxElem; txElem <= lastTxElem; ++txElem) {
 		const float txDelay = delayTensor[(txElem * numCols + col) * numRows + row];
 		const float txOffset = signalOffset + txDelay;
+		float rxSumRe = 0;
+		float rxSumIm = 0;
 		for (unsigned int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
 			const float (*p)[2] = signalTensor + (((txElem - firstTxElem) * signalTensorN2) + rxElem) * signalLength;
 			// Linear interpolation.
@@ -124,16 +126,16 @@ processRowColumnSTAKernel(
 					v[0] = v0[0] + k * (v1[0] - v0[0]);
 					v[1] = v0[1] + k * (v1[1] - v0[1]);
 
-					rxSignalSumRe += v[0] * rxApod[rxElem];
-					rxSignalSumIm += v[1] * rxApod[rxElem];
+					rxSumRe += v[0] * rxApod[rxElem];
+					rxSumIm += v[1] * rxApod[rxElem];
 				}
 			}
 		}
-		rxSignalSumRe *= txApod[txElem];
-		rxSignalSumIm *= txApod[txElem];
+		sumRe += rxSumRe * txApod[txElem];
+		sumIm += rxSumIm * txApod[txElem];
 	}
 	const unsigned int point = col * numRows + row;
-	gridValue[point] = sqrtf(rxSignalSumRe * rxSignalSumRe + rxSignalSumIm * rxSignalSumIm);
+	gridValue[point] = sqrtf(sumRe * sumRe + sumIm * sumIm);
 }
 
 __global__
