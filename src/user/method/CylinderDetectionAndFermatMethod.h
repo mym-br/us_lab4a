@@ -337,7 +337,6 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingVectorSum()
 					upsamplingFactor,
 					coherenceFactor,
 					peakOffset,
-					true,
 					txApod,
 					rxApod);
 

@@ -63,7 +63,6 @@ public:
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<float>& coherenceFactor,
 			float peakOffset,
-			bool calculateEnvelope,
 			const std::vector<float>& txApod,
 			const std::vector<float>& rxApod);
 	virtual ~VectorialSTACUDAProcessor();
@@ -105,7 +104,6 @@ private:
 	unsigned int signalLength_;
 	float signalOffset_;
 	std::vector<float, tbb::cache_aligned_allocator<float>> xArray_;
-	bool calculateEnvelope_;//TODO: Remove?
 	bool initialized_;
 	std::vector<float> txApod_;
 	std::vector<float> rxApod_;

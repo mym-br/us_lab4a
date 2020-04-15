@@ -90,7 +90,7 @@ processRowColumnSTAKernel(
 		const float* txApod,
 		const float* rxApod,
 		const float* delayTensor,
-		float (*gridValue)[2])
+		float* gridValue)
 {
 	const unsigned int signalLength = signalTensorN3;
 	const unsigned int maxPosition = signalLength - 2;
@@ -133,8 +133,7 @@ processRowColumnSTAKernel(
 		rxSignalSumIm *= txApod[txElem];
 	}
 	const unsigned int point = col * numRows + row;
-	gridValue[point][0] = rxSignalSumRe;
-	gridValue[point][1] = rxSignalSumIm;
+	gridValue[point] = sqrtf(rxSignalSumRe * rxSignalSumRe + rxSignalSumIm * rxSignalSumIm);
 }
 
 __global__
@@ -152,7 +151,7 @@ processRowColumnSTAPCFKernel(
 		const float* rxApod,
 		const float* delayTensor,
 		float pcfFactor,
-		float (*gridValue)[2],
+		float* gridValue,
 		float* gridFactor)
 {
 	float rxSignalListRe[NUM_RX_ELEM];
@@ -210,8 +209,7 @@ processRowColumnSTAPCFKernel(
 	}
 
 	const unsigned int point = col * numRows + row;
-	gridValue[point][0] = sumRe;
-	gridValue[point][1] = sumIm;
+	gridValue[point] = sqrtf(sumRe * sumRe + sumIm * sumIm);
 	gridFactor[point] = pcf;
 }
 
@@ -225,7 +223,7 @@ struct VectorialSTACUDAProcessorData {
 	CUDADevMem<MFloat> xArray;
 	CUDAHostDevMem<MFloat[2]> signalTensor;
 	CUDADevMem<MFloat> delayTensor;
-	CUDAHostDevMem<MFloat[2]> gridValue;
+	CUDAHostDevMem<MFloat> gridValue;
 	CUDAHostDevMem<MFloat> gridFactor;
 
 	VectorialSTACUDAProcessorData()
@@ -274,7 +272,6 @@ VectorialSTACUDAProcessor::VectorialSTACUDAProcessor(
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<float>& coherenceFactor,
 			float peakOffset,
-			bool calculateEnvelope,
 			const std::vector<float>& txApod,
 			const std::vector<float>& rxApod)
 		: config_(config)
@@ -284,7 +281,6 @@ VectorialSTACUDAProcessor::VectorialSTACUDAProcessor(
 		, coherenceFactor_(coherenceFactor)
 		, signalLength_()
 		, signalOffset_()
-		, calculateEnvelope_(calculateEnvelope)
 		, initialized_()
 		, txApod_(txApod)
 		, rxApod_(rxApod)
@@ -380,7 +376,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 			data_->xArray       = CUDADevMem<MFloat>(xArray_.size());
 			data_->signalTensor = CUDAHostDevMem<MFloat[2]>(numTxElem * config_.numElements * signalLength_);
 			data_->delayTensor  = CUDADevMem<MFloat>(config_.numElements * numCols * numRows);
-			data_->gridValue    = CUDAHostDevMem<MFloat[2]>(numCols * numRows);
+			data_->gridValue    = CUDAHostDevMem<MFloat>(numCols * numRows);
 			if (coherenceFactor_.enabled()) {
 				data_->gridFactor = CUDAHostDevMem<MFloat>(numCols * numRows);
 			}
@@ -537,21 +533,10 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 	//==================================================
 	// Read the formed image.
 	//==================================================
-	if (calculateEnvelope_) {
-		for (unsigned int col = 0; col < numCols; ++col) {
-			unsigned int gridPointIdx = col * numRows;
-			for (unsigned int row = 0; row < numRows; ++row, ++gridPointIdx) {
-				gridData(col, row).value = std::abs(std::complex<MFloat>(//TODO: Move to kernel?
-								data_->gridValue.hostPtr[gridPointIdx][0],
-								data_->gridValue.hostPtr[gridPointIdx][1]));
-			}
-		}
-	} else {
-		for (unsigned int col = 0; col < numCols; ++col) {
-			unsigned int gridPointIdx = col * numRows;
-			for (unsigned int row = 0; row < numRows; ++row, ++gridPointIdx) {
-				gridData(col, row).value = data_->gridValue.hostPtr[gridPointIdx][0];
-			}
+	for (unsigned int col = 0; col < numCols; ++col) {
+		unsigned int gridPointIdx = col * numRows;
+		for (unsigned int row = 0; row < numRows; ++row, ++gridPointIdx) {
+			gridData(col, row).value = data_->gridValue.hostPtr[gridPointIdx];
 		}
 	}
 	if (coherenceFactor_.enabled()) {

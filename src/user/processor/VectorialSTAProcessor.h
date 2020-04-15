@@ -62,7 +62,6 @@ public:
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
 			TFloat peakOffset,
-			bool calculateEnvelope,
 			const std::vector<TFloat>& txApod,
 			const std::vector<TFloat>& rxApod);
 	virtual ~VectorialSTAProcessor() = default;
@@ -117,7 +116,6 @@ private:
 	typename STAAcquisition<TFloat>::AcquisitionDataType acqData_;
 	unsigned int signalLength_;
 	TFloat signalOffset_;
-	bool calculateEnvelope_;
 	bool initialized_;
 	std::vector<TFloat> txApod_;
 	std::vector<TFloat> rxApod_;
@@ -135,7 +133,6 @@ VectorialSTAProcessor<TFloat, TPoint>::VectorialSTAProcessor(
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
 			TFloat peakOffset,
-			bool calculateEnvelope,
 			const std::vector<TFloat>& txApod,
 			const std::vector<TFloat>& rxApod)
 		: config_(config)
@@ -145,7 +142,6 @@ VectorialSTAProcessor<TFloat, TPoint>::VectorialSTAProcessor(
 		, coherenceFactor_(coherenceFactor)
 		, signalLength_()
 		, signalOffset_()
-		, calculateEnvelope_(calculateEnvelope)
 		, initialized_()
 		, txApod_(txApod)
 		, rxApod_(rxApod)
@@ -295,11 +291,7 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 					if (local.coherenceFactor.enabled()) {
 						point.factor = local.coherenceFactor.calculate(&local.rxSignalSumList[0], local.rxSignalSumList.size());
 					}
-					if (calculateEnvelope_) {
-						point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0)));
-					} else {
-						point.value = std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0)).real();
-					}
+					point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0)));
 				}
 			}
 
@@ -341,11 +333,7 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 						}
 					}
 
-					if (calculateEnvelope_) {
-						point.value = std::abs(rxSignalSum);
-					} else {
-						point.value = rxSignalSum.real();
-					}
+					point.value = std::abs(rxSignalSum);
 				}
 			}
 

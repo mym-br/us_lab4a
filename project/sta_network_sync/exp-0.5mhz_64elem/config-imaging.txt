@@ -1,8 +1,6 @@
 
 peak_offset = 0.0
 
-calculate_envelope_in_processing = true
-
 upsampling_factor = 4
 
 tx_apodization = rectangular

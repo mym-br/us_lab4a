@@ -2,5 +2,3 @@
 peak_offset = 0.0
 
 upsampling_factor = 4
-
-calculate_envelope_in_processing = true

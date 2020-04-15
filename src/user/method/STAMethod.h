@@ -220,40 +220,34 @@ STAMethod<TFloat>::execute()
 	case MethodEnum::sta_vectorial_dp_saved:
 	case MethodEnum::sta_vectorial_sp_saved:
 		{
-			const auto processingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
-			const auto upsamplingFactor       = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
-			if (processingWithEnvelope) {
-				visual_ = Visualization::VALUE_RECTIFIED_LOG;
-			}
+			const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
+			visual_ = Visualization::VALUE_RECTIFIED_LOG;
 			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 			std::vector<TFloat> txApod(config.numElements, 1.0); //TODO: Fill txApod
 			std::vector<TFloat> rxApod(config.numElements, 1.0); //TODO: Fill rxApod
 			auto processor = std::make_unique<VectorialSTAProcessor<TFloat, XYZValueFactor<TFloat>>>(
 							config, *acquisition, upsamplingFactor,
-							coherenceFactor, peakOffset, processingWithEnvelope, txApod, rxApod);
+							coherenceFactor, peakOffset, txApod, rxApod);
 			process(config.valueScale, *processor, baseElement, config, outputDir);
 			if (coherenceFactor.enabled()) {
-				useCoherenceFactor(config.valueScale, !processingWithEnvelope, outputDir);
+				useCoherenceFactor(config.valueScale, false, outputDir);
 			}
 		}
 		break;
 #ifdef USE_CUDA
 	case MethodEnum::sta_vectorial_cuda_sp_saved:
 		if constexpr (std::is_same<TFloat, float>::value) {
-			const auto processingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
-			const auto upsamplingFactor       = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
-			if (processingWithEnvelope) {
-				visual_ = Visualization::VALUE_RECTIFIED_LOG;
-			}
+			const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
+			visual_ = Visualization::VALUE_RECTIFIED_LOG;
 			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 			std::vector<TFloat> txApod(config.numElements, 1.0); //TODO: Fill txApod
 			std::vector<TFloat> rxApod(config.numElements, 1.0); //TODO: Fill rxApod
 			auto processor = std::make_unique<VectorialSTACUDAProcessor>(
 							config, *acquisition, upsamplingFactor,
-							coherenceFactor, peakOffset, processingWithEnvelope, txApod, rxApod);
+							coherenceFactor, peakOffset, txApod, rxApod);
 			process(config.valueScale, *processor, baseElement, config, outputDir);
 			if (coherenceFactor.enabled()) {
-				useCoherenceFactor(config.valueScale, !processingWithEnvelope, outputDir);
+				useCoherenceFactor(config.valueScale, false, outputDir);
 			}
 		} else {
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");

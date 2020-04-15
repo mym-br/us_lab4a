@@ -31,7 +31,6 @@
 #include "Matrix.h"
 #include "Method.h"
 #include "NetworkSTAAcquisition.h"
-#include "ParallelHilbertEnvelope.h"
 #include "Project.h"
 #include "SavedSTAAcquisition.h"
 #include "STAAcquisition.h"
@@ -101,11 +100,10 @@ NetworkSyncSTAMethod<TFloat>::execute()
 
 	const auto outputDir = taskPM.value<std::string>("output_dir");
 	const ParamMapPtr imagPM = project_.getSubParamMap("imag_config_file");
-	const auto peakOffset                      = imagPM->value<TFloat>(      "peak_offset"      , 0.0, 50.0);
-	const auto vectorialProcessingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
-	const auto upsamplingFactor                = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
-	const auto txApodDesc                      = imagPM->value<std::string>( "tx_apodization");
-	const auto rxApodDesc                      = imagPM->value<std::string>( "rx_apodization");
+	const auto peakOffset       = imagPM->value<TFloat>(      "peak_offset"      , 0.0, 50.0);
+	const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
+	const auto txApodDesc       = imagPM->value<std::string>( "tx_apodization");
+	const auto rxApodDesc       = imagPM->value<std::string>( "rx_apodization");
 
 	std::vector<TFloat> txApod(config.numElements);
 	WindowFunction::get(txApodDesc, config.numElements, txApod);
@@ -130,13 +128,7 @@ NetworkSyncSTAMethod<TFloat>::execute()
 	auto processor = std::make_unique<VectorialSTAProcessor<TFloat, XYZValueFactor<TFloat>>>(
 					config, *acquisition,
 					upsamplingFactor, coherenceFactor, peakOffset,
-					vectorialProcessingWithEnvelope, txApod, rxApod);
-	Visualization::Value visual;
-	if (vectorialProcessingWithEnvelope) {
-		visual = Visualization::VALUE_RECTIFIED_LOG;
-	} else {
-		visual = Visualization::VALUE_ENVELOPE_LOG;
-	}
+					txApod, rxApod);
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	TFloat valueLevel = 0.0;
 
@@ -177,15 +169,11 @@ NetworkSyncSTAMethod<TFloat>::execute()
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
 		project_.showFigure3D(1, "Raw image", &gridData, &pointList,
-					true, visual, Colormap::GRADIENT_VIRIDIS,
+					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS,
 					config.valueScale != 0.0 ? 1.0 : 0.0);
 
 		if (coherenceFactorEnabled) {
 			project_.saveFactorToHDF5(gridData, acqOutputDir, "image_factor", "factor");
-
-			if (!vectorialProcessingWithEnvelope) {
-				ParallelHilbertEnvelope<TFloat>::calculateDim2(gridData);
-			}
 
 			Util::applyFactorToValue(gridData.begin(), gridData.end());
 
