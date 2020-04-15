@@ -234,7 +234,7 @@ struct VectorialSTACUDAProcessorData {
 };
 
 template<typename TFloat>
-struct PrepareSTAData {
+struct VectorialSTACUDAProcessorPrepareData {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		typename VectorialSTACUDAProcessor::PrepareDataThreadData& local = prepareDataTLS.local();
 
@@ -398,7 +398,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 		Timer prepareDataTimer;
 #endif
-		PrepareSTAData<float> prepareDataOp = {
+		VectorialSTACUDAProcessorPrepareData<float> prepareDataOp = {
 			samplesPerChannelLow,
 			acqData_,
 			upsamplingFactor_,
