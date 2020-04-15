@@ -105,8 +105,8 @@ private:
 	float signalOffset_;
 	std::vector<float, tbb::cache_aligned_allocator<float>> xArray_;
 	bool initialized_;
-	std::vector<float> txApod_;
-	std::vector<float> rxApod_;
+	const std::vector<float> txApod_;
+	const std::vector<float> rxApod_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
 	std::unique_ptr<VectorialSTACUDAProcessorData> data_;
 

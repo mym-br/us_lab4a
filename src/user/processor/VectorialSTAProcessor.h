@@ -117,8 +117,8 @@ private:
 	unsigned int signalLength_;
 	TFloat signalOffset_;
 	bool initialized_;
-	std::vector<TFloat> txApod_;
-	std::vector<TFloat> rxApod_;
+	const std::vector<TFloat> txApod_;
+	const std::vector<TFloat> rxApod_;
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> xArray_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
 	std::unique_ptr<tbb::enumerable_thread_specific<DelaySumThreadData>> delaySumTLS_;
