@@ -45,6 +45,7 @@
 #include "VectorialSTAProcessor.h"
 #include "Visualization.h"
 #include "Util.h"
+#include "WindowFunction.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
 #ifdef USE_CUDA
@@ -221,10 +222,14 @@ STAMethod<TFloat>::execute()
 	case MethodEnum::sta_vectorial_sp_saved:
 		{
 			const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
+			const auto txApodDesc       = imagPM->value<std::string>( "tx_apodization");
+			const auto rxApodDesc       = imagPM->value<std::string>( "rx_apodization");
 			visual_ = Visualization::VALUE_RECTIFIED_LOG;
 			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
-			std::vector<TFloat> txApod(config.numElements, 1.0); //TODO: Fill txApod
-			std::vector<TFloat> rxApod(config.numElements, 1.0); //TODO: Fill rxApod
+			std::vector<TFloat> txApod(config.numElements);
+			WindowFunction::get(txApodDesc, config.numElements, txApod);
+			std::vector<TFloat> rxApod(config.numElements);
+			WindowFunction::get(rxApodDesc, config.numElements, rxApod);
 			auto processor = std::make_unique<VectorialSTAProcessor<TFloat, XYZValueFactor<TFloat>>>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset, txApod, rxApod);
@@ -238,10 +243,14 @@ STAMethod<TFloat>::execute()
 	case MethodEnum::sta_vectorial_cuda_sp_saved:
 		if constexpr (std::is_same<TFloat, float>::value) {
 			const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
+			const auto txApodDesc       = imagPM->value<std::string>( "tx_apodization");
+			const auto rxApodDesc       = imagPM->value<std::string>( "rx_apodization");
 			visual_ = Visualization::VALUE_RECTIFIED_LOG;
 			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
-			std::vector<TFloat> txApod(config.numElements, 1.0); //TODO: Fill txApod
-			std::vector<TFloat> rxApod(config.numElements, 1.0); //TODO: Fill rxApod
+			std::vector<TFloat> txApod(config.numElements);
+			WindowFunction::get(txApodDesc, config.numElements, txApod);
+			std::vector<TFloat> rxApod(config.numElements);
+			WindowFunction::get(rxApodDesc, config.numElements, rxApod);
 			auto processor = std::make_unique<VectorialSTACUDAProcessor>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset, txApod, rxApod);
