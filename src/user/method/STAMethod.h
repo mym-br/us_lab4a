@@ -47,6 +47,9 @@
 #include "Util.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
+#ifdef USE_CUDA
+# include "VectorialSTACUDAProcessor.h"
+#endif
 
 
 
@@ -65,7 +68,11 @@ private:
 	STAMethod(STAMethod&&) = delete;
 	STAMethod& operator=(STAMethod&&) = delete;
 
-	void process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement, const std::string& outputDir);
+	void process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement,
+			const std::string& outputDir);
+	template<typename P>
+		void process(TFloat valueScale, P& processor, unsigned int baseElement,
+				const STAConfiguration<TFloat>& config, const std::string& outputDir);
 	void useCoherenceFactor(TFloat valueScale, bool calculateEnvelope, const std::string& outputDir);
 
 	Project& project_;
@@ -104,25 +111,42 @@ STAMethod<TFloat>::useCoherenceFactor(TFloat valueScale, bool calculateEnvelope,
 
 template<typename TFloat>
 void
-STAMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement, const std::string& outputDir)
+STAMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFloat>>& processor, unsigned int baseElement,
+				const std::string& outputDir)
 {
-	Timer tProc;
-
 	processor.prepare(baseElement);
 
-	BEGIN_EXECUTION_TIME_MEASUREMENT
-
 	processor.process(gridData_);
-
-	END_EXECUTION_TIME_MEASUREMENT
 
 	project_.saveImageToHDF5(gridData_, outputDir);
 	project_.saveXYZToHDF5(gridData_, outputDir);
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
 				true, visual_, Colormap::GRADIENT_VIRIDIS, valueScale);
+}
 
-	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
+template<typename TFloat>
+template<typename P>
+void
+STAMethod<TFloat>::process(TFloat valueScale, P& processor, unsigned int baseElement,
+				const STAConfiguration<TFloat>& config, const std::string& outputDir)
+{
+	processor.prepare(baseElement);
+
+	const unsigned int numTxElem = config.lastTxElem - config.firstTxElem + 1U;
+	LOG_DEBUG << "numTxElem: " << numTxElem;
+
+	BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(&processor, numTxElem)
+
+	processor.process(gridData_);
+
+	END_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(&processor, numTxElem)
+
+	project_.saveImageToHDF5(gridData_, outputDir);
+	project_.saveXYZToHDF5(gridData_, outputDir);
+
+	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
+				true, visual_, Colormap::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename TFloat>
@@ -151,6 +175,9 @@ STAMethod<TFloat>::execute()
 	case MethodEnum::sta_vectorial_dp_saved:
 	case MethodEnum::sta_sp_saved:
 	case MethodEnum::sta_vectorial_sp_saved:
+#ifdef USE_CUDA
+	case MethodEnum::sta_vectorial_cuda_sp_saved:
+#endif
 		acquisition = std::make_unique<SavedSTAAcquisition<TFloat>>(
 					project_, config.numElements,
 					FileUtil::path(taskPM.value<std::string>("data_dir"), "/", 0));
@@ -199,17 +226,40 @@ STAMethod<TFloat>::execute()
 				visual_ = Visualization::VALUE_RECTIFIED_LOG;
 			}
 			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
-			std::vector<TFloat> txApod(config.numElements, 1.0);
-			std::vector<TFloat> rxApod(config.numElements, 1.0);
+			std::vector<TFloat> txApod(config.numElements, 1.0); //TODO: Fill txApod
+			std::vector<TFloat> rxApod(config.numElements, 1.0); //TODO: Fill rxApod
 			auto processor = std::make_unique<VectorialSTAProcessor<TFloat, XYZValueFactor<TFloat>>>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset, processingWithEnvelope, txApod, rxApod);
-			process(config.valueScale, *processor, baseElement, outputDir);
+			process(config.valueScale, *processor, baseElement, config, outputDir);
 			if (coherenceFactor.enabled()) {
 				useCoherenceFactor(config.valueScale, !processingWithEnvelope, outputDir);
 			}
 		}
 		break;
+#ifdef USE_CUDA
+	case MethodEnum::sta_vectorial_cuda_sp_saved:
+		if constexpr (std::is_same<TFloat, float>::value) {
+			const auto processingWithEnvelope = imagPM->value<bool>(        "calculate_envelope_in_processing");
+			const auto upsamplingFactor       = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
+			if (processingWithEnvelope) {
+				visual_ = Visualization::VALUE_RECTIFIED_LOG;
+			}
+			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
+			std::vector<TFloat> txApod(config.numElements, 1.0); //TODO: Fill txApod
+			std::vector<TFloat> rxApod(config.numElements, 1.0); //TODO: Fill rxApod
+			auto processor = std::make_unique<VectorialSTACUDAProcessor>(
+							config, *acquisition, upsamplingFactor,
+							coherenceFactor, peakOffset, processingWithEnvelope, txApod, rxApod);
+			process(config.valueScale, *processor, baseElement, config, outputDir);
+			if (coherenceFactor.enabled()) {
+				useCoherenceFactor(config.valueScale, !processingWithEnvelope, outputDir);
+			}
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+		break;
+#endif
 	default:
 		{
 			CoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));

@@ -30,6 +30,15 @@ distance2D(float x0, float y0, float x1, float y1)
 	return sqrtf(dx * dx + dy * dy);
 }
 
+__device__
+inline
+float
+distance2DY0(float x0, float x1, float y1)
+{
+	const float dx = x1 - x0;
+	return sqrtf(dx * dx + y1 * y1);
+}
+
 } // namespace Lab
 
 #endif // CUDA_GEOMETRY_CUH

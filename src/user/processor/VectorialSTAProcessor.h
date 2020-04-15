@@ -32,6 +32,7 @@
 #include "ArrayProcessor.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
+#include "ExecutionTimeMeasurement.h"
 #include "Geometry.h"
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
@@ -47,6 +48,8 @@
 
 namespace Lab {
 
+// STA image formation, using analytic signals (each sample is a real-imag vector).
+//
 // x = 0 is at the center of the element group.
 // y = 0
 // z = 0 is at the surface of the array.
@@ -66,6 +69,23 @@ public:
 
 	virtual void prepare(unsigned int baseElement);
 	virtual void process(Matrix<TPoint>& gridData);
+
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+	MeasurementList<double> tAcquisitionML;
+	MeasurementList<double> tPrepareDataML;
+	MeasurementList<double> tDelaySumML;
+	void execTimeMeasReset(unsigned int n) {
+		tAcquisitionML.reset(    EXECUTION_TIME_MEASUREMENT_ITERATIONS * n);
+		tPrepareDataML.reset(    EXECUTION_TIME_MEASUREMENT_ITERATIONS * n);
+		tDelaySumML.reset(       EXECUTION_TIME_MEASUREMENT_ITERATIONS);
+	}
+	void execTimeMeasShowResults(unsigned int n) {
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tAcquisition:    ", tAcquisitionML, n);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES_X_N("tPrepareData:    ", tPrepareDataML, n);
+		EXECUTION_TIME_MEASUREMENT_LOG_TIMES(    "tDelaySum:       ", tDelaySumML);
+	}
+#endif
+
 private:
 	// Depends on the signal.
 	// 1.0 --> pi radian / sample at the original sampling rate.
@@ -97,7 +117,7 @@ private:
 	bool initialized_;
 	std::vector<TFloat> txApod_;
 	std::vector<TFloat> rxApod_;
-	unsigned int baseElement_;
+	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> xArray_;
 };
 
 
@@ -121,7 +141,6 @@ VectorialSTAProcessor<TFloat, TPoint>::VectorialSTAProcessor(
 		, initialized_()
 		, txApod_(txApod)
 		, rxApod_(rxApod)
-		, baseElement_()
 {
 	if (upsamplingFactor_ > 1) {
 		interpolator_.prepare(upsamplingFactor_, upsampFilterHalfTransitionWidth);
@@ -149,9 +168,16 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 	// Prepare the signal matrix.
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
-		LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
+		//LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+		Timer acquisitionTimer;
+#endif
 		acquisition_.execute(txElem, acqData_);
+
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+		tAcquisitionML.put(acquisitionTimer.getTime());
+#endif
 		if (!initialized_) {
 			const std::size_t signalLength = acqData_.n2() * upsamplingFactor_;
 			tempSignal_.resize(signalLength);
@@ -169,6 +195,9 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 		const std::size_t samplesPerChannelLow = acqData_.n2();
 
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+		Timer prepareDataTimer;
+#endif
 		const unsigned int localTxElem = txElem - config_.firstTxElem;
 		for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 			if (upsamplingFactor_ > 1) {
@@ -182,10 +211,15 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 			envelope_.getAnalyticSignal(&tempSignal_[0], tempSignal_.size(), &analyticSignalTensor_(localTxElem, rxElem, 0));
 		}
+
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+		tPrepareDataML.put(prepareDataTimer.getTime());
+#endif
 	}
 
-	std::vector<TFloat> xArray;
-	ArrayGeometry::getElementXCentered2D(config_.numElements, config_.pitch, xArray);
+	if (xArray_.empty()) {
+		ArrayGeometry::getElementXCentered2D(config_.numElements, config_.pitch, xArray_);
+	}
 
 	ThreadData threadData;
 	threadData.coherenceFactor = coherenceFactor_;
@@ -196,6 +230,9 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 	IterationCounter::reset(gridData.n1());
 
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+	Timer delaySumTimer;
+#endif
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n1()),
 	[&, invCT, numRows](const tbb::blocked_range<std::size_t>& r) {
 		auto& local = tls.local();
@@ -213,7 +250,7 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 				// Calculate the delays.
 				for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
-					local.delayList[elem] = Geometry::distance2DY0(xArray[elem], point.x, point.z) * invCT;
+					local.delayList[elem] = Geometry::distance2DY0(xArray_[elem], point.x, point.z) * invCT;
 				}
 
 				for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
@@ -246,6 +283,9 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 		IterationCounter::add(r.end() - r.begin());
 	});
+#ifdef USE_EXECUTION_TIME_MEASUREMENT
+	tDelaySumML.put(delaySumTimer.getTime());
+#endif
 
 	std::for_each(gridData.begin(), gridData.end(),
 			Util::MultiplyValueBy<TPoint, TFloat>(TFloat(1) / numSignals));

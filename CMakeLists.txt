@@ -261,6 +261,8 @@ if(USE_CUDA)
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.h
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.cu
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.h
+        src/user/processor/VectorialSTACUDAProcessor.cu
+        src/user/processor/VectorialSTACUDAProcessor.h
         src/util/CUDACoherenceFactor.cuh
         src/util/CUDAGeometry.cuh
         src/util/CUDAStatistics.cuh
@@ -270,6 +272,7 @@ if(USE_CUDA)
     target_include_directories(usercuda PRIVATE
         src/fft
         src/util
+        src/user/acquisition
         src/user/configuration
         ${Qt5Core_INCLUDE_DIRS}
         ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}

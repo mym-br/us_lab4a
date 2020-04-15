@@ -27,15 +27,16 @@
 namespace Lab {
 namespace ArrayGeometry {
 
-template<typename TFloat> void getElementXCentered2D(unsigned int numElements, TFloat pitch, std::vector<TFloat>& x);
+template<typename TFloat, typename Alloc=std::allocator<TFloat>>
+	void getElementXCentered2D(unsigned int numElements, TFloat pitch, std::vector<TFloat, Alloc>& x);
 template<typename TFloat> void getElementX2D(unsigned int numElements, TFloat pitch, TFloat offset, std::vector<TFloat>& x);
 template<typename TFloat, typename VectorType> void getElementX2D(unsigned int numElements, TFloat pitch, TFloat offset, VectorType& x);
 
 
 
-template<typename TFloat>
+template<typename TFloat, typename Alloc>
 void
-getElementXCentered2D(unsigned int numElements, TFloat pitch, std::vector<TFloat>& x)
+getElementXCentered2D(unsigned int numElements, TFloat pitch, std::vector<TFloat, Alloc>& x)
 {
 	if (numElements == 0) {
 		THROW_EXCEPTION(InvalidParameterException, "The number of elements is zero.");
