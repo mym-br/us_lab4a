@@ -254,56 +254,104 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	Timer delaySumTimer;
 #endif
-	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols),
-	[&, invCT, numRows](const tbb::blocked_range<unsigned int>& r) {
-		auto& local = delaySumTLS_->local();
+	if (coherenceFactor_.enabled()) {
+		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols),
+		[&, invCT, numRows](const tbb::blocked_range<unsigned int>& r) {
+			auto& local = delaySumTLS_->local();
 
-		local.rxSignalSumList.resize(config_.numElements);
-		local.delayList.resize(config_.numElements);
+			local.rxSignalSumList.resize(config_.numElements);
+			local.delayList.resize(config_.numElements);
 
-		// For each column:
-		for (unsigned int i = r.begin(); i != r.end(); ++i) {
-			// For each row:
-			for (unsigned int j = 0; j < numRows; ++j) {
+			// For each column:
+			for (unsigned int i = r.begin(); i != r.end(); ++i) {
+				// For each row:
+				for (unsigned int j = 0; j < numRows; ++j) {
 
-				std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0));
-				TPoint& point = gridData(i, j);
+					std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0));
+					TPoint& point = gridData(i, j);
 
-				// Calculate the delays.
-				for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
-					local.delayList[elem] = Geometry::distance2DY0(xArray_[elem], point.x, point.z) * invCT;
-				}
+					// Calculate the delays.
+					for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
+						local.delayList[elem] = Geometry::distance2DY0(xArray_[elem], point.x, point.z) * invCT;
+					}
 
-				for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
-					const TFloat txDelay = local.delayList[txElem];
-					const unsigned int localTxElem = txElem - config_.firstTxElem;
-					for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
-						// Linear interpolation.
-						const TFloat delay = signalOffset_ + txDelay + local.delayList[rxElem];
-						const std::size_t delayIdx = static_cast<std::size_t>(delay);
-						const TFloat k = delay - delayIdx;
-						if (delayIdx + 1U < analyticSignalTensor_.n3()) {
-							const std::complex<TFloat>* p = &analyticSignalTensor_(localTxElem, rxElem, delayIdx);
-							local.rxSignalSumList[rxElem] +=
-									txApod_[txElem] * rxApod_[rxElem]
-									* ((1 - k) * *p + k * *(p + 1));
+					for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
+						const TFloat txDelay = local.delayList[txElem];
+						const unsigned int localTxElem = txElem - config_.firstTxElem;
+						for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
+							// Linear interpolation.
+							const TFloat delay = signalOffset_ + txDelay + local.delayList[rxElem];
+							const std::size_t delayIdx = static_cast<std::size_t>(delay);
+							const TFloat k = delay - delayIdx;
+							if (delayIdx + 1U < analyticSignalTensor_.n3()) {
+								const std::complex<TFloat>* p = &analyticSignalTensor_(localTxElem, rxElem, delayIdx);
+								local.rxSignalSumList[rxElem] +=
+										txApod_[txElem] * rxApod_[rxElem]
+										* ((1 - k) * *p + k * *(p + 1));
+							}
 						}
 					}
-				}
 
-				if (local.coherenceFactor.enabled()) {
-					point.factor = local.coherenceFactor.calculate(&local.rxSignalSumList[0], local.rxSignalSumList.size());
-				}
-				if (calculateEnvelope_) {
-					point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0)));
-				} else {
-					point.value = std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0)).real();
+					if (local.coherenceFactor.enabled()) {
+						point.factor = local.coherenceFactor.calculate(&local.rxSignalSumList[0], local.rxSignalSumList.size());
+					}
+					if (calculateEnvelope_) {
+						point.value = std::abs(std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0)));
+					} else {
+						point.value = std::accumulate(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0)).real();
+					}
 				}
 			}
-		}
 
-		IterationCounter::add(r.end() - r.begin());
-	});
+			IterationCounter::add(r.end() - r.begin());
+		});
+	} else {
+		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols),
+		[&, invCT, numRows](const tbb::blocked_range<unsigned int>& r) {
+			auto& local = delaySumTLS_->local();
+
+			local.delayList.resize(config_.numElements);
+
+			// For each column:
+			for (unsigned int i = r.begin(); i != r.end(); ++i) {
+				// For each row:
+				for (unsigned int j = 0; j < numRows; ++j) {
+
+					std::complex<TFloat> rxSignalSum;
+					TPoint& point = gridData(i, j);
+
+					// Calculate the delays.
+					for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
+						local.delayList[elem] = Geometry::distance2DY0(xArray_[elem], point.x, point.z) * invCT;
+					}
+
+					for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
+						const TFloat txDelay = local.delayList[txElem];
+						const unsigned int localTxElem = txElem - config_.firstTxElem;
+						for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
+							// Linear interpolation.
+							const TFloat delay = signalOffset_ + txDelay + local.delayList[rxElem];
+							const std::size_t delayIdx = static_cast<std::size_t>(delay);
+							const TFloat k = delay - delayIdx;
+							if (delayIdx + 1U < analyticSignalTensor_.n3()) {
+								const std::complex<TFloat>* p = &analyticSignalTensor_(localTxElem, rxElem, delayIdx);
+								rxSignalSum += txApod_[txElem] * rxApod_[rxElem]
+										* ((1 - k) * *p + k * *(p + 1));
+							}
+						}
+					}
+
+					if (calculateEnvelope_) {
+						point.value = std::abs(rxSignalSum);
+					} else {
+						point.value = rxSignalSum.real();
+					}
+				}
+			}
+
+			IterationCounter::add(r.end() - r.begin());
+		});
+	}
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 	tDelaySumML.put(delaySumTimer.getTime());
 #endif
