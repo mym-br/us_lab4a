@@ -91,7 +91,6 @@ private:
 	// 1.0 --> pi radian / sample at the original sampling rate.
 	static constexpr TFloat upsampFilterHalfTransitionWidth = 0.2;
 
-	struct PrepareData;
 	struct PrepareDataThreadData {
 		Interpolator<TFloat> interpolator;
 		HilbertEnvelope<TFloat> envelope;
@@ -216,21 +215,27 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 		Timer prepareDataTimer;
 #endif
-		PrepareData prepareDataOp = {
-			samplesPerChannelLow,
-			acqData_,
-			upsamplingFactor_,
-			*prepareDataTLS_,
-			analyticSignalTensor_.data(),
-			config_.numElements,
-			signalLength_,
-			txElem - config_.firstTxElem,
-			deadZoneSamplesUp_
-		};
-		//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements), prepareDataOp);
-		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements, 1 /* grain size */), prepareDataOp, tbb::simple_partitioner());
-		//prepareDataOp(tbb::blocked_range<unsigned int>(0, config_.numElements)); // single-thread
+		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements),
+		[&, samplesPerChannelLow, txElem](const tbb::blocked_range<unsigned int>& r) {
+			auto& local = prepareDataTLS_->local();
 
+			for (unsigned int rxElem = r.begin(); rxElem != r.end(); ++rxElem) {
+				if (upsamplingFactor_ > 1) {
+					local.interpolator.interpolate(&acqData_(rxElem, 0), samplesPerChannelLow, local.signal.data());
+				} else {
+					auto range = acqData_.range2(rxElem);
+					std::copy(range.begin(), range.end(), local.signal.begin());
+				}
+
+				Util::removeDC(local.signal.data(), local.signal.size(), deadZoneSamplesUp_);
+
+				// Obtain the analytic signal.
+				local.envelope.getAnalyticSignal(
+						local.signal.data(),
+						local.signal.size(),
+						&analyticSignalTensor_(txElem - config_.firstTxElem, rxElem, 0));
+			}
+		});
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 		tPrepareDataML.put(prepareDataTimer.getTime());
 #endif
@@ -308,41 +313,6 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 	//LOG_DEBUG << "END ========== VectorialSTAProcessor::process ==========";
 }
-
-template<typename TFloat, typename TPoint>
-struct VectorialSTAProcessor<TFloat, TPoint>::PrepareData {
-	void operator()(const tbb::blocked_range<unsigned int>& r) const {
-		typename VectorialSTAProcessor::PrepareDataThreadData& local = tls.local();
-
-		for (unsigned int rxElem = r.begin(); rxElem != r.end(); ++rxElem) {
-			if (upsamplingFactor > 1) {
-				local.interpolator.interpolate(&acqData(rxElem, 0), samplesPerChannelLow, local.signal.data());
-			} else {
-				auto range = acqData.range2(rxElem);
-				std::copy(range.begin(), range.end(), local.signal.begin());
-			}
-
-			Util::removeDC(local.signal.data(), local.signal.size(), deadZoneSamplesUp);
-
-			// Obtain the analytic signal.
-			local.envelope.getAnalyticSignal(
-					local.signal.data(),
-					local.signal.size(),
-					signalTensor + ((txElemIdx * signalTensorN2) + rxElem) * signalTensorN3);
-		}
-	}
-
-	// Use only small types or references/pointers, because this object may be copied many times.
-	const unsigned int samplesPerChannelLow;
-	const Matrix<TFloat>& acqData;
-	const unsigned int upsamplingFactor;
-	tbb::enumerable_thread_specific<typename VectorialSTAProcessor::PrepareDataThreadData>& tls;
-	std::complex<TFloat>* signalTensor;
-	const unsigned int signalTensorN2;
-	const unsigned int signalTensorN3;
-	const unsigned int txElemIdx;
-	const unsigned int deadZoneSamplesUp;
-};
 
 } // namespace Lab
 
