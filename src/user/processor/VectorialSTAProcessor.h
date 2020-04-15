@@ -167,7 +167,7 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 	const std::size_t numSignals = (config_.lastTxElem - config_.firstTxElem + 1U) * config_.numElements;
 
-	// Prepare the signal matrix.
+	// Prepare the signal tensor.
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 		//LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
@@ -225,7 +225,6 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 				Util::removeDC(local.signal.data(), local.signal.size(), deadZoneSamplesUp_);
 
-				// Obtain the analytic signal.
 				local.envelope.getAnalyticSignal(
 						local.signal.data(),
 						local.signal.size(),
@@ -258,13 +257,11 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 			local.rxSignalSumList.resize(config_.numElements);
 			local.delayList.resize(config_.numElements);
 
-			// For each column:
-			for (unsigned int i = r.begin(); i != r.end(); ++i) {
-				// For each row:
-				for (unsigned int j = 0; j < numRows; ++j) {
+			for (unsigned int col = r.begin(); col != r.end(); ++col) {
+				for (unsigned int row = 0; row < numRows; ++row) {
 
 					std::fill(local.rxSignalSumList.begin(), local.rxSignalSumList.end(), std::complex<TFloat>(0));
-					TPoint& point = gridData(i, j);
+					TPoint& point = gridData(col, row);
 
 					// Calculate the delays.
 					for (unsigned int elem = 0; elem < config_.numElements; ++elem) {
@@ -304,11 +301,9 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 			local.delayList.resize(config_.numElements);
 
-			// For each column:
-			for (unsigned int i = r.begin(); i != r.end(); ++i) {
-				// For each row:
-				for (unsigned int j = 0; j < numRows; ++j) {
-					TPoint& point = gridData(i, j);
+			for (unsigned int col = r.begin(); col != r.end(); ++col) {
+				for (unsigned int row = 0; row < numRows; ++row) {
+					TPoint& point = gridData(col, row);
 
 					// Calculate the delays.
 					for (unsigned int elem = 0; elem < config_.numElements; ++elem) {

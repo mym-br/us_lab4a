@@ -248,7 +248,6 @@ struct VectorialSTACUDAProcessorPrepareData {
 
 			Util::removeDC(local.signal.data(), local.signal.size(), deadZoneSamplesUp);
 
-			// Obtain the analytic signal.
 			local.envelope.getAnalyticSignal(
 					local.signal.data(),
 					local.signal.size(),
@@ -338,7 +337,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 		ArrayGeometry::getElementXCentered2D(config_.numElements, config_.pitch, xArray_);
 	}
 
-	// Prepare the signal matrix.
+	// Prepare the signal tensor.
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 		//LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
