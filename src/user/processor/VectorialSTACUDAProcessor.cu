@@ -519,13 +519,16 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 		exec(data_->gridFactor.copyDeviceToHost());
 	}
 
+	const unsigned int numSignals = numTxElem * config_.numElements;
+	const MFloat valueCoef = 1.0f / MFloat(numSignals);
+
 	//==================================================
 	// Read the formed image.
 	//==================================================
 	for (unsigned int col = 0; col < numCols; ++col) {
 		unsigned int gridPointIdx = col * numRows;
 		for (unsigned int row = 0; row < numRows; ++row, ++gridPointIdx) {
-			gridData(col, row).value = data_->gridValue.hostPtr[gridPointIdx];
+			gridData(col, row).value = data_->gridValue.hostPtr[gridPointIdx] * valueCoef;
 		}
 	}
 	if (coherenceFactor_.enabled()) {
