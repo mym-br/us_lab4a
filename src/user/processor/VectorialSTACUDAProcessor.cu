@@ -462,7 +462,8 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 		std::vector<MFloat> cfConstants;
 		coherenceFactor_.implementation().getConstants(cfConstants);
 
-		const std::size_t rowBlockSize = 16;
+		// Adjusted for GTX-1660.
+		const std::size_t rowBlockSize = 4;
 		const std::size_t colBlockSize = 16;
 		const std::size_t rowNumBlocks = CUDAUtil::numberOfBlocks(numRows, rowBlockSize);
 		const std::size_t colNumBlocks = CUDAUtil::numberOfBlocks(numCols, colBlockSize);
@@ -485,6 +486,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 				data_->gridFactor.devPtr);
 		checkKernelLaunchError();
 	} else {
+		// Adjusted for GTX-1660.
 		const std::size_t rowBlockSize = 16;
 		const std::size_t colBlockSize = 16;
 		const std::size_t rowNumBlocks = CUDAUtil::numberOfBlocks(numRows, rowBlockSize);
