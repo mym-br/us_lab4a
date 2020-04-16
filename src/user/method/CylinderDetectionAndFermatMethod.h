@@ -328,7 +328,6 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingVectorSum()
 	std::unique_ptr<STAAcquisition<TFloat>> acquisition =
 		std::make_unique<SavedSTAAcquisition<TFloat>>(project_, config.numElements, savedAcqDir + '/');
 
-	const std::vector<TFloat> txApod(config.numElements, 1.0);
 	const std::vector<TFloat> rxApod(config.numElements, 1.0);
 	std::unique_ptr<ArrayProcessor<XZValueFactor<TFloat>>> p =
 		std::make_unique<VectorialSTAProcessor<TFloat, XZValueFactor<TFloat>>>(
@@ -337,7 +336,6 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingVectorSum()
 					upsamplingFactor,
 					coherenceFactor,
 					peakOffset,
-					txApod,
 					rxApod);
 
 	std::vector<std::pair<TFloat, TFloat>> peakPositionList(baseElemList.size()); // x, z

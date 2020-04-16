@@ -102,18 +102,14 @@ NetworkSyncSTAMethod<TFloat>::execute()
 	const ParamMapPtr imagPM = project_.getSubParamMap("imag_config_file");
 	const auto peakOffset       = imagPM->value<TFloat>(      "peak_offset"      , 0.0, 50.0);
 	const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor",   1,  128);
-	const auto txApodDesc       = imagPM->value<std::string>( "tx_apodization");
 	const auto rxApodDesc       = imagPM->value<std::string>( "rx_apodization");
 
-	std::vector<TFloat> txApod(config.numElements);
-	WindowFunction::get(txApodDesc, config.numElements, txApod);
 	std::vector<TFloat> rxApod(config.numElements);
 	WindowFunction::get(rxApodDesc, config.numElements, rxApod);
 	std::vector<TFloat> elemIndex;
 	Util::fillSequenceFromStartToEndWithSize(elemIndex,
 		TFloat(0), static_cast<TFloat>(config.numElements - 1U), static_cast<TFloat>(config.numElements));
-	project_.showFigure2D(1, "TX Apodization", elemIndex, txApod, true, true);
-	project_.showFigure2D(2, "RX Apodization", elemIndex, rxApod, true, true);
+	project_.showFigure2D(1, "RX Apodization", elemIndex, rxApod, true, true);
 
 	project_.createDirectory(outputDir, true);
 
@@ -128,7 +124,7 @@ NetworkSyncSTAMethod<TFloat>::execute()
 	auto processor = std::make_unique<VectorialSTAProcessor<TFloat, XYZValueFactor<TFloat>>>(
 					config, *acquisition,
 					upsamplingFactor, coherenceFactor, peakOffset,
-					txApod, rxApod);
+					rxApod);
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	TFloat valueLevel = 0.0;
 

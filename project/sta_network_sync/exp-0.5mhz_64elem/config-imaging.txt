@@ -3,5 +3,4 @@ peak_offset = 0.0
 
 upsampling_factor = 4
 
-tx_apodization = rectangular
 rx_apodization = rectangular

@@ -62,7 +62,6 @@ public:
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
 			TFloat peakOffset,
-			const std::vector<TFloat>& txApod,
 			const std::vector<TFloat>& rxApod);
 	virtual ~VectorialSTAProcessor() = default;
 
@@ -117,7 +116,6 @@ private:
 	unsigned int signalLength_;
 	TFloat signalOffset_;
 	bool initialized_;
-	const std::vector<TFloat> txApod_;
 	const std::vector<TFloat> rxApod_;
 	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> xArray_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
@@ -133,7 +131,6 @@ VectorialSTAProcessor<TFloat, TPoint>::VectorialSTAProcessor(
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
 			TFloat peakOffset,
-			const std::vector<TFloat>& txApod,
 			const std::vector<TFloat>& rxApod)
 		: config_(config)
 		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
@@ -143,7 +140,6 @@ VectorialSTAProcessor<TFloat, TPoint>::VectorialSTAProcessor(
 		, signalLength_()
 		, signalOffset_()
 		, initialized_()
-		, txApod_(txApod)
 		, rxApod_(rxApod)
 {
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * peakOffset / config_.centerFrequency;
@@ -280,7 +276,7 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 								const std::complex<TFloat>* p = &analyticSignalTensor_(localTxElem, rxElem, delayIdx);
 								local.rxSignalSumList[rxElem] +=
 										((1 - k) * *p + k * *(p + 1))
-										* txApod_[txElem] * rxApod_[rxElem];
+										* rxApod_[rxElem];
 							}
 						}
 					}
@@ -314,7 +310,6 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 					for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 						const TFloat txDelay = local.delayList[txElem];
 						const unsigned int localTxElem = txElem - config_.firstTxElem;
-						std::complex<TFloat> rxSignalSum;
 						for (unsigned int rxElem = 0; rxElem < config_.numElements; ++rxElem) {
 							// Linear interpolation.
 							const TFloat delay = signalOffset_ + txDelay + local.delayList[rxElem];
@@ -322,10 +317,9 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 							const TFloat k = delay - delayIdx;
 							if (delayIdx + 1U < analyticSignalTensor_.n3()) {
 								const std::complex<TFloat>* p = &analyticSignalTensor_(localTxElem, rxElem, delayIdx);
-								rxSignalSum += ((1 - k) * *p + k * *(p + 1)) * rxApod_[rxElem];
+								signalSum += ((1 - k) * *p + k * *(p + 1)) * rxApod_[rxElem];
 							}
 						}
-						signalSum += rxSignalSum * txApod_[txElem];
 					}
 					point.value = std::abs(signalSum);
 				}

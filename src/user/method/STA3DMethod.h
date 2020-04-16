@@ -179,14 +179,6 @@ STA3DMethod<TFloat>::execute()
 		const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 		const auto peakOffset       = imagPM->value<TFloat>(      "peak_offset", 0.0, 50.0);
 
-		std::vector<TFloat> txApod;
-		if (config.activeTxElem.size() > 1) {
-			const auto txApodFile = imagPM->value<std::string>("tx_apodization_file");
-			project_.loadHDF5(txApodFile, "apod", txApod);
-		} else {
-			txApod.push_back(1.0);
-		}
-
 		std::vector<TFloat> rxApod;
 		const auto rxApodFile = imagPM->value<std::string>("rx_apodization_file");
 		project_.loadHDF5(rxApodFile, "apod", rxApod);
@@ -195,7 +187,7 @@ STA3DMethod<TFloat>::execute()
 		auto processor = std::make_unique<Vectorial3DSTAProcessor<TFloat>>(
 							config, *acquisition, upsamplingFactor,
 							coherenceFactor, peakOffset,
-							txApod, rxApod);
+							rxApod);
 		process(config.valueScale, *processor, baseElement, outputDir);
 		if (coherenceFactor.enabled()) {
 			useCoherenceFactor(config.valueScale, outputDir);

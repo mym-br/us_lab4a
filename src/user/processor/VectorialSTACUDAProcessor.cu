@@ -87,7 +87,6 @@ processRowColumnSTAKernel(
 		unsigned int signalTensorN3,
 		unsigned int firstTxElem,
 		unsigned int lastTxElem,
-		const float* txApod,
 		const float* rxApod,
 		const float* delayTensor,
 		float* gridValue)
@@ -106,8 +105,6 @@ processRowColumnSTAKernel(
 	for (unsigned int txElem = firstTxElem; txElem <= lastTxElem; ++txElem) {
 		const float txDelay = delayTensor[(txElem * numCols + col) * numRows + row];
 		const float txOffset = signalOffset + txDelay;
-		float rxSumRe = 0;
-		float rxSumIm = 0;
 		for (unsigned int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
 			const float (*p)[2] = signalTensor + (((txElem - firstTxElem) * signalTensorN2) + rxElem) * signalLength;
 			// Linear interpolation.
@@ -126,13 +123,11 @@ processRowColumnSTAKernel(
 					v[0] = v0[0] + k * (v1[0] - v0[0]);
 					v[1] = v0[1] + k * (v1[1] - v0[1]);
 
-					rxSumRe += v[0] * rxApod[rxElem];
-					rxSumIm += v[1] * rxApod[rxElem];
+					sumRe += v[0] * rxApod[rxElem];
+					sumIm += v[1] * rxApod[rxElem];
 				}
 			}
 		}
-		sumRe += rxSumRe * txApod[txElem];
-		sumIm += rxSumIm * txApod[txElem];
 	}
 	const unsigned int point = col * numRows + row;
 	gridValue[point] = sqrtf(sumRe * sumRe + sumIm * sumIm);
@@ -149,7 +144,6 @@ processRowColumnSTAPCFKernel(
 		unsigned int signalTensorN3,
 		unsigned int firstTxElem,
 		unsigned int lastTxElem,
-		const float* txApod,
 		const float* rxApod,
 		const float* delayTensor,
 		float pcfFactor,
@@ -195,8 +189,8 @@ processRowColumnSTAPCFKernel(
 					v[0] = v0[0] + k * (v1[0] - v0[0]);
 					v[1] = v0[1] + k * (v1[1] - v0[1]);
 
-					rxSignalListRe[rxElem] += v[0] * txApod[txElem] * rxApod[rxElem];
-					rxSignalListIm[rxElem] += v[1] * txApod[txElem] * rxApod[rxElem];
+					rxSignalListRe[rxElem] += v[0] * rxApod[rxElem];
+					rxSignalListIm[rxElem] += v[1] * rxApod[rxElem];
 				}
 			}
 		}
@@ -220,7 +214,6 @@ processRowColumnSTAPCFKernel(
 struct VectorialSTACUDAProcessorData {
 	bool cudaDataInitialized;
 	CUDAHostDevMem<MFloat[2]> gridXZ;
-	CUDADevMem<MFloat> txApod;
 	CUDADevMem<MFloat> rxApod;
 	CUDADevMem<MFloat> xArray;
 	CUDAHostDevMem<MFloat[2]> signalTensor;
@@ -273,7 +266,6 @@ VectorialSTACUDAProcessor::VectorialSTACUDAProcessor(
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<float>& coherenceFactor,
 			float peakOffset,
-			const std::vector<float>& txApod,
 			const std::vector<float>& rxApod)
 		: config_(config)
 		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
@@ -283,7 +275,6 @@ VectorialSTACUDAProcessor::VectorialSTACUDAProcessor(
 		, signalLength_()
 		, signalOffset_()
 		, initialized_()
-		, txApod_(txApod)
 		, rxApod_(rxApod)
 		, gridN1_()
 		, gridN2_()
@@ -372,7 +363,6 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 			gridN2_ = gridData.n2();
 
 			data_->gridXZ       = CUDAHostDevMem<MFloat[2]>(gridN1_ * gridN2_);
-			data_->txApod       = CUDADevMem<MFloat>(txApod_.size());
 			data_->rxApod       = CUDADevMem<MFloat>(rxApod_.size());
 			data_->xArray       = CUDADevMem<MFloat>(xArray_.size());
 			data_->signalTensor = CUDAHostDevMem<MFloat[2]>(numTxElem * config_.numElements * signalLength_);
@@ -425,8 +415,6 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 		data_->gridXZ.hostPtr[i][1] = point.z;
 	}
 	exec(data_->gridXZ.copyHostToDevice());
-	exec(cudaMemcpy(data_->txApod.devPtr, txApod_.data(),
-				data_->txApod.sizeInBytes, cudaMemcpyHostToDevice));
 	exec(cudaMemcpy(data_->rxApod.devPtr, rxApod_.data(),
 				data_->rxApod.sizeInBytes, cudaMemcpyHostToDevice));
 	exec(cudaMemcpy(data_->xArray.devPtr, xArray_.data(),
@@ -490,7 +478,6 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 				signalLength_,
 				config_.firstTxElem,
 				config_.lastTxElem,
-				data_->txApod.devPtr,
 				data_->rxApod.devPtr,
 				data_->delayTensor.devPtr,
 				cfConstants[2], /* factor */
@@ -514,7 +501,6 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 				signalLength_,
 				config_.firstTxElem,
 				config_.lastTxElem,
-				data_->txApod.devPtr,
 				data_->rxApod.devPtr,
 				data_->delayTensor.devPtr,
 				data_->gridValue.devPtr);

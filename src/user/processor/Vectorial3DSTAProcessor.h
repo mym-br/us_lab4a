@@ -56,7 +56,6 @@ public:
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
 			TFloat peakOffset,
-			const std::vector<TFloat>& txApod,
 			const std::vector<TFloat>& rxApod);
 	virtual ~Vectorial3DSTAProcessor() = default;
 
@@ -91,8 +90,7 @@ private:
 	Interpolator<TFloat> interpolator_;
 	HilbertEnvelope<TFloat> envelope_;
 	bool initialized_;
-	std::vector<TFloat> txApod_;
-	std::vector<TFloat> rxApod_;
+	const std::vector<TFloat> rxApod_;
 	unsigned int baseElement_;
 };
 
@@ -105,7 +103,6 @@ Vectorial3DSTAProcessor<TFloat>::Vectorial3DSTAProcessor(
 			unsigned int upsamplingFactor,
 			AnalyticSignalCoherenceFactorProcessor<TFloat>& coherenceFactor,
 			TFloat peakOffset,
-			const std::vector<TFloat>& txApod,
 			const std::vector<TFloat>& rxApod)
 		: config_(config)
 		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
@@ -113,7 +110,6 @@ Vectorial3DSTAProcessor<TFloat>::Vectorial3DSTAProcessor(
 		, upsamplingFactor_(upsamplingFactor)
 		, coherenceFactor_(coherenceFactor)
 		, initialized_()
-		, txApod_(txApod)
 		, rxApod_(rxApod)
 		, baseElement_()
 {
@@ -123,10 +119,6 @@ Vectorial3DSTAProcessor<TFloat>::Vectorial3DSTAProcessor(
 
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * peakOffset / config_.centerFrequency;
 
-	if (txApod_.size() != config_.activeTxElem.size()) {
-		THROW_EXCEPTION(InvalidValueException, "Wrong tx apodization size: " << txApod_.size()
-				<< " (should be " << config_.activeTxElem.size() << ").");
-	}
 	if (rxApod_.size() != config_.activeRxElem.size()) {
 		THROW_EXCEPTION(InvalidValueException, "Wrong rx apodization size: " << rxApod_.size()
 				<< " (should be " << config_.activeRxElem.size() << ").");
@@ -237,9 +229,8 @@ Vectorial3DSTAProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDat
 						const TFloat k = delay - delayIdx;
 						if (delayIdx + 1U < analyticSignalTensor_.n3()) {
 							const std::complex<TFloat>* p = &analyticSignalTensor_(iTxElem, iRxElem, delayIdx);
-							local.rxSignalSumList[iRxElem] +=
-									txApod_[iTxElem] * rxApod_[iRxElem]
-									* ((1 - k) * *p + k * *(p + 1));
+							local.rxSignalSumList[iRxElem] += ((1 - k) * *p + k * *(p + 1))
+												* rxApod_[iRxElem];
 						}
 					}
 				}
