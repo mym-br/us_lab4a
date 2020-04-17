@@ -17,13 +17,14 @@
 #ifndef NUMERICRECTANGULARSOURCEIMPULSERESPONSE_H
 #define NUMERICRECTANGULARSOURCEIMPULSERESPONSE_H
 
-#include <cmath>
+#include <cmath> /* ceil, nearbyint, sqrt */
+#include <cstddef> /* std::size_t */
 #include <limits>
 #include <vector>
 
 #include "Log.h"
 #include "Matrix.h"
-#include "Util.h"
+#include "Util.h" /* pi */
 
 
 

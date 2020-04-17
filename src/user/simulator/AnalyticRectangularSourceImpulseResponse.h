@@ -18,7 +18,7 @@
 #define ANALYTICRECTANGULARSOURCEIMPULSERESPONSE_H
 
 #include <algorithm> /* max, min */
-#include <cmath>
+#include <cmath> /* abs, asin, ceil, sqrt */
 #include <cstddef> /* std::size_t */
 #include <limits>
 #include <vector>

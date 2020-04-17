@@ -17,12 +17,13 @@
 #ifndef NUMERICCIRCULARSOURCEIMPULSERESPONSE_H
 #define NUMERICCIRCULARSOURCEIMPULSERESPONSE_H
 
-#include <cmath>
+#include <cmath> /* abs, floor, nearbyint, sqrt */
+#include <cstddef> /* std::size_t */
 #include <limits>
 #include <vector>
 
 #include "Log.h"
-#include "Util.h"
+#include "Util.h" /* pi */
 
 #define NUMERIC_CIRCULAR_SOURCE_IMPULSE_RESPONSE_USE_RANDOM 1
 

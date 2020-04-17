@@ -18,9 +18,10 @@
 #define ANALYTICCIRCULARSOURCEIMPULSERESPONSE_H
 
 #include <algorithm> /* max, min */
-#include <cmath>
+#include <cmath> /* abs, acos, ceil sqrt */
 #include <cstddef> /* std::size_t */
 #include <limits>
+#include <vector>
 
 #include "Util.h"
 

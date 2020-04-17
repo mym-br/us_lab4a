@@ -17,6 +17,8 @@
 #ifndef ARRAYOFRECTANGULARSOURCESIMPULSERESPONSE_H
 #define ARRAYOFRECTANGULARSOURCESIMPULSERESPONSE_H
 
+#include <cmath> /* nearbyint */
+#include <cstddef> /* std::size_t */
 #include <limits>
 #include <vector>
 
