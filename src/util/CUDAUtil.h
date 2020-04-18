@@ -45,7 +45,7 @@ struct CUDAHostDevMem {
 	CUDAHostDevMem& operator=(const CUDAHostDevMem&) = delete;
 	CUDAHostDevMem(CUDAHostDevMem&&) = delete;
 	CUDAHostDevMem& operator=(CUDAHostDevMem&& o) {
-		if (hostPtr) THROW_EXCEPTION(InvalidStateException, "The CUDAHostDevMem object is already initialized.");
+		if (hostPtr) clear();
 		hostPtr = o.hostPtr;
 		devPtr = o.devPtr;
 		sizeInBytes = o.sizeInBytes;
@@ -55,16 +55,21 @@ struct CUDAHostDevMem {
 		return *this;
 	}
 	~CUDAHostDevMem() {
+		clear();
+	}
+	void clear() {
 		cudaError_t err = cudaFree(devPtr);
 		if (err != cudaSuccess) {
-			std::cerr << "[~CUDAHostDevMem] Error in cudaFree: " << cudaGetErrorString(err) << std::endl;
+			std::cerr << "[CUDAHostDevMem::clear] Error in cudaFree: " << cudaGetErrorString(err) << std::endl;
 		}
+		devPtr = nullptr;
 		err = cudaFreeHost(hostPtr);
 		if (err != cudaSuccess) {
-			std::cerr << "[~CUDAHostDevMem] Error in cudaFreeHost: " << cudaGetErrorString(err) << std::endl;
+			std::cerr << "[CUDAHostDevMem::clear] Error in cudaFreeHost: " << cudaGetErrorString(err) << std::endl;
 		}
+		hostPtr = nullptr;
+		sizeInBytes = 0;
 	}
-
 	cudaError_t copyHostToDevice() {
 		return cudaMemcpy(devPtr, hostPtr, sizeInBytes, cudaMemcpyHostToDevice);
 	}
@@ -105,7 +110,7 @@ struct CUDADevMem {
 	CUDADevMem& operator=(const CUDADevMem&) = delete;
 	CUDADevMem(CUDADevMem&&) = delete;
 	CUDADevMem& operator=(CUDADevMem&& o) {
-		if (devPtr) THROW_EXCEPTION(InvalidStateException, "The CUDADevMem object is already initialized.");
+		if (devPtr) clear();
 		devPtr = o.devPtr;
 		sizeInBytes = o.sizeInBytes;
 		o.devPtr = nullptr;
@@ -113,10 +118,15 @@ struct CUDADevMem {
 		return *this;
 	}
 	~CUDADevMem() {
+		clear();
+	}
+	void clear() {
 		cudaError_t err = cudaFree(devPtr);
 		if (err != cudaSuccess) {
-			std::cerr << "[~CUDADevMem] Error in cudaFree: " << cudaGetErrorString(err) << std::endl;
+			std::cerr << "[CUDADevMem::clear] Error in cudaFree: " << cudaGetErrorString(err) << std::endl;
 		}
+		devPtr = nullptr;
+		sizeInBytes = 0;
 	}
 };
 

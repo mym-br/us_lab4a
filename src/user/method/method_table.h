@@ -89,6 +89,14 @@ METHOD_ITEM(SimRectangularSourceMethod<double>, sim_propagation_array_of_rectang
 METHOD_ITEM(SimRectangularSourceMethod<double>, sim_propagation_rectangular_source_transient) \
 METHOD_ITEM(SimRectangularSourceMethod<double>, sim_radiation_pattern_array_of_rectangular_sources_transient) \
 METHOD_ITEM(SimRectangularSourceMethod<double>, sim_radiation_pattern_rectangular_source_transient) \
+METHOD_ITEM(SimRectangularSourceMethod<float>, sim_acoustic_field_array_of_rectangular_sources_transient_sp) \
+METHOD_ITEM(SimRectangularSourceMethod<float>, sim_acoustic_field_rectangular_source_transient_sp) \
+METHOD_ITEM(SimRectangularSourceMethod<float>, sim_impulse_response_array_of_rectangular_sources_sp) \
+METHOD_ITEM(SimRectangularSourceMethod<float>, sim_impulse_response_rectangular_source_sp) \
+METHOD_ITEM(SimRectangularSourceMethod<float>, sim_propagation_array_of_rectangular_sources_transient_sp) \
+METHOD_ITEM(SimRectangularSourceMethod<float>, sim_propagation_rectangular_source_transient_sp) \
+METHOD_ITEM(SimRectangularSourceMethod<float>, sim_radiation_pattern_array_of_rectangular_sources_transient_sp) \
+METHOD_ITEM(SimRectangularSourceMethod<float>, sim_radiation_pattern_rectangular_source_transient_sp) \
 METHOD_ITEM(SingleAcquisitionMethod, single_acquisition) \
 METHOD_ITEM(SingleVirtualSourceMethod<double>, single_virtual_source_3d_network_save_signals) \
 METHOD_ITEM(SingleVirtualSourceMethod<double>, single_virtual_source_3d_network_save_signal_sequence) \

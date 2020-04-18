@@ -50,6 +50,11 @@
 #include "XYZ.h"
 #include "XYZValue.h"
 #include "XYZValueArray.h"
+#ifdef USE_CUDA
+# include "NumericRectangularSourceCUDAImpulseResponse.h"
+#endif
+
+
 
 namespace Lab {
 
@@ -194,7 +199,7 @@ SimRectangularSourceMethod<TFloat>::loadSimulationData(const MainData& data, Sim
 
 	Waveform::get(simData.excitationType, data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 
-	if (simData.irMethod == "numeric") {
+	if (simData.irMethod == "numeric" || simData.irMethod == "numeric_cuda") {
 		simPM->getValue(simData.discretFactor, "sub_elem_size_factor", 0.0, 1.0e3);
 	} else if (simData.irMethod == "analytic") {
 		simPM->getValue(simData.discretFactor, "min_edge_divisor"    , 0.0, 1.0e6);
@@ -209,12 +214,12 @@ SimRectangularSourceMethod<TFloat>::prepareExcitation(TFloat dt,
 						const SimulationData& simData, std::vector<TFloat>& tExc,
 						std::vector<TFloat>& dvdt, std::vector<TFloat>& tDvdt)
 {
-	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, simData.exc.size());
+	Util::fillSequenceFromStartWithStepAndSize(tExc, TFloat(0.0), dt, simData.exc.size());
 	project_.showFigure2D(1, "v", tExc, simData.exc);
 
 	Util::centralDiff(simData.exc, dt, dvdt);
 	Util::normalizeBySumOfAbs(dvdt);
-	Util::fillSequenceFromStartWithStepAndSize(tDvdt, 0.0, dt, dvdt.size());
+	Util::fillSequenceFromStartWithStepAndSize(tDvdt, TFloat(0.0), dt, dvdt.size());
 	project_.showFigure2D(2, "dv/dt", tDvdt, dvdt);
 }
 
@@ -293,6 +298,31 @@ SimRectangularSourceMethod<TFloat>::execTransientRadiationPattern(bool sourceIsA
 						subElemSize,
 						dvdt, inputData, gridData);
 		}
+//#ifdef USE_CUDA
+//	} else if (simData.irMethod == "numeric_cuda") {
+//		if constexpr (std::is_same<TFloat, float>::value) {
+//			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+//			if (sourceIsArray) {
+//				SimTransientRadiationPattern<
+//					TFloat,
+//					NumericRectangularSourceCUDAImpulseResponse>::getArrayOfRectangularSourcesRadiationPattern(
+//							simData.samplingFreq, mainData.propagationSpeed,
+//							srcData.sourceWidth, srcData.sourceHeight,
+//							subElemSize,
+//							dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
+//			} else {
+//				SimTransientRadiationPattern<
+//					TFloat,
+//					NumericRectangularSourceCUDAImpulseResponse>::getRectangularSourceRadiationPattern(
+//							simData.samplingFreq, mainData.propagationSpeed,
+//							srcData.sourceWidth, srcData.sourceHeight,
+//							subElemSize,
+//							dvdt, inputData, gridData);
+//			}
+//		} else {
+//			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+//		}
+//#endif
 	} else if (simData.irMethod == "analytic") {
 		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
@@ -344,13 +374,13 @@ SimRectangularSourceMethod<TFloat>::execTransientRadiationPattern(bool sourceIsA
 	std::vector<TFloat> patternTY(gridData.n2());
 	auto tyRange = gridData.range2(sectionTXIndex);
 	Util::copyUsingOperator(tyRange.begin(), tyRange.end(), patternTY.begin(), Util::CopyValueOp{});
-	Util::linearToDecibels(patternTY, -100.0);
+	Util::linearToDecibels(patternTY, TFloat(-100.0));
 	project_.showFigure2D(3, "Pattern theta-y", thetaYList, patternTY);
 
 	std::vector<TFloat> patternTX(gridData.n1());
 	auto txRange = gridData.range1(sectionTYIndex);
 	Util::copyUsingOperator(txRange.begin(), txRange.end(), patternTX.begin(), Util::CopyValueOp{});
-	Util::linearToDecibels(patternTX, -100.0);
+	Util::linearToDecibels(patternTX, TFloat(-100.0));
 	project_.showFigure2D(4, "Pattern theta-x", thetaXList, patternTX);
 
 	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"              , "value");
@@ -406,6 +436,31 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 						subElemSize,
 						dvdt, gridData);
 		}
+#ifdef USE_CUDA
+	} else if (simData.irMethod == "numeric_cuda") {
+		if constexpr (std::is_same<TFloat, float>::value) {
+			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+			if (sourceIsArray) {
+				SimTransientAcousticField<
+					TFloat,
+					NumericRectangularSourceCUDAImpulseResponse>::getArrayOfRectangularSourcesAcousticFieldSingleThread(
+							simData.samplingFreq, mainData.propagationSpeed,
+							srcData.sourceWidth, srcData.sourceHeight,
+							subElemSize,
+							dvdt, srcData.elemPos, srcData.focusDelay, gridData);
+			} else {
+				SimTransientAcousticField<
+					TFloat,
+					NumericRectangularSourceCUDAImpulseResponse>::getRectangularSourceAcousticFieldSingleThread(
+							simData.samplingFreq, mainData.propagationSpeed,
+							srcData.sourceWidth, srcData.sourceHeight,
+							subElemSize,
+							dvdt, gridData);
+			}
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+#endif
 	} else if (simData.irMethod == "analytic") {
 		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
@@ -504,6 +559,31 @@ SimRectangularSourceMethod<TFloat>::execTransientPropagation(bool sourceIsArray)
 						subElemSize,
 						dvdt, propagIndexList, gridData);
 		}
+//#ifdef USE_CUDA
+//	} else if (simData.irMethod == "numeric_cuda") {
+//		if constexpr (std::is_same<TFloat, float>::value) {
+//			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+//			if (sourceIsArray) {
+//				SimTransientPropagation<
+//					TFloat,
+//					NumericRectangularSourceCUDAImpulseResponse>::getArrayOfRectangularSourcesPropagation(
+//							simData.samplingFreq, mainData.propagationSpeed,
+//							srcData.sourceWidth, srcData.sourceHeight,
+//							subElemSize,
+//							dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
+//			} else {
+//				SimTransientPropagation<
+//					TFloat,
+//					NumericRectangularSourceCUDAImpulseResponse>::getRectangularSourcePropagation(
+//							simData.samplingFreq, mainData.propagationSpeed,
+//							srcData.sourceWidth, srcData.sourceHeight,
+//							subElemSize,
+//							dvdt, propagIndexList, gridData);
+//			}
+//		} else {
+//			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+//		}
+//#endif
 	} else if (simData.irMethod == "analytic") {
 		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
@@ -617,6 +697,26 @@ SimRectangularSourceMethod<TFloat>::execImpulseResponse(bool sourceIsArray)
 						subElemSize);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		}
+#ifdef USE_CUDA
+	} else if (simData.irMethod == "numeric_cuda") {
+		if constexpr (std::is_same<TFloat, float>::value) {
+			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+			if (sourceIsArray) {
+				auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<TFloat, NumericRectangularSourceCUDAImpulseResponse>>(
+							simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+							subElemSize,
+							srcData.elemPos, srcData.focusDelay);
+				impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+			} else {
+				auto impResp = std::make_unique<NumericRectangularSourceCUDAImpulseResponse>(
+							simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+							subElemSize);
+				impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+			}
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+#endif
 	} else if (simData.irMethod == "analytic") {
 		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
@@ -672,27 +772,35 @@ SimRectangularSourceMethod<TFloat>::execute()
 
 	switch (project_.method()) {
 	case MethodEnum::sim_acoustic_field_rectangular_source_transient:
+	case MethodEnum::sim_acoustic_field_rectangular_source_transient_sp:
 		execTransientAcousticField(false);
 		break;
 	case MethodEnum::sim_acoustic_field_array_of_rectangular_sources_transient:
+	case MethodEnum::sim_acoustic_field_array_of_rectangular_sources_transient_sp:
 		execTransientAcousticField(true);
 		break;
 	case MethodEnum::sim_impulse_response_rectangular_source:
+	case MethodEnum::sim_impulse_response_rectangular_source_sp:
 		execImpulseResponse(false);
 		break;
 	case MethodEnum::sim_impulse_response_array_of_rectangular_sources:
+	case MethodEnum::sim_impulse_response_array_of_rectangular_sources_sp:
 		execImpulseResponse(true);
 		break;
 	case MethodEnum::sim_propagation_rectangular_source_transient:
+	case MethodEnum::sim_propagation_rectangular_source_transient_sp:
 		execTransientPropagation(false);
 		break;
 	case MethodEnum::sim_propagation_array_of_rectangular_sources_transient:
+	case MethodEnum::sim_propagation_array_of_rectangular_sources_transient_sp:
 		execTransientPropagation(true);
 		break;
 	case MethodEnum::sim_radiation_pattern_rectangular_source_transient:
+	case MethodEnum::sim_radiation_pattern_rectangular_source_transient_sp:
 		execTransientRadiationPattern(false);
 		break;
 	case MethodEnum::sim_radiation_pattern_array_of_rectangular_sources_transient:
+	case MethodEnum::sim_radiation_pattern_array_of_rectangular_sources_transient_sp:
 		execTransientRadiationPattern(true);
 		break;
 	default:

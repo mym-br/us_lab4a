@@ -263,6 +263,8 @@ if(USE_CUDA)
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.h
         src/user/processor/VectorialSTACUDAProcessor.cu
         src/user/processor/VectorialSTACUDAProcessor.h
+        src/user/simulator/NumericRectangularSourceCUDAImpulseResponse.cu
+        src/user/simulator/NumericRectangularSourceCUDAImpulseResponse.h
         src/util/CUDACoherenceFactor.cuh
         src/util/CUDAGeometry.cuh
         src/util/CUDAStatistics.cuh

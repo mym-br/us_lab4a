@@ -155,6 +155,8 @@ NumericRectangularSourceImpulseResponse<TFloat>::getImpulseResponse(
 	}
 
 	hOffset = minN0;
+
+	//LOG_DEBUG << "[NumericRectangularSourceImpulseResponse] minN0=" << minN0 << " maxN0=" << maxN0;
 }
 
 } // namespace Lab
