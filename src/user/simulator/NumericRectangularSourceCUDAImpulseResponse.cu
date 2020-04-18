@@ -30,7 +30,7 @@
 #endif
 
 #define REDUCE_BLOCK_SIZE 1024
-#define INITIAL_H_SIZE 10000000
+#define INITIAL_H_SIZE 10000
 
 
 
