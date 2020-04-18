@@ -287,9 +287,9 @@ NumericRectangularSourceCUDAImpulseResponse::NumericRectangularSourceCUDAImpulse
 		numElemX = static_cast<unsigned int>(std::ceil(sourceWidth / subElemSize));
 	}
 	if (subElemSize > sourceHeight) {
-		numElemY_ = 1;
+		numElemY = 1;
 	} else {
-		numElemY_ = static_cast<unsigned int>(std::ceil(sourceHeight / subElemSize));
+		numElemY = static_cast<unsigned int>(std::ceil(sourceHeight / subElemSize));
 	}
 	const std::size_t n = numElemY * numElemX;
 	if (n >= std::numeric_limits<unsigned int>::max()) {
