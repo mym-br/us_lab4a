@@ -219,6 +219,7 @@ NumericRectangularSourceCUDAImpulseResponse::getImpulseResponse(
 			data_->n0.devPtr,
 			data_->value.devPtr,
 			data_->h.devPtr);
+		checkKernelLaunchError();
 	}
 	exec(data_->h.copyDeviceToHost(hSize * sizeof(MFloat)));
 
