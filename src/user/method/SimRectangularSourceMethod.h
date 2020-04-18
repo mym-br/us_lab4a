@@ -298,31 +298,31 @@ SimRectangularSourceMethod<TFloat>::execTransientRadiationPattern(bool sourceIsA
 						subElemSize,
 						dvdt, inputData, gridData);
 		}
-//#ifdef USE_CUDA
-//	} else if (simData.irMethod == "numeric_cuda") {
-//		if constexpr (std::is_same<TFloat, float>::value) {
-//			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
-//			if (sourceIsArray) {
-//				SimTransientRadiationPattern<
-//					TFloat,
-//					NumericRectangularSourceCUDAImpulseResponse>::getArrayOfRectangularSourcesRadiationPattern(
-//							simData.samplingFreq, mainData.propagationSpeed,
-//							srcData.sourceWidth, srcData.sourceHeight,
-//							subElemSize,
-//							dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
-//			} else {
-//				SimTransientRadiationPattern<
-//					TFloat,
-//					NumericRectangularSourceCUDAImpulseResponse>::getRectangularSourceRadiationPattern(
-//							simData.samplingFreq, mainData.propagationSpeed,
-//							srcData.sourceWidth, srcData.sourceHeight,
-//							subElemSize,
-//							dvdt, inputData, gridData);
-//			}
-//		} else {
-//			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
-//		}
-//#endif
+#ifdef USE_CUDA
+	} else if (simData.irMethod == "numeric_cuda") {
+		if constexpr (std::is_same<TFloat, float>::value) {
+			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+			if (sourceIsArray) {
+				SimTransientRadiationPattern<
+					TFloat,
+					NumericRectangularSourceCUDAImpulseResponse>::getArrayOfRectangularSourcesRadiationPatternSingleThread(
+							simData.samplingFreq, mainData.propagationSpeed,
+							srcData.sourceWidth, srcData.sourceHeight,
+							subElemSize,
+							dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
+			} else {
+				SimTransientRadiationPattern<
+					TFloat,
+					NumericRectangularSourceCUDAImpulseResponse>::getRectangularSourceRadiationPatternSingleThread(
+							simData.samplingFreq, mainData.propagationSpeed,
+							srcData.sourceWidth, srcData.sourceHeight,
+							subElemSize,
+							dvdt, inputData, gridData);
+			}
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+#endif
 	} else if (simData.irMethod == "analytic") {
 		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
