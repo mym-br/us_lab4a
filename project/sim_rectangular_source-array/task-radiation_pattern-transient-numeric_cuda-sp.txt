@@ -1,0 +1,9 @@
+
+method = sim_radiation_pattern_array_of_rectangular_sources_transient_sp
+
+main_config_file = config.txt
+array_config_file = config-array.txt
+rad_config_file = config-radiation_pattern-transient.txt
+
+simulation_config_file = config-simulation-numeric_cuda.txt
+output_dir = output-radiation_pattern-transient-numeric_cuda
