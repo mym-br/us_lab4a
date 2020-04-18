@@ -38,6 +38,96 @@ namespace Lab {
 
 __forceinline__
 __device__
+void
+warpReduceMinMax(unsigned int& minValue, unsigned int& maxValue) {
+	for (unsigned int offset = warpSize / 2; offset > 0; offset /= 2)  {
+		// Get the value from thread n + offset, but only if it is in the same warp.
+		// Otherwise return the current value.
+		const unsigned int shiftedMinValue = __shfl_down_sync(0xffffffff, minValue, offset);
+		minValue = min(minValue, shiftedMinValue);
+
+		const unsigned int shiftedMaxValue = __shfl_down_sync(0xffffffff, maxValue, offset);
+		maxValue = max(maxValue, shiftedMaxValue);
+	}
+	// Here the first thread in the warp contains the minimum and maximum value.
+	// The other threads in the warp contain garbage.
+}
+
+// blockDim.x must be multiple of warpSize.
+__forceinline__
+__device__
+void
+blockReduceMinMax(unsigned int& minValue, unsigned int& maxValue) {
+	__shared__ unsigned int sharedMin[32];
+	__shared__ unsigned int sharedMax[32];
+
+	unsigned int warpThreadIdx = threadIdx.x % warpSize; // index of the thread in the warp
+	unsigned int warpIdx = threadIdx.x / warpSize; // index of the warp in the block
+
+	warpReduceMinMax(minValue, maxValue);
+
+	if (warpThreadIdx == 0) {
+		sharedMin[warpIdx] = minValue; // only the first thread in the warp has a valid value
+		sharedMax[warpIdx] = maxValue;
+	}
+
+	__syncthreads();
+
+	// The first warp gets the values in the shared memory.
+	// Thread 0 gets the value from warp 0 in the block.
+	// Thread 1 gets the value from warp 1 in the block.
+	// ...
+	const unsigned int numWarpsInBlock = blockDim.x / warpSize;
+	minValue = (threadIdx.x < numWarpsInBlock) ? sharedMin[threadIdx.x] : 0;
+	maxValue = (threadIdx.x < numWarpsInBlock) ? sharedMax[threadIdx.x] : 0;
+
+	if (warpIdx == 0) {
+		warpReduceMinMax(minValue, maxValue);
+	}
+	// Here the first thread in the block has the final value.
+	// The other threads in the warp contain garbage.
+}
+
+__global__
+void
+blockReduceMinMaxKernel(const unsigned int* in, unsigned int* outMin, unsigned int* outMax, int n) {
+	unsigned int minValue = 0xffffffff;
+	unsigned int maxValue = 0;
+
+	const unsigned int totalNumThreads = gridDim.x * blockDim.x;
+	for (unsigned int i = blockIdx.x * blockDim.x + threadIdx.x; i < n; i += totalNumThreads) {
+		minValue = min(minValue, in[i]);
+		maxValue = max(maxValue, in[i]);
+	}
+	blockReduceMinMax(minValue, maxValue);
+	if (threadIdx.x == 0) {
+		outMin[blockIdx.x] = minValue; // one value for each block
+		outMax[blockIdx.x] = maxValue;
+	}
+}
+
+__global__
+void
+reduceMinMaxKernel(unsigned int* blockMinVal, unsigned int* blockMaxVal, int numBlocks) {
+	unsigned int minValue = 0xffffffff;
+	unsigned int maxValue = 0;
+
+	const unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (idx != 0) return; // single thread
+
+	for (unsigned int i = 0; i < numBlocks; ++i) {
+		minValue = min(minValue, blockMinVal[i]);
+		maxValue = max(maxValue, blockMaxVal[i]);
+	}
+
+	blockMinVal[0] = minValue;
+	blockMaxVal[0] = maxValue;
+}
+
+//-----------------------------------------------------------------------------
+
+__forceinline__
+__device__
 unsigned int
 warpReduceMin(unsigned int value) {
 	for (unsigned int offset = warpSize / 2; offset > 0; offset /= 2)  {
@@ -214,7 +304,11 @@ numericRectangularSourceIRKernel(
 {
 	const unsigned int subElemIdx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (subElemIdx >= numSubElem) {
-		n0[subElemIdx] = 0xffffffff;
+		// Get data from the first sub-element.
+		const float dy = y - subElemY[0];
+		const float dx = x - subElemX[0];
+		const float r = sqrtf(dx * dx + dy * dy + z * z);
+		n0[subElemIdx] = rintf(r * k1);
 		return;
 	}
 
@@ -357,43 +451,21 @@ NumericRectangularSourceCUDAImpulseResponse::getImpulseResponse(
 		const unsigned int blockSize = REDUCE_BLOCK_SIZE;
 		const unsigned int numBlocks = CUDAUtil::numberOfBlocks(numSubElem_, blockSize);
 
-		blockReduceMinKernel<<<numBlocks, blockSize>>>(
+		blockReduceMinMaxKernel<<<numBlocks, blockSize>>>(
 			data_->n0.devPtr,
 			data_->minN0.devPtr,
+			data_->maxN0.devPtr,
 			numSubElem_);
 		checkKernelLaunchError();
 
-		reduceMinKernel<<<1, 1>>>(
+		reduceMinMaxKernel<<<1, 1>>>(
 			data_->minN0.devPtr,
+			data_->maxN0.devPtr,
 			numBlocks);
 		checkKernelLaunchError();
 	}
 	exec(data_->minN0.copyDeviceToHost(sizeof(unsigned int)));
 	const unsigned int minN0 = *(data_->minN0.hostPtr);
-
-	{
-		const unsigned int blockSize = REDUCE_BLOCK_SIZE;
-		const unsigned int numBlocks = CUDAUtil::numberOfBlocks(numSubElem_, blockSize);
-
-		// Prepare for reduceMaxKernel.
-		padKernel<<<numBlocks, blockSize>>>(
-			numSubElem_,
-			numBlocks * blockSize,
-			data_->n0.devPtr,
-			0);
-		checkKernelLaunchError();
-
-		blockReduceMaxKernel<<<numBlocks, blockSize>>>(
-			data_->n0.devPtr,
-			data_->maxN0.devPtr,
-			numSubElem_);
-		checkKernelLaunchError();
-
-		reduceMaxKernel<<<1, 1>>>(
-			data_->maxN0.devPtr,
-			numBlocks);
-		checkKernelLaunchError();
-	}
 	exec(data_->maxN0.copyDeviceToHost(sizeof(unsigned int)));
 	const unsigned int maxN0 = *(data_->maxN0.hostPtr);
 
