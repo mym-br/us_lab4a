@@ -357,7 +357,7 @@ struct NumericRectangularSourceCUDAImpulseResponse::CUDAData {
 	CUDAHostDevMem<MFloat> subElemX;
 	CUDAHostDevMem<MFloat> subElemY;
 	CUDADevMem<unsigned int> n0;
-	CUDAHostDevMem<MFloat> value;
+	CUDADevMem<MFloat> value;
 	CUDAHostDevMem<unsigned int> minN0;
 	CUDAHostDevMem<unsigned int> maxN0;
 	CUDAHostDevMem<MFloat> h;
@@ -398,7 +398,7 @@ NumericRectangularSourceCUDAImpulseResponse::NumericRectangularSourceCUDAImpulse
 	data_->subElemY = CUDAHostDevMem<MFloat>(numSubElem_);
 	const unsigned int numReduceThreads = CUDAUtil::roundUpToMultipleOfBlockSize(numSubElem_, REDUCE_BLOCK_SIZE);
 	data_->n0       = CUDADevMem<unsigned int>(numReduceThreads);
-	data_->value    = CUDAHostDevMem<MFloat>(numSubElem_);
+	data_->value    = CUDADevMem<MFloat>(numSubElem_);
 	const unsigned int numReduceBlocks = numReduceThreads / REDUCE_BLOCK_SIZE;
 	data_->minN0    = CUDAHostDevMem<unsigned int>(numReduceBlocks);
 	data_->maxN0    = CUDAHostDevMem<unsigned int>(numReduceBlocks);
