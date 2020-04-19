@@ -231,6 +231,8 @@ set(uslab4a_gui_SRC
     src/Figure3DWindow.cpp
     src/Figure3DWindow.h
     src/FigureWindowList.h
+    src/LogSyntaxHighlighter.cpp
+    src/LogSyntaxHighlighter.h
     src/main.cpp
     src/MultiLayer3DWindow.cpp
     src/MultiLayer3DWindow.h
@@ -244,8 +246,6 @@ set(uslab4a_gui_SRC
     src/ProcessingThread.h
     src/USLab4a.cpp
     src/USLab4a.h
-    src/util/LogSyntaxHighlighter.cpp
-    src/util/LogSyntaxHighlighter.h
 
     ui/Figure2DWindow.ui
     ui/Figure3DWindow.ui
