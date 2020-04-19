@@ -3,7 +3,7 @@ method = sta_vectorial_cuda_sp_saved
 
 sta_config_file = config-sta.txt
 
-output_dir = output-vectorial-sp
+output_dir = output-vectorial-cuda-sp
 
 coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
 
