@@ -60,6 +60,11 @@ public:
 private:
 	struct CUDAData;
 
+	NumericRectangularSourceCUDAImpulseResponse(const NumericRectangularSourceCUDAImpulseResponse&) = delete;
+	NumericRectangularSourceCUDAImpulseResponse& operator=(const NumericRectangularSourceCUDAImpulseResponse&) = delete;
+	NumericRectangularSourceCUDAImpulseResponse(NumericRectangularSourceCUDAImpulseResponse&&) = delete;
+	NumericRectangularSourceCUDAImpulseResponse& operator=(NumericRectangularSourceCUDAImpulseResponse&&) = delete;
+
 	float samplingFreq_;
 	float propagationSpeed_;
 	float subElemWidth_;

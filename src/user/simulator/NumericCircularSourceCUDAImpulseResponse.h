@@ -40,6 +40,11 @@ public:
 private:
 	struct CUDAData;
 
+	NumericCircularSourceCUDAImpulseResponse(const NumericCircularSourceCUDAImpulseResponse&) = delete;
+	NumericCircularSourceCUDAImpulseResponse& operator=(const NumericCircularSourceCUDAImpulseResponse&) = delete;
+	NumericCircularSourceCUDAImpulseResponse(NumericCircularSourceCUDAImpulseResponse&&) = delete;
+	NumericCircularSourceCUDAImpulseResponse& operator=(NumericCircularSourceCUDAImpulseResponse&&) = delete;
+
 	float samplingFreq_;
 	float propagationSpeed_;
 	float subElemArea_;
