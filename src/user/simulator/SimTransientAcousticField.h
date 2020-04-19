@@ -103,6 +103,14 @@ public:
 			const std::vector<TFloat>& dvdt,
 			Matrix<XYZValue<TFloat>>& gridData);
 
+	static void getCircularSourceAcousticFieldSingleThread(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceRadius,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt,
+			Matrix<XYZValue<TFloat>>& gridData);
+
 	static void getRectangularSourceAcousticField(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -187,6 +195,43 @@ SimTransientAcousticField<TFloat, ImpulseResponse>::getCircularSourceAcousticFie
 					point.value = maxValue - minValue;
 				}
 		});
+
+		IterationCounter::add(1);
+	}
+}
+
+template<typename TFloat, typename ImpulseResponse>
+void
+SimTransientAcousticField<TFloat, ImpulseResponse>::getCircularSourceAcousticFieldSingleThread(
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceRadius,
+					TFloat discretization,
+					const std::vector<TFloat>& dvdt,
+					Matrix<XYZValue<TFloat>>& gridData)
+{
+	CircularSourceThreadData threadData{
+		samplingFreq,
+		propagationSpeed,
+		sourceRadius,
+		discretization,
+		dvdt
+	};
+
+	IterationCounter::reset(gridData.n1());
+
+	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
+		std::size_t hOffset;
+		for (std::size_t j = 0, jEnd = gridData.n2(); j < jEnd; ++j) {
+			XYZValue<TFloat>& point = gridData(i, j);
+			threadData.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, threadData.h);
+
+			threadData.filter.filter(threadData.filterFreqCoeff, threadData.h, threadData.signal);
+
+			TFloat minValue, maxValue;
+			Util::minMax(threadData.signal, minValue, maxValue);
+			point.value = maxValue - minValue;
+		}
 
 		IterationCounter::add(1);
 	}

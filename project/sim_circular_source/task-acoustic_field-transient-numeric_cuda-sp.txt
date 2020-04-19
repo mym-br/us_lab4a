@@ -1,0 +1,9 @@
+
+method = sim_acoustic_field_circular_source_transient_sp
+
+main_config_file = config.txt
+grid_config_file = config-grid.txt
+source_config_file = config-source.txt
+
+simulation_config_file = config-simulation-numeric_cuda.txt
+output_dir = output-acoustic_field-transient-numeric_cuda

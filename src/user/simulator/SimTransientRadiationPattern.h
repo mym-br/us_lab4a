@@ -109,6 +109,15 @@ public:
 			const std::vector<XYZ<TFloat>>& inputData,
 			std::vector<TFloat>& radData);
 
+	static void getCircularSourceRadiationPatternSingleThread(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceRadius,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt,
+			const std::vector<XYZ<TFloat>>& inputData,
+			std::vector<TFloat>& radData);
+
 	static void getRectangularSourceRadiationPattern(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -195,6 +204,38 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getCircularSourceRadiatio
 				radData[i] = maxValue - minValue;
 			}
 	});
+}
+
+template<typename TFloat, typename ImpulseResponse>
+void
+SimTransientRadiationPattern<TFloat, ImpulseResponse>::getCircularSourceRadiationPatternSingleThread(
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceRadius,
+					TFloat discretization,
+					const std::vector<TFloat>& dvdt,
+					const std::vector<XYZ<TFloat>>& inputData,
+					std::vector<TFloat>& radData)
+{
+	CircularSourceThreadData threadData{
+		samplingFreq,
+		propagationSpeed,
+		sourceRadius,
+		discretization,
+		dvdt
+	};
+
+	std::size_t hOffset;
+	for (std::size_t i = 0, iEnd = inputData.size(); i < iEnd; ++i) {
+		const XYZ<TFloat>& id = inputData[i];
+		threadData.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, threadData.h);
+
+		threadData.filter.filter(threadData.filterFreqCoeff, threadData.h, threadData.signal);
+
+		TFloat minValue, maxValue;
+		Util::minMax(threadData.signal, minValue, maxValue);
+		radData[i] = maxValue - minValue;
+	}
 }
 
 template<typename TFloat, typename ImpulseResponse>

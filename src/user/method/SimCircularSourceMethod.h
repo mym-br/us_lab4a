@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2019 Marcelo Y. Matuda                                       *
+ *  Copyright 2019, 2020 Marcelo Y. Matuda                                 *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -46,6 +46,11 @@
 #include "XYZ.h"
 #include "XYZValue.h"
 #include "XYZValueArray.h"
+#ifdef USE_CUDA
+# include "NumericCircularSourceCUDAImpulseResponse.h"
+#endif
+
+
 
 namespace Lab {
 
@@ -136,7 +141,7 @@ SimCircularSourceMethod<TFloat>::loadSimulationData(const MainData& data, Simula
 
 	Waveform::get(simData.excitationType, data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 
-	if (simData.irMethod == "numeric") {
+	if (simData.irMethod == "numeric" || simData.irMethod == "numeric_cuda") {
 		simPM->getValue(simData.discretFactor , "num_sub_elem_per_lambda", 0.01, 100.0);
 	} else if (simData.irMethod == "analytic") {
 		// Empty.
@@ -151,12 +156,12 @@ SimCircularSourceMethod<TFloat>::prepareExcitation(TFloat dt,
 						const SimulationData& simData, std::vector<TFloat>& tExc,
 						std::vector<TFloat>& dvdt, std::vector<TFloat>& tDvdt)
 {
-	Util::fillSequenceFromStartWithStepAndSize(tExc, 0.0, dt, simData.exc.size());
+	Util::fillSequenceFromStartWithStepAndSize(tExc, TFloat(0.0), dt, simData.exc.size());
 	project_.showFigure2D(1, "v", tExc, simData.exc);
 
 	Util::centralDiff(simData.exc, dt, dvdt);
 	Util::normalizeBySumOfAbs(dvdt);
-	Util::fillSequenceFromStartWithStepAndSize(tDvdt, 0.0, dt, dvdt.size());
+	Util::fillSequenceFromStartWithStepAndSize(tDvdt, TFloat(0.0), dt, dvdt.size());
 	project_.showFigure2D(2, "dv/dt", tDvdt, dvdt);
 }
 
@@ -210,6 +215,22 @@ SimCircularSourceMethod<TFloat>::execTransientRadiationPattern()
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, inputData, radData);
+#ifdef USE_CUDA
+	} else if (simData.irMethod == "numeric_cuda") {
+		if constexpr (std::is_same<TFloat, float>::value) {
+			const TFloat nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
+			const TFloat numSubElemPerLambda = simData.discretFactor;
+			const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+			SimTransientRadiationPattern<
+				TFloat,
+				NumericCircularSourceCUDAImpulseResponse>::getCircularSourceRadiationPatternSingleThread(
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+						numSubElemInRadius,
+						dvdt, inputData, radData);
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+#endif
 	} else if (simData.irMethod == "analytic") {
 		SimTransientRadiationPattern<
 			TFloat,
@@ -225,7 +246,7 @@ SimCircularSourceMethod<TFloat>::execTransientRadiationPattern()
 	const TFloat k = 1.0 / maxAbsValue;
 	Util::multiply(radData, k);
 
-	Util::linearToDecibels(radData, -100.0);
+	Util::linearToDecibels(radData, TFloat(-100.0));
 	project_.showFigure2D(3, "Pattern", thetaYList, radData);
 
 	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"              , "value");
@@ -267,6 +288,21 @@ SimCircularSourceMethod<TFloat>::execTransientAcousticField()
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, gridData);
+#ifdef USE_CUDA
+	} else if (simData.irMethod == "numeric_cuda") {
+		if constexpr (std::is_same<TFloat, float>::value) {
+			const TFloat numSubElemPerLambda = simData.discretFactor;
+			const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+			SimTransientAcousticField<
+				TFloat,
+				NumericCircularSourceCUDAImpulseResponse>::getCircularSourceAcousticFieldSingleThread(
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+						numSubElemInRadius,
+						dvdt, gridData);
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+#endif
 	} else if (simData.irMethod == "analytic") {
 		SimTransientAcousticField<
 			TFloat,
@@ -343,6 +379,21 @@ SimCircularSourceMethod<TFloat>::execTransientPropagation()
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, propagIndexList, gridData);
+#ifdef USE_CUDA
+	} else if (simData.irMethod == "numeric_cuda") {
+		if constexpr (std::is_same<TFloat, float>::value) {
+			const TFloat numSubElemPerLambda = simData.discretFactor;
+			const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+			SimTransientPropagation<
+				TFloat,
+				NumericCircularSourceCUDAImpulseResponse>::getCircularSourcePropagationSingleThread(
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+						numSubElemInRadius,
+						dvdt, propagIndexList, gridData);
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+#endif
 	} else if (simData.irMethod == "analytic") {
 		SimTransientPropagation<
 			TFloat,
@@ -437,6 +488,20 @@ SimCircularSourceMethod<TFloat>::execImpulseResponse()
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius);
 		impResp->getImpulseResponse(pointX, 0.0, pointZ, hOffset, h);
+#ifdef USE_CUDA
+	} else if (simData.irMethod == "numeric_cuda") {
+		if constexpr (std::is_same<TFloat, float>::value) {
+			const TFloat nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
+			const TFloat numSubElemPerLambda = simData.discretFactor;
+			const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+			auto impResp = std::make_unique<NumericCircularSourceCUDAImpulseResponse>(
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+						numSubElemInRadius);
+			impResp->getImpulseResponse(pointX, 0.0, pointZ, hOffset, h);
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+#endif
 	} else if (simData.irMethod == "analytic") {
 		auto impResp = std::make_unique<AnalyticCircularSourceImpulseResponse<TFloat>>(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius);
@@ -482,15 +547,19 @@ SimCircularSourceMethod<TFloat>::execute()
 
 	switch (project_.method()) {
 	case MethodEnum::sim_acoustic_field_circular_source_transient:
+	case MethodEnum::sim_acoustic_field_circular_source_transient_sp:
 		execTransientAcousticField();
 		break;
 	case MethodEnum::sim_impulse_response_circular_source:
+	case MethodEnum::sim_impulse_response_circular_source_sp:
 		execImpulseResponse();
 		break;
 	case MethodEnum::sim_propagation_circular_source_transient:
+	case MethodEnum::sim_propagation_circular_source_transient_sp:
 		execTransientPropagation();
 		break;
 	case MethodEnum::sim_radiation_pattern_circular_source_transient:
+	case MethodEnum::sim_radiation_pattern_circular_source_transient_sp:
 		execTransientRadiationPattern();
 		break;
 	default:

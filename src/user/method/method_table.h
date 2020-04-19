@@ -81,6 +81,10 @@ METHOD_ITEM(SimCircularSourceMethod<double>, sim_acoustic_field_circular_source_
 METHOD_ITEM(SimCircularSourceMethod<double>, sim_impulse_response_circular_source) \
 METHOD_ITEM(SimCircularSourceMethod<double>, sim_propagation_circular_source_transient) \
 METHOD_ITEM(SimCircularSourceMethod<double>, sim_radiation_pattern_circular_source_transient) \
+METHOD_ITEM(SimCircularSourceMethod<float>, sim_acoustic_field_circular_source_transient_sp) \
+METHOD_ITEM(SimCircularSourceMethod<float>, sim_impulse_response_circular_source_sp) \
+METHOD_ITEM(SimCircularSourceMethod<float>, sim_propagation_circular_source_transient_sp) \
+METHOD_ITEM(SimCircularSourceMethod<float>, sim_radiation_pattern_circular_source_transient_sp) \
 METHOD_ITEM(SimRectangularSourceMethod<double>, sim_acoustic_field_array_of_rectangular_sources_transient) \
 METHOD_ITEM(SimRectangularSourceMethod<double>, sim_acoustic_field_rectangular_source_transient) \
 METHOD_ITEM(SimRectangularSourceMethod<double>, sim_impulse_response_array_of_rectangular_sources) \
