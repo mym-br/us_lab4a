@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -19,16 +19,14 @@
 #define PROJECT_H_
 
 #include <algorithm> /* copy */
+#include <condition_variable>
 #include <cstddef> /* std::size_t */
 #include <iomanip>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include <utility> /* pair */
 #include <vector>
-
-#include <QMutex>
-#include <QString>
-#include <QWaitCondition>
 
 #include "Colormap.h"
 #include "Exception.h"
@@ -62,14 +60,14 @@ public:
 	Project(USLab4a& mainWindow);
 	~Project() = default;
 
-	const std::string directory() const { return directory_.toStdString(); }
-	void setDirectory(const std::string& dirPath) { directory_ = dirPath.c_str(); }
-	const std::string expDirectory() const { return expDirectory_.toStdString(); }
+	const std::string& directory() const { return directory_; }
+	void setDirectory(const std::string& dirPath) { directory_ = dirPath; }
+	const std::string& expDirectory() const { return expDirectory_; }
 	void setExpDirectory(const std::string& dirPath) {
 		if (dirPath.empty()) {
 			expDirectory_ = directory_;
 		} else {
-			expDirectory_ = directory_ + '/' + dirPath.c_str();
+			expDirectory_ = directory_ + '/' + dirPath;
 		}
 	}
 
@@ -185,8 +183,8 @@ private:
 			, figureName("Figure")
 			, markPoints()
 		{ }
-		QMutex mutex;
-		QWaitCondition requestHandledCondition;
+		std::mutex mutex;
+		std::condition_variable requestHandledCondition;
 		bool showFigureRequested;
 		int figureId;
 		std::string figureName;
@@ -206,8 +204,8 @@ private:
 			, figureName("Figure")
 			, valueScale()
 		{ }
-		QMutex mutex;
-		QWaitCondition requestHandledCondition;
+		std::mutex mutex;
+		std::condition_variable requestHandledCondition;
 		bool showFigureRequested;
 		bool newGridData;
 		bool newPointList;
@@ -226,8 +224,8 @@ private:
 			, figureId{}
 			, figureName{"Figure"}
 		{ }
-		QMutex mutex;
-		QWaitCondition requestHandledCondition;
+		std::mutex mutex;
+		std::condition_variable requestHandledCondition;
 		bool showFigureRequested;
 		int figureId;
 		std::string figureName;
@@ -241,8 +239,8 @@ private:
 			, processingCancellationRequested()
 			, trigger()
 		{ }
-		QMutex mutex;
-		QWaitCondition triggerCondition;
+		std::mutex mutex;
+		std::condition_variable triggerCondition;
 		std::size_t triggerCount;
 		bool processingCancellationRequested;
 		bool trigger;
@@ -256,8 +254,8 @@ private:
 	MethodEnum method_;
 	USLab4a& mainWindow_;
 	ParamMapPtr taskParameterMap_;
-	QString directory_;
-	QString expDirectory_;
+	std::string directory_;
+	std::string expDirectory_;
 	Figure2DData figure2DData_;
 	Figure3DData figure3DData_;
 	MultiLayer3DData multiLayer3DData_;
@@ -276,32 +274,36 @@ template<typename TFloat>
 void
 Project::loadHDF5(const std::string& fileName, const std::string& datasetName, std::vector<TFloat>& container) const
 {
-	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5Util::fileSuffix;
-	HDF5Util::load(filePath.toStdString(), datasetName, container);
+	std::ostringstream filePath;
+	filePath << expDirectory_ << '/' << fileName << HDF5Util::fileSuffix;
+	HDF5Util::load(filePath.str(), datasetName, container);
 }
 
 template<typename TFloat>
 void
 Project::loadHDF5(const std::string& fileName, const std::string& datasetName, Matrix<TFloat>& container) const
 {
-	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5Util::fileSuffix;
-	HDF5Util::load(filePath.toStdString(), datasetName, container);
+	std::ostringstream filePath;
+	filePath << expDirectory_ << '/' << fileName << HDF5Util::fileSuffix;
+	HDF5Util::load(filePath.str(), datasetName, container);
 }
 
 template<typename TFloat>
 void
 Project::saveHDF5(const std::vector<TFloat>& container, const std::string& fileName, const std::string& datasetName) const
 {
-	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5Util::fileSuffix;
-	HDF5Util::save(container, filePath.toStdString(), datasetName);
+	std::ostringstream filePath;
+	filePath << expDirectory_ << '/' << fileName << HDF5Util::fileSuffix;
+	HDF5Util::save(container, filePath.str(), datasetName);
 }
 
 template<typename TFloat>
 void
 Project::saveHDF5(const Matrix<TFloat>& container, const std::string& fileName, const std::string& datasetName) const
 {
-	QString filePath = expDirectory_ + '/' + QString::fromStdString(fileName) + HDF5Util::fileSuffix;
-	HDF5Util::save(container, filePath.toStdString(), datasetName);
+	std::ostringstream filePath;
+	filePath << expDirectory_ << '/' << fileName << HDF5Util::fileSuffix;
+	HDF5Util::save(container, filePath.str(), datasetName);
 }
 
 template<typename T>
@@ -472,12 +474,13 @@ Project::showFigure2D(int id,
 		THROW_EXCEPTION(InvalidParameterException, "xList.size() != yList.size().");
 	}
 	{
-		QMutexLocker locker(&figure2DData_.mutex);
+		std::unique_lock<std::mutex> locker(figure2DData_.mutex);
 
 		if (figure2DData_.showFigureRequested) {
 			if (waitPending) {
 				do {
-					figure2DData_.requestHandledCondition.wait(&figure2DData_.mutex);
+
+					figure2DData_.requestHandledCondition.wait(locker);
 				} while (figure2DData_.showFigureRequested);
 			} else {
 				return;
@@ -510,12 +513,12 @@ Project::showFigure3D(
 		Colormap::Id colormap,
 		double valueScale)
 {
-	QMutexLocker locker(&figure3DData_.mutex);
+	std::unique_lock<std::mutex> locker(figure3DData_.mutex);
 
 	if (figure3DData_.showFigureRequested) {
 		if (waitPending) {
 			do {
-				figure3DData_.requestHandledCondition.wait(&figure3DData_.mutex);
+				figure3DData_.requestHandledCondition.wait(locker);
 			} while (figure3DData_.showFigureRequested);
 		} else {
 			return;
@@ -561,11 +564,11 @@ Project::showMultiLayer3D(
 		const T& pointArray,
 		const U& indexArray)
 {
-	QMutexLocker locker(&multiLayer3DData_.mutex);
+	std::unique_lock<std::mutex> locker(multiLayer3DData_.mutex);
 
 	if (multiLayer3DData_.showFigureRequested) {
 		do {
-			multiLayer3DData_.requestHandledCondition.wait(&multiLayer3DData_.mutex);
+			multiLayer3DData_.requestHandledCondition.wait(locker);
 		} while (multiLayer3DData_.showFigureRequested);
 	}
 

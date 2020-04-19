@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
+ *  Copyright 2014, 2017, 2018, 2019, 2020 Marcelo Y. Matuda               *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -20,10 +20,9 @@
 
 #include <atomic>
 #include <cstddef> /* std::size_t */
+#include <mutex>
 #include <sstream>
 #include <vector>
-
-#include <QMutex>
 
 #include "Stream.h"
 
@@ -80,7 +79,7 @@ private:
 
 	static std::atomic<Level> level_;
 	static std::ostringstream buffer_;
-	static QMutex logMutex_;
+	static std::mutex logMutex_;
 };
 
 } // namespace Lab

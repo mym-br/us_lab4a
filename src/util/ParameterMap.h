@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
+ *  Copyright 2014, 2017, 2018, 2019, 2020 Marcelo Y. Matuda               *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -21,9 +21,6 @@
 #include <memory>
 #include <string>
 
-#include <QHash>
-#include <QString>
-
 #include "Exception.h"
 #include "KeyValueFileReader.h"
 
@@ -33,7 +30,7 @@ namespace Lab {
 
 class ParameterMap {
 public:
-	explicit ParameterMap(const QString& filePath);
+	explicit ParameterMap(const std::string& filePath);
 	~ParameterMap() = default;
 
 	bool contains(const char* key) const;
@@ -76,9 +73,9 @@ private:
 	ParameterMap(ParameterMap&&) = delete;
 	ParameterMap& operator=(ParameterMap&&) = delete;
 
-	template<typename T> static T convertValue(const QString s);
+	template<typename T> static T convertValue(const std::string& s);
 
-	const QString filePath_;
+	const std::string filePath_;
 	const KeyValueFileReader reader_;
 };
 
@@ -89,17 +86,17 @@ T
 ParameterMap::value(const char* key) const
 {
 	const auto& map = reader_.map();
-
-	if (!map.contains(key)) {
-		THROW_EXCEPTION(InvalidValueException, "Key '" << key << "' not found in file " << filePath_.toStdString() << '.');
+	const auto it = map.find(key);
+	if (it == map.end()) {
+		THROW_EXCEPTION(InvalidValueException, "Key '" << key << "' not found in file " << filePath_ << '.');
 	}
-
-	QString valueString = map.value(key);
+	std::string valueString = it->second;
 	T value;
 	try {
 		value = convertValue<T>(valueString);
 	} catch (const std::exception& e) {
-		THROW_EXCEPTION(InvalidValueException, "Invalid value for key '" << key << "' in file " << filePath_.toStdString() << ": " << e.what());
+		THROW_EXCEPTION(InvalidValueException, "Invalid value for key '" << key << "' in file "
+				<< filePath_ << ": " << e.what());
 	}
 	return value;
 }
@@ -111,9 +108,11 @@ ParameterMap::value(const char* key, T minValue, T maxValue) const
 	T v = value<T>(key);
 
 	if (v > maxValue) {
-		THROW_EXCEPTION(InvalidValueException, "The value for key '" << key << "' must be <= " << maxValue << " in file " << filePath_.toStdString() << '.');
+		THROW_EXCEPTION(InvalidValueException, "The value for key '" << key << "' must be <= "
+				<< maxValue << " in file " << filePath_ << '.');
 	} else if (v < minValue) {
-		THROW_EXCEPTION(InvalidValueException, "The value for key '" << key << "' must be >= " << minValue << " in file " << filePath_.toStdString() << '.');
+		THROW_EXCEPTION(InvalidValueException, "The value for key '" << key << "' must be >= "
+				<< minValue << " in file " << filePath_ << '.');
 	}
 
 	return v;

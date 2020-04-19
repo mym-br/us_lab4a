@@ -18,13 +18,17 @@
 #ifndef LAB_STRING_H
 #define LAB_STRING_H
 
+#include <cstddef> /* std::size_t */
 #include <sstream>
 #include <string>
+#include <string_view>
 
 
 
 namespace Lab {
 namespace String {
+
+constexpr const char* spaces = " \t";
 
 struct End {
 };
@@ -43,6 +47,64 @@ public:
 private:
 	std::ostringstream out_;
 };
+
+inline
+std::string
+trim(const std::string_view& s)
+{
+	const std::size_t pos1 = s.find_first_not_of(spaces);
+	if (pos1 == s.npos) return std::string();
+
+	const std::size_t pos2 = s.find_last_not_of(spaces);
+	return std::string(s.data() + pos1, pos2 - pos1 + 1U);
+}
+
+inline
+std::string
+trim(const std::string& s)
+{
+	const std::size_t pos1 = s.find_first_not_of(spaces);
+	if (pos1 == s.npos) return std::string();
+
+	const std::size_t pos2 = s.find_last_not_of(spaces);
+	return std::string(s.data() + pos1, pos2 - pos1 + 1U);
+}
+
+inline
+std::string_view
+trimToView(const std::string_view& s)
+{
+	const std::size_t pos1 = s.find_first_not_of(spaces);
+	if (pos1 == s.npos) return std::string_view();
+
+	const std::size_t pos2 = s.find_last_not_of(spaces);
+	return std::string_view(s.data() + pos1, pos2 - pos1 + 1U);
+}
+
+inline
+std::string_view
+trimToView(const std::string& s)
+{
+	const std::size_t pos1 = s.find_first_not_of(spaces);
+	if (pos1 == s.npos) return std::string_view();
+
+	const std::size_t pos2 = s.find_last_not_of(spaces);
+	return std::string_view(s.data() + pos1, pos2 - pos1 + 1U);
+}
+
+inline
+bool
+hasSpace(const std::string_view& s)
+{
+	return s.find_first_of(spaces) != s.npos;
+}
+
+inline
+bool
+hasSpace(const std::string& s)
+{
+	return s.find_first_of(spaces) != s.npos;
+}
 
 } // namespace String
 } // namespace Lab

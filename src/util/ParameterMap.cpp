@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -17,11 +17,13 @@
 
 #include "ParameterMap.h"
 
+#include <limits>
+
 
 
 namespace Lab {
 
-ParameterMap::ParameterMap(const QString& filePath)
+ParameterMap::ParameterMap(const std::string& filePath)
 		: filePath_(filePath)
 		, reader_(filePath)
 {
@@ -30,103 +32,190 @@ ParameterMap::ParameterMap(const QString& filePath)
 bool
 ParameterMap::contains(const char* key) const
 {
-	return reader_.map().contains(key);
+	const auto& map = reader_.map();
+	return map.find(key) != map.end();
 }
 
 template<>
 short
-ParameterMap::convertValue<short>(const QString s)
+ParameterMap::convertValue<short>(const std::string& s)
 {
-	bool ok;
-	short v = s.toShort(&ok);
-	if (!ok) THROW_EXCEPTION(InvalidValueException, "Invalid short: " << s.toStdString() << '.');
-	return v;
+	std::size_t idx;
+	int v;
+	try {
+		v = std::stoi(s, &idx);
+	} catch (std::invalid_argument&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid short integer: " << s << " (wrong format).");
+	} catch (std::out_of_range&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid short integer: " << s << " (out of range).");
+	}
+	if (idx != s.size()) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid short integer: " << s << " (garbage at the end).");
+	}
+	if (v < std::numeric_limits<short>::min() || v > std::numeric_limits<short>::max()) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid short integer: " << s << " (out of range).");
+	}
+	return static_cast<short>(v);
 }
 
 template<>
 unsigned short
-ParameterMap::convertValue<unsigned short>(const QString s)
+ParameterMap::convertValue<unsigned short>(const std::string& s)
 {
-	bool ok;
-	unsigned short v = s.toUShort(&ok);
-	if (!ok) THROW_EXCEPTION(InvalidValueException, "Invalid unsigned short: " << s.toStdString() << '.');
-	return v;
+	std::size_t idx;
+	int v;
+	try {
+		v = std::stoi(s, &idx);
+	} catch (std::invalid_argument&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned short integer: " << s << " (wrong format).");
+	} catch (std::out_of_range&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned short integer: " << s << " (out of range).");
+	}
+	if (idx != s.size()) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned short integer: " << s << " (garbage at the end).");
+	}
+	if (v < 0 || v > std::numeric_limits<short>::max()) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned short integer: " << s << " (out of range).");
+	}
+	return static_cast<unsigned short>(v);
 }
 
 template<>
 int
-ParameterMap::convertValue<int>(const QString s)
+ParameterMap::convertValue<int>(const std::string& s)
 {
-	bool ok;
-	int v = s.toInt(&ok);
-	if (!ok) THROW_EXCEPTION(InvalidValueException, "Invalid integer: " << s.toStdString() << '.');
+	std::size_t idx;
+	int v;
+	try {
+		v = std::stoi(s, &idx);
+	} catch (std::invalid_argument&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid integer: " << s << " (wrong format).");
+	} catch (std::out_of_range&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid integer: " << s << " (out of range).");
+	}
+	if (idx != s.size()) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid integer: " << s << " (garbage at the end).");
+	}
 	return v;
 }
 
+// Range: [0, std::numeric_limits<int>::max()]
 template<>
 unsigned int
-ParameterMap::convertValue<unsigned int>(const QString s)
+ParameterMap::convertValue<unsigned int>(const std::string& s)
 {
-	bool ok;
-	unsigned int v = s.toUInt(&ok);
-	if (!ok) THROW_EXCEPTION(InvalidValueException, "Invalid unsigned integer: " << s.toStdString() << '.');
-	return v;
+	std::size_t idx;
+	int v;
+	try {
+		v = std::stoi(s, &idx);
+	} catch (std::invalid_argument&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned integer: " << s << " (wrong format).");
+	} catch (std::out_of_range&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned integer: " << s << " (out of range).");
+	}
+	if (idx != s.size()) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned integer: " << s << " (garbage at the end).");
+	}
+	if (v < 0) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned integer: " << s << " (negative).");
+	}
+	return static_cast<unsigned int>(v);
 }
 
 template<>
 long
-ParameterMap::convertValue<long>(const QString s)
+ParameterMap::convertValue<long>(const std::string& s)
 {
-	bool ok;
-	long v = s.toLong(&ok);
-	if (!ok) THROW_EXCEPTION(InvalidValueException, "Invalid long: " << s.toStdString() << '.');
+	std::size_t idx;
+	long v;
+	try {
+		v = std::stol(s, &idx);
+	} catch (std::invalid_argument&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid long integer: " << s << " (wrong format).");
+	} catch (std::out_of_range&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid long integer: " << s << " (out of range).");
+	}
+	if (idx != s.size()) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid long integer: " << s << " (garbage at the end).");
+	}
 	return v;
 }
 
+// Range: [0, std::numeric_limits<long>::max()]
 template<>
 unsigned long
-ParameterMap::convertValue<unsigned long>(const QString s)
+ParameterMap::convertValue<unsigned long>(const std::string& s)
 {
-	bool ok;
-	unsigned long v = s.toULong(&ok);
-	if (!ok) THROW_EXCEPTION(InvalidValueException, "Invalid unsigned long: " << s.toStdString() << '.');
-	return v;
+	std::size_t idx;
+	long v;
+	try {
+		v = std::stol(s, &idx);
+	} catch (std::invalid_argument&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned long integer: " << s << " (wrong format).");
+	} catch (std::out_of_range&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned long integer: " << s << " (out of range).");
+	}
+	if (idx != s.size()) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned long integer: " << s << " (garbage at the end).");
+	}
+	if (v < 0) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid unsigned long integer: " << s << " (negative).");
+	}
+	return static_cast<unsigned long>(v);
 }
 
 template<>
 float
-ParameterMap::convertValue<float>(const QString s)
+ParameterMap::convertValue<float>(const std::string& s)
 {
-	bool ok;
-	float v = s.toFloat(&ok);
-	if (!ok) THROW_EXCEPTION(InvalidValueException, "Invalid float: " << s.toStdString() << '.');
+	std::size_t idx;
+	float v;
+	try {
+		v = std::stof(s, &idx);
+	} catch (std::invalid_argument&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid float: " << s << " (wrong format).");
+	} catch (std::out_of_range&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid float: " << s << " (out of range).");
+	}
+	if (idx != s.size()) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid float: " << s << " (garbage at the end).");
+	}
 	return v;
 }
 
 template<>
 double
-ParameterMap::convertValue<double>(const QString s)
+ParameterMap::convertValue<double>(const std::string& s)
 {
-	bool ok;
-	double v = s.toDouble(&ok);
-	if (!ok) THROW_EXCEPTION(InvalidValueException, "Invalid double: " << s.toStdString() << '.');
+	std::size_t idx;
+	double v;
+	try {
+		v = std::stod(s, &idx);
+	} catch (std::invalid_argument&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid double: " << s << " (wrong format).");
+	} catch (std::out_of_range&) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid double: " << s << " (out of range).");
+	}
+	if (idx != s.size()) {
+		THROW_EXCEPTION(InvalidValueException, "Invalid double: " << s << " (garbage at the end).");
+	}
 	return v;
 }
 
 template<>
 bool
-ParameterMap::convertValue<bool>(const QString s)
+ParameterMap::convertValue<bool>(const std::string& s)
 {
 	if (s == "true") return true;
 	if (s == "false") return false;
-	THROW_EXCEPTION(InvalidValueException, "Invalid bool: " << s.toStdString() << '.');
+	THROW_EXCEPTION(InvalidValueException, "Invalid bool: " << s << '.');
 }
 
 template<>
 std::string
-ParameterMap::convertValue<std::string>(const QString s)
+ParameterMap::convertValue<std::string>(const std::string& s)
 {
-	return s.toStdString();
+	return s;
 }
 
 } // namespace Lab

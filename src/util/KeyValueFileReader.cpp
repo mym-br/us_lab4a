@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -17,54 +17,58 @@
 
 #include "KeyValueFileReader.h"
 
-#include <QFile>
-#include <QStringList>
-#include <QTextStream>
+#include <cstddef> /* std::size_t */
+#include <fstream>
 
 #include "Exception.h"
+#include "String.h"
 
 
 
 namespace Lab {
 
-KeyValueFileReader::KeyValueFileReader(const QString& filePath)
+KeyValueFileReader::KeyValueFileReader(const std::string& filePath)
 {
-	QFile file(filePath);
-	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-		THROW_EXCEPTION(IOException, "The file " << filePath.toStdString() << " could not be opened.");
+	std::ifstream in(filePath);
+	if (!in) {
+		THROW_EXCEPTION(IOException, "Could not open the file " << filePath << '.');
 	}
 
-	QTextStream in(&file);
-	in.setCodec("UTF-8");
-	int lineNumber = 0;
-	while (!in.atEnd()) {
+	unsigned int lineNumber = 0;
+	std::string line;
+	while (std::getline(in, line)) {
 		++lineNumber;
 
-		QString line = in.readLine().trimmed();
+		std::string_view trimmedLine = String::trimToView(line);
+		if (trimmedLine.empty()) continue;
+		if (trimmedLine[0] == '#') continue; // comment
 
-		if (line.startsWith('#')) continue; // comment
-		if (line.isEmpty()) continue;
+		std::size_t eqPos = trimmedLine.find('=');
+		if (eqPos == trimmedLine.npos) {
+			THROW_EXCEPTION(InvalidValueException, "Missing '=' separator at line " << lineNumber
+					<< " of file " << filePath << '.');
+		}
+		if (eqPos == 0) {
+			THROW_EXCEPTION(InvalidValueException, "Missing key at line " << lineNumber
+					<< " of file " << filePath << '.');
+		}
+		if (eqPos == trimmedLine.size() - 1U) {
+			THROW_EXCEPTION(InvalidValueException, "Missing value at line " << lineNumber
+					<< " of file " << filePath << '.');
+		}
 
-		QStringList itemList = line.split('='/*, QString::SkipEmptyParts*/);
-		if (itemList.size() == 1) {
-			THROW_EXCEPTION(InvalidValueException, "Missing '=' separator at line " << lineNumber << " of file " << filePath.toStdString() << '.');
-		}
-		if (itemList.size() != 2) {
-			THROW_EXCEPTION(InvalidValueException, "Invalid syntax at line " << lineNumber << " of file " << filePath.toStdString() << '.');
+		std::string key   = String::trim(trimmedLine.substr(0, eqPos));
+		std::string value = String::trim(trimmedLine.substr(eqPos + 1));
+		if (String::hasSpace(key)) {
+			THROW_EXCEPTION(InvalidValueException, "Key has space at line " << lineNumber
+					<< " of file " << filePath << '.');
 		}
 
-		QString key = itemList.at(0).trimmed();
-		if (key.isEmpty()) {
-			THROW_EXCEPTION(InvalidValueException, "Empty key at line " << lineNumber << " of file " << filePath.toStdString() << '.');
+		if (map_.find(key) != map_.end()) {
+			THROW_EXCEPTION(InvalidValueException, "Duplicate key '" << key << "' at line " << lineNumber
+					<< " of file " << filePath << '.');
 		}
-		QString value = itemList.at(1).trimmed();
-		if (value.isEmpty()) {
-			THROW_EXCEPTION(InvalidValueException, "Empty value at line " << lineNumber << " of file " << filePath.toStdString() << '.');
-		}
-		if (map_.contains(key)) {
-			THROW_EXCEPTION(InvalidValueException, "Duplicated key '" << key.toStdString() << "' at line " << lineNumber << " of file " << filePath.toStdString() << '.');
-		}
-		map_.insert(key, value);
+		map_[key] = value;
 	}
 }
 

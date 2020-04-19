@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -17,16 +17,17 @@
 
 #include "Project.h"
 
+#include <filesystem>
+#include <fstream>
 #include <string>
 
-#include <QDir>
-#include <QFile>
-#include <QMutexLocker>
 #include <QProcess>
 #include <QStringList>
 
 #include "KeyValueFileReader.h"
 #include "USLab4a.h"
+
+namespace fs = std::filesystem;
 
 namespace Lab {
 
@@ -42,41 +43,41 @@ Project::Project(USLab4a& mainWindow)
 void
 Project::loadTaskParameters(const std::string& taskFileName)
 {
-	QFile taskFile(directory_ + '/' + taskFileName.c_str());
-	if (taskFile.exists()) {
-		taskParameterMap_ = std::make_unique<const ParameterMap>(taskFile.fileName());
-	} else {
-		THROW_EXCEPTION(InvalidFileException, "The file \"" << taskFile.fileName().toStdString() << "\" could not be opened.");
-	}
+	std::ostringstream taskFilePath;
+	taskFilePath << directory_ << '/' << taskFileName;
+	taskParameterMap_ = std::make_unique<const ParameterMap>(taskFilePath.str());
 }
 
 ParamMapPtr
 Project::getParamMap(const char* fileName) const
 {
-	QString filePath = expDirectory_ + '/' + fileName;
-	return std::make_unique<const ParameterMap>(filePath);
+	std::ostringstream filePath;
+	filePath << expDirectory_ << '/' << fileName;
+	return std::make_unique<const ParameterMap>(filePath.str());
 }
 
 ParamMapPtr
 Project::getSubParamMap(const ParameterMap& pm, const char* fileNameKey) const
 {
 	const auto fileName = pm.value<std::string>(fileNameKey);
-	QString filePath = expDirectory_ + '/' + fileName.c_str();
-	return std::make_unique<const ParameterMap>(filePath);
+	std::ostringstream filePath;
+	filePath << expDirectory_ << '/' << fileName;
+	return std::make_unique<const ParameterMap>(filePath.str());
 }
 
 ParamMapPtr
 Project::getSubParamMap(const char* fileNameKey) const
 {
 	const auto fileName = taskParamMap().value<std::string>(fileNameKey);
-	QString filePath = expDirectory_ + '/' + fileName.c_str();
-	return std::make_unique<const ParameterMap>(filePath);
+	std::ostringstream filePath;
+	filePath << expDirectory_ << '/' << fileName;
+	return std::make_unique<const ParameterMap>(filePath.str());
 }
 
 void
 Project::handleShowFigure2DRequest()
 {
-	QMutexLocker locker(&figure2DData_.mutex);
+	const std::lock_guard<std::mutex> locker(figure2DData_.mutex);
 	if (!figure2DData_.showFigureRequested) return;
 	mainWindow_.showFigure2D(
 			figure2DData_.figureId,
@@ -85,13 +86,13 @@ Project::handleShowFigure2DRequest()
 			figure2DData_.yList,
 			figure2DData_.markPoints);
 	figure2DData_.showFigureRequested = false;
-	figure2DData_.requestHandledCondition.wakeAll();
+	figure2DData_.requestHandledCondition.notify_all();
 }
 
 void
 Project::handleShowFigure3DRequest()
 {
-	QMutexLocker locker(&figure3DData_.mutex);
+	const std::lock_guard<std::mutex> locker(figure3DData_.mutex);
 	if (!figure3DData_.showFigureRequested) return;
 	mainWindow_.showFigure3D(
 			figure3DData_.figureId,
@@ -102,13 +103,13 @@ Project::handleShowFigure3DRequest()
 			figure3DData_.colormap,
 			figure3DData_.valueScale);
 	figure3DData_.showFigureRequested = false;
-	figure3DData_.requestHandledCondition.wakeAll();
+	figure3DData_.requestHandledCondition.notify_all();
 }
 
 void
 Project::handleShowMultiLayer3DRequest()
 {
-	QMutexLocker locker(&multiLayer3DData_.mutex);
+	const std::lock_guard<std::mutex> locker(multiLayer3DData_.mutex);
 	if (!multiLayer3DData_.showFigureRequested) return;
 	mainWindow_.showMultiLayer3D(
 			multiLayer3DData_.figureId,
@@ -116,7 +117,7 @@ Project::handleShowMultiLayer3DRequest()
 			multiLayer3DData_.pointArray,
 			multiLayer3DData_.indexArray);
 	multiLayer3DData_.showFigureRequested = false;
-	multiLayer3DData_.requestHandledCondition.wakeAll();
+	multiLayer3DData_.requestHandledCondition.notify_all();
 }
 
 void
@@ -128,7 +129,7 @@ Project::executeProgram(std::string& programPath, std::vector<std::string>& prog
 	}
 
 	auto proc = std::make_unique<QProcess>();
-	proc->setWorkingDirectory(expDirectory_);
+	proc->setWorkingDirectory(expDirectory_.c_str());
 
 	LOG_DEBUG << "Executing program: " << programPath << " with arguments: " << args.join(" ").toStdString();
 	proc->start(programPath.c_str(), args);
@@ -151,15 +152,15 @@ Project::executeProgram(std::string& programPath, std::vector<std::string>& prog
 void
 Project::requestProcessingCancellation()
 {
-	QMutexLocker locker(&control_.mutex);
+	const std::lock_guard<std::mutex> locker(control_.mutex);
 	control_.processingCancellationRequested = true;
-	control_.triggerCondition.wakeAll();
+	control_.triggerCondition.notify_all();
 }
 
 bool
 Project::processingCancellationRequested()
 {
-	QMutexLocker locker(&control_.mutex);
+	const std::lock_guard<std::mutex> locker(control_.mutex);
 	if (control_.processingCancellationRequested) {
 		control_.processingCancellationRequested = false;
 		return true;
@@ -171,7 +172,7 @@ Project::processingCancellationRequested()
 void
 Project::resetTrigger()
 {
-	QMutexLocker locker(&control_.mutex);
+	const std::lock_guard<std::mutex> locker(control_.mutex);
 	control_.trigger = false;
 	control_.triggerCount = 0;
 }
@@ -179,18 +180,19 @@ Project::resetTrigger()
 void
 Project::trigger()
 {
-	QMutexLocker locker(&control_.mutex);
+	const std::lock_guard<std::mutex> locker(control_.mutex);
 	if (control_.trigger) {
 		THROW_EXCEPTION(InvalidStateException, "Duplicated trigger.");
 	}
 	control_.trigger = true;
-	control_.triggerCondition.wakeAll();
+	control_.triggerCondition.notify_all();
 }
 
 bool
 Project::waitForTrigger(std::size_t* triggerCount)
 {
-	QMutexLocker locker(&control_.mutex);
+	std::unique_lock<std::mutex> locker(control_.mutex);
+
 	if (control_.processingCancellationRequested) {
 		control_.processingCancellationRequested = false;
 		control_.trigger = false;
@@ -200,7 +202,7 @@ Project::waitForTrigger(std::size_t* triggerCount)
 
 	while (!control_.trigger) {
 		LOG_INFO << ">>>>> Waiting for trigger >>>>>";
-		control_.triggerCondition.wait(&control_.mutex);
+		control_.triggerCondition.wait(locker);
 
 		if (control_.processingCancellationRequested) {
 			control_.processingCancellationRequested = false;
@@ -221,27 +223,24 @@ Project::waitForTrigger(std::size_t* triggerCount)
 void
 Project::createDirectory(const std::string &path, bool mustNotExist) const
 {
-	QString fullDir = expDirectory_;
-	fullDir.append('/');
-	fullDir.append(path.c_str());
-	QDir dir;
-	if (mustNotExist && dir.exists(fullDir)) {
-		THROW_EXCEPTION(InvalidDirectoryException, "The directory/file " << fullDir.toStdString() << " already exists.");
+	std::ostringstream fullPath;
+	fullPath << expDirectory_ << '/' << path;
+	fs::path dir(fullPath.str());
+
+	if (mustNotExist && fs::exists(dir)) {
+		THROW_EXCEPTION(InvalidDirectoryException, "The directory/file " << dir << " already exists.");
 	}
 
-	if (!dir.mkpath(fullDir)) {
-		THROW_EXCEPTION(InvalidDirectoryException, "Could not create the directory " << fullDir.toStdString() << '.');
-	}
+	fs::create_directories(dir);
 }
 
 bool
 Project::directoryExists(const std::string& path) const
 {
-	QString fullDir = expDirectory_;
-	fullDir.append('/');
-	fullDir.append(path.c_str());
-	QDir dir;
-	return dir.exists(fullDir);
+	std::ostringstream fullPath;
+	fullPath << expDirectory_ << '/' << path;
+	fs::path dir(fullPath.str());
+	return fs::exists(dir) && fs::is_directory(dir);
 }
 
 } // namespace Lab

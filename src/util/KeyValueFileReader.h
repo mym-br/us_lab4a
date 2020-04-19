@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,8 +18,8 @@
 #ifndef KEYVALUEFILEREADER_H_
 #define KEYVALUEFILEREADER_H_
 
-#include <QHash>
-#include <QString>
+#include <string>
+#include <unordered_map>
 
 
 
@@ -27,17 +27,17 @@ namespace Lab {
 
 class KeyValueFileReader {
 public:
-	explicit KeyValueFileReader(const QString& filePath);
+	explicit KeyValueFileReader(const std::string& filePath);
 	~KeyValueFileReader() = default;
 
-	const QHash<QString, QString>& map() const { return map_; }
+	const std::unordered_map<std::string, std::string>& map() const { return map_; }
 private:
 	KeyValueFileReader(const KeyValueFileReader&) = delete;
 	KeyValueFileReader& operator=(const KeyValueFileReader&) = delete;
 	KeyValueFileReader(KeyValueFileReader&&) = delete;
 	KeyValueFileReader& operator=(KeyValueFileReader&&) = delete;
 
-	QHash<QString, QString> map_;
+	std::unordered_map<std::string, std::string> map_;
 };
 
 } // namespace Lab

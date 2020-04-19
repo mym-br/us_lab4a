@@ -58,33 +58,10 @@ if(USE_EXECUTION_TIME_MEASUREMENT)
     add_compile_definitions(USE_EXECUTION_TIME_MEASUREMENT)
 endif()
 
-set(us_lab4a_SRC
-    src/Controller.cpp
-    src/Controller.h
-    src/Figure2DWidget.cpp
-    src/Figure2DWidget.h
-    src/Figure2DWindow.cpp
-    src/Figure2DWindow.h
-    src/Figure3DWindow.cpp
-    src/Figure3DWindow.h
-    src/FigureWindowList.h
-    src/main.cpp
+set(uslab4a_SRC
     src/Method.cpp
     src/Method.h
-    src/MultiLayer3DWindow.cpp
-    src/MultiLayer3DWindow.h
-    src/OGLFigureWidget.cpp
-    src/OGLFigureWidget.h
-    src/OGLMultiLayerWidget.cpp
-    src/OGLMultiLayerWidget.h
-    src/ProcessingNode.cpp
-    src/ProcessingNode.h
-    src/ProcessingThread.cpp
-    src/ProcessingThread.h
-    src/Project.cpp
     src/Project.h
-    src/USLab4a.cpp
-    src/USLab4a.h
     src/fft/FFTUtil.h
     src/fft/FFTW.cpp
     src/fft/FFTW.h
@@ -132,8 +109,6 @@ set(us_lab4a_SRC
     src/util/LinearInterpolator.h
     src/util/Log.cpp
     src/util/Log.h
-    src/util/LogSyntaxHighlighter.cpp
-    src/util/LogSyntaxHighlighter.h
     src/util/Math.cpp
     src/util/Math.h
     src/util/Matrix.h
@@ -242,14 +217,42 @@ set(us_lab4a_SRC
     src/user/simulator/Simulated3DTnRnAcquisition.h
     src/user/simulator/SimulatedSTAAcquisition.h
 
+    ${OPENCL_SRC}
+)
+
+set(uslab4a_gui_SRC
+    src/Controller.cpp
+    src/Controller.h
+    src/Project.cpp
+    src/Figure2DWidget.cpp
+    src/Figure2DWidget.h
+    src/Figure2DWindow.cpp
+    src/Figure2DWindow.h
+    src/Figure3DWindow.cpp
+    src/Figure3DWindow.h
+    src/FigureWindowList.h
+    src/main.cpp
+    src/MultiLayer3DWindow.cpp
+    src/MultiLayer3DWindow.h
+    src/OGLFigureWidget.cpp
+    src/OGLFigureWidget.h
+    src/OGLMultiLayerWidget.cpp
+    src/OGLMultiLayerWidget.h
+    src/ProcessingNode.cpp
+    src/ProcessingNode.h
+    src/ProcessingThread.cpp
+    src/ProcessingThread.h
+    src/USLab4a.cpp
+    src/USLab4a.h
+    src/util/LogSyntaxHighlighter.cpp
+    src/util/LogSyntaxHighlighter.h
+
     ui/Figure2DWindow.ui
     ui/Figure3DWindow.ui
     ui/MultiLayer3DWindow.ui
     ui/USLab4a.ui
 
     resource/us_lab4a.qrc
-
-    ${OPENCL_SRC}
 )
 
 if(USE_CUDA)
@@ -291,11 +294,11 @@ if(USE_CUDA)
     target_compile_options(usercuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-arch compute_75 -code sm_75 --compiler-options=-mavx,-O3>)
 endif()
 
-add_executable(us_lab4a ${us_lab4a_SRC})
+add_library(uslab4a STATIC ${uslab4a_SRC})
 
-target_compile_definitions(us_lab4a PRIVATE ${OPENCL_TARGET_DEFS})
+target_compile_definitions(uslab4a PRIVATE ${OPENCL_TARGET_DEFS})
 
-target_include_directories(us_lab4a PRIVATE
+target_include_directories(uslab4a PUBLIC
     src
     src/fft
     src/network_acquisition
@@ -317,7 +320,9 @@ target_include_directories(us_lab4a PRIVATE
     ${HDF5_INCLUDE_DIRS}
 )
 
-target_link_libraries(us_lab4a
+add_executable(us_lab4a_gui ${uslab4a_gui_SRC})
+
+target_link_libraries(us_lab4a_gui
     Qt5::Core
     Qt5::Gui
     Qt5::OpenGL
@@ -337,4 +342,8 @@ target_link_libraries(us_lab4a
 
     ${OPENCL_LIB_VAR}
     ${USER_CUDA_LIB}
+
+    uslab4a
+
+    stdc++fs
 )

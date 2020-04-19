@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018, 2019 Marcelo Y. Matuda                     *
+ *  Copyright 2014, 2017, 2018, 2019, 2020 Marcelo Y. Matuda               *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,8 +18,6 @@
 #include "Log.h"
 
 #include <iostream>
-
-#include <QMutexLocker>
 
 
 
@@ -55,7 +53,7 @@ NormalLogMessage::~NormalLogMessage()
  */
 std::atomic<Log::Level> Log::level_;
 std::ostringstream Log::buffer_;
-QMutex Log::logMutex_;
+std::mutex Log::logMutex_;
 
 /*******************************************************************************
  *
@@ -63,7 +61,7 @@ QMutex Log::logMutex_;
 void
 Log::add(const std::ostringstream& inputBuffer)
 {
-	QMutexLocker locker(&logMutex_);
+	const std::lock_guard<std::mutex> locker(logMutex_);
 	std::streampos pos = buffer_.tellp();
 	if (pos > 0) {
 		buffer_ << '\n';
@@ -77,7 +75,7 @@ Log::add(const std::ostringstream& inputBuffer)
 void
 Log::transferTo(std::string& out)
 {
-	QMutexLocker locker(&logMutex_);
+	const std::lock_guard<std::mutex> locker(logMutex_);
 	out = buffer_.str();
 	buffer_.str(""); // clear
 }
