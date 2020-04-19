@@ -326,7 +326,7 @@ processRowColumnWithOneTxElemPCFKernel(
 
 //=============================================================================
 
-struct VectorialCombinedTwoMediumImagingCUDAProcessor2Data {
+struct VectorialCombinedTwoMediumImagingCUDAProcessor2::CUDAData {
 	bool cudaDataInitialized;
 	CUDADevMem<MFloat[2]> gridXZ;
 	CUDADevMem<MFloat> rxApod;
@@ -338,13 +338,13 @@ struct VectorialCombinedTwoMediumImagingCUDAProcessor2Data {
 	CUDADevMem<MFloat> delayTensor;
 	CUDAHostDevMem<MFloat[2]> gridValue;
 
-	VectorialCombinedTwoMediumImagingCUDAProcessor2Data()
+	CUDAData()
 		: cudaDataInitialized()
 	{}
 };
 
 template<typename TFloat>
-struct PrepareDataWithOneTxElem2 {
+struct VectorialCombinedTwoMediumImagingCUDAProcessor2::PrepareDataWithOneTxElem {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		typename VectorialCombinedTwoMediumImagingCUDAProcessor2::PrepareDataThreadData<TFloat>& local = prepareDataTLS.local();
 
@@ -417,7 +417,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::VectorialCombinedTwoMediumImagi
 	prepareDataThreadData.signal.resize(signalLength_);
 	prepareDataTLS_ = std::make_unique<tbb::enumerable_thread_specific<PrepareDataThreadData<MFloat>>>(prepareDataThreadData);
 
-	data_ = std::make_unique<VectorialCombinedTwoMediumImagingCUDAProcessor2Data>();
+	data_ = std::make_unique<CUDAData>();
 
 	if (Log::isDebugEnabled()) {
 		int device;
@@ -615,7 +615,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 	// Only one transmit element.
 	unsigned int stepIdx = 0;
 	for (const auto& stepConfig : stepConfigList) {
-		PrepareDataWithOneTxElem2<MFloat> prepareDataOp = {
+		PrepareDataWithOneTxElem<MFloat> prepareDataOp = {
 			samplesPerChannelLow,
 			acqDataList_,
 			upsamplingFactor_,

@@ -160,7 +160,7 @@ processImagePCFKernel(
 
 //=============================================================================
 
-struct VectorialCombinedTwoMediumImagingCUDAProcessorData {
+struct VectorialCombinedTwoMediumImagingCUDAProcessor::CUDAData {
 	bool cudaDataInitialized;
 	CUDADevMem<MFloat> rxApod;
 	std::vector<CUDAHostDevMem<MFloat>> rawDataList;
@@ -170,14 +170,14 @@ struct VectorialCombinedTwoMediumImagingCUDAProcessorData {
 	CUDAHostDevMem<MFloat> gridValueRe;
 	CUDAHostDevMem<MFloat> gridValueIm;
 
-	VectorialCombinedTwoMediumImagingCUDAProcessorData()
+	CUDAData()
 		: cudaDataInitialized()
 		, rawDataList(NUM_RAW_DATA_BUFFERS)
 	{}
 };
 
 template<typename TFloat>
-struct CalculateDelays {
+struct VectorialCombinedTwoMediumImagingCUDAProcessor::CalculateDelays {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		//LOG_DEBUG << "col = " << r.begin() << " n = " << (r.end() - r.begin());
 
@@ -266,7 +266,7 @@ struct CalculateDelays {
 };
 
 template<typename TFloat>
-struct PrepareDataWithOneTxElem {
+struct VectorialCombinedTwoMediumImagingCUDAProcessor::PrepareDataWithOneTxElem {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		typename VectorialCombinedTwoMediumImagingCUDAProcessor::PrepareDataThreadData<TFloat>& local = prepareDataTLS.local();
 
@@ -300,7 +300,7 @@ struct PrepareDataWithOneTxElem {
 };
 
 template<typename TFloat>
-struct ProcessColumnWithOneTxElem {
+struct VectorialCombinedTwoMediumImagingCUDAProcessor::ProcessColumnWithOneTxElem {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		//LOG_DEBUG << "col = " << r.begin() << " n = " << (r.end() - r.begin());
 
@@ -404,7 +404,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::VectorialCombinedTwoMediumImagin
 	prepareDataThreadData.signal.resize(signalLength_);
 	prepareDataTLS_ = std::make_unique<tbb::enumerable_thread_specific<PrepareDataThreadData<MFloat>>>(prepareDataThreadData);
 
-	data_ = std::make_unique<VectorialCombinedTwoMediumImagingCUDAProcessorData>();
+	data_ = std::make_unique<CUDAData>();
 
 	if (Log::isDebugEnabled()) {
 		int device;

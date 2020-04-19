@@ -39,8 +39,6 @@
 
 namespace Lab {
 
-struct VectorialCombinedTwoMediumImagingCUDAProcessorData;
-
 // Two-medium image formation, using analytic signals (each sample is a real-imag vector).
 // The final image is a combination of sub-images, using apodization.
 //
@@ -63,13 +61,6 @@ public:
 		unsigned int baseElemIdx;
 		unsigned int baseElem;
 		unsigned int txElem;
-	};
-
-	template<typename TFloat>
-	struct PrepareDataThreadData {
-		Interpolator<TFloat> interpolator;
-		HilbertEnvelope<TFloat> envelope;
-		std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> signal;
 	};
 
 	VectorialCombinedTwoMediumImagingCUDAProcessor(
@@ -112,6 +103,19 @@ public:
 #endif
 
 private:
+	struct CUDAData;
+
+	template<typename TFloat>
+	struct PrepareDataThreadData {
+		Interpolator<TFloat> interpolator;
+		HilbertEnvelope<TFloat> envelope;
+		std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> signal;
+	};
+
+	template<typename TFloat> struct CalculateDelays;
+	template<typename TFloat> struct PrepareDataWithOneTxElem;
+	template<typename TFloat> struct ProcessColumnWithOneTxElem;
+
 	VectorialCombinedTwoMediumImagingCUDAProcessor(const VectorialCombinedTwoMediumImagingCUDAProcessor&) = delete;
 	VectorialCombinedTwoMediumImagingCUDAProcessor& operator=(const VectorialCombinedTwoMediumImagingCUDAProcessor&) = delete;
 	VectorialCombinedTwoMediumImagingCUDAProcessor(VectorialCombinedTwoMediumImagingCUDAProcessor&&) = delete;
@@ -135,7 +139,7 @@ private:
 	unsigned int rawDataN2_;
 	std::size_t rawDataSize_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData<float>>> prepareDataTLS_;
-	std::unique_ptr<VectorialCombinedTwoMediumImagingCUDAProcessorData> data_;
+	std::unique_ptr<CUDAData> data_;
 
 	unsigned int rxApodSize_;
 	unsigned int gridXZN1_;

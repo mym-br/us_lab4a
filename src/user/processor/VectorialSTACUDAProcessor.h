@@ -37,8 +37,6 @@
 
 namespace Lab {
 
-struct VectorialSTACUDAProcessorData;
-
 // STA image formation, using analytic signals (each sample is a real-imag vector).
 //
 // Processing steps:
@@ -51,12 +49,6 @@ struct VectorialSTACUDAProcessorData;
 // z = 0 is at the surface of the array.
 class VectorialSTACUDAProcessor : public ArrayProcessor<XYZValueFactor<float>> {
 public:
-	struct PrepareDataThreadData {
-		Interpolator<float> interpolator;
-		HilbertEnvelope<float> envelope;
-		std::vector<float, tbb::cache_aligned_allocator<float>> signal;
-	};
-
 	VectorialSTACUDAProcessor(
 			const STAConfiguration<float>& config,
 			STAAcquisition<float>& acquisition,
@@ -89,6 +81,15 @@ public:
 #endif
 
 private:
+	struct CUDAData;
+
+	struct PrepareDataThreadData {
+		Interpolator<float> interpolator;
+		HilbertEnvelope<float> envelope;
+		std::vector<float, tbb::cache_aligned_allocator<float>> signal;
+	};
+	template<typename TFloat> struct PrepareData;
+
 	VectorialSTACUDAProcessor(const VectorialSTACUDAProcessor&) = delete;
 	VectorialSTACUDAProcessor& operator=(const VectorialSTACUDAProcessor&) = delete;
 	VectorialSTACUDAProcessor(VectorialSTACUDAProcessor&&) = delete;
@@ -106,7 +107,7 @@ private:
 	bool initialized_;
 	const std::vector<float> rxApod_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
-	std::unique_ptr<VectorialSTACUDAProcessorData> data_;
+	std::unique_ptr<CUDAData> data_;
 
 	unsigned int gridN1_;
 	unsigned int gridN2_;

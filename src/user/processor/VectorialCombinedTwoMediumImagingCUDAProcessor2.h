@@ -39,8 +39,6 @@
 
 namespace Lab {
 
-struct VectorialCombinedTwoMediumImagingCUDAProcessor2Data;
-
 // Two-medium image formation, using analytic signals (each sample is a real-imag vector).
 // The final image is a combination of sub-images, using apodization.
 //
@@ -59,13 +57,6 @@ public:
 		unsigned int baseElemIdx;
 		unsigned int baseElem;
 		unsigned int txElem;
-	};
-
-	template<typename TFloat>
-	struct PrepareDataThreadData {
-		Interpolator<TFloat> interpolator;
-		HilbertEnvelope<TFloat> envelope;
-		std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> signal;
 	};
 
 	VectorialCombinedTwoMediumImagingCUDAProcessor2(
@@ -108,6 +99,17 @@ public:
 #endif
 
 private:
+	struct CUDAData;
+
+	template<typename TFloat>
+	struct PrepareDataThreadData {
+		Interpolator<TFloat> interpolator;
+		HilbertEnvelope<TFloat> envelope;
+		std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> signal;
+	};
+
+	template<typename TFloat> struct PrepareDataWithOneTxElem;
+
 	VectorialCombinedTwoMediumImagingCUDAProcessor2(const VectorialCombinedTwoMediumImagingCUDAProcessor2&) = delete;
 	VectorialCombinedTwoMediumImagingCUDAProcessor2& operator=(const VectorialCombinedTwoMediumImagingCUDAProcessor2&) = delete;
 	VectorialCombinedTwoMediumImagingCUDAProcessor2(VectorialCombinedTwoMediumImagingCUDAProcessor2&&) = delete;
@@ -125,7 +127,7 @@ private:
 	std::vector<float, tbb::cache_aligned_allocator<float>> xArray_;
 	Matrix<float, tbb::cache_aligned_allocator<float>> medium1DelayMatrix_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData<float>>> prepareDataTLS_;
-	std::unique_ptr<VectorialCombinedTwoMediumImagingCUDAProcessor2Data> data_;
+	std::unique_ptr<CUDAData> data_;
 
 	unsigned int stepConfigListSize_;
 	unsigned int interfacePointListSize_;

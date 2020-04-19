@@ -211,7 +211,7 @@ processRowColumnSTAPCFKernel(
 
 //=============================================================================
 
-struct VectorialSTACUDAProcessorData {
+struct VectorialSTACUDAProcessor::CUDAData {
 	bool cudaDataInitialized;
 	CUDAHostDevMem<MFloat[2]> gridXZ;
 	CUDADevMem<MFloat> rxApod;
@@ -221,13 +221,13 @@ struct VectorialSTACUDAProcessorData {
 	CUDAHostDevMem<MFloat> gridValue;
 	CUDAHostDevMem<MFloat> gridFactor;
 
-	VectorialSTACUDAProcessorData()
+	CUDAData()
 		: cudaDataInitialized()
 	{}
 };
 
 template<typename TFloat>
-struct VectorialSTACUDAProcessorPrepareData {
+struct VectorialSTACUDAProcessor::PrepareData {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
 		typename VectorialSTACUDAProcessor::PrepareDataThreadData& local = prepareDataTLS.local();
 
@@ -287,7 +287,7 @@ VectorialSTACUDAProcessor::VectorialSTACUDAProcessor(
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * (peakOffset / config_.centerFrequency);
 	LOG_DEBUG << "signalOffset_: " << signalOffset_;
 
-	data_ = std::make_unique<VectorialSTACUDAProcessorData>();
+	data_ = std::make_unique<CUDAData>();
 
 	if (Log::isDebugEnabled()) {
 		int device;
@@ -385,7 +385,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 		Timer prepareDataTimer;
 #endif
-		VectorialSTACUDAProcessorPrepareData<float> prepareDataOp = {
+		PrepareData<float> prepareDataOp = {
 			samplesPerChannelLow,
 			acqData_,
 			upsamplingFactor_,
