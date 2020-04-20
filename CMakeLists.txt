@@ -347,3 +347,28 @@ target_link_libraries(us_lab4a_gui
 
     stdc++fs
 )
+
+add_executable(us_lab4a
+    src/cli_main.cpp
+    src/cli_Project.cpp
+)
+
+target_link_libraries(us_lab4a
+    PkgConfig::FFTW3
+    PkgConfig::FFTW3F
+    PkgConfig::HDF5
+
+    tbb
+    tbbmalloc
+    #tbbmalloc_proxy
+    hdf5_cpp
+    boost_system
+    pthread
+
+    ${OPENCL_LIB_VAR}
+    ${USER_CUDA_LIB}
+
+    uslab4a
+
+    stdc++fs
+)

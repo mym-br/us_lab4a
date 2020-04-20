@@ -74,12 +74,14 @@ public:
 	static void setLevel(Level level) { level_ = level; }
 	static void add(const std::ostringstream& inputBuffer);
 	static void transferTo(std::string& out);
+	static void setLogToStdOut() { logToStdOut_ = true; }
 private:
 	Log() = delete;
 
 	static std::atomic<Level> level_;
 	static std::ostringstream buffer_;
 	static std::mutex logMutex_;
+	static bool logToStdOut_;
 };
 
 } // namespace Lab

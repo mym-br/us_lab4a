@@ -37,6 +37,7 @@ std::vector<XYZ<float>>* const Project::emptyPointList = nullptr;
 Project::Project(USLab4a& mainWindow)
 		: method_(MethodEnum::invalid)
 		, mainWindow_(mainWindow)
+		, useGUI_(true)
 {
 }
 

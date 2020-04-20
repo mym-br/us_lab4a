@@ -260,6 +260,7 @@ private:
 	Figure3DData figure3DData_;
 	MultiLayer3DData multiLayer3DData_;
 	Control control_;
+	bool useGUI_;
 
 	// These containers are here to avoid reallocations.
 	std::vector<double> auxHDF5Vector_;
@@ -464,6 +465,7 @@ Project::showFigure2D(int id,
 		bool waitPending,
 		bool markPoints)
 {
+	if (!useGUI_) return;
 	if (xList.empty()) {
 		THROW_EXCEPTION(InvalidParameterException, "xList is empty.");
 	}
@@ -513,6 +515,8 @@ Project::showFigure3D(
 		Colormap::Id colormap,
 		double valueScale)
 {
+	if (!useGUI_) return;
+
 	std::unique_lock<std::mutex> locker(figure3DData_.mutex);
 
 	if (figure3DData_.showFigureRequested) {
@@ -564,6 +568,8 @@ Project::showMultiLayer3D(
 		const T& pointArray,
 		const U& indexArray)
 {
+	if (!useGUI_) return;
+
 	std::unique_lock<std::mutex> locker(multiLayer3DData_.mutex);
 
 	if (multiLayer3DData_.showFigureRequested) {

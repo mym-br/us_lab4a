@@ -54,6 +54,7 @@ NormalLogMessage::~NormalLogMessage()
 std::atomic<Log::Level> Log::level_;
 std::ostringstream Log::buffer_;
 std::mutex Log::logMutex_;
+bool Log::logToStdOut_ = false;
 
 /*******************************************************************************
  *
@@ -61,6 +62,11 @@ std::mutex Log::logMutex_;
 void
 Log::add(const std::ostringstream& inputBuffer)
 {
+	if (logToStdOut_) {
+		std::cout << inputBuffer.str() << '\n';
+		return;
+	}
+
 	const std::lock_guard<std::mutex> locker(logMutex_);
 	std::streampos pos = buffer_.tellp();
 	if (pos > 0) {
