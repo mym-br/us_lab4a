@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018 Marcelo Y. Matuda                           *
+ *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -35,9 +35,10 @@
 #include "Exception.h"
 #include "FFTWFilter2.h"
 #include "Log.h"
-#include "PseudorandomNumberGenerator.h"
+#include "NumericArrayOfRectangularSourcesImpulseResponse.h"
 #include "NumericRectangularSourceImpulseResponse.h"
 #include "ParameterMap.h"
+#include "PseudorandomNumberGenerator.h"
 #include "Util.h"
 #include "Waveform.h"
 #include "WavefrontObjFileWriter.h"
@@ -115,8 +116,8 @@ private:
 	Simulated3DAcquisitionDevice& operator=(Simulated3DAcquisitionDevice&&) = delete;
 
 	void prepareExcitationDadt(const std::vector<TFloat>& vExc);
-	template<typename ImpulseResponse> void processReflector(const XYZValue<TFloat>& reflector,
-									FFTWFilter2<TFloat>& dadtFilter);
+	template<typename TXImpulseResponse, typename RXImpulseResponse>
+		void process(FFTWFilter2<TFloat>& dadtFilter);
 
 	const TFloat c_; // propagation speed (m/s)
 	const TFloat invC_;
@@ -399,68 +400,83 @@ Simulated3DAcquisitionDevice<TFloat>::setTxFocalPoint(TFloat xf, TFloat yf, TFlo
 }
 
 template<typename TFloat>
-template<typename ImpulseResponse>
+template<typename TXImpulseResponse, typename RXImpulseResponse>
 void
-Simulated3DAcquisitionDevice<TFloat>::processReflector(const XYZValue<TFloat>& reflector, FFTWFilter2<TFloat>& dadtFilter)
+Simulated3DAcquisitionDevice<TFloat>::process(FFTWFilter2<TFloat>& dadtFilter)
 {
-	const TFloat refX = reflector.x + reflectorsOffsetX_;
-	const TFloat refY = reflector.y + reflectorsOffsetY_;
-	const TFloat refZ = reflector.z;
-	const TFloat refCoeff = reflector.value;
-
-	auto txImpResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<TFloat, ImpulseResponse>>(
+	auto txImpResp = std::make_unique<TXImpulseResponse>(
 				simFs_, c_, txElemWidth_, txElemHeight_, txDiscretization_, txElemPos_, txDelays_);
 
-	// Calculate the impulse response in transmission (all active elements).
-	std::size_t hTxOffset;
-	txImpResp->getImpulseResponse(refX, refY, refZ, hTxOffset, hTx_, &activeTxElem_);
-
-	// dadt * hTx
-	dadtFilter.filter(dadtFilterFreqCoeff_, hTx_, convDadtHTx_);
-	Util::multiply(convDadtHTx_, 1 / simFs_);
-
-	ThreadData<ImpulseResponse> threadData{
+	ThreadData<RXImpulseResponse> threadData{
 		simFs_,
 		c_,
 		rxElemWidth_,
 		rxElemHeight_,
 		rxDiscretization_
 	};
-	threadData.convDadtHTxFilter.setCoefficients(convDadtHTx_, convDadtHTxFilterFreqCoeff_);
-	tbb::enumerable_thread_specific<ThreadData<ImpulseResponse>> tls(threadData);
 
-	// If activeRxElem_.size() == 1, only one thread will be used.
-	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, activeRxElem_.size()),
-	[&, refX, refY, refZ, hTxOffset](const tbb::blocked_range<std::size_t>& r) {
-		auto& local = tls.local();
+	TFloat refCoeffSum = 0.0;
 
-		// For each active receive element:
-		for (std::size_t iActiveRx = r.begin(); iActiveRx != r.end(); ++iActiveRx) {
-			const unsigned int activeRxElem = activeRxElem_[iActiveRx];
-			const XY<TFloat>& pos = rxElemPos_[activeRxElem];
+	// For each reflector:
+	for (std::size_t iRef = 0, iRefEnd = reflectorList_.size(); iRef < iRefEnd; ++iRef) {
+		LOG_DEBUG << "ACQ Reflector: " << iRef << " < " << iRefEnd;
+		const XYZValue<TFloat>& reflector = reflectorList_[iRef];
 
-			// Calculate the impulse response in reception (only for the active element).
-			std::size_t hRxOffset;
-			local.rxImpResp.getImpulseResponse(refX - pos.x, refY - pos.y, refZ, hRxOffset, local.hRx);
+		refCoeffSum += std::abs(reflectorList_[iRef].value);
 
-			local.convDadtHTxFilter.filter(convDadtHTxFilterFreqCoeff_, local.hRx, local.p);
+		const TFloat refX = reflector.x + reflectorsOffsetX_;
+		const TFloat refY = reflector.y + reflectorsOffsetY_;
+		const TFloat refZ = reflector.z;
+		const TFloat refCoeff = reflector.value;
 
-			const std::size_t pOffset = hTxOffset + hRxOffset;
-			// Offset due to the low-pass filter applied to the excitation waveform.
-			const std::size_t lpOffset = (decimator_->lowPassFIRFilter().size() - 1) / 2;
+		// Calculate the impulse response in transmission (all active elements).
+		std::size_t hTxOffset;
+		txImpResp->getImpulseResponse(refX, refY, refZ, hTxOffset, hTx_, &activeTxElem_);
 
-			// Downsample to the output sampling frequency.
-			std::size_t pDownOffset;
-			decimator_->downsample(lpOffset, pOffset, local.p, pDownOffset, local.pDown);
+		// dadt * hTx
+		dadtFilter.filter(dadtFilterFreqCoeff_, hTx_, convDadtHTx_);
+		Util::multiply(convDadtHTx_, 1 / simFs_);
 
-			const std::size_t signalListOffset = iActiveRx * signalLength_;
-			for (std::size_t i = 0, iEnd = local.pDown.size(), j = pDownOffset;
-					(i < iEnd) && (j < signalLength_);
-					++i, ++j) {
-				signalList_[signalListOffset + j] += local.pDown[i] * refCoeff;
+		threadData.convDadtHTxFilter.clean();
+		threadData.convDadtHTxFilter.setCoefficients(convDadtHTx_, convDadtHTxFilterFreqCoeff_);
+		tbb::enumerable_thread_specific<ThreadData<RXImpulseResponse>> tls(threadData);
+
+		// If activeRxElem_.size() == 1, only one thread will be used.
+		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, activeRxElem_.size()),
+		[&, refX, refY, refZ, hTxOffset](const tbb::blocked_range<std::size_t>& r) {
+			auto& local = tls.local();
+
+			// For each active receive element:
+			for (std::size_t iActiveRx = r.begin(); iActiveRx != r.end(); ++iActiveRx) {
+				const unsigned int activeRxElem = activeRxElem_[iActiveRx];
+				const XY<TFloat>& pos = rxElemPos_[activeRxElem];
+
+				// Calculate the impulse response in reception (only for the active element).
+				std::size_t hRxOffset;
+				local.rxImpResp.getImpulseResponse(refX - pos.x, refY - pos.y, refZ, hRxOffset, local.hRx);
+
+				local.convDadtHTxFilter.filter(convDadtHTxFilterFreqCoeff_, local.hRx, local.p);
+
+				const std::size_t pOffset = hTxOffset + hRxOffset;
+				// Offset due to the low-pass filter applied to the excitation waveform.
+				const std::size_t lpOffset = (decimator_->lowPassFIRFilter().size() - 1) / 2;
+
+				// Downsample to the output sampling frequency.
+				std::size_t pDownOffset;
+				decimator_->downsample(lpOffset, pOffset, local.p, pDownOffset, local.pDown);
+
+				const std::size_t signalListOffset = iActiveRx * signalLength_;
+				for (std::size_t i = 0, iEnd = local.pDown.size(), j = pDownOffset;
+						(i < iEnd) && (j < signalLength_);
+						++i, ++j) {
+					signalList_[signalListOffset + j] += local.pDown[i] * refCoeff;
+				}
 			}
-		}
-	});
+		});
+	}
+
+	Util::multiply(signalList_, signalCoeff_ / refCoeffSum);
+
 }
 
 template<typename TFloat>
@@ -487,22 +503,15 @@ Simulated3DAcquisitionDevice<TFloat>::getSignalList()
 	FFTWFilter2<TFloat> dadtFilter;
 	dadtFilter.setCoefficients(dadt_, dadtFilterFreqCoeff_);
 
-	TFloat refCoeffSum = 0.0;
-
-	// For each reflector:
-	for (std::size_t iRef = 0, iRefEnd = reflectorList_.size(); iRef < iRefEnd; ++iRef) {
-		LOG_DEBUG << "ACQ Reflector: " << iRef << " < " << iRefEnd;
-
-		refCoeffSum += std::abs(reflectorList_[iRef].value);
-
-		if (useNumericMethod_) {
-			processReflector<NumericRectangularSourceImpulseResponse<TFloat>>(reflectorList_[iRef], dadtFilter);
-		} else {
-			processReflector<AnalyticRectangularSourceImpulseResponse<TFloat>>(reflectorList_[iRef], dadtFilter);
-		}
+	if (useNumericMethod_) {
+		process<NumericArrayOfRectangularSourcesImpulseResponse<TFloat>,
+			NumericRectangularSourceImpulseResponse<TFloat>>(dadtFilter);
+	} else {
+		process<ArrayOfRectangularSourcesImpulseResponse<
+					TFloat,
+					AnalyticRectangularSourceImpulseResponse<TFloat>>,
+			AnalyticRectangularSourceImpulseResponse<TFloat>>(dadtFilter);
 	}
-
-	Util::multiply(signalList_, signalCoeff_ / refCoeffSum);
 
 	// Add noise.
 	if (noiseAmplitude_ == 0.0) {
