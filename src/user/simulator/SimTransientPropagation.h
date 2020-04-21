@@ -166,6 +166,18 @@ public:
 			const std::vector<unsigned int>& propagIndexList,
 			Matrix<XYZValueArray<TFloat>>& gridData);
 
+	static void getArrayOfRectangularSourcesPropagationDirect(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt,
+			const std::vector<XY<TFloat>>& elemPos,
+			const std::vector<TFloat>& focusDelay /* s */,
+			const std::vector<unsigned int>& propagIndexList,
+			Matrix<XYZValueArray<TFloat>>& gridData);
+
 	static void getArrayOfRectangularSourcesPropagationSingleThread(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -434,6 +446,68 @@ SimTransientPropagation<TFloat, ImpulseResponse>::getArrayOfRectangularSourcesPr
 		dvdt
 	};
 	tbb::enumerable_thread_specific<ArrayOfRectangularSourcesThreadData> tls(threadData);
+
+	IterationCounter::reset(gridData.n1());
+
+	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
+		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n2()),
+			[&, i](const tbb::blocked_range<std::size_t>& r) {
+				auto& local = tls.local();
+
+				std::size_t hOffset;
+
+				for (std::size_t j = r.begin(); j != r.end(); ++j) {
+					XYZValueArray<TFloat>& point = gridData(i, j);
+					local.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, local.h);
+
+					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
+
+					point.values.resize(propagIndexList.size());
+					for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
+						const unsigned int index = propagIndexList[i];
+						if (index < hOffset) {
+							point.values[i] = 0;
+						} else {
+							const unsigned int localIndex = index - hOffset;
+							if (localIndex < local.signal.size()) {
+								point.values[i] = local.signal[localIndex];
+							} else {
+								point.values[i] = 0;
+							}
+						}
+					}
+				}
+		});
+
+		IterationCounter::add(1);
+	}
+}
+
+template<typename TFloat, typename ImpulseResponse>
+void
+SimTransientPropagation<TFloat, ImpulseResponse>::getArrayOfRectangularSourcesPropagationDirect(
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceWidth,
+					TFloat sourceHeight,
+					TFloat discretization,
+					const std::vector<TFloat>& dvdt,
+					const std::vector<XY<TFloat>>& elemPos,
+					const std::vector<TFloat>& focusDelay,
+					const std::vector<unsigned int>& propagIndexList,
+					Matrix<XYZValueArray<TFloat>>& gridData)
+{
+	DirectArrayOfRectangularSourcesThreadData threadData{
+		samplingFreq,
+		propagationSpeed,
+		sourceWidth,
+		sourceHeight,
+		discretization,
+		elemPos,
+		focusDelay,
+		dvdt
+	};
+	tbb::enumerable_thread_specific<DirectArrayOfRectangularSourcesThreadData> tls(threadData);
 
 	IterationCounter::reset(gridData.n1());
 

@@ -172,6 +172,18 @@ public:
 			const Matrix<XYZ<TFloat>>& inputData,
 			Matrix<XYZValue<TFloat>>& gridData);
 
+	static void getArrayOfRectangularSourcesRadiationPatternDirect(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt,
+			const std::vector<XY<TFloat>>& elemPos,
+			const std::vector<TFloat>& focusDelay /* s */,
+			const Matrix<XYZ<TFloat>>& inputData,
+			Matrix<XYZValue<TFloat>>& gridData);
+
 	static void getArrayOfRectangularSourcesRadiationPatternSingleThread(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -384,6 +396,57 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getArrayOfRectangularSour
 		dvdt
 	};
 	tbb::enumerable_thread_specific<ArrayOfRectangularSourcesThreadData> tls(threadData);
+
+	IterationCounter::reset(inputData.n1());
+
+	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
+		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
+			[&, i](const tbb::blocked_range<std::size_t>& r) {
+				auto& local = tls.local();
+
+				std::size_t hOffset;
+
+				for (std::size_t j = r.begin(); j != r.end(); ++j) {
+					const XYZ<TFloat>& id = inputData(i, j);
+					local.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, local.h);
+
+					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
+
+					TFloat minValue, maxValue;
+					Util::minMax(local.signal, minValue, maxValue);
+					gridData(i, j).value = maxValue - minValue;
+				}
+		});
+
+		IterationCounter::add(1);
+	}
+}
+
+template<typename TFloat, typename ImpulseResponse>
+void
+SimTransientRadiationPattern<TFloat, ImpulseResponse>::getArrayOfRectangularSourcesRadiationPatternDirect(
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceWidth,
+					TFloat sourceHeight,
+					TFloat discretization,
+					const std::vector<TFloat>& dvdt,
+					const std::vector<XY<TFloat>>& elemPos,
+					const std::vector<TFloat>& focusDelay,
+					const Matrix<XYZ<TFloat>>& inputData,
+					Matrix<XYZValue<TFloat>>& gridData)
+{
+	DirectArrayOfRectangularSourcesThreadData threadData{
+		samplingFreq,
+		propagationSpeed,
+		sourceWidth,
+		sourceHeight,
+		discretization,
+		elemPos,
+		focusDelay,
+		dvdt
+	};
+	tbb::enumerable_thread_specific<DirectArrayOfRectangularSourcesThreadData> tls(threadData);
 
 	IterationCounter::reset(inputData.n1());
 
