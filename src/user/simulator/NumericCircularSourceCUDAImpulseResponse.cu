@@ -42,9 +42,11 @@
 
 namespace Lab {
 
+// Defined in NumericRectangularSourceCUDAImpulseResponse.cu.
 extern __global__ void numericSourceIRKernel(unsigned int numSubElem, float x, float y, float z,
-						float k1, float k2, float* subElemX, float* subElemY,
+						float k1, float k2, const float* subElemX, const float* subElemY,
 						unsigned int* n0, float* value);
+// Defined in NumericRectangularSourceCUDAImpulseResponse.cu.
 extern __global__ void accumulateIRSamplesKernel(unsigned int numSubElem,  unsigned int minN0, const unsigned int* n0,
 							const float* value, float* h);
 

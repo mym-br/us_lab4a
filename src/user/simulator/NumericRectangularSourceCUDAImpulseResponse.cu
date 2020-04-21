@@ -46,23 +46,23 @@ numericSourceIRKernel(
 		float z,
 		float k1,
 		float k2,
-		float* subElemX,
-		float* subElemY,
+		const float* subElemX,
+		const float* subElemY,
 		unsigned int* n0,
 		float* value)
 {
 	const unsigned int subElemIdx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (subElemIdx >= numSubElem) {
-		// Get data from the first sub-element.
-		const float dy = y - subElemY[0];
+		// Get data from the first sub-element, to help min/max(n0).
 		const float dx = x - subElemX[0];
+		const float dy = y - subElemY[0];
 		const float r = sqrtf(dx * dx + dy * dy + z * z);
 		n0[subElemIdx] = rintf(r * k1);
 		return;
 	}
 
-	const float dy = y - subElemY[subElemIdx];
 	const float dx = x - subElemX[subElemIdx];
+	const float dy = y - subElemY[subElemIdx];
 	const float r = sqrtf(dx * dx + dy * dy + z * z);
 	n0[subElemIdx] = rintf(r * k1);
 	value[subElemIdx] = k2 / r;
@@ -173,14 +173,14 @@ NumericRectangularSourceCUDAImpulseResponse::getImpulseResponse(
 		const unsigned int numBlocks = CUDAUtil::numberOfBlocks(numSubElem_, blockSize);
 
 		numericSourceIRKernel<<<numBlocks, blockSize>>>(
-			 numSubElem_,
-			 x, y, z,
-			 samplingFreq_ / propagationSpeed_,
-			 samplingFreq_ * subElemWidth_ * subElemHeight_ / (MFloat(2.0 * pi) * propagationSpeed_),
-			 data_->subElemX.devPtr,
-			 data_->subElemY.devPtr,
-			 data_->n0.devPtr,
-			 data_->value.devPtr);
+			numSubElem_,
+			x, y, z,
+			samplingFreq_ / propagationSpeed_,
+			samplingFreq_ * subElemWidth_ * subElemHeight_ / (MFloat(2.0 * pi) * propagationSpeed_),
+			data_->subElemX.devPtr,
+			data_->subElemY.devPtr,
+			data_->n0.devPtr,
+			data_->value.devPtr);
 		checkKernelLaunchError();
 	}
 	{
