@@ -30,6 +30,10 @@
 
 namespace Lab {
 
+// Warning: In this class, the element delays are discretized at the sampling
+// frequency. The problem is not critical when using analytic impulse response,
+// because it is used at very high fs. But with numeric impulse response, the
+// use of NumericArrayOfRectangularSources*ImpulseResponse is recommended.
 template<typename TFloat, typename ImpulseResponse>
 class ArrayOfRectangularSourcesImpulseResponse {
 public:
