@@ -20,6 +20,7 @@
 #include <cmath> /* ceil */
 #include <limits>
 
+#include "Exception.h"
 #include "Log.h"
 #include "Util.h" /* pi */
 
@@ -63,22 +64,22 @@ numericArraySourceIRKernel(
 	const unsigned int subElemIdx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (subElemIdx >= numSubElem) {
 		// Get data from the first sub-element, to help min/max(n0).
-		const unsigned int elemIdx = activeElem[0];
-		const float dx = x - subElemX[0] - elemPosX[elemIdx];
-		const float dy = y - subElemY[0] - elemPosY[elemIdx];
+		const unsigned int activeElemIdx = activeElem[0];
+		const float dx = x - subElemX[0] - elemPosX[activeElemIdx];
+		const float dy = y - subElemY[0] - elemPosY[activeElemIdx];
 		const float r = sqrtf(dx * dx + dy * dy + z * z);
 		const unsigned int idx = (numElem - 1U) * numSubElem + subElemIdx;
-		n0[idx] = rintf(r * k1 + elemDelay[elemIdx]);
+		n0[idx] = rintf(r * k1 + elemDelay[0]);
 		return;
 	}
 
 	for (unsigned int i = 0; i < numElem; ++i) {
-		const unsigned int elemIdx = activeElem[i];
-		const float dx = x - subElemX[subElemIdx] - elemPosX[elemIdx];
-		const float dy = y - subElemY[subElemIdx] - elemPosY[elemIdx];
+		const unsigned int activeElemIdx = activeElem[i];
+		const float dx = x - subElemX[subElemIdx] - elemPosX[activeElemIdx];
+		const float dy = y - subElemY[subElemIdx] - elemPosY[activeElemIdx];
 		const float r = sqrtf(dx * dx + dy * dy + z * z);
 		const unsigned int idx = i * numSubElem + subElemIdx;
-		n0[idx] = rintf(r * k1 + elemDelay[elemIdx]);
+		n0[idx] = rintf(r * k1 + elemDelay[i]);
 		value[idx] = k2 / r;
 	}
 }
