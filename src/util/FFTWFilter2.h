@@ -52,13 +52,14 @@ public:
 
 	// y.size() will be x.size() + filterCoeff.size() - 1.
 	void filter(const std::vector<std::complex<TFloat>>& filterFreqCoeff, const std::vector<TFloat>& x, std::vector<TFloat>& y);
+
+	void clean();
 private:
 	static constexpr int fftSize = 512; // must be a power of two
 
 	FFTWFilter2(FFTWFilter2&&) = delete;
 	FFTWFilter2& operator=(FFTWFilter2&&) = delete;
 
-	void clean();
 	void copyInput(const std::vector<TFloat>& v, long offset);
 	void prepare();
 
