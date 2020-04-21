@@ -306,7 +306,7 @@ SimRectangularSourceMethod<TFloat>::execTransientRadiationPattern(bool sourceIsA
 			if (sourceIsArray) {
 				SimTransientRadiationPattern<
 					TFloat,
-					NumericRectangularSourceCUDAImpulseResponse>::getArrayOfRectangularSourcesRadiationPatternSingleThread(
+					NumericArrayOfRectangularSourcesCUDAImpulseResponse>::getArrayOfRectangularSourcesRadiationPatternDirectSingleThread(
 							simData.samplingFreq, mainData.propagationSpeed,
 							srcData.sourceWidth, srcData.sourceHeight,
 							subElemSize,
@@ -567,7 +567,7 @@ SimRectangularSourceMethod<TFloat>::execTransientPropagation(bool sourceIsArray)
 			if (sourceIsArray) {
 				SimTransientPropagation<
 					TFloat,
-					NumericRectangularSourceCUDAImpulseResponse>::getArrayOfRectangularSourcesPropagationSingleThread(
+					NumericArrayOfRectangularSourcesCUDAImpulseResponse>::getArrayOfRectangularSourcesPropagationDirectSingleThread(
 							simData.samplingFreq, mainData.propagationSpeed,
 							srcData.sourceWidth, srcData.sourceHeight,
 							subElemSize,

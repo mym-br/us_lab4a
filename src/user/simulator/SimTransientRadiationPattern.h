@@ -100,6 +100,28 @@ public:
 		FFTWFilter2<TFloat> filter;
 	};
 
+	struct DirectArrayOfRectangularSourcesThreadData {
+		DirectArrayOfRectangularSourcesThreadData(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<XY<TFloat>>& elemPos,
+			const std::vector<TFloat>& focusDelay,
+			const std::vector<TFloat>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
+					elemPos, focusDelay)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ImpulseResponse ir;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
+	};
+
 	static void getCircularSourceRadiationPattern(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -151,6 +173,18 @@ public:
 			Matrix<XYZValue<TFloat>>& gridData);
 
 	static void getArrayOfRectangularSourcesRadiationPatternSingleThread(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt,
+			const std::vector<XY<TFloat>>& elemPos,
+			const std::vector<TFloat>& focusDelay /* s */,
+			const Matrix<XYZ<TFloat>>& inputData,
+			Matrix<XYZValue<TFloat>>& gridData);
+
+	static void getArrayOfRectangularSourcesRadiationPatternDirectSingleThread(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
 			TFloat sourceWidth,
@@ -391,6 +425,50 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getArrayOfRectangularSour
 					Matrix<XYZValue<TFloat>>& gridData)
 {
 	ArrayOfRectangularSourcesThreadData threadData{
+		samplingFreq,
+		propagationSpeed,
+		sourceWidth,
+		sourceHeight,
+		discretization,
+		elemPos,
+		focusDelay,
+		dvdt
+	};
+
+	IterationCounter::reset(inputData.n1());
+
+	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
+		std::size_t hOffset;
+		for (std::size_t j = 0, jEnd = inputData.n2(); j < jEnd; ++j) {
+			const XYZ<TFloat>& id = inputData(i, j);
+			threadData.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, threadData.h);
+
+			threadData.filter.filter(threadData.filterFreqCoeff, threadData.h, threadData.signal);
+
+			TFloat minValue, maxValue;
+			Util::minMax(threadData.signal, minValue, maxValue);
+			gridData(i, j).value = maxValue - minValue;
+		}
+
+		IterationCounter::add(1);
+	}
+}
+
+template<typename TFloat, typename ImpulseResponse>
+void
+SimTransientRadiationPattern<TFloat, ImpulseResponse>::getArrayOfRectangularSourcesRadiationPatternDirectSingleThread(
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceWidth,
+					TFloat sourceHeight,
+					TFloat discretization,
+					const std::vector<TFloat>& dvdt,
+					const std::vector<XY<TFloat>>& elemPos,
+					const std::vector<TFloat>& focusDelay,
+					const Matrix<XYZ<TFloat>>& inputData,
+					Matrix<XYZValue<TFloat>>& gridData)
+{
+	DirectArrayOfRectangularSourcesThreadData threadData{
 		samplingFreq,
 		propagationSpeed,
 		sourceWidth,
