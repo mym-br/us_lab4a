@@ -116,6 +116,12 @@ public:
 		FFTWFilter2<TFloat> filter;
 	};
 
+	template<typename T> static void exec(T& tls, const std::vector<unsigned int>& propagIndexList,
+						Matrix<XYZValueArray<TFloat>>& gridData);
+	template<typename T> static void execSingleThread(T& threadData,
+								const std::vector<unsigned int>& propagIndexList,
+								Matrix<XYZValueArray<TFloat>>& gridData);
+
 	static void getCircularSourcePropagation(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -205,37 +211,18 @@ private:
 	SimTransientPropagation() = delete;
 };
 
-
-
 template<typename TFloat, typename ImpulseResponse>
+template<typename T>
 void
-SimTransientPropagation<TFloat, ImpulseResponse>::getCircularSourcePropagation(
-					TFloat samplingFreq,
-					TFloat propagationSpeed,
-					TFloat sourceRadius,
-					TFloat discretization,
-					const std::vector<TFloat>& dvdt,
-					const std::vector<unsigned int>& propagIndexList,
-					Matrix<XYZValueArray<TFloat>>& gridData)
+SimTransientPropagation<TFloat, ImpulseResponse>::exec(T& tls, const std::vector<unsigned int>& propagIndexList,
+							Matrix<XYZValueArray<TFloat>>& gridData)
 {
-	CircularSourceThreadData threadData{
-		samplingFreq,
-		propagationSpeed,
-		sourceRadius,
-		discretization,
-		dvdt
-	};
-	tbb::enumerable_thread_specific<CircularSourceThreadData> tls(threadData);
-
 	IterationCounter::reset(gridData.n1());
-
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
 		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n2()),
 			[&, i](const tbb::blocked_range<std::size_t>& r) {
 				auto& local = tls.local();
-
 				std::size_t hOffset;
-
 				for (std::size_t j = r.begin(); j != r.end(); ++j) {
 					XYZValueArray<TFloat>& point = gridData(i, j);
 					local.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, local.h);
@@ -257,33 +244,20 @@ SimTransientPropagation<TFloat, ImpulseResponse>::getCircularSourcePropagation(
 						}
 					}
 				}
-		});
-
+			}
+		);
 		IterationCounter::add(1);
 	}
 }
 
 template<typename TFloat, typename ImpulseResponse>
+template<typename T>
 void
-SimTransientPropagation<TFloat, ImpulseResponse>::getCircularSourcePropagationSingleThread(
-					TFloat samplingFreq,
-					TFloat propagationSpeed,
-					TFloat sourceRadius,
-					TFloat discretization,
-					const std::vector<TFloat>& dvdt,
-					const std::vector<unsigned int>& propagIndexList,
-					Matrix<XYZValueArray<TFloat>>& gridData)
+SimTransientPropagation<TFloat, ImpulseResponse>::execSingleThread(T& threadData,
+									const std::vector<unsigned int>& propagIndexList,
+									Matrix<XYZValueArray<TFloat>>& gridData)
 {
-	CircularSourceThreadData threadData{
-		samplingFreq,
-		propagationSpeed,
-		sourceRadius,
-		discretization,
-		dvdt
-	};
-
 	IterationCounter::reset(gridData.n1());
-
 	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
 		std::size_t hOffset;
 		for (std::size_t j = 0, jEnd = gridData.n2(); j < jEnd; ++j) {
@@ -307,9 +281,53 @@ SimTransientPropagation<TFloat, ImpulseResponse>::getCircularSourcePropagationSi
 				}
 			}
 		}
-
 		IterationCounter::add(1);
 	}
+}
+
+template<typename TFloat, typename ImpulseResponse>
+void
+SimTransientPropagation<TFloat, ImpulseResponse>::getCircularSourcePropagation(
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceRadius,
+					TFloat discretization,
+					const std::vector<TFloat>& dvdt,
+					const std::vector<unsigned int>& propagIndexList,
+					Matrix<XYZValueArray<TFloat>>& gridData)
+{
+	CircularSourceThreadData threadData{
+		samplingFreq,
+		propagationSpeed,
+		sourceRadius,
+		discretization,
+		dvdt
+	};
+	tbb::enumerable_thread_specific<CircularSourceThreadData> tls(threadData);
+
+	exec(tls, propagIndexList, gridData);
+}
+
+template<typename TFloat, typename ImpulseResponse>
+void
+SimTransientPropagation<TFloat, ImpulseResponse>::getCircularSourcePropagationSingleThread(
+					TFloat samplingFreq,
+					TFloat propagationSpeed,
+					TFloat sourceRadius,
+					TFloat discretization,
+					const std::vector<TFloat>& dvdt,
+					const std::vector<unsigned int>& propagIndexList,
+					Matrix<XYZValueArray<TFloat>>& gridData)
+{
+	CircularSourceThreadData threadData{
+		samplingFreq,
+		propagationSpeed,
+		sourceRadius,
+		discretization,
+		dvdt
+	};
+
+	execSingleThread(threadData, propagIndexList, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -334,40 +352,7 @@ SimTransientPropagation<TFloat, ImpulseResponse>::getRectangularSourcePropagatio
 	};
 	tbb::enumerable_thread_specific<RectangularSourceThreadData> tls(threadData);
 
-	IterationCounter::reset(gridData.n1());
-
-	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
-		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n2()),
-			[&, i](const tbb::blocked_range<std::size_t>& r) {
-				auto& local = tls.local();
-
-				std::size_t hOffset;
-
-				for (std::size_t j = r.begin(); j != r.end(); ++j) {
-					XYZValueArray<TFloat>& point = gridData(i, j);
-					local.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, local.h);
-
-					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
-
-					point.values.resize(propagIndexList.size());
-					for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
-						const unsigned int index = propagIndexList[i];
-						if (index < hOffset) {
-							point.values[i] = 0;
-						} else {
-							const unsigned int localIndex = index - hOffset;
-							if (localIndex < local.signal.size()) {
-								point.values[i] = local.signal[localIndex];
-							} else {
-								point.values[i] = 0;
-							}
-						}
-					}
-				}
-		});
-
-		IterationCounter::add(1);
-	}
+	exec(tls, propagIndexList, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -391,34 +376,7 @@ SimTransientPropagation<TFloat, ImpulseResponse>::getRectangularSourcePropagatio
 		dvdt
 	};
 
-	IterationCounter::reset(gridData.n1());
-
-	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
-		std::size_t hOffset;
-		for (std::size_t j = 0, jEnd = gridData.n2(); j < jEnd; ++j) {
-			XYZValueArray<TFloat>& point = gridData(i, j);
-			threadData.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, threadData.h);
-
-			threadData.filter.filter(threadData.filterFreqCoeff, threadData.h, threadData.signal);
-
-			point.values.resize(propagIndexList.size());
-			for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
-				const unsigned int index = propagIndexList[i];
-				if (index < hOffset) {
-					point.values[i] = 0;
-				} else {
-					const unsigned int localIndex = index - hOffset;
-					if (localIndex < threadData.signal.size()) {
-						point.values[i] = threadData.signal[localIndex];
-					} else {
-						point.values[i] = 0;
-					}
-				}
-			}
-		}
-
-		IterationCounter::add(1);
-	}
+	execSingleThread(threadData, propagIndexList, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -447,40 +405,7 @@ SimTransientPropagation<TFloat, ImpulseResponse>::getArrayOfRectangularSourcesPr
 	};
 	tbb::enumerable_thread_specific<ArrayOfRectangularSourcesThreadData> tls(threadData);
 
-	IterationCounter::reset(gridData.n1());
-
-	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
-		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n2()),
-			[&, i](const tbb::blocked_range<std::size_t>& r) {
-				auto& local = tls.local();
-
-				std::size_t hOffset;
-
-				for (std::size_t j = r.begin(); j != r.end(); ++j) {
-					XYZValueArray<TFloat>& point = gridData(i, j);
-					local.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, local.h);
-
-					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
-
-					point.values.resize(propagIndexList.size());
-					for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
-						const unsigned int index = propagIndexList[i];
-						if (index < hOffset) {
-							point.values[i] = 0;
-						} else {
-							const unsigned int localIndex = index - hOffset;
-							if (localIndex < local.signal.size()) {
-								point.values[i] = local.signal[localIndex];
-							} else {
-								point.values[i] = 0;
-							}
-						}
-					}
-				}
-		});
-
-		IterationCounter::add(1);
-	}
+	exec(tls, propagIndexList, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -509,40 +434,7 @@ SimTransientPropagation<TFloat, ImpulseResponse>::getArrayOfRectangularSourcesPr
 	};
 	tbb::enumerable_thread_specific<DirectArrayOfRectangularSourcesThreadData> tls(threadData);
 
-	IterationCounter::reset(gridData.n1());
-
-	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
-		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, gridData.n2()),
-			[&, i](const tbb::blocked_range<std::size_t>& r) {
-				auto& local = tls.local();
-
-				std::size_t hOffset;
-
-				for (std::size_t j = r.begin(); j != r.end(); ++j) {
-					XYZValueArray<TFloat>& point = gridData(i, j);
-					local.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, local.h);
-
-					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
-
-					point.values.resize(propagIndexList.size());
-					for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
-						const unsigned int index = propagIndexList[i];
-						if (index < hOffset) {
-							point.values[i] = 0;
-						} else {
-							const unsigned int localIndex = index - hOffset;
-							if (localIndex < local.signal.size()) {
-								point.values[i] = local.signal[localIndex];
-							} else {
-								point.values[i] = 0;
-							}
-						}
-					}
-				}
-		});
-
-		IterationCounter::add(1);
-	}
+	exec(tls, propagIndexList, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -570,34 +462,7 @@ SimTransientPropagation<TFloat, ImpulseResponse>::getArrayOfRectangularSourcesPr
 		dvdt
 	};
 
-	IterationCounter::reset(gridData.n1());
-
-	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
-		std::size_t hOffset;
-		for (std::size_t j = 0, jEnd = gridData.n2(); j < jEnd; ++j) {
-			XYZValueArray<TFloat>& point = gridData(i, j);
-			threadData.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, threadData.h);
-
-			threadData.filter.filter(threadData.filterFreqCoeff, threadData.h, threadData.signal);
-
-			point.values.resize(propagIndexList.size());
-			for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
-				const unsigned int index = propagIndexList[i];
-				if (index < hOffset) {
-					point.values[i] = 0;
-				} else {
-					const unsigned int localIndex = index - hOffset;
-					if (localIndex < threadData.signal.size()) {
-						point.values[i] = threadData.signal[localIndex];
-					} else {
-						point.values[i] = 0;
-					}
-				}
-			}
-		}
-
-		IterationCounter::add(1);
-	}
+	execSingleThread(threadData, propagIndexList, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -625,34 +490,7 @@ SimTransientPropagation<TFloat, ImpulseResponse>::getArrayOfRectangularSourcesPr
 		dvdt
 	};
 
-	IterationCounter::reset(gridData.n1());
-
-	for (std::size_t i = 0, iEnd = gridData.n1(); i < iEnd; ++i) {
-		std::size_t hOffset;
-		for (std::size_t j = 0, jEnd = gridData.n2(); j < jEnd; ++j) {
-			XYZValueArray<TFloat>& point = gridData(i, j);
-			threadData.ir.getImpulseResponse(point.x, point.y, point.z, hOffset, threadData.h);
-
-			threadData.filter.filter(threadData.filterFreqCoeff, threadData.h, threadData.signal);
-
-			point.values.resize(propagIndexList.size());
-			for (unsigned int i = 0, end = propagIndexList.size(); i < end; ++i) {
-				const unsigned int index = propagIndexList[i];
-				if (index < hOffset) {
-					point.values[i] = 0;
-				} else {
-					const unsigned int localIndex = index - hOffset;
-					if (localIndex < threadData.signal.size()) {
-						point.values[i] = threadData.signal[localIndex];
-					} else {
-						point.values[i] = 0;
-					}
-				}
-			}
-		}
-
-		IterationCounter::add(1);
-	}
+	execSingleThread(threadData, propagIndexList, gridData);
 }
 
 } // namespace Lab

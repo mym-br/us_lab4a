@@ -122,6 +122,11 @@ public:
 		FFTWFilter2<TFloat> filter;
 	};
 
+	template<typename T> static void exec(T& tls, const Matrix<XYZ<TFloat>>& inputData,
+						Matrix<XYZValue<TFloat>>& gridData);
+	template<typename T> static void execSingleThread(T& threadData, const Matrix<XYZ<TFloat>>& inputData,
+								Matrix<XYZValue<TFloat>>& gridData);
+
 	static void getCircularSourceRadiationPattern(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -211,7 +216,57 @@ private:
 	SimTransientRadiationPattern() = delete;
 };
 
+template<typename TFloat, typename ImpulseResponse>
+template<typename T>
+void
+SimTransientRadiationPattern<TFloat, ImpulseResponse>::exec(T& tls, const Matrix<XYZ<TFloat>>& inputData,
+								Matrix<XYZValue<TFloat>>& gridData)
+{
+	IterationCounter::reset(inputData.n1());
+	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
+		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
+			[&, i](const tbb::blocked_range<std::size_t>& r) {
+				auto& local = tls.local();
+				std::size_t hOffset;
+				for (std::size_t j = r.begin(); j != r.end(); ++j) {
+					const XYZ<TFloat>& id = inputData(i, j);
+					local.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, local.h);
 
+					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
+
+					TFloat minValue, maxValue;
+					Util::minMax(local.signal, minValue, maxValue);
+					gridData(i, j).value = maxValue - minValue;
+				}
+			}
+		);
+		IterationCounter::add(1);
+	}
+}
+
+template<typename TFloat, typename ImpulseResponse>
+template<typename T>
+void
+SimTransientRadiationPattern<TFloat, ImpulseResponse>::execSingleThread(T& threadData,
+										const Matrix<XYZ<TFloat>>& inputData,
+										Matrix<XYZValue<TFloat>>& gridData)
+{
+	IterationCounter::reset(inputData.n1());
+	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
+		std::size_t hOffset;
+		for (std::size_t j = 0, jEnd = inputData.n2(); j < jEnd; ++j) {
+			const XYZ<TFloat>& id = inputData(i, j);
+			threadData.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, threadData.h);
+
+			threadData.filter.filter(threadData.filterFreqCoeff, threadData.h, threadData.signal);
+
+			TFloat minValue, maxValue;
+			Util::minMax(threadData.signal, minValue, maxValue);
+			gridData(i, j).value = maxValue - minValue;
+		}
+		IterationCounter::add(1);
+	}
+}
 
 template<typename TFloat, typename ImpulseResponse>
 void
@@ -236,9 +291,7 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getCircularSourceRadiatio
 	tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.size()),
 		[&](const tbb::blocked_range<std::size_t>& r) {
 			auto& local = tls.local();
-
 			std::size_t hOffset;
-
 			for (std::size_t i = r.begin(); i != r.end(); ++i) {
 				const XYZ<TFloat>& id = inputData[i];
 				local.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, local.h);
@@ -249,7 +302,8 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getCircularSourceRadiatio
 				Util::minMax(local.signal, minValue, maxValue);
 				radData[i] = maxValue - minValue;
 			}
-	});
+		}
+	);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -306,29 +360,7 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getRectangularSourceRadia
 	};
 	tbb::enumerable_thread_specific<RectangularSourceThreadData> tls(threadData);
 
-	IterationCounter::reset(inputData.n1());
-
-	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
-		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
-			[&, i](const tbb::blocked_range<std::size_t>& r) {
-				auto& local = tls.local();
-
-				std::size_t hOffset;
-
-				for (std::size_t j = r.begin(); j != r.end(); ++j) {
-					const XYZ<TFloat>& id = inputData(i, j);
-					local.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, local.h);
-
-					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
-
-					TFloat minValue, maxValue;
-					Util::minMax(local.signal, minValue, maxValue);
-					gridData(i, j).value = maxValue - minValue;
-				}
-		});
-
-		IterationCounter::add(1);
-	}
+	exec(tls, inputData, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -352,23 +384,7 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getRectangularSourceRadia
 		dvdt
 	};
 
-	IterationCounter::reset(inputData.n1());
-
-	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
-		std::size_t hOffset;
-		for (std::size_t j = 0, jEnd = inputData.n2(); j < jEnd; ++j) {
-			const XYZ<TFloat>& id = inputData(i, j);
-			threadData.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, threadData.h);
-
-			threadData.filter.filter(threadData.filterFreqCoeff, threadData.h, threadData.signal);
-
-			TFloat minValue, maxValue;
-			Util::minMax(threadData.signal, minValue, maxValue);
-			gridData(i, j).value = maxValue - minValue;
-		}
-
-		IterationCounter::add(1);
-	}
+	execSingleThread(threadData, inputData, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -397,29 +413,7 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getArrayOfRectangularSour
 	};
 	tbb::enumerable_thread_specific<ArrayOfRectangularSourcesThreadData> tls(threadData);
 
-	IterationCounter::reset(inputData.n1());
-
-	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
-		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
-			[&, i](const tbb::blocked_range<std::size_t>& r) {
-				auto& local = tls.local();
-
-				std::size_t hOffset;
-
-				for (std::size_t j = r.begin(); j != r.end(); ++j) {
-					const XYZ<TFloat>& id = inputData(i, j);
-					local.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, local.h);
-
-					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
-
-					TFloat minValue, maxValue;
-					Util::minMax(local.signal, minValue, maxValue);
-					gridData(i, j).value = maxValue - minValue;
-				}
-		});
-
-		IterationCounter::add(1);
-	}
+	exec(tls, inputData, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -448,29 +442,7 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getArrayOfRectangularSour
 	};
 	tbb::enumerable_thread_specific<DirectArrayOfRectangularSourcesThreadData> tls(threadData);
 
-	IterationCounter::reset(inputData.n1());
-
-	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
-		tbb::parallel_for(tbb::blocked_range<std::size_t>(0, inputData.n2()),
-			[&, i](const tbb::blocked_range<std::size_t>& r) {
-				auto& local = tls.local();
-
-				std::size_t hOffset;
-
-				for (std::size_t j = r.begin(); j != r.end(); ++j) {
-					const XYZ<TFloat>& id = inputData(i, j);
-					local.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, local.h);
-
-					local.filter.filter(local.filterFreqCoeff, local.h, local.signal);
-
-					TFloat minValue, maxValue;
-					Util::minMax(local.signal, minValue, maxValue);
-					gridData(i, j).value = maxValue - minValue;
-				}
-		});
-
-		IterationCounter::add(1);
-	}
+	exec(tls, inputData, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -498,23 +470,7 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getArrayOfRectangularSour
 		dvdt
 	};
 
-	IterationCounter::reset(inputData.n1());
-
-	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
-		std::size_t hOffset;
-		for (std::size_t j = 0, jEnd = inputData.n2(); j < jEnd; ++j) {
-			const XYZ<TFloat>& id = inputData(i, j);
-			threadData.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, threadData.h);
-
-			threadData.filter.filter(threadData.filterFreqCoeff, threadData.h, threadData.signal);
-
-			TFloat minValue, maxValue;
-			Util::minMax(threadData.signal, minValue, maxValue);
-			gridData(i, j).value = maxValue - minValue;
-		}
-
-		IterationCounter::add(1);
-	}
+	execSingleThread(threadData, inputData, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
@@ -542,23 +498,7 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getArrayOfRectangularSour
 		dvdt
 	};
 
-	IterationCounter::reset(inputData.n1());
-
-	for (std::size_t i = 0, iEnd = inputData.n1(); i < iEnd; ++i) {
-		std::size_t hOffset;
-		for (std::size_t j = 0, jEnd = inputData.n2(); j < jEnd; ++j) {
-			const XYZ<TFloat>& id = inputData(i, j);
-			threadData.ir.getImpulseResponse(id.x, id.y, id.z, hOffset, threadData.h);
-
-			threadData.filter.filter(threadData.filterFreqCoeff, threadData.h, threadData.signal);
-
-			TFloat minValue, maxValue;
-			Util::minMax(threadData.signal, minValue, maxValue);
-			gridData(i, j).value = maxValue - minValue;
-		}
-
-		IterationCounter::add(1);
-	}
+	execSingleThread(threadData, inputData, gridData);
 }
 
 } // namespace Lab
