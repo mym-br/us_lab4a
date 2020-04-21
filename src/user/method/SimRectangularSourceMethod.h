@@ -35,6 +35,7 @@
 #include "Log.h"
 #include "Matrix.h"
 #include "Method.h"
+#include "NumericArrayOfRectangularSourcesImpulseResponse.h"
 #include "NumericRectangularSourceImpulseResponse.h"
 #include "ParameterMap.h"
 #include "Project.h"
@@ -423,7 +424,7 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 		if (sourceIsArray) {
 			SimTransientAcousticField<
 				TFloat,
-				NumericRectangularSourceImpulseResponse<TFloat>>::getArrayOfRectangularSourcesAcousticField(
+				NumericArrayOfRectangularSourcesImpulseResponse<TFloat>>::getArrayOfRectangularSourcesAcousticFieldDirect(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,

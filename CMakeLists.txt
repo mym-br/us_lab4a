@@ -206,6 +206,7 @@ set(uslab4a_SRC
     src/user/simulator/AnalyticCircularSourceImpulseResponse.h
     src/user/simulator/AnalyticRectangularSourceImpulseResponse.h
     src/user/simulator/ArrayOfRectangularSourcesImpulseResponse.h
+    src/user/simulator/NumericArrayOfRectangularSourcesImpulseResponse.h
     src/user/simulator/NumericCircularSourceImpulseResponse.h
     src/user/simulator/NumericRectangularSourceImpulseResponse.h
     src/user/simulator/SimTransientAcousticField.h
