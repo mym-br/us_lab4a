@@ -51,6 +51,7 @@
 #include "XYZValue.h"
 #include "XYZValueArray.h"
 #ifdef USE_CUDA
+# include "NumericArrayOfRectangularSourcesCUDAImpulseResponse.h"
 # include "NumericRectangularSourceCUDAImpulseResponse.h"
 #endif
 
@@ -443,7 +444,7 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 			if (sourceIsArray) {
 				SimTransientAcousticField<
 					TFloat,
-					NumericRectangularSourceCUDAImpulseResponse>::getArrayOfRectangularSourcesAcousticFieldSingleThread(
+					NumericArrayOfRectangularSourcesCUDAImpulseResponse>::getArrayOfRectangularSourcesAcousticFieldDirectSingleThread(
 							simData.samplingFreq, mainData.propagationSpeed,
 							srcData.sourceWidth, srcData.sourceHeight,
 							subElemSize,

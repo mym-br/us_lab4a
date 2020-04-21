@@ -266,6 +266,8 @@ if(USE_CUDA)
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.h
         src/user/processor/VectorialSTACUDAProcessor.cu
         src/user/processor/VectorialSTACUDAProcessor.h
+        src/user/simulator/NumericArrayOfRectangularSourcesCUDAImpulseResponse.cu
+        src/user/simulator/NumericArrayOfRectangularSourcesCUDAImpulseResponse.h
         src/user/simulator/NumericCircularSourceCUDAImpulseResponse.cu
         src/user/simulator/NumericCircularSourceCUDAImpulseResponse.h
         src/user/simulator/NumericRectangularSourceCUDAImpulseResponse.cu
