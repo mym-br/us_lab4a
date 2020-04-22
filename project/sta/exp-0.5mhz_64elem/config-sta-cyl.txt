@@ -32,7 +32,7 @@ min_gain = 45.0
 # 0 - 48 (dB)
 max_gain = 45.0
 
-# (m/s) [T = 22.14 °C]
+# (m/s) [T = 22.14 degC]
 propagation_speed_1 = 1488.76
 
 # (s)
