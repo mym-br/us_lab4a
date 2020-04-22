@@ -155,7 +155,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	painter.drawText(QPointF(uBegin + mainAreaWidth_ / 2 - xLabelWidth_ / 2, vLabelPos), xLabel_);
 	// X ticks transformation.
 	QString xTickTransf;
-	if (xTickCoef_   != 1.0) xTickTransf += QString("×1e%1 ").arg(std::log10(xTickCoef_));
+	if (xTickCoef_   != 1.0) xTickTransf += QString("x1e%1 ").arg(std::log10(xTickCoef_));
 	if (xTickOffset_ >  0.0) xTickTransf += "+";
 	if (xTickOffset_ != 0.0) xTickTransf += QString("%1").arg(xTickOffset_);
 	if (!xTickTransf.isEmpty()) {
@@ -181,7 +181,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	painter.drawText(QPointF(-vBegin + mainAreaHeight_ / 2 - yLabelWidth_ / 2, SPACING + textCapHeight_), yLabel_);
 	// Y ticks transformation.
 	QString yTickTransf;
-	if (yTickCoef_   != 1.0) yTickTransf += QString("×1e%1 ").arg(std::log10(yTickCoef_));
+	if (yTickCoef_   != 1.0) yTickTransf += QString("x1e%1 ").arg(std::log10(yTickCoef_));
 	if (yTickOffset_ >  0.0) yTickTransf += "+";
 	if (yTickOffset_ != 0.0) yTickTransf += QString("%1").arg(yTickOffset_);
 	if (!yTickTransf.isEmpty()) {
