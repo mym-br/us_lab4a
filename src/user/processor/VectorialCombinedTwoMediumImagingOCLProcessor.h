@@ -257,6 +257,9 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 			std::string name = plat.getInfo<CL_PLATFORM_NAME>();
 			LOG_DEBUG << "OpenCL platform: " << name;
 
+			std::string version = plat.getInfo<CL_PLATFORM_VERSION>();
+			LOG_DEBUG << "OpenCL version: " << version;
+
 			std::vector<cl::Device> devices;
 			plat.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 			if (devices.empty()) {
