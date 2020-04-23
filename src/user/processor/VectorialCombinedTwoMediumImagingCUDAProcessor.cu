@@ -134,8 +134,6 @@ processImagePCFKernel(
 {
 	float rxSignalListRe[NUM_RX_ELEM];
 	float rxSignalListIm[NUM_RX_ELEM];
-	float phi[NUM_RX_ELEM];
-	float phiAux[NUM_RX_ELEM];
 
 	const int point = blockIdx.x * blockDim.x + threadIdx.x;
 	if (point >= numGridPoints) return;
@@ -145,7 +143,7 @@ processImagePCFKernel(
 		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
 	}
 
-	float pcf = calcPCF(rxSignalListRe, rxSignalListIm, NUM_RX_ELEM, pcfFactor, phi, phiAux);
+	float pcf = calcPCF<NUM_RX_ELEM>(rxSignalListRe, rxSignalListIm, pcfFactor);
 
 	float sumRe = 0.0;
 	float sumIm = 0.0;

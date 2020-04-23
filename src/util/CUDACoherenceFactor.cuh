@@ -24,19 +24,22 @@
 
 namespace Lab {
 
+template<unsigned int N>
 __device__
-inline
 float
-calcPCF(float* re, float* im, unsigned int size, float factor, float* phi, float* phiAux)
+calcPCF(float* re, float* im, float factor)
 {
-	for (unsigned int i = 0; i < size; ++i) {
+	float phi[N];
+	float phiAux[N];
+
+	for (unsigned int i = 0; i < N; ++i) {
 		phi[i] = atan2f(im[i], re[i]);
 	}
-	for (unsigned int i = 0; i < size; ++i) {
+	for (unsigned int i = 0; i < N; ++i) {
 		phiAux[i] = phi[i] - copysignf(M_PI, phi[i]);
 	}
 
-	const float sf = fminf(standardDeviation(phi, size), standardDeviation(phiAux, size));
+	const float sf = fminf(standardDeviation<N>(phi), standardDeviation<N>(phiAux));
 	return fmaxf(0.0, 1.0f - factor * sf);
 }
 

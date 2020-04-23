@@ -20,30 +20,30 @@
 
 namespace Lab {
 
+template<unsigned int N>
 __device__
-inline
 float
-arithmeticMean(float* data, unsigned int size)
+arithmeticMean(float* data)
 {
 	float sum = 0.0;
-	for (unsigned int i = 0; i < size; ++i) {
+	for (unsigned int i = 0; i < N; ++i) {
 		sum += data[i];
 	}
-	return sum / size;
+	return sum * (static_cast<float>(1) / N);
 }
 
+template<unsigned int N>
 __device__
-inline
 float
-standardDeviation(float* data, unsigned int size)
+standardDeviation(float* data)
 {
 	float sum = 0.0;
-	const float mean = arithmeticMean(data, size);
-	for (unsigned int i = 0; i < size; ++i) {
+	const float mean = arithmeticMean<N>(data);
+	for (unsigned int i = 0; i < N; ++i) {
 		const float e = data[i] - mean;
 		sum += e * e;
 	}
-	return sqrtf(sum / size);
+	return sqrtf(sum * (static_cast<float>(1) / N));
 }
 
 } // namespace Lab

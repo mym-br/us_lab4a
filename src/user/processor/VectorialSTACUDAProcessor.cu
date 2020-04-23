@@ -152,8 +152,6 @@ processRowColumnSTAPCFKernel(
 {
 	float rxSignalListRe[NUM_RX_ELEM];
 	float rxSignalListIm[NUM_RX_ELEM];
-	float phi[NUM_RX_ELEM];
-	float phiAux[NUM_RX_ELEM];
 
 	const unsigned int signalLength = signalTensorN3;
 	const unsigned int maxPosition = signalLength - 2;
@@ -196,7 +194,7 @@ processRowColumnSTAPCFKernel(
 		}
 	}
 
-	const float pcf = calcPCF(rxSignalListRe, rxSignalListIm, NUM_RX_ELEM, pcfFactor, phi, phiAux);
+	const float pcf = calcPCF<NUM_RX_ELEM>(rxSignalListRe, rxSignalListIm, pcfFactor);
 	float sumRe = 0;
 	float sumIm = 0;
 	for (int i = 0; i < NUM_RX_ELEM; ++i) {
