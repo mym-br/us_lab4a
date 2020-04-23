@@ -18,6 +18,8 @@
 #ifndef TEMPLATE_UTIL_H_
 #define TEMPLATE_UTIL_H_
 
+#include <string>
+#include <typeinfo>
 #include <type_traits>
 
 
@@ -31,6 +33,25 @@ struct has_y_member : std::false_type { };
 template<typename T>
 struct has_y_member<T, std::void_t<decltype(T::y)>> : std::true_type { };
 
+
+
+namespace TemplateUtil {
+
+template<typename T, std::enable_if_t<std::is_same_v<T, float>, int> = 0>
+std::string
+typeName()
+{
+	return "float";
+}
+
+template<typename T, std::enable_if_t<std::is_same_v<T, double>, int> = 0>
+std::string
+typeName()
+{
+	return "double";
+}
+
+} // namespace TemplateUtil
 } // namespace Lab
 
 #endif /*TEMPLATE_UTIL_H_*/

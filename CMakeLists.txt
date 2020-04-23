@@ -40,6 +40,7 @@ if(USE_OPENCL)
     set(OPENCL_LIB_VAR ${OPENCL_LIB})
     set(OPENCL_SRC
         src/user/processor/VectorialCombinedTwoMediumImagingOCLProcessor.h
+        src/util/OCLUtil.h
     )
     add_compile_definitions(
         USE_OPENCL
@@ -51,6 +52,7 @@ if(USE_OPENCL)
         CL_HPP_CL_1_2_DEFAULT_BUILD
         OPENCL_PLATFORM=${OPENCL_PLATFORM}
         OPENCL_DEVICE=${OPENCL_DEVICE}
+        OCL_PROGRAM_BUILD_OPTIONS="-cl-std=CL1.2"
     )
 endif()
 

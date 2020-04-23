@@ -36,8 +36,6 @@
 #include <tbb/partitioner.h>
 #include <tbb/tbb.h>
 
-#include <CL/cl2.hpp>
-
 #include "ArrayGeometry.h"
 #include "CoherenceFactor.h"
 #include "Exception.h"
@@ -48,11 +46,15 @@
 #include "Interpolator.h"
 #include "Log.h"
 #include "Matrix.h"
+#include "TemplateUtil.h"
 #include "Tensor3.h"
 #include "Timer.h"
 #include "TwoMediumSTAConfiguration.h"
 #include "Util.h"
 #include "XZ.h"
+
+#include <CL/cl2.hpp>
+#include "OCLUtil.h"
 
 
 
@@ -62,7 +64,6 @@
 
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS 2
 #define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE 1
-#define VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS "-cl-std=CL1.2"
 
 
 
@@ -103,7 +104,7 @@ public:
 			TFloat maxFermatBlockSize,
 			TFloat peakOffset,
 			unsigned int signalStartOffset);
-	~VectorialCombinedTwoMediumImagingOCLProcessor();
+	~VectorialCombinedTwoMediumImagingOCLProcessor() = default;
 
 	void process(
 		const std::vector<StepConfiguration>& stepConfigList,
@@ -156,11 +157,6 @@ private:
 	VectorialCombinedTwoMediumImagingOCLProcessor(VectorialCombinedTwoMediumImagingOCLProcessor&&) = delete;
 	VectorialCombinedTwoMediumImagingOCLProcessor& operator=(VectorialCombinedTwoMediumImagingOCLProcessor&&) = delete;
 
-	static std::size_t roundUpToMultipleOfGroupSize(std::size_t n, std::size_t groupSize) {
-		std::size_t numGroups = (n + (groupSize - 1)) / groupSize;
-		return numGroups * groupSize;
-	}
-
 	std::string getKernel() const;
 
 	const TwoMediumSTAConfiguration<TFloat>& config_;
@@ -181,25 +177,25 @@ private:
 	unsigned int rawDataN2_;
 	std::size_t rawDataSizeInBytes_;
 	std::unique_ptr<tbb::enumerable_thread_specific<PrepareDataThreadData>> prepareDataTLS_;
+
+	unsigned int rxApodSize_;
+	unsigned int gridXZN1_;
+	unsigned int gridXZN2_;
+
+	// OpenCL.
 	bool clDataInitialized_;
-	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> gridValueRe_;
-	std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>> gridValueIm_;
 	cl::Context clContext_;
 	cl::Program clProgram_;
 	cl::CommandQueue clCommandQueue_;
-	std::vector<cl::Buffer> pinnedRawDataCLBufferList_;
-	std::vector<TFloat*> mappedRawDataPtrList_;
+	std::vector<OCLPinnedHostMem<TFloat>> rawDataHostMemList_;
 	cl::Buffer rawDataCLBuffer_;
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
 	cl::Buffer rawDataTCLBuffer_;
 #endif
 	cl::Buffer gridValueReCLBuffer_;
 	cl::Buffer gridValueImCLBuffer_;
+	std::vector<OCLPinnedHostMem<TFloat>> gridValueHostMemList_;
 	cl::Buffer rxApodCLBuffer_;
-
-	unsigned int rxApodSize_;
-	unsigned int gridXZN1_;
-	unsigned int gridXZN2_;
 };
 
 
@@ -222,12 +218,10 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 		, rawDataN1_()
 		, rawDataN2_()
 		, rawDataSizeInBytes_()
-		, clDataInitialized_()
-		, pinnedRawDataCLBufferList_(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS)
-		, mappedRawDataPtrList_(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS)
 		, rxApodSize_()
 		, gridXZN1_()
 		, gridXZN2_()
+		, clDataInitialized_()
 {
 	if constexpr (!std::is_same<TFloat, float>::value) {
 		THROW_EXCEPTION(InvalidParameterException, "Only single precision is supported.");
@@ -246,64 +240,13 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 	prepareDataThreadData.signal.resize(signalLength_);
 	prepareDataTLS_ = std::make_unique<tbb::enumerable_thread_specific<PrepareDataThreadData>>(prepareDataThreadData);
 
-	std::vector<cl::Platform> platforms;
-	cl::Platform::get(&platforms);
-	if (platforms.empty()) {
-		THROW_EXCEPTION(UnavailableResourceException, "No OpenCL platforms available.");
-	}
+	clContext_ = OCLUtil::initOpenCL();
 
-	if (Log::isDebugEnabled()) {
-		for (auto& plat : platforms) {
-			std::string name = plat.getInfo<CL_PLATFORM_NAME>();
-			LOG_DEBUG << "OpenCL platform: " << name;
-
-			std::string version = plat.getInfo<CL_PLATFORM_VERSION>();
-			LOG_DEBUG << "OpenCL version: " << version;
-
-			std::vector<cl::Device> devices;
-			plat.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-			if (devices.empty()) {
-				THROW_EXCEPTION(UnavailableResourceException, "No OpenCL devices available for platform " << name << '.');
-			}
-
-			for (auto& dev : devices) {
-				cl_device_type deviceType = dev.getInfo<CL_DEVICE_TYPE>();
-				std::string devName = dev.getInfo<CL_DEVICE_NAME>();
-				LOG_DEBUG << "  device name: " << devName;
-				switch (deviceType) {
-				case CL_DEVICE_TYPE_CPU:
-					LOG_DEBUG << "    type: CPU";
-					break;
-				case CL_DEVICE_TYPE_GPU:
-					LOG_DEBUG << "    type: GPU";
-					break;
-				default:
-					LOG_DEBUG << "    type: other (" << deviceType << ").";
-				}
-			}
-		}
-	}
-
-	if (OPENCL_PLATFORM >= platforms.size()) {
-		THROW_EXCEPTION(UnavailableResourceException, "Invalid OpenCL platform: " << OPENCL_PLATFORM << '.');
-	}
-	cl::Platform chosenPlatform = platforms[OPENCL_PLATFORM];
-	cl_context_properties contextProp[] = {CL_CONTEXT_PLATFORM, (cl_context_properties) chosenPlatform(), 0 /* end of list */};
-	std::vector<cl::Device> devices;
-	chosenPlatform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
-	if (devices.empty()) {
-		THROW_EXCEPTION(UnavailableResourceException, "No OpenCL devices available.");
-	}
-	if (OPENCL_DEVICE >= devices.size()) {
-		THROW_EXCEPTION(UnavailableResourceException, "Invalid OpenCL device: " << OPENCL_DEVICE << '.');
-	}
-	cl::Device chosenDevice = devices[OPENCL_DEVICE];
-	clContext_ = cl::Context(chosenDevice, contextProp);
 	std::vector<std::string> kernelStrings = {getKernel()};
 	clProgram_ = cl::Program(clContext_, kernelStrings);
 	std::ostringstream progOpt;
-	progOpt << VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_PROGRAM_BUILD_OPTIONS <<
-			" -DNUM_RX_ELEM=" << config.numElements;
+	progOpt << OCL_PROGRAM_BUILD_OPTIONS << " -DNUM_RX_ELEM=" << config.numElements <<
+			" -DMFloat=" << TemplateUtil::typeName<TFloat>();
 	try {
 		clProgram_.build(progOpt.str().c_str());
 	} catch (...) {
@@ -313,33 +256,10 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 		for (auto& pair : buildInfo) {
 			msg << pair.second << "\n";
 		}
-		THROW_EXCEPTION(Exception, msg.str());
+		THROW_EXCEPTION(OCLException, msg.str());
 	}
 
 	clCommandQueue_ = cl::CommandQueue(clContext_);
-}
-
-template<typename TFloat>
-VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::~VectorialCombinedTwoMediumImagingOCLProcessor()
-{
-	if (clCommandQueue_()) {
-		try {
-			for (unsigned int i = 0; i < pinnedRawDataCLBufferList_.size(); ++i) {
-				if (pinnedRawDataCLBufferList_[i]() && mappedRawDataPtrList_[i]) {
-					cl::Event event;
-					clCommandQueue_.enqueueUnmapMemObject(
-									pinnedRawDataCLBufferList_[i],
-									mappedRawDataPtrList_[i],
-									nullptr, &event);
-					event.wait();
-				}
-			}
-		} catch (cl::Error& e) {
-			std::cerr << "[~VectorialCombinedTwoMediumImagingOCLProcessor: Unmap mappedRawDataPtrList_] Error: " << e.what() << std::endl;
-		} catch (...) {
-			std::cerr << "[~VectorialCombinedTwoMediumImagingOCLProcessor: Unmap mappedRawDataPtrList_] Caught an unknown exception." << std::endl;
-		}
-	}
 }
 
 template<typename TFloat>
@@ -425,7 +345,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 #endif
 
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-	const std::size_t transpNumGridPoints = roundUpToMultipleOfGroupSize(numGridPoints, OCL_TRANSPOSE_GROUP_SIZE_DIM_0);
+	const std::size_t transpNumGridPoints = OCLUtil::roundUpToMultipleOfGroupSize(numGridPoints, OCL_TRANSPOSE_GROUP_SIZE_DIM_0);
 	LOG_DEBUG << "transpNumGridPoints: " << transpNumGridPoints;
 	rawDataN1_ = transpNumGridPoints;
 	rawDataN2_ = 2 * config_.numElements /* real, imag */;
@@ -435,35 +355,33 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 #endif
 	rawDataSizeInBytes_ = rawDataN1_ * rawDataN2_ * sizeof(TFloat);
 
-	gridValueRe_.resize(numGridPoints);
-	gridValueIm_.resize(numGridPoints);
-
 	if (!clDataInitialized_) {
 		rxApodSize_ = rxApod.size();
 		gridXZN1_   = gridXZ.n1();
 		gridXZN2_   = gridXZ.n2();
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-		const std::size_t reservedGridPoints = roundUpToMultipleOfGroupSize(numCols * numRows, OCL_TRANSPOSE_GROUP_SIZE_DIM_0);
+		const std::size_t reservedGridPoints = OCLUtil::roundUpToMultipleOfGroupSize(numCols * numRows, OCL_TRANSPOSE_GROUP_SIZE_DIM_0);
 #else
 		const std::size_t reservedGridPoints = numCols * numRows;
 #endif
-		const std::size_t reservedRawDataSizeInBytes = reservedGridPoints * 2 * config_.numElements * sizeof(TFloat);
-		LOG_DEBUG << "reservedGridPoints: " << reservedGridPoints;
+		const std::size_t reservedRawDataSize = reservedGridPoints * 2 * config_.numElements;
+		const std::size_t reservedRawDataSizeInBytes = reservedRawDataSize * sizeof(TFloat);
+		LOG_DEBUG << "reservedGridPoints: " << reservedGridPoints <<
+				" reservedRawDataSize: " << reservedRawDataSize <<
+				" reservedRawDataSizeInBytes: " << reservedRawDataSizeInBytes;
 
-		for (unsigned int i = 0; i < pinnedRawDataCLBufferList_.size(); ++i) {
-			pinnedRawDataCLBufferList_[i] = cl::Buffer(clContext_, CL_MEM_ALLOC_HOST_PTR, reservedRawDataSizeInBytes);
-			mappedRawDataPtrList_[i] = static_cast<TFloat*>(
-							clCommandQueue_.enqueueMapBuffer(
-								pinnedRawDataCLBufferList_[i], CL_TRUE /* blocking */, CL_MAP_WRITE,
-								0 /* offset */, reservedRawDataSizeInBytes));
+		for (unsigned int i = 0; i < VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS; ++i) {
+			rawDataHostMemList_.emplace_back(clContext_, clCommandQueue_, reservedRawDataSize, CL_MAP_WRITE_INVALIDATE_REGION);
 		}
 		rawDataCLBuffer_     = cl::Buffer(clContext_, CL_MEM_READ_ONLY , reservedRawDataSizeInBytes);
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
 		rawDataTCLBuffer_    = cl::Buffer(clContext_, CL_MEM_READ_WRITE, reservedRawDataSizeInBytes);
 #endif
+		gridValueHostMemList_.emplace_back(clContext_, clCommandQueue_, numCols * numRows, CL_MAP_READ); // real
+		gridValueHostMemList_.emplace_back(clContext_, clCommandQueue_, numCols * numRows, CL_MAP_READ); // imag
 		gridValueReCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, numCols * numRows * sizeof(TFloat));
 		gridValueImCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_WRITE, numCols * numRows * sizeof(TFloat));
-		rxApodCLBuffer_ =      cl::Buffer(clContext_, CL_MEM_READ_ONLY , Util::sizeInBytes(rxApod));
+		rxApodCLBuffer_      = cl::Buffer(clContext_, CL_MEM_READ_ONLY , Util::sizeInBytes(rxApod));
 
 		clDataInitialized_ = true;
 	} else {
@@ -474,17 +392,10 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		}
 	}
 
-	for (unsigned int i = 0; i < pinnedRawDataCLBufferList_.size(); ++i) {
-		std::memset(mappedRawDataPtrList_[i], 0, rawDataSizeInBytes_);
-	}
-	std::memset(gridValueRe_.data(), 0, Util::sizeInBytes(gridValueRe_));
-	std::memset(gridValueIm_.data(), 0, Util::sizeInBytes(gridValueIm_));
-	clCommandQueue_.enqueueWriteBuffer(
-		gridValueReCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
-		Util::sizeInBytes(gridValueRe_), gridValueRe_.data());
-	clCommandQueue_.enqueueWriteBuffer(
-		gridValueImCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
-		Util::sizeInBytes(gridValueIm_), gridValueIm_.data());
+	clCommandQueue_.enqueueFillBuffer(
+		gridValueReCLBuffer_, (TFloat) 0, 0 /* offset */, numGridPoints * sizeof(TFloat));
+	clCommandQueue_.enqueueFillBuffer(
+		gridValueImCLBuffer_, (TFloat) 0, 0 /* offset */, numGridPoints * sizeof(TFloat));
 	clCommandQueue_.enqueueWriteBuffer(
 		rxApodCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
 		Util::sizeInBytes(rxApod), rxApod.data());
@@ -515,8 +426,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		config_,
 		config_.samplingFrequency * upsamplingFactor_,
 		config_.samplingFrequency * upsamplingFactor_ / config_.propagationSpeed2,
-		1 / config_.propagationSpeed1,
-		1 / config_.propagationSpeed2,
 		fermatBlockSize,
 		interfacePointList,
 		xArray_,
@@ -596,19 +505,18 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			procImageKernel.setArg(5, cfConstants[2] /* factor */);
 		}
 	} catch (cl::Error& e) {
-		LOG_ERROR << "[Kernel preparation] OpenCL error: " << e.what() << " (" << e.err() << ").";
-		throw;
+		THROW_EXCEPTION(OCLException, "[Kernel preparation] OpenCL error: " << e.what() << " (" << e.err() << ").");
 	}
 
-	std::vector<cl::Event> writeBufferEventList(pinnedRawDataCLBufferList_.size());
-	std::size_t procImageKernelGlobalSize = roundUpToMultipleOfGroupSize(numGridPoints, OCL_WORK_ITEMS_PER_GROUP);
+	std::vector<cl::Event> writeBufferEventList(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS);
+	std::size_t procImageKernelGlobalSize = OCLUtil::roundUpToMultipleOfGroupSize(numGridPoints, OCL_WORK_ITEMS_PER_GROUP);
 	//LOG_DEBUG << numGridPoints << ':' << procImageKernelGlobalSize << ':' << OCL_WORK_ITEMS_PER_GROUP;
 
 	//==================================================
 	// Step configuration loop.
 	//==================================================
 	for (unsigned int i = 0; i < stepConfigList.size(); ++i) {
-		const unsigned int rawBufferIdx = i % pinnedRawDataCLBufferList_.size();
+		const unsigned int rawBufferIdx = i % VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS;
 		const auto& stepConfig = stepConfigList[i];
 		LOG_DEBUG << "stepConfig.baseElemIdx: " << stepConfig.baseElemIdx << " rawBufferIdx: " << rawBufferIdx;
 
@@ -629,7 +537,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			minRowIdx_,
 			firstGridPointIdx_,
 			delayTensor_,
-			mappedRawDataPtrList_[rawBufferIdx],
+			rawDataHostMemList_[rawBufferIdx].hostPtr,
 			rawDataN2_,
 		};
 
@@ -637,7 +545,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols, 1 /* grain size */), processColumnOp, tbb::simple_partitioner());
 		//processColumnOp(tbb::blocked_range<unsigned int>(0, numCols)); // single-thread
 
-		LOG_DEBUG << "OCL DELAY-STORE " << delayStoreTimer.getTime();
+		LOG_DEBUG << "TIME OCL DELAY-STORE " << delayStoreTimer.getTime();
 
 		try {
 			Timer transfTimer;
@@ -647,13 +555,12 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			//==================================================
 			clCommandQueue_.enqueueWriteBuffer(
 				rawDataCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
-				rawDataSizeInBytes_, mappedRawDataPtrList_[rawBufferIdx],
-				nullptr, &writeBufferEventList[rawBufferIdx]);
+				rawDataSizeInBytes_, rawDataHostMemList_[rawBufferIdx].hostPtr,
+				nullptr /* previous events */, &writeBufferEventList[rawBufferIdx]);
 
-			LOG_DEBUG << "OCL TRANSF " << transfTimer.getTime(); // useful only if the command was run with blocking activated
+			LOG_DEBUG << "TIME OCL TRANSF " << transfTimer.getTime(); // useful only with blocking = CL_TRUE
 		} catch (cl::Error& e) {
-			LOG_ERROR << "[oclCommandQueue_.enqueueWriteBuffer()] OpenCL error: " << e.what() << " (" << e.err() << ").";
-			throw;
+			THROW_EXCEPTION(OCLException, "[Memory transfer] OpenCL error: " << e.what() << " (" << e.err() << ").");
 		}
 
 		try {
@@ -666,12 +573,12 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			//==================================================
 			clCommandQueue_.enqueueNDRangeKernel(
 				transpKernel,
-				cl::NullRange, /* offset range / must be null */
-				cl::NDRange(rawDataN2_, rawDataN1_), /* global range, defines the total number of work-items */
-				cl::NDRange(OCL_TRANSPOSE_GROUP_SIZE_DIM_0, OCL_TRANSPOSE_GROUP_SIZE_DIM_0), /* local range, defines the number of work-items in a work-group */
-				nullptr /* events */, &kernelEvent);
+				cl::NullRange, // offset
+				cl::NDRange(rawDataN2_, rawDataN1_), // global
+				cl::NDRange(OCL_TRANSPOSE_GROUP_SIZE_DIM_0, OCL_TRANSPOSE_GROUP_SIZE_DIM_0), // local
+				nullptr /* previous events */, &kernelEvent);
 			//kernelEvent.wait();
-			LOG_DEBUG << "OCL TRANSPOSE " << transpTimer.getTime(); // useful only with kernelEvent.wait()
+			LOG_DEBUG << "TIME OCL TRANSPOSE " << transpTimer.getTime(); // useful only with kernelEvent.wait()
 #endif
 			Timer procTimer;
 			//==================================================
@@ -679,16 +586,15 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			//==================================================
 			clCommandQueue_.enqueueNDRangeKernel(
 				procImageKernel,
-				cl::NullRange, /* offset range / must be null */
-				cl::NDRange(procImageKernelGlobalSize), /* global range, defines the total number of work-items */
-				cl::NDRange(OCL_WORK_ITEMS_PER_GROUP), /* local range, defines the number of work-items in a work-group */
-				nullptr /* events */, &kernelEvent);
+				cl::NullRange, // offset
+				cl::NDRange(procImageKernelGlobalSize), // global
+				cl::NDRange(OCL_WORK_ITEMS_PER_GROUP), // local
+				nullptr /* previous events */, &kernelEvent);
 			//kernelEvent.wait();
-			LOG_DEBUG << "OCL PROC " << procTimer.getTime(); // useful only with kernelEvent.wait()
+			LOG_DEBUG << "TIME OCL PROC " << procTimer.getTime(); // useful only with kernelEvent.wait()
 
 		} catch (cl::Error& e) {
-			LOG_ERROR << "OpenCL error: " << e.what() << " (" << e.err() << ").";
-			throw;
+			THROW_EXCEPTION(OCLException, "[Imaging] OpenCL error: " << e.what() << " (" << e.err() << ").");
 		}
 	}
 
@@ -697,17 +603,19 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	//==================================================
 	clCommandQueue_.enqueueReadBuffer(
 		gridValueReCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
-		Util::sizeInBytes(gridValueRe_), gridValueRe_.data());
+		numGridPoints * sizeof(TFloat), gridValueHostMemList_[0].hostPtr);
 	clCommandQueue_.enqueueReadBuffer(
 		gridValueImCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
-		Util::sizeInBytes(gridValueIm_), gridValueIm_.data());
+		numGridPoints * sizeof(TFloat), gridValueHostMemList_[1].hostPtr);
 	for (unsigned int col = 0; col < numCols; ++col) {
 		for (unsigned int row = 0; row < minRowIdx_[col]; ++row) {
 			gridValue(col, row) = 0;
 		}
 		unsigned int gridPointIdx = firstGridPointIdx_[col];
 		for (unsigned int row = minRowIdx_[col]; row < numRows; ++row, ++gridPointIdx) {
-			gridValue(col, row) = std::complex<TFloat>(gridValueRe_[gridPointIdx], gridValueIm_[gridPointIdx]);
+			gridValue(col, row) = std::complex<TFloat>(
+						gridValueHostMemList_[0].hostPtr[gridPointIdx],
+						gridValueHostMemList_[1].hostPtr[gridPointIdx]);
 		}
 	}
 
@@ -801,8 +709,6 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::CalculateDelays {
 	const TwoMediumSTAConfiguration<TFloat>& config;
 	const TFloat fs;
 	const TFloat fsInvC2;
-	const TFloat invC1;
-	const TFloat invC2;
 	const unsigned int fermatBlockSize;
 	const std::vector<XZ<TFloat>>& interfacePointList;
 	const std::vector<TFloat, tbb::cache_aligned_allocator<TFloat>>& xArray;
@@ -928,11 +834,11 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::getKernel() const
 __kernel
 void
 transposeKernel(
-		__global float* rawData,
-		__global float* rawDataT,
+		__global MFloat* rawData,
+		__global MFloat* rawDataT,
 		unsigned int oldSizeX,
 		unsigned int oldSizeY,
-		__local float* temp) // GROUP_SIZE * (GROUP_SIZE + 1) -- +1 to avoid bank conflicts
+		__local MFloat* temp) // GROUP_SIZE * (GROUP_SIZE + 1) -- +1 to avoid bank conflicts
 {
 	unsigned int iX = get_global_id(0);
 	unsigned int iY = get_global_id(1);
@@ -952,14 +858,14 @@ transposeKernel(
 __kernel
 void
 processImageKernel(
-		__global float* rawData,
-		__global float* gridValueRe,
-		__global float* gridValueIm,
-		__constant float* rxApod,
+		__global MFloat* rawData,
+		__global MFloat* gridValueRe,
+		__global MFloat* gridValueIm,
+		__constant MFloat* rxApod,
 		unsigned int numGridPoints)
 {
-	float rxSignalListRe[NUM_RX_ELEM];
-	float rxSignalListIm[NUM_RX_ELEM];
+	MFloat rxSignalListRe[NUM_RX_ELEM];
+	MFloat rxSignalListIm[NUM_RX_ELEM];
 
 	const unsigned int point = get_global_id(0);
 	if (point >= numGridPoints) return;
@@ -971,8 +877,8 @@ processImageKernel(
 		//rxSignalListIm[i] = rawData[point * (NUM_RX_ELEM << 1) + ((i << 1) + 1)];
 	}
 
-	float sumRe = 0.0f;
-	float sumIm = 0.0f;
+	MFloat sumRe = 0;
+	MFloat sumIm = 0;
 	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
 		sumRe += rxSignalListRe[i] * rxApod[i];
 		sumIm += rxSignalListIm[i] * rxApod[i];
@@ -982,58 +888,58 @@ processImageKernel(
 	gridValueIm[point] += sumIm;
 }
 
-float
-arithmeticMean(float* data)
+MFloat
+arithmeticMean(MFloat* data)
 {
-	float sum = 0.0f;
+	MFloat sum = 0;
 	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
 		sum += data[i];
 	}
-	return sum * (1.0f / NUM_RX_ELEM);
+	return sum * ((MFloat) 1 / NUM_RX_ELEM);
 }
 
-float
-standardDeviation(float* data)
+MFloat
+standardDeviation(MFloat* data)
 {
-	float sum = 0.0f;
-	float mean = arithmeticMean(data);
+	MFloat sum = 0;
+	MFloat mean = arithmeticMean(data);
 	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		float e = data[i] - mean;
+		MFloat e = data[i] - mean;
 		sum += e * e;
 	}
-	return sqrt(sum * (1.0f / NUM_RX_ELEM));
+	return sqrt(sum * ((MFloat) 1 / NUM_RX_ELEM));
 }
 
-float
-calcPCF(float* re, float* im, float factor)
+MFloat
+calcPCF(MFloat* re, MFloat* im, MFloat factor)
 {
-	float phi[NUM_RX_ELEM];
-	float phiAux[NUM_RX_ELEM];
+	MFloat phi[NUM_RX_ELEM];
+	MFloat phiAux[NUM_RX_ELEM];
 
 #pragma unroll
 	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
 		phi[i] = atan2(im[i], re[i]);
 	}
 	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		phiAux[i] = phi[i] - copysign(M_PI_F, phi[i]);
+		phiAux[i] = phi[i] - copysign((MFloat) M_PI, phi[i]);
 	}
 
-	float sf = fmin(standardDeviation(phi), standardDeviation(phiAux));
-	return fmax(0.0f, 1.0f - factor * sf);
+	MFloat sf = fmin(standardDeviation(phi), standardDeviation(phiAux));
+	return fmax((MFloat) 0, (MFloat) 1 - factor * sf);
 }
 
 __kernel
 void
 processImagePCFKernel(
-		__global float* rawData,
-		__global float* gridValueRe,
-		__global float* gridValueIm,
-		__constant float* rxApod,
+		__global MFloat* rawData,
+		__global MFloat* gridValueRe,
+		__global MFloat* gridValueIm,
+		__constant MFloat* rxApod,
 		unsigned int numGridPoints,
-		float pcfFactor)
+		MFloat pcfFactor)
 {
-	float rxSignalListRe[NUM_RX_ELEM];
-	float rxSignalListIm[NUM_RX_ELEM];
+	MFloat rxSignalListRe[NUM_RX_ELEM];
+	MFloat rxSignalListIm[NUM_RX_ELEM];
 
 	const unsigned int point = get_global_id(0);
 	if (point >= numGridPoints) return;
@@ -1043,10 +949,10 @@ processImagePCFKernel(
 		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
 	}
 
-	float pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor);
+	MFloat pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor);
 
-	float sumRe = 0.0f;
-	float sumIm = 0.0f;
+	MFloat sumRe = 0;
+	MFloat sumIm = 0;
 	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
 		sumRe += rxSignalListRe[i] * rxApod[i];
 		sumIm += rxSignalListIm[i] * rxApod[i];
