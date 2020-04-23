@@ -223,10 +223,6 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 		, gridXZN2_()
 		, clDataInitialized_()
 {
-	if constexpr (!std::is_same<TFloat, float>::value) {
-		THROW_EXCEPTION(InvalidParameterException, "Only single precision is supported.");
-	}
-
 	const std::size_t origSignalLength = acqDataList_[0].n2();
 
 	signalOffset_ = (config_.samplingFrequency * upsamplingFactor_) * (peakOffset / config_.centerFrequency) - signalStartOffset * upsamplingFactor_;

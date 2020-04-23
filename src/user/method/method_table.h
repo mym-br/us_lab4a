@@ -20,6 +20,7 @@
 
 #ifdef USE_OPENCL
 # define OCL_METHOD_TABLE \
+METHOD_ITEM(CylinderDetectionAndFermatMethod<double>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_dp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp)
 #else
 # define OCL_METHOD_TABLE

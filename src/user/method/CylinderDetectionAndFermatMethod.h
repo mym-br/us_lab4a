@@ -2271,12 +2271,9 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 		execCombinedTwoMediumImaging();
 		break;
 #ifdef USE_OPENCL
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_dp:
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp:
-		if constexpr (std::is_same<TFloat, float>::value) {
-			execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>>();
-		} else {
-			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
-		}
+		execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>>();
 		break;
 #endif
 #ifdef USE_CUDA
