@@ -54,6 +54,7 @@
 #include "XZ.h"
 
 #include <CL/cl2.hpp>
+#include "OCLCoherenceFactor.h"
 #include "OCLUtil.h"
 
 
@@ -157,7 +158,7 @@ private:
 	VectorialCombinedTwoMediumImagingOCLProcessor(VectorialCombinedTwoMediumImagingOCLProcessor&&) = delete;
 	VectorialCombinedTwoMediumImagingOCLProcessor& operator=(VectorialCombinedTwoMediumImagingOCLProcessor&&) = delete;
 
-	std::string getKernel() const;
+	std::string getKernels() const;
 
 	const TwoMediumSTAConfiguration<TFloat>& config_;
 	std::vector<Matrix<TFloat>>& acqDataList_;
@@ -238,11 +239,15 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::VectorialCombinedTwoMediu
 
 	clContext_ = OCLUtil::initOpenCL();
 
-	std::vector<std::string> kernelStrings = {getKernel()};
+	std::vector<std::string> kernelStrings = {OCLCoherenceFactor::code() + getKernels()};
 	clProgram_ = cl::Program(clContext_, kernelStrings);
 	std::ostringstream progOpt;
-	progOpt << OCL_PROGRAM_BUILD_OPTIONS << " -DNUM_RX_ELEM=" << config.numElements <<
-			" -DMFloat=" << TemplateUtil::typeName<TFloat>();
+	progOpt << OCL_PROGRAM_BUILD_OPTIONS
+			<< " -DNUM_RX_ELEM="        << config.numElements
+			<< " -DSTATISTICS_N="       << config.numElements
+			<< " -DCOHERENCE_FACTOR_N=" << config.numElements
+			<< " -DMFloat="             << TemplateUtil::typeName<TFloat>()
+			<< " -DGROUP_SIZE="         << OCL_TRANSPOSE_GROUP_SIZE_DIM_0;
 	try {
 		clProgram_.build(progOpt.str().c_str());
 	} catch (...) {
@@ -819,11 +824,9 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::ProcessColumnWithO
 
 template<typename TFloat>
 std::string
-VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::getKernel() const
+VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::getKernels() const
 {
 	return R"CLC(
-
-#define GROUP_SIZE 16
 
 // NVIDIA sm_50 or newer:
 //   - Local (shared) memory has 32 banks of 32 bits.
@@ -882,46 +885,6 @@ processImageKernel(
 
 	gridValueRe[point] += sumRe;
 	gridValueIm[point] += sumIm;
-}
-
-MFloat
-arithmeticMean(MFloat* data)
-{
-	MFloat sum = 0;
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		sum += data[i];
-	}
-	return sum * ((MFloat) 1 / NUM_RX_ELEM);
-}
-
-MFloat
-standardDeviation(MFloat* data)
-{
-	MFloat sum = 0;
-	MFloat mean = arithmeticMean(data);
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		MFloat e = data[i] - mean;
-		sum += e * e;
-	}
-	return sqrt(sum * ((MFloat) 1 / NUM_RX_ELEM));
-}
-
-MFloat
-calcPCF(MFloat* re, MFloat* im, MFloat factor)
-{
-	MFloat phi[NUM_RX_ELEM];
-	MFloat phiAux[NUM_RX_ELEM];
-
-#pragma unroll
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		phi[i] = atan2(im[i], re[i]);
-	}
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		phiAux[i] = phi[i] - copysign((MFloat) M_PI, phi[i]);
-	}
-
-	MFloat sf = fmin(standardDeviation(phi), standardDeviation(phiAux));
-	return fmax((MFloat) 0, (MFloat) 1 - factor * sf);
 }
 
 __kernel
