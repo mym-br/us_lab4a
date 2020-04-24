@@ -23,7 +23,7 @@ namespace Lab {
 
 __global__
 void
-blockReduceMinMaxKernel(const unsigned int* in, unsigned int* outMin, unsigned int* outMax, int n) {
+blockReduceMinMaxKernel(const unsigned int* in, unsigned int* outMin, unsigned int* outMax, unsigned int n) {
 	unsigned int minValue = 0xffffffff;
 	unsigned int maxValue = 0;
 
@@ -41,14 +41,14 @@ blockReduceMinMaxKernel(const unsigned int* in, unsigned int* outMin, unsigned i
 
 __global__
 void
-reduceMinMaxKernel(unsigned int* blockMinVal, unsigned int* blockMaxVal, int numBlocks) {
+reduceMinMaxKernel(unsigned int* blockMinVal, unsigned int* blockMaxVal, unsigned int numBlocks) {
 	unsigned int minValue = 0xffffffff;
 	unsigned int maxValue = 0;
 
 	const unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (idx != 0) return; // single thread
 
-	for (unsigned int i = 0; i < numBlocks; ++i) {
+	for (int i = 0; i < numBlocks; ++i) {
 		minValue = min(minValue, blockMinVal[i]);
 		maxValue = max(maxValue, blockMaxVal[i]);
 	}
@@ -61,7 +61,7 @@ reduceMinMaxKernel(unsigned int* blockMinVal, unsigned int* blockMaxVal, int num
 
 __global__
 void
-blockReduceMinKernel(const unsigned int* in, unsigned int* out, int n) {
+blockReduceMinKernel(const unsigned int* in, unsigned int* out, unsigned int n) {
 	unsigned int minValue = 0xffffffff;
 
 	const unsigned int totalNumThreads = gridDim.x * blockDim.x;
@@ -76,13 +76,13 @@ blockReduceMinKernel(const unsigned int* in, unsigned int* out, int n) {
 
 __global__
 void
-reduceMinKernel(unsigned int* blockVal, int numBlocks) {
+reduceMinKernel(unsigned int* blockVal, unsigned int numBlocks) {
 	unsigned int minValue = 0xffffffff;
 
 	const unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (idx != 0) return; // single thread
 
-	for (unsigned int i = 0; i < numBlocks; ++i) {
+	for (int i = 0; i < numBlocks; ++i) {
 		minValue = min(minValue, blockVal[i]);
 	}
 
@@ -93,7 +93,7 @@ reduceMinKernel(unsigned int* blockVal, int numBlocks) {
 
 __global__
 void
-blockReduceMaxKernel(const unsigned int* in, unsigned int* out, int n) {
+blockReduceMaxKernel(const unsigned int* in, unsigned int* out, unsigned int n) {
 	unsigned int maxValue = 0;
 
 	const unsigned int totalNumThreads = gridDim.x * blockDim.x;
@@ -108,13 +108,13 @@ blockReduceMaxKernel(const unsigned int* in, unsigned int* out, int n) {
 
 __global__
 void
-reduceMaxKernel(unsigned int* blockVal, int numBlocks) {
+reduceMaxKernel(unsigned int* blockVal, unsigned int numBlocks) {
 	unsigned int maxValue = 0;
 
 	const unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (idx != 0) return; // single thread
 
-	for (unsigned int i = 0; i < numBlocks; ++i) {
+	for (int i = 0; i < numBlocks; ++i) {
 		maxValue = max(maxValue, blockVal[i]);
 	}
 

@@ -276,6 +276,7 @@ if(USE_CUDA)
         src/user/simulator/NumericCircularSourceCUDAImpulseResponse.cu
         src/user/simulator/NumericCircularSourceCUDAImpulseResponse.h
         src/user/simulator/NumericRectangularSourceCUDAImpulseResponse.cu
+        src/user/simulator/NumericRectangularSourceCUDAImpulseResponse.cuh
         src/user/simulator/NumericRectangularSourceCUDAImpulseResponse.h
         src/util/CUDACoherenceFactor.cuh
         src/util/CUDAGeometry.cuh

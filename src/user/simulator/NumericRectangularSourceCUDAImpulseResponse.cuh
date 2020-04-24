@@ -15,34 +15,57 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
 
-#ifndef CUDA_COHERENCE_FACTOR_CUH
-#define CUDA_COHERENCE_FACTOR_CUH
-
-#include "CUDAStatistics.cuh"
-
-
-
 namespace Lab {
 
-template<typename TFloat, int N>
-__device__
-TFloat
-calcPCF(TFloat* re, TFloat* im, TFloat factor)
+template<typename TFloat>
+__global__
+void
+numericSourceIRKernel(
+		unsigned int numSubElem,
+		TFloat x,
+		TFloat y,
+		TFloat z,
+		TFloat k1,
+		TFloat k2,
+		const TFloat* subElemX,
+		const TFloat* subElemY,
+		unsigned int* n0,
+		TFloat* value)
 {
-	TFloat phi[N];
-	TFloat phiAux[N];
-
-	for (int i = 0; i < N; ++i) {
-		phi[i] = atan2(im[i], re[i]);
+	const unsigned int subElemIdx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (subElemIdx >= numSubElem) {
+		// Get data from the first sub-element, to help min/max(n0).
+		const TFloat dx = x - subElemX[0];
+		const TFloat dy = y - subElemY[0];
+		const TFloat r = sqrt(dx * dx + dy * dy + z * z);
+		n0[subElemIdx] = rint(r * k1);
+		return;
 	}
-	for (int i = 0; i < N; ++i) {
-		phiAux[i] = phi[i] - copysign(TFloat(M_PI), phi[i]);
+
+	const TFloat dx = x - subElemX[subElemIdx];
+	const TFloat dy = y - subElemY[subElemIdx];
+	const TFloat r = sqrt(dx * dx + dy * dy + z * z);
+	n0[subElemIdx] = rint(r * k1);
+	value[subElemIdx] = k2 / r;
+}
+
+template<typename TFloat>
+__global__
+void
+accumulateIRSamplesKernel(
+		unsigned int numSubElem,
+		unsigned int minN0,
+		const unsigned int* n0,
+		const TFloat* value,
+		TFloat* h)
+{
+	const unsigned int subElemIdx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (subElemIdx >= numSubElem) {
+		return;
 	}
 
-	const TFloat sf = fmin(standardDeviation<TFloat, N>(phi), standardDeviation<TFloat, N>(phiAux));
-	return fmax(TFloat(0), TFloat(1) - factor * sf);
+	// Different sub-elements may have the same value for n0.
+	atomicAdd(h + n0[subElemIdx] - minN0, value[subElemIdx]);
 }
 
 } // namespace Lab
-
-#endif // CUDA_COHERENCE_FACTOR_CUH

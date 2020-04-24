@@ -24,6 +24,7 @@
 
 #include "CUDAReduce.cuh"
 #include "CUDAUtil.h"
+#include "NumericRectangularSourceCUDAImpulseResponse.cuh"
 
 #ifndef MFloat
 # define MFloat float
@@ -41,16 +42,6 @@
 
 
 namespace Lab {
-
-// Defined in NumericRectangularSourceCUDAImpulseResponse.cu.
-extern __global__ void numericSourceIRKernel(unsigned int numSubElem, float x, float y, float z,
-						float k1, float k2, const float* subElemX, const float* subElemY,
-						unsigned int* n0, float* value);
-// Defined in NumericRectangularSourceCUDAImpulseResponse.cu.
-extern __global__ void accumulateIRSamplesKernel(unsigned int numSubElem,  unsigned int minN0, const unsigned int* n0,
-							const float* value, float* h);
-
-//=============================================================================
 
 struct NumericCircularSourceCUDAImpulseResponse::CUDAData {
 	CUDAHostDevMem<MFloat> subElemX;
@@ -189,7 +180,7 @@ NumericCircularSourceCUDAImpulseResponse::getImpulseResponse(
 		const unsigned int blockSize = REDUCE_BLOCK_SIZE;
 		const unsigned int numBlocks = CUDAUtil::numberOfBlocks(numSubElem_, blockSize);
 
-		numericSourceIRKernel<<<numBlocks, blockSize>>>(
+		numericSourceIRKernel<MFloat><<<numBlocks, blockSize>>>(
 			 numSubElem_,
 			 x, y, z,
 			 samplingFreq_ / propagationSpeed_,
@@ -231,7 +222,7 @@ NumericCircularSourceCUDAImpulseResponse::getImpulseResponse(
 		const unsigned int blockSize = 64;
 		const unsigned int numBlocks = CUDAUtil::numberOfBlocks(numSubElem_, blockSize);
 
-		accumulateIRSamplesKernel<<<numBlocks, blockSize>>>(
+		accumulateIRSamplesKernel<MFloat><<<numBlocks, blockSize>>>(
 			numSubElem_,
 			minN0,
 			data_->n0.devPtr,

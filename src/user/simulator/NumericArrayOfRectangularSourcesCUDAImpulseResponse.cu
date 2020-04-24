@@ -26,6 +26,7 @@
 
 #include "CUDAReduce.cuh"
 #include "CUDAUtil.h"
+#include "NumericRectangularSourceCUDAImpulseResponse.cuh"
 
 #ifndef MFloat
 # define MFloat float
@@ -38,48 +39,45 @@
 
 namespace Lab {
 
-// Defined in NumericRectangularSourceCUDAImpulseResponse.cu.
-extern __global__ void accumulateIRSamplesKernel(unsigned int numSubElem, unsigned int minN0, const unsigned int* n0,
-							const float* value, float* h);
-
+template<typename TFloat>
 __global__
 void
 numericArraySourceIRKernel(
 		unsigned int numElem,
 		unsigned int numSubElem,
-		float x,
-		float y,
-		float z,
-		float k1,
-		float k2,
+		TFloat x,
+		TFloat y,
+		TFloat z,
+		TFloat k1,
+		TFloat k2,
 		const unsigned int* activeElem,
-		const float* elemDelay,
-		const float* elemPosX,
-		const float* elemPosY,
-		const float* subElemX,
-		const float* subElemY,
+		const TFloat* elemDelay,
+		const TFloat* elemPosX,
+		const TFloat* elemPosY,
+		const TFloat* subElemX,
+		const TFloat* subElemY,
 		unsigned int* n0,
-		float* value)
+		TFloat* value)
 {
 	const unsigned int subElemIdx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (subElemIdx >= numSubElem) {
 		// Get data from the first sub-element, to help min/max(n0).
 		const unsigned int activeElemIdx = activeElem[0];
-		const float dx = x - subElemX[0] - elemPosX[activeElemIdx];
-		const float dy = y - subElemY[0] - elemPosY[activeElemIdx];
-		const float r = sqrtf(dx * dx + dy * dy + z * z);
+		const TFloat dx = x - subElemX[0] - elemPosX[activeElemIdx];
+		const TFloat dy = y - subElemY[0] - elemPosY[activeElemIdx];
+		const TFloat r = sqrt(dx * dx + dy * dy + z * z);
 		const unsigned int idx = (numElem - 1U) * numSubElem + subElemIdx;
-		n0[idx] = rintf(r * k1 + elemDelay[0]);
+		n0[idx] = rint(r * k1 + elemDelay[0]);
 		return;
 	}
 
-	for (unsigned int i = 0; i < numElem; ++i) {
+	for (int i = 0; i < numElem; ++i) {
 		const unsigned int activeElemIdx = activeElem[i];
-		const float dx = x - subElemX[subElemIdx] - elemPosX[activeElemIdx];
-		const float dy = y - subElemY[subElemIdx] - elemPosY[activeElemIdx];
-		const float r = sqrtf(dx * dx + dy * dy + z * z);
+		const TFloat dx = x - subElemX[subElemIdx] - elemPosX[activeElemIdx];
+		const TFloat dy = y - subElemY[subElemIdx] - elemPosY[activeElemIdx];
+		const TFloat r = sqrt(dx * dx + dy * dy + z * z);
 		const unsigned int idx = i * numSubElem + subElemIdx;
-		n0[idx] = rintf(r * k1 + elemDelay[i]);
+		n0[idx] = rint(r * k1 + elemDelay[i]);
 		value[idx] = k2 / r;
 	}
 }
@@ -106,8 +104,8 @@ NumericArrayOfRectangularSourcesCUDAImpulseResponse::NumericArrayOfRectangularSo
 		MFloat sourceWidth,
 		MFloat sourceHeight,
 		MFloat subElemSize,
-		const std::vector<XY<float>>& elemPos,
-		const std::vector<float>& focusDelay /* s */)
+		const std::vector<XY<MFloat>>& elemPos,
+		const std::vector<MFloat>& focusDelay /* s */)
 			: samplingFreq_(samplingFreq)
 			, propagationSpeed_(propagationSpeed)
 			, subElemWidth_()
@@ -223,7 +221,7 @@ NumericArrayOfRectangularSourcesCUDAImpulseResponse::getImpulseResponse(
 		const unsigned int blockSize = REDUCE_BLOCK_SIZE;
 		const unsigned int numBlocks = CUDAUtil::numberOfBlocks(numSubElem_, blockSize);
 
-		numericArraySourceIRKernel<<<numBlocks, blockSize>>>(
+		numericArraySourceIRKernel<MFloat><<<numBlocks, blockSize>>>(
 			numElem_,
 			numSubElem_,
 			x, y, z,
@@ -270,7 +268,7 @@ NumericArrayOfRectangularSourcesCUDAImpulseResponse::getImpulseResponse(
 		const unsigned int blockSize = 64;
 		const unsigned int numBlocks = CUDAUtil::numberOfBlocks(numElem_ * numSubElem_, blockSize);
 
-		accumulateIRSamplesKernel<<<numBlocks, blockSize>>>(
+		accumulateIRSamplesKernel<MFloat><<<numBlocks, blockSize>>>(
 			numElem_ * numSubElem_,
 			minN0,
 			data_->n0.devPtr,

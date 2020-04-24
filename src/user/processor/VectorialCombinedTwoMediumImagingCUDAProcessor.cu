@@ -62,18 +62,19 @@ namespace Lab {
 #define TRANSP_BLOCK_SIZE 16
 #define NUM_RX_ELEM 32
 
+template<typename TFloat>
 __global__
 void
 transposeKernel(
-		float* rawData,
-		float* rawDataT,
-		int oldSizeX,
-		int oldSizeY)
+		TFloat* rawData,
+		TFloat* rawDataT,
+		unsigned int oldSizeX,
+		unsigned int oldSizeY)
 {
-	__shared__ float temp[TRANSP_BLOCK_SIZE][TRANSP_BLOCK_SIZE + 1]; // +1 to avoid bank conflicts
+	__shared__ TFloat temp[TRANSP_BLOCK_SIZE][TRANSP_BLOCK_SIZE + 1]; // +1 to avoid bank conflicts
 
-	int iX = blockIdx.y * TRANSP_BLOCK_SIZE + threadIdx.x;
-	int iY = blockIdx.x * TRANSP_BLOCK_SIZE + threadIdx.y;
+	unsigned int iX = blockIdx.y * TRANSP_BLOCK_SIZE + threadIdx.x;
+	unsigned int iY = blockIdx.x * TRANSP_BLOCK_SIZE + threadIdx.y;
 
 	if (iX < oldSizeY && iY < oldSizeX) {
 		temp[threadIdx.x][threadIdx.y] = rawData[iX + oldSizeY * iY];
@@ -89,31 +90,33 @@ transposeKernel(
 	}
 }
 
+template<typename TFloat>
 __global__
 void
 processImageKernel(
-		float* rawData,
-		int numGridPoints,
-		float* gridValueRe,
-		float* gridValueIm,
-		float* rxApod)
+		TFloat* rawData,
+		unsigned int numGridPoints,
+		TFloat* gridValueRe,
+		TFloat* gridValueIm,
+		TFloat* rxApod)
 {
-	float rxSignalListRe[NUM_RX_ELEM];
-	float rxSignalListIm[NUM_RX_ELEM];
+	TFloat rxSignalListRe[NUM_RX_ELEM];
+	TFloat rxSignalListIm[NUM_RX_ELEM];
 
-	const int point = blockIdx.x * blockDim.x + threadIdx.x;
+	const unsigned int point = blockIdx.x * blockDim.x + threadIdx.x;
 	if (point >= numGridPoints) return;
 
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
-		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
-		//rxSignalListRe[i] = rawData[point * (NUM_RX_ELEM << 1) + (i << 1)];
-		//rxSignalListIm[i] = rawData[point * (NUM_RX_ELEM << 1) + ((i << 1) + 1)];
+	unsigned int idx1 = point;
+	unsigned int idx2 = point + 1;
+	const unsigned int step = 2 * numGridPoints;
+	for (int i = 0; i < NUM_RX_ELEM; ++i, idx1 += step, idx2 += step) {
+		rxSignalListRe[i] = rawData[idx1];
+		rxSignalListIm[i] = rawData[idx2];
 	}
 
-	float sumRe = 0.0;
-	float sumIm = 0.0;
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+	TFloat sumRe = 0;
+	TFloat sumIm = 0;
+	for (int i = 0; i < NUM_RX_ELEM; ++i) {
 		sumRe += rxSignalListRe[i] * rxApod[i];
 		sumIm += rxSignalListIm[i] * rxApod[i];
 	}
@@ -122,31 +125,35 @@ processImageKernel(
 	gridValueIm[point] += sumIm;
 }
 
+template<typename TFloat>
 __global__
 void
 processImagePCFKernel(
-		float* rawData,
-		int numGridPoints,
-		float* gridValueRe,
-		float* gridValueIm,
-		float* rxApod,
-		float pcfFactor)
+		TFloat* rawData,
+		unsigned int numGridPoints,
+		TFloat* gridValueRe,
+		TFloat* gridValueIm,
+		TFloat* rxApod,
+		TFloat pcfFactor)
 {
-	float rxSignalListRe[NUM_RX_ELEM];
-	float rxSignalListIm[NUM_RX_ELEM];
+	TFloat rxSignalListRe[NUM_RX_ELEM];
+	TFloat rxSignalListIm[NUM_RX_ELEM];
 
-	const int point = blockIdx.x * blockDim.x + threadIdx.x;
+	const unsigned int point = blockIdx.x * blockDim.x + threadIdx.x;
 	if (point >= numGridPoints) return;
 
-	for (int i = 0; i < NUM_RX_ELEM; ++i) {
-		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
-		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
+	unsigned int idx1 = point;
+	unsigned int idx2 = point + 1;
+	const unsigned int step = 2 * numGridPoints;
+	for (int i = 0; i < NUM_RX_ELEM; ++i, idx1 += step, idx2 += step) {
+		rxSignalListRe[i] = rawData[idx1];
+		rxSignalListIm[i] = rawData[idx2];
 	}
 
-	float pcf = calcPCF<NUM_RX_ELEM>(rxSignalListRe, rxSignalListIm, pcfFactor);
+	const TFloat pcf = calcPCF<TFloat, NUM_RX_ELEM>(rxSignalListRe, rxSignalListIm, pcfFactor);
 
-	float sumRe = 0.0;
-	float sumIm = 0.0;
+	TFloat sumRe = 0.0;
+	TFloat sumIm = 0.0;
 	for (int i = 0; i < NUM_RX_ELEM; ++i) {
 		sumRe += rxSignalListRe[i] * rxApod[i];
 		sumIm += rxSignalListIm[i] * rxApod[i];
@@ -664,7 +671,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 			dim3 gridDim(rawDataN1_ / TRANSP_BLOCK_SIZE, rawDataN2_ / TRANSP_BLOCK_SIZE);
 			dim3 blockDim(TRANSP_BLOCK_SIZE, TRANSP_BLOCK_SIZE);
 
-			transposeKernel<<<gridDim, blockDim>>>(
+			transposeKernel<MFloat><<<gridDim, blockDim>>>(
 							data_->rawDataList[rawBufferIdx].devPtr,
 							data_->rawDataT.devPtr,
 							rawDataN1_,
@@ -679,7 +686,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 			std::vector<MFloat> cfConstants;
 			coherenceFactor_.implementation().getConstants(cfConstants);
 
-			processImagePCFKernel<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
+			processImagePCFKernel<MFloat><<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
 #ifdef USE_TRANSPOSE
 							data_->rawDataT.devPtr,
 							rawDataN1_,
@@ -693,7 +700,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 							cfConstants[2] /* factor */);
 			checkKernelLaunchError();
 		} else {
-			processImageKernel<<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
+			processImageKernel<MFloat><<<procImageKernelGlobalSize / BLOCK_SIZE, BLOCK_SIZE>>>(
 #ifdef USE_TRANSPOSE
 							data_->rawDataT.devPtr,
 							rawDataN1_,

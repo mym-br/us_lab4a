@@ -21,19 +21,19 @@
 namespace Lab {
 
 // Call with <<<numBlocks, 1024>>>.
-extern __global__ void blockReduceMinMaxKernel(const unsigned int* in, unsigned int* outMin, unsigned int* outMax, int n);
+extern __global__ void blockReduceMinMaxKernel(const unsigned int* in, unsigned int* outMin, unsigned int* outMax, unsigned int n);
 // Call with <<<1, 1>>>.
-extern __global__ void reduceMinMaxKernel(unsigned int* blockMinVal, unsigned int* blockMaxVal, int numBlocks);
+extern __global__ void reduceMinMaxKernel(unsigned int* blockMinVal, unsigned int* blockMaxVal, unsigned int numBlocks);
 
 // Call with <<<numBlocks, 1024>>>.
-extern __global__ void blockReduceMinKernel(const unsigned int* in, unsigned int* out, int n);
+extern __global__ void blockReduceMinKernel(const unsigned int* in, unsigned int* out, unsigned int n);
 // Call with <<<1, 1>>>.
-extern __global__ void reduceMinKernel(unsigned int* blockVal, int numBlocks);
+extern __global__ void reduceMinKernel(unsigned int* blockVal, unsigned int numBlocks);
 
 // Call with <<<numBlocks, 1024>>>.
-extern __global__ void blockReduceMaxKernel(const unsigned int* in, unsigned int* out, int n);
+extern __global__ void blockReduceMaxKernel(const unsigned int* in, unsigned int* out, unsigned int n);
 // Call with <<<1, 1>>>.
-extern __global__ void reduceMaxKernel(unsigned int* blockVal, int numBlocks);
+extern __global__ void reduceMaxKernel(unsigned int* blockVal, unsigned int numBlocks);
 
 
 

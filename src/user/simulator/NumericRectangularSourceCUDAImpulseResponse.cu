@@ -25,6 +25,7 @@
 
 #include "CUDAReduce.cuh"
 #include "CUDAUtil.h"
+#include "NumericRectangularSourceCUDAImpulseResponse.cuh"
 
 #ifndef MFloat
 # define MFloat float
@@ -36,57 +37,6 @@
 
 
 namespace Lab {
-
-__global__
-void
-numericSourceIRKernel(
-		unsigned int numSubElem,
-		float x,
-		float y,
-		float z,
-		float k1,
-		float k2,
-		const float* subElemX,
-		const float* subElemY,
-		unsigned int* n0,
-		float* value)
-{
-	const unsigned int subElemIdx = blockIdx.x * blockDim.x + threadIdx.x;
-	if (subElemIdx >= numSubElem) {
-		// Get data from the first sub-element, to help min/max(n0).
-		const float dx = x - subElemX[0];
-		const float dy = y - subElemY[0];
-		const float r = sqrtf(dx * dx + dy * dy + z * z);
-		n0[subElemIdx] = rintf(r * k1);
-		return;
-	}
-
-	const float dx = x - subElemX[subElemIdx];
-	const float dy = y - subElemY[subElemIdx];
-	const float r = sqrtf(dx * dx + dy * dy + z * z);
-	n0[subElemIdx] = rintf(r * k1);
-	value[subElemIdx] = k2 / r;
-}
-
-__global__
-void
-accumulateIRSamplesKernel(
-		unsigned int numSubElem,
-		unsigned int minN0,
-		const unsigned int* n0,
-		const float* value,
-		float* h)
-{
-	const unsigned int subElemIdx = blockIdx.x * blockDim.x + threadIdx.x;
-	if (subElemIdx >= numSubElem) {
-		return;
-	}
-
-	// Different sub-elements may have the same value for n0.
-	atomicAdd(h + n0[subElemIdx] - minN0, value[subElemIdx]);
-}
-
-//=============================================================================
 
 struct NumericRectangularSourceCUDAImpulseResponse::CUDAData {
 	CUDAHostDevMem<MFloat> subElemX;
@@ -172,7 +122,7 @@ NumericRectangularSourceCUDAImpulseResponse::getImpulseResponse(
 		const unsigned int blockSize = REDUCE_BLOCK_SIZE;
 		const unsigned int numBlocks = CUDAUtil::numberOfBlocks(numSubElem_, blockSize);
 
-		numericSourceIRKernel<<<numBlocks, blockSize>>>(
+		numericSourceIRKernel<MFloat><<<numBlocks, blockSize>>>(
 			numSubElem_,
 			x, y, z,
 			samplingFreq_ / propagationSpeed_,
@@ -214,7 +164,7 @@ NumericRectangularSourceCUDAImpulseResponse::getImpulseResponse(
 		const unsigned int blockSize = 64;
 		const unsigned int numBlocks = CUDAUtil::numberOfBlocks(numSubElem_, blockSize);
 
-		accumulateIRSamplesKernel<<<numBlocks, blockSize>>>(
+		accumulateIRSamplesKernel<MFloat><<<numBlocks, blockSize>>>(
 			numSubElem_,
 			minN0,
 			data_->n0.devPtr,

@@ -57,35 +57,42 @@ namespace Lab {
 
 #define NUM_RX_ELEM 32
 
+template<typename TFloat>
 __device__
-float
-calcTwoMediumTravelTime(float x1, float z1, float xi, float zi, float x2, float z2, float invC1, float invC2)
+TFloat
+calcTwoMediumTravelTime(TFloat x1, TFloat z1, TFloat xi, TFloat zi, TFloat x2, TFloat z2, TFloat invC1, TFloat invC2)
 {
-	const float dx1 = xi - x1;
-	const float dz1 = zi - z1;
-	const float dx2 = x2 - xi;
-	const float dz2 = z2 - zi;
-	return sqrtf(dx1 * dx1 + dz1 * dz1) * invC1 + sqrtf(dx2 * dx2 + dz2 * dz2) * invC2;
+	const TFloat dx1 = xi - x1;
+	const TFloat dz1 = zi - z1;
+	const TFloat dx2 = x2 - xi;
+	const TFloat dz2 = z2 - zi;
+	return sqrt(dx1 * dx1 + dz1 * dz1) * invC1 + sqrt(dx2 * dx2 + dz2 * dz2) * invC2;
 }
 
+template<typename TFloat>
 __device__
 void
 findMinTimeInTwoSteps(
 		unsigned int blockSize,
-		float c1, float c2,
-		const float (*interfacePointList)[2],
+		TFloat c1, TFloat c2,
+		const TFloat (*interfacePointList)[2],
 		unsigned int interfacePointListSize,
-		float x1, float z1, float x2, float z2,
-		float& tMin, unsigned int& idxMin)
+		TFloat x1, TFloat z1, TFloat x2, TFloat z2,
+		TFloat& tMin, unsigned int& idxMin)
 {
-	const float invC1 = 1 / c1;
-	const float invC2 = 1 / c2;
+	const TFloat invC1 = 1 / c1;
+	const TFloat invC2 = 1 / c2;
 
 	// First step: step = blockSize
-	tMin = 3.4e38f;
-	for (unsigned int i = 0; i < interfacePointListSize; i += blockSize) {
-		const float (*point)[2] = interfacePointList + i;
-		const float t = calcTwoMediumTravelTime(x1, z1, (*point)[0], (*point)[1], x2, z2, invC1, invC2);
+	{
+		const TFloat (*point)[2] = interfacePointList;
+		const TFloat t = calcTwoMediumTravelTime<TFloat>(x1, z1, (*point)[0], (*point)[1], x2, z2, invC1, invC2);
+		tMin = t;
+		idxMin = 0;
+	}
+	for (unsigned int i = 1; i < interfacePointListSize; i += blockSize) {
+		const TFloat (*point)[2] = interfacePointList + i;
+		const TFloat t = calcTwoMediumTravelTime<TFloat>(x1, z1, (*point)[0], (*point)[1], x2, z2, invC1, invC2);
 		if (t < tMin) {
 			tMin = t;
 			idxMin = i;
@@ -96,8 +103,8 @@ findMinTimeInTwoSteps(
 	const unsigned int iBegin = (idxMin > (blockSize - 1U)) ? idxMin - (blockSize - 1U) : 0;
 	const unsigned int iEnd = umin(idxMin + blockSize, interfacePointListSize);
 	for (unsigned int i = iBegin; i < iEnd; ++i) {
-		const float (*point)[2] = interfacePointList + i;
-		const float t = calcTwoMediumTravelTime(x1, z1, (*point)[0], (*point)[1], x2, z2, invC1, invC2);
+		const TFloat (*point)[2] = interfacePointList + i;
+		const TFloat t = calcTwoMediumTravelTime<TFloat>(x1, z1, (*point)[0], (*point)[1], x2, z2, invC1, invC2);
 		if (t < tMin) {
 			tMin = t;
 			idxMin = i;
@@ -106,24 +113,25 @@ findMinTimeInTwoSteps(
 }
 
 // This function is not efficient in GPUs, but it avoids the transfer of the large delayTensor.
+template<typename TFloat>
 __global__
 void
 calculateDelaysTwoMediumKernel(
 		unsigned int numCols,
 		unsigned int numRows,
 		unsigned int numElementsMux,
-		float fs,
-		float fsInvC2,
-		float c1,
-		float c2,
+		TFloat fs,
+		TFloat fsInvC2,
+		TFloat c1,
+		TFloat c2,
 		unsigned int fermatBlockSize,
-		const float (*interfacePointList)[2],
+		const TFloat (*interfacePointList)[2],
 		unsigned int interfacePointListSize,
-		const float* xArray,
+		const TFloat* xArray,
 		const unsigned int* minRowIdx,
-		const float* medium1DelayMatrix,
-		const float (*gridXZ)[2],
-		float* delayTensor)
+		const TFloat* medium1DelayMatrix,
+		const TFloat (*gridXZ)[2],
+		TFloat* delayTensor)
 {
 	const unsigned int col = blockIdx.x * blockDim.x + threadIdx.x;
 	if (col >= numCols) return;
@@ -137,12 +145,12 @@ calculateDelaysTwoMediumKernel(
 
 	// The first row above the interface.
 	{
-		const float (*point)[2] = gridXZ + col * numRows + minRowIdx[col];
+		const TFloat (*point)[2] = gridXZ + col * numRows + minRowIdx[col];
 
 		// Fermat's principle. Find the fastest path.
-		float tMin;
+		TFloat tMin;
 		unsigned int idxMin;
-		findMinTimeInTwoSteps(
+		findMinTimeInTwoSteps<TFloat>(
 				fermatBlockSize,
 				c1, c2,
 				interfacePointList,
@@ -153,19 +161,19 @@ calculateDelaysTwoMediumKernel(
 		lastInterfaceIdx = idxMin;
 	}
 
-	const float* medium1Delays = medium1DelayMatrix + elem * interfacePointListSize;
+	const TFloat* medium1Delays = medium1DelayMatrix + elem * interfacePointListSize;
 
 	for (unsigned int row = minRowIdx[col] + 1U; row < numRows; ++row) {
-		const float (*point)[2] = gridXZ + col * numRows + row;
+		const TFloat (*point)[2] = gridXZ + col * numRows + row;
 		unsigned int idxMin = lastInterfaceIdx;
-		float tC2Min;
+		TFloat tC2Min;
 		{
-			const float (*ifPoint)[2] = interfacePointList + idxMin;
-			tC2Min = medium1Delays[idxMin] + distance2D((*ifPoint)[0], (*ifPoint)[1], (*point)[0], (*point)[1]);
+			const TFloat (*ifPoint)[2] = interfacePointList + idxMin;
+			tC2Min = medium1Delays[idxMin] + distance2D<TFloat>((*ifPoint)[0], (*ifPoint)[1], (*point)[0], (*point)[1]);
 		}
 		for (unsigned int idxSearch = idxMin + 1U; idxSearch < interfacePointListSize; ++idxSearch) {
-			const float (*ifPoint)[2] = interfacePointList + idxSearch;
-			const float tC2 = medium1Delays[idxSearch] + distance2D((*ifPoint)[0], (*ifPoint)[1], (*point)[0], (*point)[1]);
+			const TFloat (*ifPoint)[2] = interfacePointList + idxSearch;
+			const TFloat tC2 = medium1Delays[idxSearch] + distance2D<TFloat>((*ifPoint)[0], (*ifPoint)[1], (*point)[0], (*point)[1]);
 			if (tC2 >= tC2Min) {
 				break;
 			} else {
@@ -175,8 +183,8 @@ calculateDelaysTwoMediumKernel(
 		}
 		if (idxMin == lastInterfaceIdx) { // if the previous search was not successful
 			for (int idxSearch = static_cast<int>(idxMin) - 1; idxSearch >= 0; --idxSearch) { // if idxMin = 0, idxSearch will start with -1
-				const float (*ifPoint)[2] = interfacePointList + idxSearch;
-				const float tC2 = medium1Delays[idxSearch] + distance2D((*ifPoint)[0], (*ifPoint)[1], (*point)[0], (*point)[1]);
+				const TFloat (*ifPoint)[2] = interfacePointList + idxSearch;
+				const TFloat tC2 = medium1Delays[idxSearch] + distance2D<TFloat>((*ifPoint)[0], (*ifPoint)[1], (*point)[0], (*point)[1]);
 				if (tC2 >= tC2Min) {
 					break;
 				} else {
@@ -191,22 +199,23 @@ calculateDelaysTwoMediumKernel(
 	}
 }
 
+template<typename TFloat>
 __global__
 void
 processRowColumnWithOneTxElemKernel(
 		unsigned int numCols,
 		unsigned int numRows,
-		float signalOffset,
-		const float (*signalTensor)[2],
+		TFloat signalOffset,
+		const TFloat (*signalTensor)[2],
 		unsigned int signalTensorN2,
 		unsigned int signalTensorN3,
 		unsigned int baseElem,
 		unsigned int baseElemIdx,
 		unsigned int txElem,
 		const unsigned int* minRowIdx,
-		const float* delayTensor,
-		float (*gridValue)[2],
-		const float* rxApod)
+		const TFloat* delayTensor,
+		TFloat (*gridValue)[2],
+		const TFloat* rxApod)
 {
 	const unsigned int signalLength = signalTensorN3;
 	const unsigned int maxPosition = signalLength - 2;
@@ -217,27 +226,27 @@ processRowColumnWithOneTxElemKernel(
 	const unsigned int row = blockIdx.x * blockDim.x + threadIdx.x;
 	if (row < minRowIdx[col] || row >= numRows) return;
 
-	const float txDelay = delayTensor[((baseElem + txElem) * numCols + col) * numRows + row];
-	const float txOffset = signalOffset + txDelay;
+	const TFloat txDelay = delayTensor[((baseElem + txElem) * numCols + col) * numRows + row];
+	const TFloat txOffset = signalOffset + txDelay;
 
-	float rxSignalSumRe = 0;
-	float rxSignalSumIm = 0;
+	TFloat rxSignalSumRe = 0;
+	TFloat rxSignalSumIm = 0;
 	for (unsigned int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
-		const float (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
+		const TFloat (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
 					+ rxElem * signalLength;
 		// Linear interpolation.
-		const float position = txOffset + delayTensor[((baseElem + rxElem) * numCols + col) * numRows + row];
+		const TFloat position = txOffset + delayTensor[((baseElem + rxElem) * numCols + col) * numRows + row];
 		if (position >= 0.0f) {
 			const unsigned int positionIdx = static_cast<unsigned int>(position);
 			if (positionIdx <= maxPosition) {
-				const float k = position - positionIdx;
-				float v0[2]; // complex
+				const TFloat k = position - positionIdx;
+				TFloat v0[2]; // complex
 				v0[0] = p[positionIdx][0];
 				v0[1] = p[positionIdx][1];
-				float v1[2]; // complex
+				TFloat v1[2]; // complex
 				v1[0] = p[positionIdx + 1][0];
 				v1[1] = p[positionIdx + 1][1];
-				float v[2]; // complex
+				TFloat v[2]; // complex
 				v[0] = v0[0] + k * (v1[0] - v0[0]);
 				v[1] = v0[1] + k * (v1[1] - v0[1]);
 
@@ -251,26 +260,27 @@ processRowColumnWithOneTxElemKernel(
 	gridValue[point][1] += rxSignalSumIm;
 }
 
+template<typename TFloat>
 __global__
 void
 processRowColumnWithOneTxElemPCFKernel(
 		unsigned int numCols,
 		unsigned int numRows,
-		float signalOffset,
-		const float (*signalTensor)[2],
+		TFloat signalOffset,
+		const TFloat (*signalTensor)[2],
 		unsigned int signalTensorN2,
 		unsigned int signalTensorN3,
 		unsigned int baseElem,
 		unsigned int baseElemIdx,
 		unsigned int txElem,
 		const unsigned int* minRowIdx,
-		const float* delayTensor,
-		float (*gridValue)[2],
-		const float* rxApod,
-		float pcfFactor)
+		const TFloat* delayTensor,
+		TFloat (*gridValue)[2],
+		const TFloat* rxApod,
+		TFloat pcfFactor)
 {
-	float rxSignalListRe[NUM_RX_ELEM];
-	float rxSignalListIm[NUM_RX_ELEM];
+	TFloat rxSignalListRe[NUM_RX_ELEM];
+	TFloat rxSignalListIm[NUM_RX_ELEM];
 
 	const unsigned int signalLength = signalTensorN3;
 	const unsigned int maxPosition = signalLength - 2;
@@ -281,25 +291,25 @@ processRowColumnWithOneTxElemPCFKernel(
 	const unsigned int row = blockIdx.x * blockDim.x + threadIdx.x;
 	if (row < minRowIdx[col] || row >= numRows) return;
 
-	const float txDelay = delayTensor[((baseElem + txElem) * numCols + col) * numRows + row];
-	const float txOffset = signalOffset + txDelay;
+	const TFloat txDelay = delayTensor[((baseElem + txElem) * numCols + col) * numRows + row];
+	const TFloat txOffset = signalOffset + txDelay;
 
 	for (unsigned int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
-		const float (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
+		const TFloat (*p)[2] = signalTensor + baseElemIdx * signalTensorN2 * signalTensorN3
 					+ rxElem * signalLength;
 		// Linear interpolation.
-		const float position = txOffset + delayTensor[((baseElem + rxElem) * numCols + col) * numRows + row];
+		const TFloat position = txOffset + delayTensor[((baseElem + rxElem) * numCols + col) * numRows + row];
 		if (position >= 0.0f) {
 			const unsigned int positionIdx = static_cast<unsigned int>(position);
 			if (positionIdx <= maxPosition) {
-				const float k = position - positionIdx;
-				float v0[2]; // complex
+				const TFloat k = position - positionIdx;
+				TFloat v0[2]; // complex
 				v0[0] = p[positionIdx][0];
 				v0[1] = p[positionIdx][1];
-				float v1[2]; // complex
+				TFloat v1[2]; // complex
 				v1[0] = p[positionIdx + 1][0];
 				v1[1] = p[positionIdx + 1][1];
-				float v[2]; // complex
+				TFloat v[2]; // complex
 				v[0] = v0[0] + k * (v1[0] - v0[0]);
 				v[1] = v0[1] + k * (v1[1] - v0[1]);
 
@@ -309,9 +319,9 @@ processRowColumnWithOneTxElemPCFKernel(
 		}
 	}
 
-	const float pcf = calcPCF<NUM_RX_ELEM>(rxSignalListRe, rxSignalListIm, pcfFactor);
-	float sumRe = 0;
-	float sumIm = 0;
+	const TFloat pcf = calcPCF<TFloat, NUM_RX_ELEM>(rxSignalListRe, rxSignalListIm, pcfFactor);
+	TFloat sumRe = 0;
+	TFloat sumIm = 0;
 	for (int i = 0; i < NUM_RX_ELEM; ++i) {
 		sumRe += rxSignalListRe[i] * rxApod[i];
 		sumIm += rxSignalListIm[i] * rxApod[i];

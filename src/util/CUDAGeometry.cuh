@@ -20,23 +20,23 @@
 
 namespace Lab {
 
+template<typename TFloat>
 __device__
-inline
-float
-distance2D(float x0, float y0, float x1, float y1)
+TFloat
+distance2D(TFloat x0, TFloat y0, TFloat x1, TFloat y1)
 {
-	const float dx = x1 - x0;
-	const float dy = y1 - y0;
-	return sqrtf(dx * dx + dy * dy);
+	const TFloat dx = x1 - x0;
+	const TFloat dy = y1 - y0;
+	return sqrt(dx * dx + dy * dy);
 }
 
+template<typename TFloat>
 __device__
-inline
-float
-distance2DY0(float x0, float x1, float y1)
+TFloat
+distance2DY0(TFloat x0, TFloat x1, TFloat y1)
 {
-	const float dx = x1 - x0;
-	return sqrtf(dx * dx + y1 * y1);
+	const TFloat dx = x1 - x0;
+	return sqrt(dx * dx + y1 * y1);
 }
 
 } // namespace Lab

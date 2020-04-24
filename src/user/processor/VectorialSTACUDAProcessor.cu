@@ -52,15 +52,16 @@ namespace Lab {
 
 #define NUM_RX_ELEM 32
 
+template<typename TFloat>
 __global__
 void
 calculateDelaysSTAKernel(
 		unsigned int numCols,
 		unsigned int numRows,
-		float invCT,
-		const float* xArray,
-		const float (*gridXZ)[2],
-		float* delayTensor)
+		TFloat invCT,
+		const TFloat* xArray,
+		const TFloat (*gridXZ)[2],
+		TFloat* delayTensor)
 {
 	const unsigned int row = blockIdx.x * blockDim.x + threadIdx.x;
 	if (row >= numRows) return;
@@ -71,25 +72,26 @@ calculateDelaysSTAKernel(
 	const unsigned int elem = blockIdx.z * blockDim.z + threadIdx.z;
 	if (elem >= NUM_RX_ELEM) return;
 
-	const float (*point)[2] = gridXZ + col * numRows + row;
+	const TFloat (*point)[2] = gridXZ + col * numRows + row;
 	delayTensor[((elem * numCols) + col) * numRows + row] =
-			distance2DY0(xArray[elem], (*point)[0], (*point)[1]) * invCT;
+			distance2DY0<TFloat>(xArray[elem], (*point)[0], (*point)[1]) * invCT;
 }
 
+template<typename TFloat>
 __global__
 void
 processRowColumnSTAKernel(
 		unsigned int numCols,
 		unsigned int numRows,
-		float signalOffset,
-		const float (*signalTensor)[2],
+		TFloat signalOffset,
+		const TFloat (*signalTensor)[2],
 		unsigned int signalTensorN2,
 		unsigned int signalTensorN3,
 		unsigned int firstTxElem,
 		unsigned int lastTxElem,
-		const float* rxApod,
-		const float* delayTensor,
-		float* gridValue)
+		const TFloat* rxApod,
+		const TFloat* delayTensor,
+		TFloat* gridValue)
 {
 	const unsigned int signalLength = signalTensorN3;
 	const unsigned int maxPosition = signalLength - 2;
@@ -100,26 +102,26 @@ processRowColumnSTAKernel(
 	const unsigned int col = blockIdx.y * blockDim.y + threadIdx.y;
 	if (col >= numCols) return;
 
-	float sumRe = 0;
-	float sumIm = 0;
-	for (unsigned int txElem = firstTxElem; txElem <= lastTxElem; ++txElem) {
-		const float txDelay = delayTensor[(txElem * numCols + col) * numRows + row];
-		const float txOffset = signalOffset + txDelay;
-		for (unsigned int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
-			const float (*p)[2] = signalTensor + (((txElem - firstTxElem) * signalTensorN2) + rxElem) * signalLength;
+	TFloat sumRe = 0;
+	TFloat sumIm = 0;
+	for (int txElem = firstTxElem; txElem <= lastTxElem; ++txElem) {
+		const TFloat txDelay = delayTensor[(txElem * numCols + col) * numRows + row];
+		const TFloat txOffset = signalOffset + txDelay;
+		for (int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
+			const TFloat (*p)[2] = signalTensor + (((txElem - firstTxElem) * signalTensorN2) + rxElem) * signalLength;
 			// Linear interpolation.
-			const float position = txOffset + delayTensor[(rxElem * numCols + col) * numRows + row];
+			const TFloat position = txOffset + delayTensor[(rxElem * numCols + col) * numRows + row];
 			if (position >= 0.0f) {
 				const unsigned int positionIdx = static_cast<unsigned int>(position);
 				if (positionIdx <= maxPosition) {
-					const float k = position - positionIdx;
-					float v0[2]; // complex
+					const TFloat k = position - positionIdx;
+					TFloat v0[2]; // complex
 					v0[0] = p[positionIdx][0];
 					v0[1] = p[positionIdx][1];
-					float v1[2]; // complex
+					TFloat v1[2]; // complex
 					v1[0] = p[positionIdx + 1][0];
 					v1[1] = p[positionIdx + 1][1];
-					float v[2]; // complex
+					TFloat v[2]; // complex
 					v[0] = v0[0] + k * (v1[0] - v0[0]);
 					v[1] = v0[1] + k * (v1[1] - v0[1]);
 
@@ -130,28 +132,29 @@ processRowColumnSTAKernel(
 		}
 	}
 	const unsigned int point = col * numRows + row;
-	gridValue[point] = sqrtf(sumRe * sumRe + sumIm * sumIm);
+	gridValue[point] = sqrt(sumRe * sumRe + sumIm * sumIm);
 }
 
+template<typename TFloat>
 __global__
 void
 processRowColumnSTAPCFKernel(
 		unsigned int numCols,
 		unsigned int numRows,
-		float signalOffset,
-		const float (*signalTensor)[2],
+		TFloat signalOffset,
+		const TFloat (*signalTensor)[2],
 		unsigned int signalTensorN2,
 		unsigned int signalTensorN3,
 		unsigned int firstTxElem,
 		unsigned int lastTxElem,
-		const float* rxApod,
-		const float* delayTensor,
-		float pcfFactor,
-		float* gridValue,
-		float* gridFactor)
+		const TFloat* rxApod,
+		const TFloat* delayTensor,
+		TFloat pcfFactor,
+		TFloat* gridValue,
+		TFloat* gridFactor)
 {
-	float rxSignalListRe[NUM_RX_ELEM];
-	float rxSignalListIm[NUM_RX_ELEM];
+	TFloat rxSignalListRe[NUM_RX_ELEM];
+	TFloat rxSignalListIm[NUM_RX_ELEM];
 
 	const unsigned int signalLength = signalTensorN3;
 	const unsigned int maxPosition = signalLength - 2;
@@ -162,28 +165,28 @@ processRowColumnSTAPCFKernel(
 	const unsigned int col = blockIdx.y * blockDim.y + threadIdx.y;
 	if (col >= numCols) return;
 
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+	for (int i = 0; i < NUM_RX_ELEM; ++i) {
 		rxSignalListRe[i] = 0;
 		rxSignalListIm[i] = 0;
 	}
-	for (unsigned int txElem = firstTxElem; txElem <= lastTxElem; ++txElem) {
-		const float txDelay = delayTensor[(txElem * numCols + col) * numRows + row];
-		const float txOffset = signalOffset + txDelay;
-		for (unsigned int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
-			const float (*p)[2] = signalTensor + (((txElem - firstTxElem) * signalTensorN2) + rxElem) * signalLength;
+	for (int txElem = firstTxElem; txElem <= lastTxElem; ++txElem) {
+		const TFloat txDelay = delayTensor[(txElem * numCols + col) * numRows + row];
+		const TFloat txOffset = signalOffset + txDelay;
+		for (int rxElem = 0; rxElem < NUM_RX_ELEM; ++rxElem) {
+			const TFloat (*p)[2] = signalTensor + (((txElem - firstTxElem) * signalTensorN2) + rxElem) * signalLength;
 			// Linear interpolation.
-			const float position = txOffset + delayTensor[(rxElem * numCols + col) * numRows + row];
+			const TFloat position = txOffset + delayTensor[(rxElem * numCols + col) * numRows + row];
 			if (position >= 0.0f) {
 				const unsigned int positionIdx = static_cast<unsigned int>(position);
 				if (positionIdx <= maxPosition) {
-					const float k = position - positionIdx;
-					float v0[2]; // complex
+					const TFloat k = position - positionIdx;
+					TFloat v0[2]; // complex
 					v0[0] = p[positionIdx][0];
 					v0[1] = p[positionIdx][1];
-					float v1[2]; // complex
+					TFloat v1[2]; // complex
 					v1[0] = p[positionIdx + 1][0];
 					v1[1] = p[positionIdx + 1][1];
-					float v[2]; // complex
+					TFloat v[2]; // complex
 					v[0] = v0[0] + k * (v1[0] - v0[0]);
 					v[1] = v0[1] + k * (v1[1] - v0[1]);
 
@@ -194,16 +197,16 @@ processRowColumnSTAPCFKernel(
 		}
 	}
 
-	const float pcf = calcPCF<NUM_RX_ELEM>(rxSignalListRe, rxSignalListIm, pcfFactor);
-	float sumRe = 0;
-	float sumIm = 0;
+	const TFloat pcf = calcPCF<TFloat, NUM_RX_ELEM>(rxSignalListRe, rxSignalListIm, pcfFactor);
+	TFloat sumRe = 0;
+	TFloat sumIm = 0;
 	for (int i = 0; i < NUM_RX_ELEM; ++i) {
 		sumRe += rxSignalListRe[i];
 		sumIm += rxSignalListIm[i];
 	}
 
 	const unsigned int point = col * numRows + row;
-	gridValue[point] = sqrtf(sumRe * sumRe + sumIm * sumIm);
+	gridValue[point] = sqrt(sumRe * sumRe + sumIm * sumIm);
 	gridFactor[point] = pcf;
 }
 
@@ -259,12 +262,12 @@ struct VectorialSTACUDAProcessor::PrepareData {
 };
 
 VectorialSTACUDAProcessor::VectorialSTACUDAProcessor(
-			const STAConfiguration<float>& config,
-			STAAcquisition<float>& acquisition,
+			const STAConfiguration<MFloat>& config,
+			STAAcquisition<MFloat>& acquisition,
 			unsigned int upsamplingFactor,
-			AnalyticSignalCoherenceFactorProcessor<float>& coherenceFactor,
-			float peakOffset,
-			const std::vector<float>& rxApod)
+			AnalyticSignalCoherenceFactorProcessor<MFloat>& coherenceFactor,
+			MFloat peakOffset,
+			const std::vector<MFloat>& rxApod)
 		: config_(config)
 		, deadZoneSamplesUp_((upsamplingFactor * config.samplingFrequency) * 2.0 * config.deadZoneM / config.propagationSpeed)
 		, acquisition_(acquisition)
@@ -383,7 +386,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 		Timer prepareDataTimer;
 #endif
-		PrepareData<float> prepareDataOp = {
+		PrepareData<MFloat> prepareDataOp = {
 			samplesPerChannelLow,
 			acqData_,
 			upsamplingFactor_,

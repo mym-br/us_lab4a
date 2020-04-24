@@ -20,30 +20,30 @@
 
 namespace Lab {
 
-template<unsigned int N>
+template<typename TFloat, int N>
 __device__
-float
-arithmeticMean(float* data)
+TFloat
+arithmeticMean(TFloat* data)
 {
-	float sum = 0.0;
-	for (unsigned int i = 0; i < N; ++i) {
+	TFloat sum = 0;
+	for (int i = 0; i < N; ++i) {
 		sum += data[i];
 	}
-	return sum * (static_cast<float>(1) / N);
+	return sum * (TFloat(1) / N);
 }
 
-template<unsigned int N>
+template<typename TFloat, int N>
 __device__
-float
-standardDeviation(float* data)
+TFloat
+standardDeviation(TFloat* data)
 {
-	float sum = 0.0;
-	const float mean = arithmeticMean<N>(data);
-	for (unsigned int i = 0; i < N; ++i) {
-		const float e = data[i] - mean;
+	TFloat sum = 0;
+	const TFloat mean = arithmeticMean<TFloat, N>(data);
+	for (int i = 0; i < N; ++i) {
+		const TFloat e = data[i] - mean;
 		sum += e * e;
 	}
-	return sqrtf(sum * (static_cast<float>(1) / N));
+	return sqrt(sum * (TFloat(1) / N));
 }
 
 } // namespace Lab
