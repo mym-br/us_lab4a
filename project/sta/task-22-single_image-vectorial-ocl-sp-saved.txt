@@ -1,0 +1,13 @@
+
+method = sta_vectorial_ocl_sp_saved
+
+sta_config_file = config-sta.txt
+
+output_dir = output-vectorial-ocl-sp
+
+coherence_factor_config_file = config-analytic_signal_coherence_factor.txt
+
+grid_config_file = config-grid.txt
+imag_config_file = config-imaging-vectorial.txt
+
+data_dir = saved_acquisition

@@ -51,6 +51,9 @@
 #ifdef USE_CUDA
 # include "VectorialSTACUDAProcessor.h"
 #endif
+#ifdef USE_CUDA
+# include "VectorialSTAOCLProcessor.h"
+#endif
 
 
 
@@ -179,6 +182,10 @@ STAMethod<TFloat>::execute()
 #ifdef USE_CUDA
 	case MethodEnum::sta_vectorial_cuda_sp_saved:
 #endif
+#ifdef USE_OPENCL
+	case MethodEnum::sta_vectorial_ocl_dp_saved:
+	case MethodEnum::sta_vectorial_ocl_sp_saved:
+#endif
 		acquisition = std::make_unique<SavedSTAAcquisition<TFloat>>(
 					project_, config.numElements,
 					FileUtil::path(taskPM.value<std::string>("data_dir"), "/", 0));
@@ -254,6 +261,26 @@ STAMethod<TFloat>::execute()
 			}
 		} else {
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+		break;
+#endif
+#ifdef USE_OPENCL
+	case MethodEnum::sta_vectorial_ocl_dp_saved:
+	case MethodEnum::sta_vectorial_ocl_sp_saved:
+		{
+			const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
+			const auto rxApodDesc       = imagPM->value<std::string>( "rx_apodization");
+			visual_ = Visualization::VALUE_RECTIFIED_LOG;
+			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
+			std::vector<TFloat> rxApod(config.numElements);
+			WindowFunction::get(rxApodDesc, config.numElements, rxApod);
+			auto processor = std::make_unique<VectorialSTAOCLProcessor<TFloat>>(
+							config, *acquisition, upsamplingFactor,
+							coherenceFactor, peakOffset, rxApod);
+			process(config.valueScale, *processor, baseElement, config, outputDir);
+			if (coherenceFactor.enabled()) {
+				useCoherenceFactor(config.valueScale, false, outputDir);
+			}
 		}
 		break;
 #endif
