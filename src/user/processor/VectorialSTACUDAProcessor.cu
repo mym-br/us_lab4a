@@ -18,8 +18,6 @@
 #include "VectorialSTACUDAProcessor.h"
 
 #include <algorithm> /* copy */
-#include <cmath> /* abs */
-#include <complex>
 
 #include <tbb/partitioner.h>
 #include <tbb/tbb.h>
@@ -230,7 +228,7 @@ struct VectorialSTACUDAProcessor::CUDAData {
 template<typename TFloat>
 struct VectorialSTACUDAProcessor::PrepareData {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
-		typename VectorialSTACUDAProcessor::PrepareDataThreadData& local = prepareDataTLS.local();
+		auto& local = prepareDataTLS.local();
 
 		for (unsigned int rxElem = r.begin(); rxElem != r.end(); ++rxElem) {
 			if (upsamplingFactor > 1) {
