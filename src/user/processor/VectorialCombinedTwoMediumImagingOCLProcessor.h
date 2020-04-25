@@ -489,17 +489,14 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 		procImageKernel = cl::Kernel(clProgram_, coherenceFactor_.enabled() ? "processImagePCFKernel" : "processImageKernel");
 #ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
 		procImageKernel.setArg(0, rawDataTCLBuffer_);
+		procImageKernel.setArg(1, rawDataN1_);
 #else
 		procImageKernel.setArg(0, rawDataCLBuffer_);
+		procImageKernel.setArg(1, rawDataN2_);
 #endif
-		procImageKernel.setArg(1, gridValueReCLBuffer_);
-		procImageKernel.setArg(2, gridValueImCLBuffer_);
-		procImageKernel.setArg(3, rxApodCLBuffer_);
-#ifdef VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_USE_TRANSPOSE
-		procImageKernel.setArg(4, rawDataN1_);
-#else
-		procImageKernel.setArg(4, rawDataN2_);
-#endif
+		procImageKernel.setArg(2, gridValueReCLBuffer_);
+		procImageKernel.setArg(3, gridValueImCLBuffer_);
+		procImageKernel.setArg(4, rxApodCLBuffer_);
 		if (coherenceFactor_.enabled()) {
 			std::vector<TFloat> cfConstants;
 			coherenceFactor_.implementation().getConstants(cfConstants);
@@ -842,7 +839,7 @@ transposeKernel(
 	unsigned int iX = get_global_id(0);
 	unsigned int iY = get_global_id(1);
 	if (iX < oldSizeX && iY < oldSizeY) {
-		temp[get_local_id(0) + (GROUP_SIZE + 1) * get_local_id(1)] = rawData[iX + oldSizeX * iY];
+		temp[get_local_id(0) * (GROUP_SIZE + 1) + get_local_id(1)] = rawData[iY * oldSizeX + iX];
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -850,7 +847,7 @@ transposeKernel(
 	iX = get_group_id(1) * GROUP_SIZE + get_local_id(0);
 	iY = get_group_id(0) * GROUP_SIZE + get_local_id(1);
 	if (iX < oldSizeY && iY < oldSizeX) {
-		rawDataT[iX + oldSizeY * iY] = temp[(GROUP_SIZE + 1) * get_local_id(0) + get_local_id(1)];
+		rawDataT[iY * oldSizeY + iX] = temp[get_local_id(1) * (GROUP_SIZE + 1) + get_local_id(0)];
 	}
 }
 
@@ -858,10 +855,10 @@ __kernel
 void
 processImageKernel(
 		__global MFloat* rawData,
+		unsigned int numGridPoints,
 		__global MFloat* gridValueRe,
 		__global MFloat* gridValueIm,
-		__constant MFloat* rxApod,
-		unsigned int numGridPoints)
+		__constant MFloat* rxApod)
 {
 	MFloat rxSignalListRe[NUM_RX_ELEM];
 	MFloat rxSignalListIm[NUM_RX_ELEM];
@@ -869,16 +866,17 @@ processImageKernel(
 	const unsigned int point = get_global_id(0);
 	if (point >= numGridPoints) return;
 
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
-		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
-		//rxSignalListRe[i] = rawData[point * (NUM_RX_ELEM << 1) + (i << 1)];
-		//rxSignalListIm[i] = rawData[point * (NUM_RX_ELEM << 1) + ((i << 1) + 1)];
+	unsigned int idx1 = point;
+	unsigned int idx2 = point + numGridPoints;
+	const unsigned int step = 2 * numGridPoints;
+	for (int i = 0; i < NUM_RX_ELEM; ++i, idx1 += step, idx2 += step) {
+		rxSignalListRe[i] = rawData[idx1];
+		rxSignalListIm[i] = rawData[idx2];
 	}
 
 	MFloat sumRe = 0;
 	MFloat sumIm = 0;
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+	for (int i = 0; i < NUM_RX_ELEM; ++i) {
 		sumRe += rxSignalListRe[i] * rxApod[i];
 		sumIm += rxSignalListIm[i] * rxApod[i];
 	}
@@ -891,10 +889,10 @@ __kernel
 void
 processImagePCFKernel(
 		__global MFloat* rawData,
+		unsigned int numGridPoints,
 		__global MFloat* gridValueRe,
 		__global MFloat* gridValueIm,
 		__constant MFloat* rxApod,
-		unsigned int numGridPoints,
 		MFloat pcfFactor)
 {
 	MFloat rxSignalListRe[NUM_RX_ELEM];
@@ -903,16 +901,19 @@ processImagePCFKernel(
 	const unsigned int point = get_global_id(0);
 	if (point >= numGridPoints) return;
 
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
-		rxSignalListRe[i] = rawData[ (i << 1)      * numGridPoints + point];
-		rxSignalListIm[i] = rawData[((i << 1) + 1) * numGridPoints + point];
+	unsigned int idx1 = point;
+	unsigned int idx2 = point + numGridPoints;
+	const unsigned int step = 2 * numGridPoints;
+	for (int i = 0; i < NUM_RX_ELEM; ++i, idx1 += step, idx2 += step) {
+		rxSignalListRe[i] = rawData[idx1];
+		rxSignalListIm[i] = rawData[idx2];
 	}
 
-	MFloat pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor);
+	const MFloat pcf = calcPCF(rxSignalListRe, rxSignalListIm, pcfFactor);
 
 	MFloat sumRe = 0;
 	MFloat sumIm = 0;
-	for (unsigned int i = 0; i < NUM_RX_ELEM; ++i) {
+	for (int i = 0; i < NUM_RX_ELEM; ++i) {
 		sumRe += rxSignalListRe[i] * rxApod[i];
 		sumIm += rxSignalListIm[i] * rxApod[i];
 	}

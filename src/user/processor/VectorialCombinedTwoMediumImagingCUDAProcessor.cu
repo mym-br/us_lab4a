@@ -56,12 +56,11 @@
 
 namespace Lab {
 
-// NVIDIA sm_50 or newer:
-//   - Shared memory has 32 banks of 32 bits.
-
 #define TRANSP_BLOCK_SIZE 16
 #define NUM_RX_ELEM 32
 
+// NVIDIA sm_50 or newer:
+//   - Shared memory has 32 banks of 32 bits.
 template<typename TFloat>
 __global__
 void
@@ -73,20 +72,20 @@ transposeKernel(
 {
 	__shared__ TFloat temp[TRANSP_BLOCK_SIZE][TRANSP_BLOCK_SIZE + 1]; // +1 to avoid bank conflicts
 
-	unsigned int iX = blockIdx.y * TRANSP_BLOCK_SIZE + threadIdx.x;
-	unsigned int iY = blockIdx.x * TRANSP_BLOCK_SIZE + threadIdx.y;
+	unsigned int iX = blockIdx.x * TRANSP_BLOCK_SIZE + threadIdx.x;
+	unsigned int iY = blockIdx.y * TRANSP_BLOCK_SIZE + threadIdx.y;
 
-	if (iX < oldSizeY && iY < oldSizeX) {
-		temp[threadIdx.x][threadIdx.y] = rawData[iX + oldSizeY * iY];
+	if (iX < oldSizeX && iY < oldSizeY) {
+		temp[threadIdx.x][threadIdx.y] = rawData[iY * oldSizeX + iX];
 	}
 
 	__syncthreads();
 
-	iX = blockIdx.x * blockDim.x + threadIdx.x;
-	iY = blockIdx.y * blockDim.y + threadIdx.y;
+	iX = blockIdx.y * TRANSP_BLOCK_SIZE + threadIdx.x;
+	iY = blockIdx.x * TRANSP_BLOCK_SIZE + threadIdx.y;
 
-	if (iX < oldSizeX && iY < oldSizeY) {
-		rawDataT[iX + oldSizeX * iY] = temp[threadIdx.y][threadIdx.x];
+	if (iX < oldSizeY && iY < oldSizeX) {
+		rawDataT[iY * oldSizeY + iX] = temp[threadIdx.y][threadIdx.x];
 	}
 }
 
@@ -107,7 +106,7 @@ processImageKernel(
 	if (point >= numGridPoints) return;
 
 	unsigned int idx1 = point;
-	unsigned int idx2 = point + 1;
+	unsigned int idx2 = point + numGridPoints;
 	const unsigned int step = 2 * numGridPoints;
 	for (int i = 0; i < NUM_RX_ELEM; ++i, idx1 += step, idx2 += step) {
 		rxSignalListRe[i] = rawData[idx1];
@@ -143,7 +142,7 @@ processImagePCFKernel(
 	if (point >= numGridPoints) return;
 
 	unsigned int idx1 = point;
-	unsigned int idx2 = point + 1;
+	unsigned int idx2 = point + numGridPoints;
 	const unsigned int step = 2 * numGridPoints;
 	for (int i = 0; i < NUM_RX_ELEM; ++i, idx1 += step, idx2 += step) {
 		rxSignalListRe[i] = rawData[idx1];
@@ -668,14 +667,14 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		{
 			//Timer transposeTimer;
 
-			dim3 gridDim(rawDataN1_ / TRANSP_BLOCK_SIZE, rawDataN2_ / TRANSP_BLOCK_SIZE);
+			dim3 gridDim(rawDataN2_ / TRANSP_BLOCK_SIZE, rawDataN1_ / TRANSP_BLOCK_SIZE);
 			dim3 blockDim(TRANSP_BLOCK_SIZE, TRANSP_BLOCK_SIZE);
 
 			transposeKernel<MFloat><<<gridDim, blockDim>>>(
 							data_->rawDataList[rawBufferIdx].devPtr,
 							data_->rawDataT.devPtr,
-							rawDataN1_,
-							rawDataN2_);
+							rawDataN2_,
+							rawDataN1_);
 			checkKernelLaunchError();
 
 			//exec(cudaDeviceSynchronize());
