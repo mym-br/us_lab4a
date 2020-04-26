@@ -493,11 +493,11 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 #endif
 
 	clCommandQueue_.enqueueReadBuffer(
-		gridValueCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
+		gridValueCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
 		gridValueHostMem_->sizeInBytes, gridValueHostMem_->hostPtr);
 	if (coherenceFactor_.enabled()) {
 		clCommandQueue_.enqueueReadBuffer(
-			gridFactorCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
+			gridFactorCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
 			gridFactorHostMem_->sizeInBytes, gridFactorHostMem_->hostPtr);
 	}
 
