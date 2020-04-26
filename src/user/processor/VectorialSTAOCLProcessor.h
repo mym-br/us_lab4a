@@ -178,7 +178,7 @@ struct VectorialSTAOCLProcessor<TFloat>::PrepareData {
 	const unsigned int samplesPerChannelLow;
 	const Matrix<TFloat>& acqData;
 	const unsigned int upsamplingFactor;
-	tbb::enumerable_thread_specific<typename VectorialSTAOCLProcessor::PrepareDataThreadData>& prepareDataTLS;
+	tbb::enumerable_thread_specific<PrepareDataThreadData>& prepareDataTLS;
 	TFloat (*signalTensor)[2];
 	const unsigned int signalTensorN2;
 	const unsigned int signalTensorN3;
@@ -376,7 +376,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 		gridValueCLBuffer_, (TFloat) 0, 0 /* offset */, gridValueHostMem_->sizeInBytes);
 	LOG_DEBUG << "PREPARE BUFFERS " << prepareBuffersTimer.getTime();
 
-	{
+	try {
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 		Timer calculateDelaysTimer;
 #endif
@@ -408,6 +408,8 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 		kernelEvent.wait();
 		tCalculateDelaysML.put(calculateDelaysTimer.getTime());
 #endif
+	} catch (cl::Error& e) {
+		THROW_EXCEPTION(OCLException, "[calculateDelaysSTAKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
 	}
 
 	//==================================================
@@ -422,59 +424,67 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 		std::vector<TFloat> cfConstants;
 		coherenceFactor_.implementation().getConstants(cfConstants);
 
-		cl::Kernel processRowColumnSTAPCFKernel(clProgram_, "processRowColumnSTAPCFKernel");
-		processRowColumnSTAPCFKernel.setArg( 0, numCols);
-		processRowColumnSTAPCFKernel.setArg( 1, numRows);
-		processRowColumnSTAPCFKernel.setArg( 2, signalOffset_);
-		processRowColumnSTAPCFKernel.setArg( 3, signalTensorCLBuffer_);
-		processRowColumnSTAPCFKernel.setArg( 4, config_.numElements);
-		processRowColumnSTAPCFKernel.setArg( 5, signalLength_);
-		processRowColumnSTAPCFKernel.setArg( 6, config_.firstTxElem);
-		processRowColumnSTAPCFKernel.setArg( 7, config_.lastTxElem);
-		processRowColumnSTAPCFKernel.setArg( 8, rxApodCLBuffer_);
-		processRowColumnSTAPCFKernel.setArg( 9, delayTensorCLBuffer_);
-		processRowColumnSTAPCFKernel.setArg(10, cfConstants[2] /* factor */);
-		processRowColumnSTAPCFKernel.setArg(11, gridValueCLBuffer_);
-		processRowColumnSTAPCFKernel.setArg(12, gridFactorCLBuffer_);
+		try {
+			cl::Kernel processRowColumnSTAPCFKernel(clProgram_, "processRowColumnSTAPCFKernel");
+			processRowColumnSTAPCFKernel.setArg( 0, numCols);
+			processRowColumnSTAPCFKernel.setArg( 1, numRows);
+			processRowColumnSTAPCFKernel.setArg( 2, signalOffset_);
+			processRowColumnSTAPCFKernel.setArg( 3, signalTensorCLBuffer_);
+			processRowColumnSTAPCFKernel.setArg( 4, config_.numElements);
+			processRowColumnSTAPCFKernel.setArg( 5, signalLength_);
+			processRowColumnSTAPCFKernel.setArg( 6, config_.firstTxElem);
+			processRowColumnSTAPCFKernel.setArg( 7, config_.lastTxElem);
+			processRowColumnSTAPCFKernel.setArg( 8, rxApodCLBuffer_);
+			processRowColumnSTAPCFKernel.setArg( 9, delayTensorCLBuffer_);
+			processRowColumnSTAPCFKernel.setArg(10, cfConstants[2] /* factor */);
+			processRowColumnSTAPCFKernel.setArg(11, gridValueCLBuffer_);
+			processRowColumnSTAPCFKernel.setArg(12, gridFactorCLBuffer_);
 
-		// Adjusted for GTX-1660.
-		const std::size_t rowGroupSize = 4;
-		const std::size_t colGroupSize = 16;
-		const std::size_t globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numRows, rowGroupSize);
-		const std::size_t globalN1 = OCLUtil::roundUpToMultipleOfGroupSize(numCols, colGroupSize);
+			// Adjusted for GTX-1660.
+			const std::size_t rowGroupSize = 4;
+			const std::size_t colGroupSize = 16;
+			const std::size_t globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numRows, rowGroupSize);
+			const std::size_t globalN1 = OCLUtil::roundUpToMultipleOfGroupSize(numCols, colGroupSize);
 
-		clCommandQueue_.enqueueNDRangeKernel(
-			processRowColumnSTAPCFKernel,
-			cl::NullRange, // offset
-			cl::NDRange(globalN0, globalN1), // global
-			cl::NDRange(rowGroupSize, colGroupSize), // local
-			nullptr /* previous events */, &procKernelEvent);
+			clCommandQueue_.enqueueNDRangeKernel(
+				processRowColumnSTAPCFKernel,
+				cl::NullRange, // offset
+				cl::NDRange(globalN0, globalN1), // global
+				cl::NDRange(rowGroupSize, colGroupSize), // local
+				nullptr /* previous events */, &procKernelEvent);
+		} catch (cl::Error& e) {
+			THROW_EXCEPTION(OCLException, "[processRowColumnSTAPCFKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		}
 	} else {
-		cl::Kernel processRowColumnSTAKernel(clProgram_, "processRowColumnSTAKernel");
-		processRowColumnSTAKernel.setArg( 0, numCols);
-		processRowColumnSTAKernel.setArg( 1, numRows);
-		processRowColumnSTAKernel.setArg( 2, signalOffset_);
-		processRowColumnSTAKernel.setArg( 3, signalTensorCLBuffer_);
-		processRowColumnSTAKernel.setArg( 4, config_.numElements);
-		processRowColumnSTAKernel.setArg( 5, signalLength_);
-		processRowColumnSTAKernel.setArg( 6, config_.firstTxElem);
-		processRowColumnSTAKernel.setArg( 7, config_.lastTxElem);
-		processRowColumnSTAKernel.setArg( 8, rxApodCLBuffer_);
-		processRowColumnSTAKernel.setArg( 9, delayTensorCLBuffer_);
-		processRowColumnSTAKernel.setArg(10, gridValueCLBuffer_);
+		try {
+			cl::Kernel processRowColumnSTAKernel(clProgram_, "processRowColumnSTAKernel");
+			processRowColumnSTAKernel.setArg( 0, numCols);
+			processRowColumnSTAKernel.setArg( 1, numRows);
+			processRowColumnSTAKernel.setArg( 2, signalOffset_);
+			processRowColumnSTAKernel.setArg( 3, signalTensorCLBuffer_);
+			processRowColumnSTAKernel.setArg( 4, config_.numElements);
+			processRowColumnSTAKernel.setArg( 5, signalLength_);
+			processRowColumnSTAKernel.setArg( 6, config_.firstTxElem);
+			processRowColumnSTAKernel.setArg( 7, config_.lastTxElem);
+			processRowColumnSTAKernel.setArg( 8, rxApodCLBuffer_);
+			processRowColumnSTAKernel.setArg( 9, delayTensorCLBuffer_);
+			processRowColumnSTAKernel.setArg(10, gridValueCLBuffer_);
 
-		// Adjusted for GTX-1660.
-		const std::size_t rowGroupSize = 16;
-		const std::size_t colGroupSize = 16;
-		const std::size_t globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numRows, rowGroupSize);
-		const std::size_t globalN1 = OCLUtil::roundUpToMultipleOfGroupSize(numCols, colGroupSize);
+			// Adjusted for GTX-1660.
+			const std::size_t rowGroupSize = 16;
+			const std::size_t colGroupSize = 16;
+			const std::size_t globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numRows, rowGroupSize);
+			const std::size_t globalN1 = OCLUtil::roundUpToMultipleOfGroupSize(numCols, colGroupSize);
 
-		clCommandQueue_.enqueueNDRangeKernel(
-			processRowColumnSTAKernel,
-			cl::NullRange, // offset
-			cl::NDRange(globalN0, globalN1), // global
-			cl::NDRange(rowGroupSize, colGroupSize), // local
-			nullptr /* previous events */, &procKernelEvent);
+			clCommandQueue_.enqueueNDRangeKernel(
+				processRowColumnSTAKernel,
+				cl::NullRange, // offset
+				cl::NDRange(globalN0, globalN1), // global
+				cl::NDRange(rowGroupSize, colGroupSize), // local
+				nullptr /* previous events */, &procKernelEvent);
+		} catch (cl::Error& e) {
+			THROW_EXCEPTION(OCLException, "[processRowColumnSTAKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		}
 	}
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
