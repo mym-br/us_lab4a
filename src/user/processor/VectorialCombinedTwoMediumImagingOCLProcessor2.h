@@ -447,6 +447,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>::process(
 		kernel.setArg(14, delayTensorCLBuffer_);
 
 		// Adjusted for GTX-1660.
+		// Note: Less than 32 threads!
 		const std::size_t colGroupSize  = 2;
 		const std::size_t elemGroupSize = 8;
 		const std::size_t globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numCols, colGroupSize);

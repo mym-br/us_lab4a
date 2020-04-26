@@ -585,6 +585,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor2::process(
 		Timer calculateDelaysTimer;
 #endif
 		// Adjusted for GTX-1660.
+		// Note: Less than 32 threads!
 		const std::size_t colBlockSize = 2;
 		const std::size_t elemBlockSize = 8;
 		const std::size_t colNumBlocks  = CUDAUtil::numberOfBlocks(numCols, colBlockSize);
