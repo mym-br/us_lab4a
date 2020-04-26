@@ -21,9 +21,11 @@
 #ifdef USE_OPENCL
 # define OCL_METHOD_TABLE \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<double>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_dp) \
-METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp) \
+METHOD_ITEM(CylinderDetectionAndFermatMethod<float> , cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp) \
+METHOD_ITEM(CylinderDetectionAndFermatMethod<double>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_2_dp) \
+METHOD_ITEM(CylinderDetectionAndFermatMethod<float> , cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_2_sp) \
 METHOD_ITEM(STAMethod<double>, sta_vectorial_ocl_dp_saved) \
-METHOD_ITEM(STAMethod<float>, sta_vectorial_ocl_sp_saved)
+METHOD_ITEM(STAMethod<float> , sta_vectorial_ocl_sp_saved)
 #else
 # define OCL_METHOD_TABLE
 #endif

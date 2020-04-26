@@ -40,6 +40,7 @@ if(USE_OPENCL)
     set(OPENCL_LIB_VAR ${OPENCL_LIB})
     set(OPENCL_SRC
         src/user/processor/VectorialCombinedTwoMediumImagingOCLProcessor.h
+        src/user/processor/VectorialCombinedTwoMediumImagingOCLProcessor2.h
         src/user/processor/VectorialSTAOCLProcessor.h
         src/util/OCLCoherenceFactor.h
         src/util/OCLGeometry.h

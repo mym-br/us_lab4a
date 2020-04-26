@@ -65,6 +65,7 @@
 #include "XZValueFactor.h"
 #ifdef USE_OPENCL
 # include "VectorialCombinedTwoMediumImagingOCLProcessor.h"
+# include "VectorialCombinedTwoMediumImagingOCLProcessor2.h"
 #endif
 #ifdef USE_CUDA
 # include "VectorialCombinedTwoMediumImagingCUDAProcessor.h"
@@ -2274,6 +2275,10 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_dp:
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp:
 		execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>>();
+		break;
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_2_dp:
+	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_2_sp:
+		execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>>();
 		break;
 #endif
 #ifdef USE_CUDA
