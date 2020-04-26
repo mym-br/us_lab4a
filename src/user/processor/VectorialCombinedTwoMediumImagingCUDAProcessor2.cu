@@ -19,7 +19,6 @@
 
 #include <algorithm> /* copy */
 #include <cmath> /* ceil, sqrt */
-#include <cstring> /* memset */
 
 #include <tbb/partitioner.h>
 #include <tbb/tbb.h>
@@ -354,7 +353,7 @@ struct VectorialCombinedTwoMediumImagingCUDAProcessor2::CUDAData {
 template<typename TFloat>
 struct VectorialCombinedTwoMediumImagingCUDAProcessor2::PrepareDataWithOneTxElem {
 	void operator()(const tbb::blocked_range<unsigned int>& r) const {
-		typename VectorialCombinedTwoMediumImagingCUDAProcessor2::PrepareDataThreadData<TFloat>& local = prepareDataTLS.local();
+		auto& local = prepareDataTLS.local();
 
 		for (unsigned int rxElem = r.begin(); rxElem != r.end(); ++rxElem) {
 			if (upsamplingFactor > 1) {

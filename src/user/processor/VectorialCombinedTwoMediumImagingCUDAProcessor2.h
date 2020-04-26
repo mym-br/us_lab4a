@@ -31,7 +31,6 @@
 #include "HilbertEnvelope.h"
 #include "Interpolator.h"
 #include "Matrix.h"
-#include "Tensor3.h"
 #include "TwoMediumSTAConfiguration.h"
 #include "XZ.h"
 
