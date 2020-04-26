@@ -429,22 +429,22 @@ VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>::process(
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
 		Timer calculateDelaysTimer;
 #endif
-		cl::Kernel calculateDelaysTwoMediumKernel(clProgram_, "calculateDelaysTwoMediumKernel");
-		calculateDelaysTwoMediumKernel.setArg( 0, numCols);
-		calculateDelaysTwoMediumKernel.setArg( 1, numRows);
-		calculateDelaysTwoMediumKernel.setArg( 2, config_.numElementsMux);
-		calculateDelaysTwoMediumKernel.setArg( 3, config_.samplingFrequency * upsamplingFactor_);
-		calculateDelaysTwoMediumKernel.setArg( 4, config_.samplingFrequency * upsamplingFactor_ / config_.propagationSpeed2);
-		calculateDelaysTwoMediumKernel.setArg( 5, config_.propagationSpeed1);
-		calculateDelaysTwoMediumKernel.setArg( 6, config_.propagationSpeed2);
-		calculateDelaysTwoMediumKernel.setArg( 7, fermatBlockSize);
-		calculateDelaysTwoMediumKernel.setArg( 8, interfacePointListCLBuffer_);
-		calculateDelaysTwoMediumKernel.setArg( 9, static_cast<unsigned int>(interfacePointList.size()));
-		calculateDelaysTwoMediumKernel.setArg(10, xArrayCLBuffer_);
-		calculateDelaysTwoMediumKernel.setArg(11, minRowIdxCLBuffer_);
-		calculateDelaysTwoMediumKernel.setArg(12, medium1DelayMatrixCLBuffer_);
-		calculateDelaysTwoMediumKernel.setArg(13, gridXZCLBuffer_);
-		calculateDelaysTwoMediumKernel.setArg(14, delayTensorCLBuffer_);
+		cl::Kernel kernel(clProgram_, "calculateDelaysTwoMediumKernel");
+		kernel.setArg( 0, numCols);
+		kernel.setArg( 1, numRows);
+		kernel.setArg( 2, config_.numElementsMux);
+		kernel.setArg( 3, config_.samplingFrequency * upsamplingFactor_);
+		kernel.setArg( 4, config_.samplingFrequency * upsamplingFactor_ / config_.propagationSpeed2);
+		kernel.setArg( 5, config_.propagationSpeed1);
+		kernel.setArg( 6, config_.propagationSpeed2);
+		kernel.setArg( 7, fermatBlockSize);
+		kernel.setArg( 8, interfacePointListCLBuffer_);
+		kernel.setArg( 9, static_cast<unsigned int>(interfacePointList.size()));
+		kernel.setArg(10, xArrayCLBuffer_);
+		kernel.setArg(11, minRowIdxCLBuffer_);
+		kernel.setArg(12, medium1DelayMatrixCLBuffer_);
+		kernel.setArg(13, gridXZCLBuffer_);
+		kernel.setArg(14, delayTensorCLBuffer_);
 
 		// Adjusted for GTX-1660.
 		const std::size_t colGroupSize  = 2;
@@ -455,7 +455,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>::process(
 		cl::Event kernelEvent;
 
 		clCommandQueue_.enqueueNDRangeKernel(
-			calculateDelaysTwoMediumKernel,
+			kernel,
 			cl::NullRange, // offset
 			cl::NDRange(globalN0, globalN1), // global
 			cl::NDRange(colGroupSize, elemGroupSize), // local
@@ -522,74 +522,57 @@ VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>::process(
 
 		//Timer delaySumTimer;
 
-		if (coherenceFactor_.enabled()) {
-			std::vector<TFloat> cfConstants;
-			coherenceFactor_.implementation().getConstants(cfConstants);
-
-			try {
-				cl::Kernel processRowColumnWithOneTxElemPCFKernel(clProgram_, "processRowColumnWithOneTxElemPCFKernel");
-				processRowColumnWithOneTxElemPCFKernel.setArg( 0, numCols);
-				processRowColumnWithOneTxElemPCFKernel.setArg( 1, numRows);
-				processRowColumnWithOneTxElemPCFKernel.setArg( 2, signalOffset_);
-				processRowColumnWithOneTxElemPCFKernel.setArg( 3, signalTensorCLBuffer_);
-				processRowColumnWithOneTxElemPCFKernel.setArg( 4, config_.numElements);
-				processRowColumnWithOneTxElemPCFKernel.setArg( 5, signalLength_);
-				processRowColumnWithOneTxElemPCFKernel.setArg( 6, stepConfig.baseElem);
-				processRowColumnWithOneTxElemPCFKernel.setArg( 7, stepConfig.baseElemIdx);
-				processRowColumnWithOneTxElemPCFKernel.setArg( 8, stepConfig.txElem);
-				processRowColumnWithOneTxElemPCFKernel.setArg( 9, minRowIdxCLBuffer_);
-				processRowColumnWithOneTxElemPCFKernel.setArg(10, delayTensorCLBuffer_);
-				processRowColumnWithOneTxElemPCFKernel.setArg(11, gridValueCLBuffer_);
-				processRowColumnWithOneTxElemPCFKernel.setArg(12, rxApodCLBuffer_);
-				processRowColumnWithOneTxElemPCFKernel.setArg(13, cfConstants[2] /* factor */);
-
-				// Adjusted for GTX-1660.
-				const std::size_t rowGroupSize = 16;
-				const std::size_t colGroupSize = 16;
-				const std::size_t globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numRows, rowGroupSize);
-				const std::size_t globalN1 = OCLUtil::roundUpToMultipleOfGroupSize(numCols, colGroupSize);
-
-				clCommandQueue_.enqueueNDRangeKernel(
-					processRowColumnWithOneTxElemPCFKernel,
-					cl::NullRange, // offset
-					cl::NDRange(globalN0, globalN1), // global
-					cl::NDRange(rowGroupSize, colGroupSize), // local
-					nullptr /* previous events */, &procKernelEvent);
-			} catch (cl::Error& e) {
-				THROW_EXCEPTION(OCLException, "[processRowColumnWithOneTxElemPCFKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		cl::Kernel procKernel;
+		try {
+			if (coherenceFactor_.enabled()) {
+				procKernel = cl::Kernel(clProgram_, "processRowColumnWithOneTxElemPCFKernel");
+			} else {
+				procKernel = cl::Kernel(clProgram_, "processRowColumnWithOneTxElemKernel");
 			}
-		} else {
-			try {
-				cl::Kernel processRowColumnWithOneTxElemKernel(clProgram_, "processRowColumnWithOneTxElemKernel");
-				processRowColumnWithOneTxElemKernel.setArg( 0, numCols);
-				processRowColumnWithOneTxElemKernel.setArg( 1, numRows);
-				processRowColumnWithOneTxElemKernel.setArg( 2, signalOffset_);
-				processRowColumnWithOneTxElemKernel.setArg( 3, signalTensorCLBuffer_);
-				processRowColumnWithOneTxElemKernel.setArg( 4, config_.numElements);
-				processRowColumnWithOneTxElemKernel.setArg( 5, signalLength_);
-				processRowColumnWithOneTxElemKernel.setArg( 6, stepConfig.baseElem);
-				processRowColumnWithOneTxElemKernel.setArg( 7, stepConfig.baseElemIdx);
-				processRowColumnWithOneTxElemKernel.setArg( 8, stepConfig.txElem);
-				processRowColumnWithOneTxElemKernel.setArg( 9, minRowIdxCLBuffer_);
-				processRowColumnWithOneTxElemKernel.setArg(10, delayTensorCLBuffer_);
-				processRowColumnWithOneTxElemKernel.setArg(11, gridValueCLBuffer_);
-				processRowColumnWithOneTxElemKernel.setArg(12, rxApodCLBuffer_);
-
-				// Adjusted for GTX-1660.
-				const std::size_t rowGroupSize = 64;
-				const std::size_t colGroupSize = 2;
-				const std::size_t globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numRows, rowGroupSize);
-				const std::size_t globalN1 = OCLUtil::roundUpToMultipleOfGroupSize(numCols, colGroupSize);
-
-				clCommandQueue_.enqueueNDRangeKernel(
-					processRowColumnWithOneTxElemKernel,
-					cl::NullRange, // offset
-					cl::NDRange(globalN0, globalN1), // global
-					cl::NDRange(rowGroupSize, colGroupSize), // local
-					nullptr /* previous events */, &procKernelEvent);
-			} catch (cl::Error& e) {
-				THROW_EXCEPTION(OCLException, "[processRowColumnWithOneTxElemKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+			procKernel.setArg( 0, numCols);
+			procKernel.setArg( 1, numRows);
+			procKernel.setArg( 2, signalOffset_);
+			procKernel.setArg( 3, signalTensorCLBuffer_);
+			procKernel.setArg( 4, config_.numElements);
+			procKernel.setArg( 5, signalLength_);
+			procKernel.setArg( 6, stepConfig.baseElem);
+			procKernel.setArg( 7, stepConfig.baseElemIdx);
+			procKernel.setArg( 8, stepConfig.txElem);
+			procKernel.setArg( 9, minRowIdxCLBuffer_);
+			procKernel.setArg(10, delayTensorCLBuffer_);
+			procKernel.setArg(11, gridValueCLBuffer_);
+			procKernel.setArg(12, rxApodCLBuffer_);
+			if (coherenceFactor_.enabled()) {
+				std::vector<TFloat> cfConstants;
+				coherenceFactor_.implementation().getConstants(cfConstants);
+				procKernel.setArg(13, cfConstants[2] /* factor */);
 			}
+		} catch (cl::Error& e) {
+			THROW_EXCEPTION(OCLException, "[Kernel preparation] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		}
+
+		try {
+			std::size_t rowGroupSize;
+			std::size_t colGroupSize;
+			// Adjusted for GTX-1660.
+			if (coherenceFactor_.enabled()) {
+				rowGroupSize = 16;
+				colGroupSize = 16;
+			} else {
+				rowGroupSize = 64;
+				colGroupSize = 2;
+			}
+			const std::size_t globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numRows, rowGroupSize);
+			const std::size_t globalN1 = OCLUtil::roundUpToMultipleOfGroupSize(numCols, colGroupSize);
+
+			clCommandQueue_.enqueueNDRangeKernel(
+				procKernel,
+				cl::NullRange, // offset
+				cl::NDRange(globalN0, globalN1), // global
+				cl::NDRange(rowGroupSize, colGroupSize), // local
+				nullptr /* previous events */, &procKernelEvent);
+		} catch (cl::Error& e) {
+			THROW_EXCEPTION(OCLException, "[processRowColumnWithOneTxElem*Kernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
 		}
 
 		//procKernelEvent.wait();
