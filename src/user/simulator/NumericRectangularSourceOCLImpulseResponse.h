@@ -321,7 +321,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 		kernel.setArg(3, valueCLBuffer_);
 		kernel.setArg(4, hCLBuffer_);
 
-		const unsigned int groupSize = 64;
+		const unsigned int groupSize = 1;
 		const unsigned int globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numSubElem_, groupSize);
 
 		clCommandQueue_.enqueueNDRangeKernel(
