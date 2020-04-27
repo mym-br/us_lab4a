@@ -23,6 +23,7 @@
 #include <complex>
 #include <cstddef> /* std::size_t */
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 

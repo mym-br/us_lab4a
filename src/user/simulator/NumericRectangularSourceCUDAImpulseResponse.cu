@@ -20,6 +20,7 @@
 #include <cmath> /* ceil */
 #include <limits>
 
+#include "Exception.h"
 #include "Log.h"
 #include "Util.h" /* pi */
 
