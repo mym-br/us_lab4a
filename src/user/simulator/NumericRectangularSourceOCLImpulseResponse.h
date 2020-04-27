@@ -35,6 +35,8 @@
 #include "OCLReduce.h"
 #include "OCLUtil.h"
 
+//#define NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU 1
+
 
 
 namespace Lab {
@@ -103,8 +105,13 @@ private:
 	cl::Buffer minN0CLBuffer_;
 	std::unique_ptr<OCLPinnedHostMem<unsigned int>> maxN0HostMem_;
 	cl::Buffer maxN0CLBuffer_;
+#ifdef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU
 	std::unique_ptr<OCLPinnedHostMem<TFloat>> hHostMem_;
 	cl::Buffer hCLBuffer_;
+#else
+	std::unique_ptr<OCLPinnedHostMem<unsigned int>> n0HostMem_;
+	std::unique_ptr<OCLPinnedHostMem<TFloat>> valueHostMem_;
+#endif
 };
 
 
@@ -179,11 +186,19 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::NumericRectangularSourceOCLI
 									numReduceGroups,
 									CL_MAP_READ);
 	maxN0CLBuffer_    = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(unsigned int) * numReduceGroups);
+#ifdef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU
 	hHostMem_         = std::make_unique<OCLPinnedHostMem<TFloat>>(clContext_, clCommandQueue_,
 									INITIAL_H_SIZE,
 									CL_MAP_READ);
 	hCLBuffer_        = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(TFloat) * INITIAL_H_SIZE);
-
+#else
+	n0HostMem_        = std::make_unique<OCLPinnedHostMem<unsigned int>>(clContext_, clCommandQueue_,
+									numReduceThreads,
+									CL_MAP_READ);
+	valueHostMem_     = std::make_unique<OCLPinnedHostMem<TFloat>>(clContext_, clCommandQueue_,
+									numSubElem_,
+									CL_MAP_READ);
+#endif
 	std::vector<TFloat> subElemX(numSubElem_);
 	std::vector<TFloat> subElemY(numSubElem_);
 	const TFloat halfW = 0.5 * (numElemX - 1);
@@ -286,6 +301,8 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 	const unsigned int maxN0 = *(maxN0HostMem_->hostPtr);
 
 	const unsigned int hSize = maxN0 - minN0 + 1U;
+
+#ifdef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU
 	if (hSize > hHostMem_->sizeInBytes / sizeof(TFloat)) {
 		hHostMem_  = std::make_unique<OCLPinnedHostMem<TFloat>>(clContext_, clCommandQueue_,
 									hSize * 2,
@@ -325,6 +342,19 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 	for (unsigned int i = 0; i < hSize; ++i) {
 		h[i] = hHostMem_->hostPtr[i];
 	}
+#else
+	clCommandQueue_.enqueueReadBuffer(
+		n0CLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		numSubElem_ * sizeof(unsigned int), n0HostMem_->hostPtr);
+	clCommandQueue_.enqueueReadBuffer(
+		valueCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		numSubElem_ * sizeof(TFloat), valueHostMem_->hostPtr);
+
+	h.assign(hSize, 0);
+	for (unsigned int i = 0; i < numSubElem_; ++i) {
+		h[n0HostMem_->hostPtr[i] - minN0] += valueHostMem_->hostPtr[i];
+	}
+#endif
 	hOffset = minN0;
 
 	//LOG_DEBUG << "[NumericRectangularSourceOCLImpulseResponse] minN0=" << minN0 << " maxN0=" << maxN0;
