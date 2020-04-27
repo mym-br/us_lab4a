@@ -55,6 +55,9 @@
 # include "NumericArrayOfRectangularSourcesCUDAImpulseResponse.h"
 # include "NumericRectangularSourceCUDAImpulseResponse.h"
 #endif
+#ifdef USE_OPENCL
+# include "NumericRectangularSourceOCLImpulseResponse.h"
+#endif
 
 
 
@@ -201,7 +204,7 @@ SimRectangularSourceMethod<TFloat>::loadSimulationData(const MainData& data, Sim
 
 	Waveform::get(simData.excitationType, data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 
-	if (simData.irMethod == "numeric" || simData.irMethod == "numeric_cuda") {
+	if (simData.irMethod == "numeric" || simData.irMethod == "numeric_cuda" || simData.irMethod == "numeric_ocl") {
 		simPM->getValue(simData.discretFactor, "sub_elem_size_factor", 0.0, 1.0e3);
 	} else if (simData.irMethod == "analytic") {
 		simPM->getValue(simData.discretFactor, "min_edge_divisor"    , 0.0, 1.0e6);
@@ -323,6 +326,27 @@ SimRectangularSourceMethod<TFloat>::execTransientRadiationPattern(bool sourceIsA
 			}
 		} else {
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+#endif
+#ifdef USE_OPENCL
+	} else if (simData.irMethod == "numeric_ocl") {
+		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+		if (sourceIsArray) {
+//			SimTransientRadiationPattern<
+//				TFloat,
+//				NumericArrayOfRectangularSourcesCUDAImpulseResponse>::getArrayOfRectangularSourcesRadiationPatternDirectSingleThread(
+//						simData.samplingFreq, mainData.propagationSpeed,
+//						srcData.sourceWidth, srcData.sourceHeight,
+//						subElemSize,
+//						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
+		} else {
+			SimTransientRadiationPattern<
+				TFloat,
+				NumericRectangularSourceOCLImpulseResponse<TFloat>>::getRectangularSourceRadiationPatternSingleThread(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
+						subElemSize,
+						dvdt, inputData, gridData);
 		}
 #endif
 	} else if (simData.irMethod == "analytic") {
@@ -463,6 +487,27 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}
 #endif
+#ifdef USE_OPENCL
+	} else if (simData.irMethod == "numeric_ocl") {
+		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+		if (sourceIsArray) {
+//			SimTransientAcousticField<
+//				TFloat,
+//				NumericArrayOfRectangularSourcesCUDAImpulseResponse>::getArrayOfRectangularSourcesAcousticFieldDirectSingleThread(
+//						simData.samplingFreq, mainData.propagationSpeed,
+//						srcData.sourceWidth, srcData.sourceHeight,
+//						subElemSize,
+//						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
+		} else {
+			SimTransientAcousticField<
+				TFloat,
+				NumericRectangularSourceOCLImpulseResponse<TFloat>>::getRectangularSourceAcousticFieldSingleThread(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
+						subElemSize,
+						dvdt, gridData);
+		}
+#endif
 	} else if (simData.irMethod == "analytic") {
 		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
@@ -586,6 +631,27 @@ SimRectangularSourceMethod<TFloat>::execTransientPropagation(bool sourceIsArray)
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}
 #endif
+#ifdef USE_OPENCL
+	} else if (simData.irMethod == "numeric_ocl") {
+		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+		if (sourceIsArray) {
+//			SimTransientPropagation<
+//				TFloat,
+//				NumericArrayOfRectangularSourcesCUDAImpulseResponse>::getArrayOfRectangularSourcesPropagationDirectSingleThread(
+//						simData.samplingFreq, mainData.propagationSpeed,
+//						srcData.sourceWidth, srcData.sourceHeight,
+//						subElemSize,
+//						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
+		} else {
+			SimTransientPropagation<
+				TFloat,
+				NumericRectangularSourceOCLImpulseResponse<TFloat>>::getRectangularSourcePropagationSingleThread(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
+						subElemSize,
+						dvdt, propagIndexList, gridData);
+		}
+#endif
 	} else if (simData.irMethod == "analytic") {
 		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
@@ -704,7 +770,7 @@ SimRectangularSourceMethod<TFloat>::execImpulseResponse(bool sourceIsArray)
 		if constexpr (std::is_same<TFloat, float>::value) {
 			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 			if (sourceIsArray) {
-				auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<TFloat, NumericRectangularSourceCUDAImpulseResponse>>(
+				auto impResp = std::make_unique<NumericArrayOfRectangularSourcesCUDAImpulseResponse>(
 							simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 							subElemSize,
 							srcData.elemPos, srcData.focusDelay);
@@ -717,6 +783,22 @@ SimRectangularSourceMethod<TFloat>::execImpulseResponse(bool sourceIsArray)
 			}
 		} else {
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+#endif
+#ifdef USE_OPENCL
+	} else if (simData.irMethod == "numeric_ocl") {
+		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+		if (sourceIsArray) {
+			auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<TFloat, NumericRectangularSourceOCLImpulseResponse<TFloat>>>(
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+						subElemSize,
+						srcData.elemPos, srcData.focusDelay);
+			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
+		} else {
+			auto impResp = std::make_unique<NumericRectangularSourceOCLImpulseResponse<TFloat>>(
+						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
+						subElemSize);
+			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		}
 #endif
 	} else if (simData.irMethod == "analytic") {
