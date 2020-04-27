@@ -320,9 +320,11 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 		kernel.setArg(2, n0CLBuffer_);
 		kernel.setArg(3, valueCLBuffer_);
 		kernel.setArg(4, hCLBuffer_);
+		kernel.setArg(5, hSize);
+		kernel.setArg(6, cl::Local(hSize * sizeof(TFloat)));
 
-		const unsigned int groupSize = 1;
-		const unsigned int globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numSubElem_, groupSize);
+		const unsigned int groupSize = 1024;
+		const unsigned int globalN0 = groupSize;
 
 		clCommandQueue_.enqueueNDRangeKernel(
 			kernel,
@@ -334,9 +336,13 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 		THROW_EXCEPTION(OCLException, "[accumulateIRSamplesKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
 	}
 
-	clCommandQueue_.enqueueReadBuffer(
-		hCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
-		hSize * sizeof(TFloat), hHostMem_->hostPtr);
+	try {
+		clCommandQueue_.enqueueReadBuffer(
+			hCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+			hSize * sizeof(TFloat), hHostMem_->hostPtr);
+	} catch (cl::Error& e) {
+		THROW_EXCEPTION(OCLException, "[Read h] OpenCL error: " << e.what() << " (" << e.err() << ").");
+	}
 
 	h.resize(hSize);
 	for (unsigned int i = 0; i < hSize; ++i) {
@@ -405,15 +411,26 @@ accumulateIRSamplesKernel(
 		unsigned int minN0,
 		__global unsigned int* n0,
 		__global MFloat* value,
-		__global MFloat* h)
+		__global MFloat* h,
+		unsigned int hSize,
+		__local MFloat* localH)
 {
-	const unsigned int subElemIdx = get_global_id(0);
-	if (subElemIdx >= numSubElem) {
-		return;
+	for (int hIdx = get_global_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
+		localH[hIdx] = 0;
 	}
 
-	// Different sub-elements may have the same value for n0.
-	atomicAddGlobalFloat(h + n0[subElemIdx] - minN0, value[subElemIdx]);
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for (int subElemIdx = get_global_id(0); subElemIdx < numSubElem; subElemIdx += get_local_size(0)) {
+		// Different sub-elements may have the same value for n0.
+		atomicAddLocalFloat(localH + n0[subElemIdx] - minN0, value[subElemIdx]);
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for (int hIdx = get_global_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
+		h[hIdx] = localH[hIdx];
+	}
 }
 #else
 __kernel
@@ -423,15 +440,28 @@ accumulateIRSamplesKernel(
 		unsigned int minN0,
 		__global unsigned int* n0,
 		__global MFloat* value,
-		__global MFloat* h)
+		__global MFloat* h,
+		unsigned int hSize,
+		__local MFloat* localH)
 {
-	// No atomic operations for double in OpenCL 1.2.
-	if (get_global_id(0) != 0) { // single thread
-		return;
+	for (int hIdx = get_global_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
+		localH[hIdx] = 0;
 	}
-	for (int i = 0; i < numSubElem; ++i) {
-		// Different sub-elements may have the same value for n0.
-		h[n0[i] - minN0] += value[i];
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	// No atomic operations for double in OpenCL 1.2.
+	if (get_global_id(0) == 0) { // single thread
+		for (int subElemIdx = 0; subElemIdx < numSubElem; ++subElemIdx) {
+			// Different sub-elements may have the same value for n0.
+			localH[n0[subElemIdx] - minN0] += value[subElemIdx];
+		}
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for (int hIdx = get_global_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
+		h[hIdx] = localH[hIdx];
 	}
 }
 #endif

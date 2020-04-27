@@ -35,6 +35,26 @@ atomicAddGlobalFloat(volatile __global float* p, float value)
 	} while (old.ui != expected.ui);
 }
 
+inline
+float
+atomicAddLocalFloat(volatile __local float* p, float value)
+{
+	union {
+		unsigned int ui;
+		float f;
+	} old, expected, next;
+
+	old.f = *p;
+	do {
+		expected.f = old.f;
+		next.f = expected.f + value;
+		old.ui = atomic_cmpxchg(
+				(volatile __local unsigned int*) p,
+				expected.ui,
+				next.ui);
+	} while (old.ui != expected.ui);
+}
+
 )CLC";
 }
 
