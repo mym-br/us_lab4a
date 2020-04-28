@@ -114,7 +114,7 @@ private:
 	VectorialSTAOCLProcessor(VectorialSTAOCLProcessor&&) = delete;
 	VectorialSTAOCLProcessor& operator=(VectorialSTAOCLProcessor&&) = delete;
 
-	std::string getKernels() const;
+	static std::string getKernels();
 
 	const STAConfiguration<TFloat>& config_;
 	unsigned int deadZoneSamplesUp_;
@@ -514,7 +514,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 
 template<typename TFloat>
 std::string
-VectorialSTAOCLProcessor<TFloat>::getKernels() const
+VectorialSTAOCLProcessor<TFloat>::getKernels()
 {
 	return R"CLC(
 

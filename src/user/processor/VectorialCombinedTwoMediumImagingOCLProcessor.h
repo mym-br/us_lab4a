@@ -158,7 +158,7 @@ private:
 	VectorialCombinedTwoMediumImagingOCLProcessor(VectorialCombinedTwoMediumImagingOCLProcessor&&) = delete;
 	VectorialCombinedTwoMediumImagingOCLProcessor& operator=(VectorialCombinedTwoMediumImagingOCLProcessor&&) = delete;
 
-	std::string getKernels() const;
+	static std::string getKernels();
 
 	const TwoMediumSTAConfiguration<TFloat>& config_;
 	std::vector<Matrix<TFloat>>& acqDataList_;
@@ -821,7 +821,7 @@ struct VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::ProcessColumnWithO
 
 template<typename TFloat>
 std::string
-VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::getKernels() const
+VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::getKernels()
 {
 	return R"CLC(
 

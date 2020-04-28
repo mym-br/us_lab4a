@@ -86,7 +86,7 @@ private:
 	NumericRectangularSourceOCLImpulseResponse(NumericRectangularSourceOCLImpulseResponse&&) = delete;
 	NumericRectangularSourceOCLImpulseResponse& operator=(NumericRectangularSourceOCLImpulseResponse&&) = delete;
 
-	std::string getKernels() const;
+	static std::string getKernels();
 
 	TFloat samplingFreq_;
 	TFloat propagationSpeed_;
@@ -376,7 +376,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 
 template<typename TFloat>
 std::string
-NumericRectangularSourceOCLImpulseResponse<TFloat>::getKernels() const
+NumericRectangularSourceOCLImpulseResponse<TFloat>::getKernels()
 {
 	return R"CLC(
 
