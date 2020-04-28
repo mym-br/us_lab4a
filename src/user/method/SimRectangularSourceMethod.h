@@ -56,6 +56,7 @@
 # include "NumericRectangularSourceCUDAImpulseResponse.h"
 #endif
 #ifdef USE_OPENCL
+# include "NumericArrayOfRectangularSourcesOCLImpulseResponse.h"
 # include "NumericRectangularSourceOCLImpulseResponse.h"
 #endif
 
@@ -332,13 +333,13 @@ SimRectangularSourceMethod<TFloat>::execTransientRadiationPattern(bool sourceIsA
 	} else if (simData.irMethod == "numeric_ocl") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
-//			SimTransientRadiationPattern<
-//				TFloat,
-//				NumericArrayOfRectangularSourcesCUDAImpulseResponse>::getArrayOfRectangularSourcesRadiationPatternDirectSingleThread(
-//						simData.samplingFreq, mainData.propagationSpeed,
-//						srcData.sourceWidth, srcData.sourceHeight,
-//						subElemSize,
-//						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
+			SimTransientRadiationPattern<
+				TFloat,
+				NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>>::getArrayOfRectangularSourcesRadiationPatternDirectSingleThread(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
+						subElemSize,
+						dvdt, srcData.elemPos, srcData.focusDelay, inputData, gridData);
 		} else {
 			SimTransientRadiationPattern<
 				TFloat,
@@ -491,13 +492,13 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 	} else if (simData.irMethod == "numeric_ocl") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
-//			SimTransientAcousticField<
-//				TFloat,
-//				NumericArrayOfRectangularSourcesCUDAImpulseResponse>::getArrayOfRectangularSourcesAcousticFieldDirectSingleThread(
-//						simData.samplingFreq, mainData.propagationSpeed,
-//						srcData.sourceWidth, srcData.sourceHeight,
-//						subElemSize,
-//						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
+			SimTransientAcousticField<
+				TFloat,
+				NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>>::getArrayOfRectangularSourcesAcousticFieldDirectSingleThread(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
+						subElemSize,
+						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
 			SimTransientAcousticField<
 				TFloat,
@@ -635,13 +636,13 @@ SimRectangularSourceMethod<TFloat>::execTransientPropagation(bool sourceIsArray)
 	} else if (simData.irMethod == "numeric_ocl") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
-//			SimTransientPropagation<
-//				TFloat,
-//				NumericArrayOfRectangularSourcesCUDAImpulseResponse>::getArrayOfRectangularSourcesPropagationDirectSingleThread(
-//						simData.samplingFreq, mainData.propagationSpeed,
-//						srcData.sourceWidth, srcData.sourceHeight,
-//						subElemSize,
-//						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
+			SimTransientPropagation<
+				TFloat,
+				NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>>::getArrayOfRectangularSourcesPropagationDirectSingleThread(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
+						subElemSize,
+						dvdt, srcData.elemPos, srcData.focusDelay, propagIndexList, gridData);
 		} else {
 			SimTransientPropagation<
 				TFloat,
@@ -754,7 +755,7 @@ SimRectangularSourceMethod<TFloat>::execImpulseResponse(bool sourceIsArray)
 	if (simData.irMethod == "numeric") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
-			auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<TFloat, NumericRectangularSourceImpulseResponse<TFloat>>>(
+			auto impResp = std::make_unique<NumericArrayOfRectangularSourcesImpulseResponse<TFloat>>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						srcData.elemPos, srcData.focusDelay);
@@ -789,7 +790,7 @@ SimRectangularSourceMethod<TFloat>::execImpulseResponse(bool sourceIsArray)
 	} else if (simData.irMethod == "numeric_ocl") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
-			auto impResp = std::make_unique<ArrayOfRectangularSourcesImpulseResponse<TFloat, NumericRectangularSourceOCLImpulseResponse<TFloat>>>(
+			auto impResp = std::make_unique<NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						srcData.elemPos, srcData.focusDelay);

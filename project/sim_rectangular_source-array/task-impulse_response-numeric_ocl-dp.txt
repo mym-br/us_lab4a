@@ -1,0 +1,9 @@
+
+method = sim_impulse_response_array_of_rectangular_sources
+
+main_config_file = config.txt
+array_config_file = config-array.txt
+ir_config_file = config-impulse_response.txt
+
+simulation_config_file = config-simulation-numeric_ocl.txt
+output_dir = output-impulse_response-numeric_ocl

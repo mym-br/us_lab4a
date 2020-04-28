@@ -42,6 +42,7 @@ if(USE_OPENCL)
         src/user/processor/VectorialCombinedTwoMediumImagingOCLProcessor.h
         src/user/processor/VectorialCombinedTwoMediumImagingOCLProcessor2.h
         src/user/processor/VectorialSTAOCLProcessor.h
+        src/user/simulator/NumericArrayOfRectangularSourcesOCLImpulseResponse.h
         src/user/simulator/NumericRectangularSourceOCLImpulseResponse.h
         src/util/OCLAtomic.h
         src/util/OCLCoherenceFactor.h

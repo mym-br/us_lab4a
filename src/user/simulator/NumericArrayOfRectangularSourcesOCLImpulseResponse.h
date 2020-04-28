@@ -14,8 +14,8 @@
  *  You should have received a copy of the GNU General Public License      *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.  *
  ***************************************************************************/
-#ifndef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_H
-#define NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_H
+#ifndef NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_H
+#define NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_H
 
 #include <cmath> /* ceil */
 #include <cstddef> /* std::size_t */
@@ -29,14 +29,16 @@
 #include "Exception.h"
 #include "Log.h"
 #include "Util.h" /* pi */
+#include "XY.h"
 
 #include <CL/cl2.hpp>
+#include "NumericRectangularSourceOCLImpulseResponse.h"
 #include "OCLAtomic.h"
 #include "OCLReduce.h"
 #include "OCLUtil.h"
 
-#define NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU 1
-#define NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_WITH_LOCAL_MEM 1
+#define NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU 1
+#define NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_ACCUMULATE_WITH_LOCAL_MEM 1
 
 
 
@@ -62,37 +64,41 @@ namespace Lab {
 // Note:
 // - The source is surrounded by a rigid baffle.
 template<typename TFloat>
-class NumericRectangularSourceOCLImpulseResponse {
+class NumericArrayOfRectangularSourcesOCLImpulseResponse {
 public:
-	NumericRectangularSourceOCLImpulseResponse(
+	NumericArrayOfRectangularSourcesOCLImpulseResponse(
 					TFloat samplingFreq,
 					TFloat propagationSpeed,
 					TFloat sourceWidth,
 					TFloat sourceHeight,
-					TFloat subElemSize);
-	~NumericRectangularSourceOCLImpulseResponse() = default;
+					TFloat subElemSize,
+					const std::vector<XY<TFloat>>& elemPos,
+					const std::vector<TFloat>& focusDelay /* s */);
+	~NumericArrayOfRectangularSourcesOCLImpulseResponse() = default;
 
 	// Return h/c.
 	void getImpulseResponse(TFloat x, TFloat y, TFloat z,
-				std::size_t& hOffset /* samples */, std::vector<TFloat>& h);
-
-	static std::string getKernels();
+				std::size_t& hOffset /* samples */, std::vector<TFloat>& h,
+				std::vector<unsigned int>* activeElemList=nullptr);
 private:
 	enum {
 		REDUCE_GROUP_SIZE = 1024,
 		INITIAL_H_SIZE = 10000
 	};
 
-	NumericRectangularSourceOCLImpulseResponse(const NumericRectangularSourceOCLImpulseResponse&) = delete;
-	NumericRectangularSourceOCLImpulseResponse& operator=(const NumericRectangularSourceOCLImpulseResponse&) = delete;
-	NumericRectangularSourceOCLImpulseResponse(NumericRectangularSourceOCLImpulseResponse&&) = delete;
-	NumericRectangularSourceOCLImpulseResponse& operator=(NumericRectangularSourceOCLImpulseResponse&&) = delete;
+	NumericArrayOfRectangularSourcesOCLImpulseResponse(const NumericArrayOfRectangularSourcesOCLImpulseResponse&) = delete;
+	NumericArrayOfRectangularSourcesOCLImpulseResponse& operator=(const NumericArrayOfRectangularSourcesOCLImpulseResponse&) = delete;
+	NumericArrayOfRectangularSourcesOCLImpulseResponse(NumericArrayOfRectangularSourcesOCLImpulseResponse&&) = delete;
+	NumericArrayOfRectangularSourcesOCLImpulseResponse& operator=(NumericArrayOfRectangularSourcesOCLImpulseResponse&&) = delete;
+
+	static std::string getKernels();
 
 	TFloat samplingFreq_;
 	TFloat propagationSpeed_;
 	TFloat subElemWidth_;
 	TFloat subElemHeight_;
-	unsigned int numSubElem_;
+	unsigned int numElem_;
+	unsigned int numSubElem_; // per element
 
 	// OpenCL.
 	cl::Context clContext_;
@@ -100,13 +106,18 @@ private:
 	cl::CommandQueue clCommandQueue_;
 	cl::Buffer subElemXCLBuffer_;
 	cl::Buffer subElemYCLBuffer_;
+	cl::Buffer elemDelayCLBuffer_;
+	cl::Buffer elemPosXCLBuffer_;
+	cl::Buffer elemPosYCLBuffer_;
+	std::unique_ptr<OCLPinnedHostMem<unsigned int>> activeElemHostMem_;
+	cl::Buffer activeElemCLBuffer_;
 	cl::Buffer n0CLBuffer_;
 	cl::Buffer valueCLBuffer_;
 	std::unique_ptr<OCLPinnedHostMem<unsigned int>> minN0HostMem_;
 	cl::Buffer minN0CLBuffer_;
 	std::unique_ptr<OCLPinnedHostMem<unsigned int>> maxN0HostMem_;
 	cl::Buffer maxN0CLBuffer_;
-#ifdef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU
+#ifdef NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU
 	std::unique_ptr<OCLPinnedHostMem<TFloat>> hHostMem_;
 	cl::Buffer hCLBuffer_;
 #else
@@ -118,18 +129,32 @@ private:
 
 
 template<typename TFloat>
-NumericRectangularSourceOCLImpulseResponse<TFloat>::NumericRectangularSourceOCLImpulseResponse(
+NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::NumericArrayOfRectangularSourcesOCLImpulseResponse(
 		TFloat samplingFreq,
 		TFloat propagationSpeed,
 		TFloat sourceWidth,
 		TFloat sourceHeight,
-		TFloat subElemSize)
+		TFloat subElemSize,
+		const std::vector<XY<TFloat>>& elemPos,
+		const std::vector<TFloat>& focusDelay /* s */)
 			: samplingFreq_(samplingFreq)
 			, propagationSpeed_(propagationSpeed)
 			, subElemWidth_()
 			, subElemHeight_()
+			, numElem_()
 			, numSubElem_()
 {
+	if (elemPos.empty()) {
+		THROW_EXCEPTION(InvalidParameterException, "Empty element position list.");
+	}
+	if (focusDelay.empty()) {
+		THROW_EXCEPTION(InvalidParameterException, "Empty element delay list.");
+	}
+	if (focusDelay.size() > elemPos.size()) {
+		THROW_EXCEPTION(InvalidParameterException, "Size of focusDelay is greater than size of elemPos.");
+	}
+	numElem_ = focusDelay.size(); // may be less than elemPos.size()
+
 	unsigned int numElemX, numElemY;
 	if (subElemSize > sourceWidth) {
 		numElemX = 1;
@@ -151,12 +176,16 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::NumericRectangularSourceOCLI
 
 	clContext_ = OCLUtil::initOpenCL();
 
-	std::vector<std::string> kernelStrings = {OCLAtomic::code() + OCLReduce::code() + getKernels()};
+	std::vector<std::string> kernelStrings = {
+					OCLAtomic::code() +
+					OCLReduce::code() +
+					NumericRectangularSourceOCLImpulseResponse<TFloat>::getKernels() +
+					getKernels()};
 	clProgram_ = cl::Program(clContext_, kernelStrings);
 	std::ostringstream progOpt;
 	progOpt << OCL_PROGRAM_BUILD_OPTIONS
 			<< " -DMFloat=" << TemplateUtil::typeName<TFloat>();
-#ifdef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_WITH_LOCAL_MEM
+#ifdef NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_ACCUMULATE_WITH_LOCAL_MEM
 	progOpt << " -DWITH_LOCAL_MEM=1";
 #endif
 	if (std::is_same<TFloat, float>::value) {
@@ -176,31 +205,38 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::NumericRectangularSourceOCLI
 
 	clCommandQueue_ = cl::CommandQueue(clContext_);
 
-	subElemXCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_ONLY , sizeof(TFloat) * numSubElem_);
-	subElemYCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_ONLY , sizeof(TFloat) * numSubElem_);
-	const unsigned int numReduceThreads = OCLUtil::roundUpToMultipleOfGroupSize(numSubElem_, REDUCE_GROUP_SIZE);
-	n0CLBuffer_       = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(unsigned int) * numReduceThreads);
-	valueCLBuffer_    = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(TFloat) * numSubElem_);
+	subElemXCLBuffer_   = cl::Buffer(clContext_, CL_MEM_READ_ONLY , sizeof(TFloat) * numSubElem_);
+	subElemYCLBuffer_   = cl::Buffer(clContext_, CL_MEM_READ_ONLY , sizeof(TFloat) * numSubElem_);
+	elemDelayCLBuffer_  = cl::Buffer(clContext_, CL_MEM_READ_ONLY , sizeof(TFloat) * numElem_);
+	elemPosXCLBuffer_   = cl::Buffer(clContext_, CL_MEM_READ_ONLY , sizeof(TFloat) * elemPos.size());
+	elemPosYCLBuffer_   = cl::Buffer(clContext_, CL_MEM_READ_ONLY , sizeof(TFloat) * elemPos.size());
+	activeElemHostMem_  = std::make_unique<OCLPinnedHostMem<unsigned int>>(clContext_, clCommandQueue_,
+									numElem_,
+									CL_MAP_WRITE_INVALIDATE_REGION);
+	activeElemCLBuffer_ = cl::Buffer(clContext_, CL_MEM_READ_ONLY , sizeof(unsigned int) * numElem_);
+	const unsigned int numReduceThreads = OCLUtil::roundUpToMultipleOfGroupSize(numElem_ * numSubElem_, REDUCE_GROUP_SIZE);
+	n0CLBuffer_         = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(unsigned int) * numReduceThreads);
+	valueCLBuffer_      = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(TFloat) * numElem_ * numSubElem_);
 	const unsigned int numReduceGroups = numReduceThreads / REDUCE_GROUP_SIZE;
-	minN0HostMem_     = std::make_unique<OCLPinnedHostMem<unsigned int>>(clContext_, clCommandQueue_,
+	minN0HostMem_       = std::make_unique<OCLPinnedHostMem<unsigned int>>(clContext_, clCommandQueue_,
 									numReduceGroups,
 									CL_MAP_READ);
-	minN0CLBuffer_    = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(unsigned int) * numReduceGroups);
-	maxN0HostMem_     = std::make_unique<OCLPinnedHostMem<unsigned int>>(clContext_, clCommandQueue_,
+	minN0CLBuffer_      = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(unsigned int) * numReduceGroups);
+	maxN0HostMem_       = std::make_unique<OCLPinnedHostMem<unsigned int>>(clContext_, clCommandQueue_,
 									numReduceGroups,
 									CL_MAP_READ);
-	maxN0CLBuffer_    = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(unsigned int) * numReduceGroups);
-#ifdef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU
-	hHostMem_         = std::make_unique<OCLPinnedHostMem<TFloat>>(clContext_, clCommandQueue_,
+	maxN0CLBuffer_      = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(unsigned int) * numReduceGroups);
+#ifdef NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU
+	hHostMem_           = std::make_unique<OCLPinnedHostMem<TFloat>>(clContext_, clCommandQueue_,
 									INITIAL_H_SIZE,
 									CL_MAP_READ);
-	hCLBuffer_        = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(TFloat) * INITIAL_H_SIZE);
+	hCLBuffer_          = cl::Buffer(clContext_, CL_MEM_READ_WRITE, sizeof(TFloat) * INITIAL_H_SIZE);
 #else
-	n0HostMem_        = std::make_unique<OCLPinnedHostMem<unsigned int>>(clContext_, clCommandQueue_,
+	n0HostMem_          = std::make_unique<OCLPinnedHostMem<unsigned int>>(clContext_, clCommandQueue_,
 									numReduceThreads,
 									CL_MAP_READ);
-	valueHostMem_     = std::make_unique<OCLPinnedHostMem<TFloat>>(clContext_, clCommandQueue_,
-									numSubElem_,
+	valueHostMem_       = std::make_unique<OCLPinnedHostMem<TFloat>>(clContext_, clCommandQueue_,
+									numElem_ * numSubElem_,
 									CL_MAP_READ);
 #endif
 	std::vector<TFloat> subElemX(numSubElem_);
@@ -221,30 +257,77 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::NumericRectangularSourceOCLI
 		subElemYCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
 		subElemY.size() * sizeof(TFloat), subElemY.data());
 
-	LOG_DEBUG << "[NumericRectangularSourceOCLImpulseResponse] numElemX=" << numElemX << " numElemY=" << numElemY;
+	std::vector<TFloat> elemDelay(numElem_);
+	for (unsigned int i = 0; i < elemDelay.size(); ++i) {
+		elemDelay[i] = focusDelay[i] * samplingFreq_;
+	}
+	clCommandQueue_.enqueueWriteBuffer(
+		elemDelayCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		elemDelay.size() * sizeof(TFloat), elemDelay.data());
+
+	std::vector<TFloat> elemPosX(elemPos.size());
+	std::vector<TFloat> elemPosY(elemPos.size());
+	for (unsigned int i = 0; i < elemPos.size(); ++i) {
+		elemPosX[i] = elemPos[i].x;
+		elemPosY[i] = elemPos[i].y;
+	}
+	clCommandQueue_.enqueueWriteBuffer(
+		elemPosXCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		elemPosX.size() * sizeof(TFloat), elemPosX.data());
+	clCommandQueue_.enqueueWriteBuffer(
+		elemPosYCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		elemPosY.size() * sizeof(TFloat), elemPosY.data());
+
+	LOG_DEBUG << "[NumericArrayOfRectangularSourcesOCLImpulseResponse] numElemX=" << numElemX << " numElemY=" << numElemY;
 }
 
 template<typename TFloat>
 void
-NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
+NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::getImpulseResponse(
 							TFloat x,
 							TFloat y,
 							TFloat z,
 							std::size_t& hOffset,
-							std::vector<TFloat>& h)
+							std::vector<TFloat>& h,
+							std::vector<unsigned int>* activeElemList)
 {
+	if (activeElemList) {
+		if (activeElemList->empty()) {
+			THROW_EXCEPTION(InvalidParameterException, "Empty active element list.");
+		} else {
+			if (activeElemList->size() != numElem_) {
+				THROW_EXCEPTION(InvalidParameterException, "Active element size is not equal to number of delays.");
+			}
+			for (unsigned int i = 0; i < numElem_; ++i) {
+				activeElemHostMem_->hostPtr[i] = (*activeElemList)[i];
+			}
+		}
+	} else {
+		for (unsigned int i = 0; i < numElem_; ++i) {
+			activeElemHostMem_->hostPtr[i] = i;
+		}
+	}
+	clCommandQueue_.enqueueWriteBuffer(
+		activeElemCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		activeElemHostMem_->sizeInBytes, activeElemHostMem_->hostPtr);
+
 	try {
-		cl::Kernel kernel(clProgram_, "numericSourceIRKernel");
-		kernel.setArg(0, numSubElem_);
-		kernel.setArg(1, x);
-		kernel.setArg(2, y);
-		kernel.setArg(3, z);
-		kernel.setArg(4, samplingFreq_ / propagationSpeed_);
-		kernel.setArg(5, samplingFreq_ * subElemWidth_ * subElemHeight_ / (TFloat(2.0 * pi) * propagationSpeed_));
-		kernel.setArg(6, subElemXCLBuffer_);
-		kernel.setArg(7, subElemYCLBuffer_);
-		kernel.setArg(8, n0CLBuffer_);
-		kernel.setArg(9, valueCLBuffer_);
+		cl::Kernel kernel(clProgram_, "numericArraySourceIRKernel");
+		kernel.setArg( 0, numElem_);
+		kernel.setArg( 1, numSubElem_);
+		kernel.setArg( 2, x);
+		kernel.setArg( 3, y);
+		kernel.setArg( 4, z);
+		kernel.setArg( 5, samplingFreq_ / propagationSpeed_);
+		kernel.setArg( 6, samplingFreq_ * subElemWidth_ * subElemHeight_ / (TFloat(2.0 * pi) * propagationSpeed_));
+		kernel.setArg( 7, activeElemCLBuffer_);
+		kernel.setArg( 8, elemDelayCLBuffer_);
+		kernel.setArg( 9, elemPosXCLBuffer_);
+		kernel.setArg(10, elemPosYCLBuffer_);
+		kernel.setArg(11, subElemXCLBuffer_);
+		kernel.setArg(12, subElemYCLBuffer_);
+		kernel.setArg(13, n0CLBuffer_);
+		kernel.setArg(14, valueCLBuffer_);
 
 		const unsigned int groupSize = REDUCE_GROUP_SIZE;
 		const unsigned int globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numSubElem_, groupSize);
@@ -256,16 +339,16 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 			cl::NDRange(groupSize), // local
 			nullptr /* previous events */, nullptr);
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[numericSourceIRKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[numericArraySourceIRKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
 	}
 
-	const unsigned int reduceGlobalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numSubElem_, REDUCE_GROUP_SIZE);
+	const unsigned int reduceGlobalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numElem_ * numSubElem_, REDUCE_GROUP_SIZE);
 	try {
 		cl::Kernel kernel(clProgram_, "groupReduceMinMaxKernel");
 		kernel.setArg(0, n0CLBuffer_);
 		kernel.setArg(1, minN0CLBuffer_);
 		kernel.setArg(2, maxN0CLBuffer_);
-		kernel.setArg(3, numSubElem_);
+		kernel.setArg(3, numElem_ * numSubElem_);
 		kernel.setArg(4, cl::Local(REDUCE_GROUP_SIZE * sizeof(unsigned int)));
 		kernel.setArg(5, cl::Local(REDUCE_GROUP_SIZE * sizeof(unsigned int)));
 
@@ -310,7 +393,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 	const unsigned int maxN0 = *(maxN0HostMem_->hostPtr);
 	const unsigned int hSize = maxN0 - minN0 + 1U;
 
-#ifdef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU
+#ifdef NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU
 	if (hSize > hHostMem_->sizeInBytes / sizeof(TFloat)) {
 		hHostMem_  = std::make_unique<OCLPinnedHostMem<TFloat>>(clContext_, clCommandQueue_,
 									hSize * 2,
@@ -323,12 +406,12 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 
 	try {
 		cl::Kernel kernel(clProgram_, "accumulateIRSamplesKernel");
-		kernel.setArg(0, numSubElem_);
+		kernel.setArg(0, numElem_ * numSubElem_);
 		kernel.setArg(1, minN0);
 		kernel.setArg(2, n0CLBuffer_);
 		kernel.setArg(3, valueCLBuffer_);
 		kernel.setArg(4, hCLBuffer_);
-#ifdef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_WITH_LOCAL_MEM
+#ifdef NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_ACCUMULATE_WITH_LOCAL_MEM
 		kernel.setArg(5, hSize);
 		kernel.setArg(6, cl::Local(hSize * sizeof(TFloat)));
 
@@ -336,7 +419,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 #else
 		const unsigned int groupSize = 64;
 #endif
-		const unsigned int globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numSubElem_, groupSize);
+		const unsigned int globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numElem_ * numSubElem_, groupSize);
 
 		clCommandQueue_.enqueueNDRangeKernel(
 			kernel,
@@ -375,24 +458,29 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 #endif
 	hOffset = minN0;
 
-	//LOG_DEBUG << "[NumericRectangularSourceOCLImpulseResponse] minN0=" << minN0 << " maxN0=" << maxN0;
+	//LOG_DEBUG << "[NumericArrayOfRectangularSourcesOCLImpulseResponse] minN0=" << minN0 << " maxN0=" << maxN0;
 }
 
 template<typename TFloat>
 std::string
-NumericRectangularSourceOCLImpulseResponse<TFloat>::getKernels()
+NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::getKernels()
 {
 	return R"CLC(
 
 __kernel
 void
-numericSourceIRKernel(
+numericArraySourceIRKernel(
+		unsigned int numElem,
 		unsigned int numSubElem,
 		MFloat x,
 		MFloat y,
 		MFloat z,
 		MFloat k1,
 		MFloat k2,
+		__constant unsigned int* activeElem,
+		__constant MFloat* elemDelay,
+		__constant MFloat* elemPosX,
+		__constant MFloat* elemPosY,
 		__global MFloat* subElemX,
 		__global MFloat* subElemY,
 		__global unsigned int* n0,
@@ -401,88 +489,29 @@ numericSourceIRKernel(
 	const unsigned int subElemIdx = get_global_id(0);
 	if (subElemIdx >= numSubElem) {
 		// Get data from the first sub-element, to help min/max(n0).
-		const MFloat dx = x - subElemX[0];
-		const MFloat dy = y - subElemY[0];
+		const unsigned int activeElemIdx = activeElem[0];
+		const MFloat dx = x - subElemX[0] - elemPosX[activeElemIdx];
+		const MFloat dy = y - subElemY[0] - elemPosY[activeElemIdx];
 		const MFloat r = sqrt(dx * dx + dy * dy + z * z);
-		n0[subElemIdx] = rint(r * k1);
+		const unsigned int idx = (numElem - 1U) * numSubElem + subElemIdx;
+		n0[idx] = rint(r * k1 + elemDelay[0]);
 		return;
 	}
 
-	const MFloat dx = x - subElemX[subElemIdx];
-	const MFloat dy = y - subElemY[subElemIdx];
-	const MFloat r = sqrt(dx * dx + dy * dy + z * z);
-	n0[subElemIdx] = rint(r * k1);
-	value[subElemIdx] = k2 / r;
-}
-
-#ifdef WITH_LOCAL_MEM
-__kernel
-void
-accumulateIRSamplesKernel(
-		unsigned int numSubElem,
-		unsigned int minN0,
-		__global unsigned int* n0,
-		__global MFloat* value,
-		__global MFloat* h,
-		unsigned int hSize,
-		__local MFloat* localH)
-{
-	for (int hIdx = get_local_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
-		localH[hIdx] = 0;
-	}
-
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-	const unsigned int subElemIdx = get_global_id(0);
-	if (subElemIdx < numSubElem) {
-		// Different sub-elements may have the same value for n0.
-# ifdef SINGLE_PREC
-		atomicAddLocalFloat(localH + n0[subElemIdx] - minN0, value[subElemIdx]);
-# else
-		atomicAddLocalDouble(localH + n0[subElemIdx] - minN0, value[subElemIdx]);
-# endif
-	}
-
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-	for (int hIdx = get_local_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
-		const MFloat sample = localH[hIdx];
-		if (sample != 0) {
-# ifdef SINGLE_PREC
-			atomicAddGlobalFloat(h + hIdx, sample);
-# else
-			atomicAddGlobalDouble(h + hIdx, sample);
-# endif
-		}
+	for (int i = 0; i < numElem; ++i) {
+		const unsigned int activeElemIdx = activeElem[i];
+		const MFloat dx = x - subElemX[subElemIdx] - elemPosX[activeElemIdx];
+		const MFloat dy = y - subElemY[subElemIdx] - elemPosY[activeElemIdx];
+		const MFloat r = sqrt(dx * dx + dy * dy + z * z);
+		const unsigned int idx = i * numSubElem + subElemIdx;
+		n0[idx] = rint(r * k1 + elemDelay[i]);
+		value[idx] = k2 / r;
 	}
 }
-#else
-__kernel
-void
-accumulateIRSamplesKernel(
-		unsigned int numSubElem,
-		unsigned int minN0,
-		__global unsigned int* n0,
-		__global MFloat* value,
-		__global MFloat* h)
-{
-	const unsigned int subElemIdx = get_global_id(0);
-	if (subElemIdx >= numSubElem) {
-		return;
-	}
-
-	// Different sub-elements may have the same value for n0.
-# ifdef SINGLE_PREC
-	atomicAddGlobalFloat(h + n0[subElemIdx] - minN0, value[subElemIdx]);
-# else
-	atomicAddGlobalDouble(h + n0[subElemIdx] - minN0, value[subElemIdx]);
-# endif
-}
-#endif
 
 )CLC";
 }
 
 } // namespace Lab
 
-#endif // NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_H
+#endif // NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_H
