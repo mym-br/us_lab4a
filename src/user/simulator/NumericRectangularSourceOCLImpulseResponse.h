@@ -36,6 +36,7 @@
 #include "OCLUtil.h"
 
 #define NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU 1
+#define NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_WITH_LOCAL_MEM 1
 
 
 
@@ -155,6 +156,9 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::NumericRectangularSourceOCLI
 	std::ostringstream progOpt;
 	progOpt << OCL_PROGRAM_BUILD_OPTIONS
 			<< " -DMFloat=" << TemplateUtil::typeName<TFloat>();
+#ifdef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_WITH_LOCAL_MEM
+	progOpt << " -DWITH_LOCAL_MEM=1";
+#endif
 	if (std::is_same<TFloat, float>::value) {
 		progOpt << " -DSINGLE_PREC=1";
 	}
@@ -320,11 +324,15 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 		kernel.setArg(2, n0CLBuffer_);
 		kernel.setArg(3, valueCLBuffer_);
 		kernel.setArg(4, hCLBuffer_);
+#ifdef NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_WITH_LOCAL_MEM
 		kernel.setArg(5, hSize);
 		kernel.setArg(6, cl::Local(hSize * sizeof(TFloat)));
 
 		const unsigned int groupSize = 1024;
-		const unsigned int globalN0 = groupSize;
+#else
+		const unsigned int groupSize = 64;
+#endif
+		const unsigned int globalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numSubElem_, groupSize);
 
 		clCommandQueue_.enqueueNDRangeKernel(
 			kernel,
@@ -403,6 +411,7 @@ numericSourceIRKernel(
 	value[subElemIdx] = k2 / r;
 }
 
+#ifdef WITH_LOCAL_MEM
 __kernel
 void
 accumulateIRSamplesKernel(
@@ -414,27 +423,55 @@ accumulateIRSamplesKernel(
 		unsigned int hSize,
 		__local MFloat* localH)
 {
-	for (int hIdx = get_global_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
+	for (int hIdx = get_local_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
 		localH[hIdx] = 0;
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	for (int subElemIdx = get_global_id(0); subElemIdx < numSubElem; subElemIdx += get_local_size(0)) {
+	const unsigned int subElemIdx = get_global_id(0);
+	if (subElemIdx < numSubElem) {
 		// Different sub-elements may have the same value for n0.
-#ifdef SINGLE_PREC
+# ifdef SINGLE_PREC
 		atomicAddLocalFloat(localH + n0[subElemIdx] - minN0, value[subElemIdx]);
-#else
+# else
 		atomicAddLocalDouble(localH + n0[subElemIdx] - minN0, value[subElemIdx]);
-#endif
+# endif
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	for (int hIdx = get_global_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
-		h[hIdx] = localH[hIdx];
+	for (int hIdx = get_local_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
+# ifdef SINGLE_PREC
+		atomicAddGlobalFloat(h + hIdx, localH[hIdx]);
+# else
+		atomicAddGlobalDouble(h + hIdx, localH[hIdx]);
+# endif
 	}
 }
+#else
+__kernel
+void
+accumulateIRSamplesKernel(
+		unsigned int numSubElem,
+		unsigned int minN0,
+		__global unsigned int* n0,
+		__global MFloat* value,
+		__global MFloat* h)
+{
+	const unsigned int subElemIdx = get_global_id(0);
+	if (subElemIdx >= numSubElem) {
+		return;
+	}
+
+	// Different sub-elements may have the same value for n0.
+# ifdef SINGLE_PREC
+	atomicAddGlobalFloat(h + n0[subElemIdx] - minN0, value[subElemIdx]);
+# else
+	atomicAddGlobalDouble(h + n0[subElemIdx] - minN0, value[subElemIdx]);
+# endif
+}
+#endif
 
 )CLC";
 }
