@@ -361,16 +361,16 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 		(*dest)[1] = point.z;
 	}
 	clCommandQueue_.enqueueWriteBuffer(
-		gridXZCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		gridXZCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		gridXZHostMem_->sizeInBytes, gridXZHostMem_->hostPtr);
 	clCommandQueue_.enqueueWriteBuffer(
-		rxApodCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		rxApodCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		rxApod_.size() * sizeof(TFloat), rxApod_.data());
 	clCommandQueue_.enqueueWriteBuffer(
-		xArrayCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		xArrayCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		xArray_.size() * sizeof(TFloat), xArray_.data());
 	clCommandQueue_.enqueueWriteBuffer(
-		signalTensorCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		signalTensorCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		signalTensorHostMem_->sizeInBytes, signalTensorHostMem_->hostPtr);
 	clCommandQueue_.enqueueFillBuffer(
 		gridValueCLBuffer_, (TFloat) 0, 0 /* offset */, gridValueHostMem_->sizeInBytes);
@@ -480,11 +480,11 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 #endif
 
 	clCommandQueue_.enqueueReadBuffer(
-		gridValueCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		gridValueCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		gridValueHostMem_->sizeInBytes, gridValueHostMem_->hostPtr);
 	if (coherenceFactor_.enabled()) {
 		clCommandQueue_.enqueueReadBuffer(
-			gridFactorCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+			gridFactorCLBuffer_, CL_BLOCKING, 0 /* offset */,
 			gridFactorHostMem_->sizeInBytes, gridFactorHostMem_->hostPtr);
 	}
 

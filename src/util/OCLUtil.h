@@ -35,7 +35,7 @@ struct OCLPinnedHostMem {
 			, sizeInBytes(size * sizeof(T)) {
 		hostBuffer = cl::Buffer(context, CL_MEM_ALLOC_HOST_PTR, sizeInBytes);
 		hostPtr = static_cast<T*>(queue.enqueueMapBuffer(
-						hostBuffer, CL_TRUE /* blocking */, mapFlag,
+						hostBuffer, CL_BLOCKING, mapFlag,
 						0 /* offset */, sizeInBytes));
 	}
 	OCLPinnedHostMem(const OCLPinnedHostMem&) = delete;

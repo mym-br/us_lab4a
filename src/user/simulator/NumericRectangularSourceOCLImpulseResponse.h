@@ -215,10 +215,10 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::NumericRectangularSourceOCLI
 		}
 	}
 	clCommandQueue_.enqueueWriteBuffer(
-		subElemXCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		subElemXCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		subElemX.size() * sizeof(TFloat), subElemX.data());
 	clCommandQueue_.enqueueWriteBuffer(
-		subElemYCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		subElemYCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		subElemY.size() * sizeof(TFloat), subElemY.data());
 
 	LOG_DEBUG << "[NumericRectangularSourceOCLImpulseResponse] numElemX=" << numElemX << " numElemY=" << numElemY;
@@ -297,10 +297,10 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 
 	try {
 		clCommandQueue_.enqueueReadBuffer(
-			minN0CLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+			minN0CLBuffer_, CL_BLOCKING, 0 /* offset */,
 			sizeof(unsigned int), minN0HostMem_->hostPtr);
 		clCommandQueue_.enqueueReadBuffer(
-			maxN0CLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+			maxN0CLBuffer_, CL_BLOCKING, 0 /* offset */,
 			sizeof(unsigned int), maxN0HostMem_->hostPtr);
 	} catch (cl::Error& e) {
 		THROW_EXCEPTION(OCLException, "[Read minN0, maxN0] OpenCL error: " << e.what() << " (" << e.err() << ").");
@@ -350,7 +350,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 
 	try {
 		clCommandQueue_.enqueueReadBuffer(
-			hCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+			hCLBuffer_, CL_BLOCKING, 0 /* offset */,
 			hSize * sizeof(TFloat), hHostMem_->hostPtr);
 	} catch (cl::Error& e) {
 		THROW_EXCEPTION(OCLException, "[Read h] OpenCL error: " << e.what() << " (" << e.err() << ").");
@@ -362,10 +362,10 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 	}
 #else
 	clCommandQueue_.enqueueReadBuffer(
-		n0CLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		n0CLBuffer_, CL_BLOCKING, 0 /* offset */,
 		numSubElem_ * sizeof(unsigned int), n0HostMem_->hostPtr);
 	clCommandQueue_.enqueueReadBuffer(
-		valueCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		valueCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		numSubElem_ * sizeof(TFloat), valueHostMem_->hostPtr);
 
 	h.assign(hSize, 0);

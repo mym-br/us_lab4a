@@ -251,10 +251,10 @@ NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::NumericArrayOfRectan
 		}
 	}
 	clCommandQueue_.enqueueWriteBuffer(
-		subElemXCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		subElemXCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		subElemX.size() * sizeof(TFloat), subElemX.data());
 	clCommandQueue_.enqueueWriteBuffer(
-		subElemYCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		subElemYCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		subElemY.size() * sizeof(TFloat), subElemY.data());
 
 	std::vector<TFloat> elemDelay(numElem_);
@@ -262,7 +262,7 @@ NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::NumericArrayOfRectan
 		elemDelay[i] = focusDelay[i] * samplingFreq_;
 	}
 	clCommandQueue_.enqueueWriteBuffer(
-		elemDelayCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		elemDelayCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		elemDelay.size() * sizeof(TFloat), elemDelay.data());
 
 	std::vector<TFloat> elemPosX(elemPos.size());
@@ -272,10 +272,10 @@ NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::NumericArrayOfRectan
 		elemPosY[i] = elemPos[i].y;
 	}
 	clCommandQueue_.enqueueWriteBuffer(
-		elemPosXCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		elemPosXCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		elemPosX.size() * sizeof(TFloat), elemPosX.data());
 	clCommandQueue_.enqueueWriteBuffer(
-		elemPosYCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		elemPosYCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		elemPosY.size() * sizeof(TFloat), elemPosY.data());
 
 	LOG_DEBUG << "[NumericArrayOfRectangularSourcesOCLImpulseResponse] numElemX=" << numElemX << " numElemY=" << numElemY;
@@ -308,7 +308,7 @@ NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::getImpulseResponse(
 		}
 	}
 	clCommandQueue_.enqueueWriteBuffer(
-		activeElemCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		activeElemCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		activeElemHostMem_->sizeInBytes, activeElemHostMem_->hostPtr);
 
 	try {
@@ -380,10 +380,10 @@ NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::getImpulseResponse(
 
 	try {
 		clCommandQueue_.enqueueReadBuffer(
-			minN0CLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+			minN0CLBuffer_, CL_BLOCKING, 0 /* offset */,
 			sizeof(unsigned int), minN0HostMem_->hostPtr);
 		clCommandQueue_.enqueueReadBuffer(
-			maxN0CLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+			maxN0CLBuffer_, CL_BLOCKING, 0 /* offset */,
 			sizeof(unsigned int), maxN0HostMem_->hostPtr);
 	} catch (cl::Error& e) {
 		THROW_EXCEPTION(OCLException, "[Read minN0, maxN0] OpenCL error: " << e.what() << " (" << e.err() << ").");
@@ -433,7 +433,7 @@ NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::getImpulseResponse(
 
 	try {
 		clCommandQueue_.enqueueReadBuffer(
-			hCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+			hCLBuffer_, CL_BLOCKING, 0 /* offset */,
 			hSize * sizeof(TFloat), hHostMem_->hostPtr);
 	} catch (cl::Error& e) {
 		THROW_EXCEPTION(OCLException, "[Read h] OpenCL error: " << e.what() << " (" << e.err() << ").");
@@ -445,10 +445,10 @@ NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::getImpulseResponse(
 	}
 #else
 	clCommandQueue_.enqueueReadBuffer(
-		n0CLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		n0CLBuffer_, CL_BLOCKING, 0 /* offset */,
 		numElem_ * numSubElem_ * sizeof(unsigned int), n0HostMem_->hostPtr);
 	clCommandQueue_.enqueueReadBuffer(
-		valueCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		valueCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		numElem_ * numSubElem_ * sizeof(TFloat), valueHostMem_->hostPtr);
 
 	h.assign(hSize, 0);

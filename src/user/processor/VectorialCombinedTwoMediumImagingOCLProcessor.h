@@ -398,7 +398,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	clCommandQueue_.enqueueFillBuffer(
 		gridValueImCLBuffer_, (TFloat) 0, 0 /* offset */, numGridPoints * sizeof(TFloat));
 	clCommandQueue_.enqueueWriteBuffer(
-		rxApodCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		rxApodCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		Util::sizeInBytes(rxApod), rxApod.data());
 
 	const TFloat c2ByC1 = config_.propagationSpeed2 / config_.propagationSpeed1;
@@ -552,11 +552,11 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			// [OpenCL] Memory transfer to device.
 			//==================================================
 			clCommandQueue_.enqueueWriteBuffer(
-				rawDataCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
+				rawDataCLBuffer_, CL_NON_BLOCKING, 0 /* offset */,
 				rawDataSizeInBytes_, rawDataHostMemList_[rawBufferIdx].hostPtr,
 				nullptr /* previous events */, &writeBufferEventList[rawBufferIdx]);
 
-			LOG_DEBUG << "TIME OCL TRANSF " << transfTimer.getTime(); // useful only with blocking = CL_TRUE
+			LOG_DEBUG << "TIME OCL TRANSF " << transfTimer.getTime(); // useful only with CL_BLOCKING
 		} catch (cl::Error& e) {
 			THROW_EXCEPTION(OCLException, "[Memory transfer] OpenCL error: " << e.what() << " (" << e.err() << ").");
 		}
@@ -600,10 +600,10 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 	// [OpenCL] Read the formed image.
 	//==================================================
 	clCommandQueue_.enqueueReadBuffer(
-		gridValueReCLBuffer_, CL_FALSE /* blocking */, 0 /* offset */,
+		gridValueReCLBuffer_, CL_NON_BLOCKING, 0 /* offset */,
 		numGridPoints * sizeof(TFloat), gridValueHostMemList_[0].hostPtr);
 	clCommandQueue_.enqueueReadBuffer(
-		gridValueImCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		gridValueImCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		numGridPoints * sizeof(TFloat), gridValueHostMemList_[1].hostPtr);
 	for (unsigned int col = 0; col < numCols; ++col) {
 		for (unsigned int row = 0; row < minRowIdx_[col]; ++row) {

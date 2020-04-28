@@ -405,22 +405,22 @@ VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>::process(
 	// Prepare buffers.
 	Timer prepareBuffersTimer;
 	clCommandQueue_.enqueueWriteBuffer(
-		gridXZCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		gridXZCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		gridXZ.size() * sizeof(TFloat[2]), gridXZ.data());
 	clCommandQueue_.enqueueWriteBuffer(
-		rxApodCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		rxApodCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		rxApod.size() * sizeof(TFloat), rxApod.data());
 	clCommandQueue_.enqueueWriteBuffer(
-		xArrayCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		xArrayCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		xArray_.size() * sizeof(TFloat), xArray_.data());
 	clCommandQueue_.enqueueWriteBuffer(
-		minRowIdxCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		minRowIdxCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		minRowIdx_.size() * sizeof(unsigned int), minRowIdx_.data());
 	clCommandQueue_.enqueueWriteBuffer(
-		interfacePointListCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		interfacePointListCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		interfacePointList.size() * 2 * sizeof(TFloat), interfacePointList.data());
 	clCommandQueue_.enqueueWriteBuffer(
-		medium1DelayMatrixCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		medium1DelayMatrixCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		medium1DelayMatrix_.size() * sizeof(TFloat), medium1DelayMatrix_.data());
 	clCommandQueue_.enqueueFillBuffer(
 		gridValueCLBuffer_, (TFloat) 0, 0 /* offset */, gridValueHostMem_->sizeInBytes);
@@ -503,7 +503,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>::process(
 	//Timer signalTransferTimer;
 
 	clCommandQueue_.enqueueWriteBuffer(
-		signalTensorCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		signalTensorCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		signalTensorHostMem_->sizeInBytes, signalTensorHostMem_->hostPtr);
 
 	//LOG_DEBUG << "SIGNAL TRANSFER " << signalTransferTimer.getTime();
@@ -585,7 +585,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>::process(
 	//Timer gridValueTransferTimer;
 
 	clCommandQueue_.enqueueReadBuffer(
-		gridValueCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
+		gridValueCLBuffer_, CL_BLOCKING, 0 /* offset */,
 		gridValueHostMem_->sizeInBytes, gridValueHostMem_->hostPtr);
 
 	//==================================================
