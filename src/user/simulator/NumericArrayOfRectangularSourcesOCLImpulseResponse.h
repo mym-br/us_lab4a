@@ -446,13 +446,13 @@ NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::getImpulseResponse(
 #else
 	clCommandQueue_.enqueueReadBuffer(
 		n0CLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
-		numSubElem_ * sizeof(unsigned int), n0HostMem_->hostPtr);
+		numElem_ * numSubElem_ * sizeof(unsigned int), n0HostMem_->hostPtr);
 	clCommandQueue_.enqueueReadBuffer(
 		valueCLBuffer_, CL_TRUE /* blocking */, 0 /* offset */,
-		numSubElem_ * sizeof(TFloat), valueHostMem_->hostPtr);
+		numElem_ * numSubElem_ * sizeof(TFloat), valueHostMem_->hostPtr);
 
 	h.assign(hSize, 0);
-	for (unsigned int i = 0; i < numSubElem_; ++i) {
+	for (unsigned int i = 0, iEnd = numElem_ * numSubElem_; i < iEnd; ++i) {
 		h[n0HostMem_->hostPtr[i] - minN0] += valueHostMem_->hostPtr[i];
 	}
 #endif
