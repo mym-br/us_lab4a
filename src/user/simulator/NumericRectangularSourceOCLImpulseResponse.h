@@ -35,7 +35,7 @@
 #include "OCLReduce.h"
 #include "OCLUtil.h"
 
-//#define NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU 1
+#define NUMERIC_RECTANGULAR_SOURCE_OCL_IMPULSE_RESPONSE_ACCUMULATE_IN_GPU 1
 
 
 
@@ -403,7 +403,6 @@ numericSourceIRKernel(
 	value[subElemIdx] = k2 / r;
 }
 
-#ifdef SINGLE_PREC
 __kernel
 void
 accumulateIRSamplesKernel(
@@ -423,39 +422,11 @@ accumulateIRSamplesKernel(
 
 	for (int subElemIdx = get_global_id(0); subElemIdx < numSubElem; subElemIdx += get_local_size(0)) {
 		// Different sub-elements may have the same value for n0.
+#ifdef SINGLE_PREC
 		atomicAddLocalFloat(localH + n0[subElemIdx] - minN0, value[subElemIdx]);
-	}
-
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-	for (int hIdx = get_global_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
-		h[hIdx] = localH[hIdx];
-	}
-}
 #else
-__kernel
-void
-accumulateIRSamplesKernel(
-		unsigned int numSubElem,
-		unsigned int minN0,
-		__global unsigned int* n0,
-		__global MFloat* value,
-		__global MFloat* h,
-		unsigned int hSize,
-		__local MFloat* localH)
-{
-	for (int hIdx = get_global_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
-		localH[hIdx] = 0;
-	}
-
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-	// No atomic operations for double in OpenCL 1.2.
-	if (get_global_id(0) == 0) { // single thread
-		for (int subElemIdx = 0; subElemIdx < numSubElem; ++subElemIdx) {
-			// Different sub-elements may have the same value for n0.
-			localH[n0[subElemIdx] - minN0] += value[subElemIdx];
-		}
+		atomicAddLocalDouble(localH + n0[subElemIdx] - minN0, value[subElemIdx]);
+#endif
 	}
 
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -464,7 +435,6 @@ accumulateIRSamplesKernel(
 		h[hIdx] = localH[hIdx];
 	}
 }
-#endif
 
 )CLC";
 }
