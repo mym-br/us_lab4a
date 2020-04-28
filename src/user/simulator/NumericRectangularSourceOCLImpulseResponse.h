@@ -442,11 +442,14 @@ accumulateIRSamplesKernel(
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	for (int hIdx = get_local_id(0); hIdx < hSize; hIdx += get_local_size(0)) {
+		const MFloat sample = localH[hIdx];
+		if (sample != 0) {
 # ifdef SINGLE_PREC
-		atomicAddGlobalFloat(h + hIdx, localH[hIdx]);
+			atomicAddGlobalFloat(h + hIdx, sample);
 # else
-		atomicAddGlobalDouble(h + hIdx, localH[hIdx]);
+			atomicAddGlobalDouble(h + hIdx, sample);
 # endif
+		}
 	}
 }
 #else
