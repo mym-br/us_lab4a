@@ -49,6 +49,9 @@
 #ifdef USE_CUDA
 # include "NumericCircularSourceCUDAImpulseResponse.h"
 #endif
+#ifdef USE_OPENCL
+# include "NumericCircularSourceOCLImpulseResponse.h"
+#endif
 
 
 
@@ -141,7 +144,7 @@ SimCircularSourceMethod<TFloat>::loadSimulationData(const MainData& data, Simula
 
 	Waveform::get(simData.excitationType, data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 
-	if (simData.irMethod == "numeric" || simData.irMethod == "numeric_cuda") {
+	if (simData.irMethod == "numeric" || simData.irMethod == "numeric_cuda" || simData.irMethod == "numeric_ocl") {
 		simPM->getValue(simData.discretFactor , "num_sub_elem_per_lambda", 0.01, 100.0);
 	} else if (simData.irMethod == "analytic") {
 		// Empty.
@@ -231,6 +234,18 @@ SimCircularSourceMethod<TFloat>::execTransientRadiationPattern()
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}
 #endif
+#ifdef USE_OPENCL
+	} else if (simData.irMethod == "numeric_ocl") {
+		const TFloat nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
+		const TFloat numSubElemPerLambda = simData.discretFactor;
+		const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		SimTransientRadiationPattern<
+			TFloat,
+			NumericCircularSourceOCLImpulseResponse<TFloat>>::getCircularSourceRadiationPatternSingleThread(
+					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					numSubElemInRadius,
+					dvdt, inputData, radData);
+#endif
 	} else if (simData.irMethod == "analytic") {
 		SimTransientRadiationPattern<
 			TFloat,
@@ -302,6 +317,17 @@ SimCircularSourceMethod<TFloat>::execTransientAcousticField()
 		} else {
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}
+#endif
+#ifdef USE_OPENCL
+	} else if (simData.irMethod == "numeric_ocl") {
+		const TFloat numSubElemPerLambda = simData.discretFactor;
+		const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		SimTransientAcousticField<
+			TFloat,
+			NumericCircularSourceOCLImpulseResponse<TFloat>>::getCircularSourceAcousticFieldSingleThread(
+					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					numSubElemInRadius,
+					dvdt, gridData);
 #endif
 	} else if (simData.irMethod == "analytic") {
 		SimTransientAcousticField<
@@ -393,6 +419,17 @@ SimCircularSourceMethod<TFloat>::execTransientPropagation()
 		} else {
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}
+#endif
+#ifdef USE_OPENCL
+	} else if (simData.irMethod == "numeric_ocl") {
+		const TFloat numSubElemPerLambda = simData.discretFactor;
+		const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		SimTransientPropagation<
+			TFloat,
+			NumericCircularSourceOCLImpulseResponse<TFloat>>::getCircularSourcePropagationSingleThread(
+					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					numSubElemInRadius,
+					dvdt, propagIndexList, gridData);
 #endif
 	} else if (simData.irMethod == "analytic") {
 		SimTransientPropagation<
@@ -501,6 +538,16 @@ SimCircularSourceMethod<TFloat>::execImpulseResponse()
 		} else {
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}
+#endif
+#ifdef USE_OPENCL
+	} else if (simData.irMethod == "numeric_ocl") {
+		const TFloat nyquistLambda = Util::wavelength(mainData.propagationSpeed, mainData.nyquistRate);
+		const TFloat numSubElemPerLambda = simData.discretFactor;
+		const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
+		auto impResp = std::make_unique<NumericCircularSourceOCLImpulseResponse<TFloat>>(
+					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
+					numSubElemInRadius);
+		impResp->getImpulseResponse(pointX, 0.0, pointZ, hOffset, h);
 #endif
 	} else if (simData.irMethod == "analytic") {
 		auto impResp = std::make_unique<AnalyticCircularSourceImpulseResponse<TFloat>>(
