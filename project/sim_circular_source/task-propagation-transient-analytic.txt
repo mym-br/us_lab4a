@@ -6,5 +6,6 @@ grid_config_file = config-grid.txt
 source_config_file = config-source.txt
 propag_config_file = config-propagation-transient.txt
 
+impulse_response_method = analytic
 simulation_config_file = config-simulation-analytic.txt
 output_dir = output-propagation-transient-analytic

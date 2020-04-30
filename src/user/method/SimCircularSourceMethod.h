@@ -91,7 +91,7 @@ private:
 
 	void loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData);
 	void loadSourceData(SourceData& srcData);
-	void loadSimulationData(const MainData& data, SimulationData& simData);
+	void loadSimulationData(const MainData& data, const std::string& irMethod, SimulationData& simData);
 	void prepareExcitation(TFloat dt, const SimulationData& simData, std::vector<TFloat>& tExc,
 				std::vector<TFloat>& dvdt, std::vector<TFloat>& tDvdt);
 
@@ -121,7 +121,7 @@ SimCircularSourceMethod<TFloat>::loadData(const ParameterMap& taskPM, MainData& 
 	data.nyquistRate = Util::nyquistRate(data.maxFreq);
 	taskPM.getValue(data.outputDir, "output_dir");
 
-	loadSimulationData(data, simData);
+	loadSimulationData(data, taskPM.value<std::string>("impulse_response_method"), simData);
 }
 
 template<typename TFloat>
@@ -134,17 +134,19 @@ SimCircularSourceMethod<TFloat>::loadSourceData(SourceData& srcData)
 
 template<typename TFloat>
 void
-SimCircularSourceMethod<TFloat>::loadSimulationData(const MainData& data, SimulationData& simData)
+SimCircularSourceMethod<TFloat>::loadSimulationData(const MainData& data, const std::string& irMethod, SimulationData& simData)
 {
 	const ParamMapPtr simPM = project_.getSubParamMap("simulation_config_file");
 	simData.samplingFreq = simPM->value<TFloat>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
-	simPM->getValue(simData.irMethod      , "impulse_response_method");
 	simPM->getValue(simData.excitationType, "excitation_type");
 	simPM->getValue(simData.excNumPeriods , "excitation_num_periods", 0.0, 100.0);
+	simData.irMethod = irMethod;
 
 	Waveform::get(simData.excitationType, data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 
-	if (simData.irMethod == "numeric" || simData.irMethod == "numeric_cuda" || simData.irMethod == "numeric_ocl") {
+	if (simData.irMethod == "numeric" ||
+			simData.irMethod == "numeric_cuda" ||
+			simData.irMethod == "numeric_ocl") {
 		simPM->getValue(simData.discretFactor , "num_sub_elem_per_lambda", 0.01, 100.0);
 	} else if (simData.irMethod == "analytic") {
 		// Empty.
@@ -297,9 +299,7 @@ SimCircularSourceMethod<TFloat>::execTransientAcousticField()
 	if (simData.irMethod == "numeric") {
 		const TFloat numSubElemPerLambda = simData.discretFactor;
 		const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
-		SimTransientAcousticField<
-			TFloat,
-			NumericCircularSourceImpulseResponse<TFloat>>::getCircularSourceAcousticField(
+		SimTransientAcousticField<TFloat>::template getCircularSourceAcousticField<NumericCircularSourceImpulseResponse<TFloat>>(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, gridData);
@@ -308,9 +308,7 @@ SimCircularSourceMethod<TFloat>::execTransientAcousticField()
 		if constexpr (std::is_same<TFloat, float>::value) {
 			const TFloat numSubElemPerLambda = simData.discretFactor;
 			const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
-			SimTransientAcousticField<
-				TFloat,
-				NumericCircularSourceCUDAImpulseResponse>::getCircularSourceAcousticFieldSingleThread(
+			SimTransientAcousticField<TFloat>::template getCircularSourceAcousticFieldSingleThread<NumericCircularSourceCUDAImpulseResponse>(
 						simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 						numSubElemInRadius,
 						dvdt, gridData);
@@ -322,17 +320,13 @@ SimCircularSourceMethod<TFloat>::execTransientAcousticField()
 	} else if (simData.irMethod == "numeric_ocl") {
 		const TFloat numSubElemPerLambda = simData.discretFactor;
 		const TFloat numSubElemInRadius = srcData.sourceRadius * (numSubElemPerLambda / nyquistLambda);
-		SimTransientAcousticField<
-			TFloat,
-			NumericCircularSourceOCLImpulseResponse<TFloat>>::getCircularSourceAcousticFieldSingleThread(
+		SimTransientAcousticField<TFloat>::template getCircularSourceAcousticFieldSingleThread<NumericCircularSourceOCLImpulseResponse<TFloat>>(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					numSubElemInRadius,
 					dvdt, gridData);
 #endif
 	} else if (simData.irMethod == "analytic") {
-		SimTransientAcousticField<
-			TFloat,
-			AnalyticCircularSourceImpulseResponse<TFloat>>::getCircularSourceAcousticField(
+		SimTransientAcousticField<TFloat>::template getCircularSourceAcousticField<AnalyticCircularSourceImpulseResponse<TFloat>>(
 					simData.samplingFreq, mainData.propagationSpeed, srcData.sourceRadius,
 					0.0,
 					dvdt, gridData);

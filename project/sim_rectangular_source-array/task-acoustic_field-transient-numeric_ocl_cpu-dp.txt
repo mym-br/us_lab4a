@@ -5,6 +5,6 @@ main_config_file = config.txt
 grid_config_file = config-grid.txt
 array_config_file = config-array.txt
 
-impulse_response_method = numeric_ocl
+impulse_response_method = numeric_ocl_cpu
 simulation_config_file = config-simulation-numeric.txt
-output_dir = output-acoustic_field-transient-numeric_ocl
+output_dir = output-acoustic_field-transient-numeric_ocl_cpu

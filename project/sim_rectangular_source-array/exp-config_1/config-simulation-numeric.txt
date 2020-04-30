@@ -1,6 +1,4 @@
 
-impulse_response_method = numeric
-
 # sub_elem_size = propagation_speed / (nyquist_rate * sub_elem_size_factor)
 sub_elem_size_factor = 4.0
 

@@ -6,5 +6,6 @@ grid_config_file = config-grid.txt
 source_config_file = config-source.txt
 propag_config_file = config-propagation-transient.txt
 
-simulation_config_file = config-simulation-numeric_cuda.txt
+impulse_response_method = numeric_cuda
+simulation_config_file = config-simulation-numeric.txt
 output_dir = output-propagation-transient-numeric_cuda

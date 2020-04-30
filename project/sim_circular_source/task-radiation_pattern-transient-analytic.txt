@@ -5,5 +5,6 @@ main_config_file = config.txt
 source_config_file = config-source.txt
 rad_config_file = config-radiation_pattern-transient.txt
 
+impulse_response_method = analytic
 simulation_config_file = config-simulation-analytic.txt
 output_dir = output-radiation_pattern-transient-analytic

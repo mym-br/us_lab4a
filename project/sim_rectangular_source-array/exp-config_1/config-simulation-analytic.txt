@@ -1,6 +1,4 @@
 
-impulse_response_method = analytic
-
 # 0.0: disable
 min_edge_divisor = 0.0
 

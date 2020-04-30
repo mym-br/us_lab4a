@@ -5,6 +5,6 @@ main_config_file = config.txt
 grid_config_file = config-grid.txt
 array_config_file = config-array.txt
 
-impulse_response_method = numeric
+impulse_response_method = numeric_cuda_cpu
 simulation_config_file = config-simulation-numeric.txt
-output_dir = output-acoustic_field-transient-numeric
+output_dir = output-acoustic_field-transient-numeric_cuda_cpu

@@ -5,5 +5,6 @@ main_config_file = config.txt
 source_config_file = config-source.txt
 ir_config_file = config-impulse_response.txt
 
-simulation_config_file = config-simulation-numeric_cuda.txt
+impulse_response_method = numeric_cuda
+simulation_config_file = config-simulation-numeric.txt
 output_dir = output-impulse_response-numeric_cuda

@@ -1,10 +1,11 @@
 
-method = sim_acoustic_field_array_of_rectangular_sources_transient_sp
+method = sim_propagation_array_of_rectangular_sources_transient_sp
 
 main_config_file = config.txt
 grid_config_file = config-grid.txt
 array_config_file = config-array.txt
+propag_config_file = config-propagation-transient.txt
 
 impulse_response_method = numeric
 simulation_config_file = config-simulation-numeric.txt
-output_dir = output-acoustic_field-transient-numeric
+output_dir = output-propagation-transient-numeric

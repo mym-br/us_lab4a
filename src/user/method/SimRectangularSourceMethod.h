@@ -107,7 +107,7 @@ private:
 
 	void loadData(const ParameterMap& taskPM, MainData& data, SimulationData& simData);
 	void loadSourceData(MainData& data, bool sourceIsArray, SourceData& srcData);
-	void loadSimulationData(const MainData& data, SimulationData& simData);
+	void loadSimulationData(const MainData& data, const std::string& irMethod, SimulationData& simData);
 	void prepareExcitation(TFloat dt, const SimulationData& simData, std::vector<TFloat>& tExc,
 				std::vector<TFloat>& dvdt, std::vector<TFloat>& tDvdt);
 
@@ -137,7 +137,7 @@ SimRectangularSourceMethod<TFloat>::loadData(const ParameterMap& taskPM, MainDat
 	data.nyquistRate = Util::nyquistRate(data.maxFreq);
 	taskPM.getValue(data.outputDir, "output_dir");
 
-	loadSimulationData(data, simData);
+	loadSimulationData(data, taskPM.value<std::string>("impulse_response_method"), simData);
 }
 
 template<typename TFloat>
@@ -195,17 +195,21 @@ SimRectangularSourceMethod<TFloat>::loadSourceData(MainData& data, bool sourceIs
 
 template<typename TFloat>
 void
-SimRectangularSourceMethod<TFloat>::loadSimulationData(const MainData& data, SimulationData& simData)
+SimRectangularSourceMethod<TFloat>::loadSimulationData(const MainData& data, const std::string& irMethod, SimulationData& simData)
 {
 	const ParamMapPtr simPM = project_.getSubParamMap("simulation_config_file");
 	simData.samplingFreq = simPM->value<TFloat>("sampling_frequency_factor", 0.0, 10000.0) * data.nyquistRate;
-	simPM->getValue(simData.irMethod      , "impulse_response_method");
 	simPM->getValue(simData.excitationType, "excitation_type");
 	simPM->getValue(simData.excNumPeriods , "excitation_num_periods", 0.0, 100.0);
+	simData.irMethod = irMethod;
 
 	Waveform::get(simData.excitationType, data.centerFreq, simData.samplingFreq, simData.excNumPeriods, simData.exc);
 
-	if (simData.irMethod == "numeric" || simData.irMethod == "numeric_cuda" || simData.irMethod == "numeric_ocl") {
+	if (simData.irMethod == "numeric" ||
+			simData.irMethod == "numeric_cuda"     ||
+			simData.irMethod == "numeric_cuda_cpu" ||
+			simData.irMethod == "numeric_ocl"      ||
+			simData.irMethod == "numeric_ocl_cpu") {
 		simPM->getValue(simData.discretFactor, "sub_elem_size_factor", 0.0, 1.0e3);
 	} else if (simData.irMethod == "analytic") {
 		simPM->getValue(simData.discretFactor, "min_edge_divisor"    , 0.0, 1.0e6);
@@ -447,17 +451,13 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 	if (simData.irMethod == "numeric") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
-			SimTransientAcousticField<
-				TFloat,
-				NumericArrayOfRectangularSourcesImpulseResponse<TFloat>>::getArrayOfRectangularSourcesAcousticFieldDirect(
+			SimTransientAcousticField<TFloat>::template getArrayOfRectangularSourcesAcousticFieldDirect<NumericArrayOfRectangularSourcesImpulseResponse<TFloat>>(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
-			SimTransientAcousticField<
-				TFloat,
-				NumericRectangularSourceImpulseResponse<TFloat>>::getRectangularSourceAcousticField(
+			SimTransientAcousticField<TFloat>::template getRectangularSourceAcousticField<NumericRectangularSourceImpulseResponse<TFloat>>(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
@@ -468,17 +468,36 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 		if constexpr (std::is_same<TFloat, float>::value) {
 			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 			if (sourceIsArray) {
-				SimTransientAcousticField<
-					TFloat,
-					NumericArrayOfRectangularSourcesCUDAImpulseResponse>::getArrayOfRectangularSourcesAcousticFieldDirectSingleThread(
+				SimTransientAcousticField<TFloat>::template getArrayOfRectangularSourcesAcousticFieldDirectSingleThread<NumericArrayOfRectangularSourcesCUDAImpulseResponse>(
 							simData.samplingFreq, mainData.propagationSpeed,
 							srcData.sourceWidth, srcData.sourceHeight,
 							subElemSize,
 							dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 			} else {
-				SimTransientAcousticField<
-					TFloat,
-					NumericRectangularSourceCUDAImpulseResponse>::getRectangularSourceAcousticFieldSingleThread(
+				SimTransientAcousticField<TFloat>::template getRectangularSourceAcousticFieldSingleThread<NumericRectangularSourceCUDAImpulseResponse>(
+							simData.samplingFreq, mainData.propagationSpeed,
+							srcData.sourceWidth, srcData.sourceHeight,
+							subElemSize,
+							dvdt, gridData);
+			}
+		} else {
+			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
+		}
+	} else if (simData.irMethod == "numeric_cuda_cpu") {
+		if constexpr (std::is_same<TFloat, float>::value) {
+			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+			if (sourceIsArray) {
+				SimTransientAcousticField<TFloat>::template getArrayOfRectangularSourcesAcousticFieldDirectSTMT<
+										NumericArrayOfRectangularSourcesCUDAImpulseResponse,
+										NumericArrayOfRectangularSourcesImpulseResponse<TFloat>>(
+							simData.samplingFreq, mainData.propagationSpeed,
+							srcData.sourceWidth, srcData.sourceHeight,
+							subElemSize,
+							dvdt, srcData.elemPos, srcData.focusDelay, gridData);
+			} else {
+				SimTransientAcousticField<TFloat>::template getRectangularSourceAcousticFieldSTMT<
+										NumericRectangularSourceCUDAImpulseResponse,
+										NumericRectangularSourceImpulseResponse<TFloat>>(
 							simData.samplingFreq, mainData.propagationSpeed,
 							srcData.sourceWidth, srcData.sourceHeight,
 							subElemSize,
@@ -492,17 +511,32 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 	} else if (simData.irMethod == "numeric_ocl") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
-			SimTransientAcousticField<
-				TFloat,
-				NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>>::getArrayOfRectangularSourcesAcousticFieldDirectSingleThread(
+			SimTransientAcousticField<TFloat>::template getArrayOfRectangularSourcesAcousticFieldDirectSingleThread<NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>>(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
 						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
-			SimTransientAcousticField<
-				TFloat,
-				NumericRectangularSourceOCLImpulseResponse<TFloat>>::getRectangularSourceAcousticFieldSingleThread(
+			SimTransientAcousticField<TFloat>::template getRectangularSourceAcousticFieldSingleThread<NumericRectangularSourceOCLImpulseResponse<TFloat>>(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
+						subElemSize,
+						dvdt, gridData);
+		}
+	} else if (simData.irMethod == "numeric_ocl_cpu") {
+		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
+		if (sourceIsArray) {
+			SimTransientAcousticField<TFloat>::template getArrayOfRectangularSourcesAcousticFieldDirectSTMT<
+									NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>,
+									NumericArrayOfRectangularSourcesImpulseResponse<TFloat>>(
+						simData.samplingFreq, mainData.propagationSpeed,
+						srcData.sourceWidth, srcData.sourceHeight,
+						subElemSize,
+						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
+		} else {
+			SimTransientAcousticField<TFloat>::template getRectangularSourceAcousticFieldSTMT<
+									NumericRectangularSourceOCLImpulseResponse<TFloat>,
+									NumericRectangularSourceImpulseResponse<TFloat>>(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
@@ -512,17 +546,13 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 	} else if (simData.irMethod == "analytic") {
 		const TFloat minEdgeDivisor = simData.discretFactor;
 		if (sourceIsArray) {
-			SimTransientAcousticField<
-				TFloat,
-				AnalyticRectangularSourceImpulseResponse<TFloat>>::getArrayOfRectangularSourcesAcousticField(
+			SimTransientAcousticField<TFloat>::template getArrayOfRectangularSourcesAcousticField<AnalyticRectangularSourceImpulseResponse<TFloat>>(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,
 						dvdt, srcData.elemPos, srcData.focusDelay, gridData);
 		} else {
-			SimTransientAcousticField<
-				TFloat,
-				AnalyticRectangularSourceImpulseResponse<TFloat>>::getRectangularSourceAcousticField(
+			SimTransientAcousticField<TFloat>::template getRectangularSourceAcousticField<AnalyticRectangularSourceImpulseResponse<TFloat>>(
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						minEdgeDivisor,

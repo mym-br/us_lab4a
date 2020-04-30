@@ -1,8 +1,8 @@
 
-method = sim_radiation_pattern_array_of_rectangular_sources_transient
+method = sim_radiation_pattern_circular_source_transient_sp
 
 main_config_file = config.txt
-array_config_file = config-array.txt
+source_config_file = config-source.txt
 rad_config_file = config-radiation_pattern-transient.txt
 
 impulse_response_method = numeric
