@@ -35,93 +35,6 @@ namespace Lab {
 template<typename TFloat, typename ImpulseResponse>
 class SimTransientPropagation {
 public:
-	struct CircularSourceThreadData {
-		CircularSourceThreadData(
-			TFloat samplingFreq,
-			TFloat propagationSpeed,
-			TFloat sourceRadius,
-			TFloat discretization,
-			const std::vector<TFloat>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceRadius, discretization)
-		{
-			filter.setCoefficients(dvdt, filterFreqCoeff);
-		}
-		ImpulseResponse ir;
-		std::vector<std::complex<TFloat>> filterFreqCoeff;
-		std::vector<TFloat> h;
-		std::vector<TFloat> signal;
-		FFTWFilter2<TFloat> filter;
-	};
-
-	struct RectangularSourceThreadData {
-		RectangularSourceThreadData(
-			TFloat samplingFreq,
-			TFloat propagationSpeed,
-			TFloat sourceWidth,
-			TFloat sourceHeight,
-			TFloat discretization,
-			const std::vector<TFloat>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization)
-		{
-			filter.setCoefficients(dvdt, filterFreqCoeff);
-		}
-		ImpulseResponse ir;
-		std::vector<std::complex<TFloat>> filterFreqCoeff;
-		std::vector<TFloat> h;
-		std::vector<TFloat> signal;
-		FFTWFilter2<TFloat> filter;
-	};
-
-	struct ArrayOfRectangularSourcesThreadData {
-		ArrayOfRectangularSourcesThreadData(
-			TFloat samplingFreq,
-			TFloat propagationSpeed,
-			TFloat sourceWidth,
-			TFloat sourceHeight,
-			TFloat discretization,
-			const std::vector<XY<TFloat>>& elemPos,
-			const std::vector<TFloat>& focusDelay,
-			const std::vector<TFloat>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
-					elemPos, focusDelay)
-		{
-			filter.setCoefficients(dvdt, filterFreqCoeff);
-		}
-		ArrayOfRectangularSourcesImpulseResponse<TFloat, ImpulseResponse> ir;
-		std::vector<std::complex<TFloat>> filterFreqCoeff;
-		std::vector<TFloat> h;
-		std::vector<TFloat> signal;
-		FFTWFilter2<TFloat> filter;
-	};
-
-	struct DirectArrayOfRectangularSourcesThreadData {
-		DirectArrayOfRectangularSourcesThreadData(
-			TFloat samplingFreq,
-			TFloat propagationSpeed,
-			TFloat sourceWidth,
-			TFloat sourceHeight,
-			TFloat discretization,
-			const std::vector<XY<TFloat>>& elemPos,
-			const std::vector<TFloat>& focusDelay,
-			const std::vector<TFloat>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
-					elemPos, focusDelay)
-		{
-			filter.setCoefficients(dvdt, filterFreqCoeff);
-		}
-		ImpulseResponse ir;
-		std::vector<std::complex<TFloat>> filterFreqCoeff;
-		std::vector<TFloat> h;
-		std::vector<TFloat> signal;
-		FFTWFilter2<TFloat> filter;
-	};
-
-	template<typename T> static void exec(T& tls, const std::vector<unsigned int>& propagIndexList,
-						Matrix<XYZValueArray<TFloat>>& gridData);
-	template<typename T> static void execSingleThread(T& threadData,
-								const std::vector<unsigned int>& propagIndexList,
-								Matrix<XYZValueArray<TFloat>>& gridData);
-
 	static void getCircularSourcePropagation(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -207,8 +120,96 @@ public:
 			const std::vector<TFloat>& focusDelay /* s */,
 			const std::vector<unsigned int>& propagIndexList,
 			Matrix<XYZValueArray<TFloat>>& gridData);
+
 private:
+	struct CircularSourceThreadData {
+		CircularSourceThreadData(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceRadius,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceRadius, discretization)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ImpulseResponse ir;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
+	};
+
+	struct RectangularSourceThreadData {
+		RectangularSourceThreadData(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ImpulseResponse ir;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
+	};
+
+	struct ArrayOfRectangularSourcesThreadData {
+		ArrayOfRectangularSourcesThreadData(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<XY<TFloat>>& elemPos,
+			const std::vector<TFloat>& focusDelay,
+			const std::vector<TFloat>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
+					elemPos, focusDelay)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ArrayOfRectangularSourcesImpulseResponse<TFloat, ImpulseResponse> ir;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
+	};
+
+	struct DirectArrayOfRectangularSourcesThreadData {
+		DirectArrayOfRectangularSourcesThreadData(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<XY<TFloat>>& elemPos,
+			const std::vector<TFloat>& focusDelay,
+			const std::vector<TFloat>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
+					elemPos, focusDelay)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ImpulseResponse ir;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
+	};
+
 	SimTransientPropagation() = delete;
+
+	template<typename T> static void exec(T& tls, const std::vector<unsigned int>& propagIndexList,
+						Matrix<XYZValueArray<TFloat>>& gridData);
+	template<typename T> static void execSingleThread(T& threadData,
+								const std::vector<unsigned int>& propagIndexList,
+								Matrix<XYZValueArray<TFloat>>& gridData);
 };
 
 template<typename TFloat, typename ImpulseResponse>

@@ -43,98 +43,6 @@ template<typename TFloat>
 class SimTransientAcousticField {
 public:
 	template<typename ImpulseResponse>
-	struct CircularSourceThreadData {
-		CircularSourceThreadData(
-			TFloat samplingFreq,
-			TFloat propagationSpeed,
-			TFloat sourceRadius,
-			TFloat discretization,
-			const std::vector<TFloat>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceRadius, discretization)
-		{
-			filter.setCoefficients(dvdt, filterFreqCoeff);
-		}
-		ImpulseResponse ir;
-		std::vector<std::complex<TFloat>> filterFreqCoeff;
-		std::vector<TFloat> h;
-		std::vector<TFloat> signal;
-		FFTWFilter2<TFloat> filter;
-	};
-
-	template<typename ImpulseResponse>
-	struct RectangularSourceThreadData {
-		RectangularSourceThreadData(
-			TFloat samplingFreq,
-			TFloat propagationSpeed,
-			TFloat sourceWidth,
-			TFloat sourceHeight,
-			TFloat discretization,
-			const std::vector<TFloat>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization)
-		{
-			filter.setCoefficients(dvdt, filterFreqCoeff);
-		}
-		ImpulseResponse ir;
-		std::vector<std::complex<TFloat>> filterFreqCoeff;
-		std::vector<TFloat> h;
-		std::vector<TFloat> signal;
-		FFTWFilter2<TFloat> filter;
-	};
-
-	template<typename ImpulseResponse>
-	struct ArrayOfRectangularSourcesThreadData {
-		ArrayOfRectangularSourcesThreadData(
-			TFloat samplingFreq,
-			TFloat propagationSpeed,
-			TFloat sourceWidth,
-			TFloat sourceHeight,
-			TFloat discretization,
-			const std::vector<XY<TFloat>>& elemPos,
-			const std::vector<TFloat>& focusDelay,
-			const std::vector<TFloat>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
-					elemPos, focusDelay)
-		{
-			filter.setCoefficients(dvdt, filterFreqCoeff);
-		}
-		ArrayOfRectangularSourcesImpulseResponse<TFloat, ImpulseResponse> ir;
-		std::vector<std::complex<TFloat>> filterFreqCoeff;
-		std::vector<TFloat> h;
-		std::vector<TFloat> signal;
-		FFTWFilter2<TFloat> filter;
-	};
-
-	template<typename ImpulseResponse>
-	struct DirectArrayOfRectangularSourcesThreadData {
-		DirectArrayOfRectangularSourcesThreadData(
-			TFloat samplingFreq,
-			TFloat propagationSpeed,
-			TFloat sourceWidth,
-			TFloat sourceHeight,
-			TFloat discretization,
-			const std::vector<XY<TFloat>>& elemPos,
-			const std::vector<TFloat>& focusDelay,
-			const std::vector<TFloat>& dvdt)
-				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
-					elemPos, focusDelay)
-		{
-			filter.setCoefficients(dvdt, filterFreqCoeff);
-		}
-		ImpulseResponse ir;
-		std::vector<std::complex<TFloat>> filterFreqCoeff;
-		std::vector<TFloat> h;
-		std::vector<TFloat> signal;
-		FFTWFilter2<TFloat> filter;
-	};
-
-	template<typename T>
-		static void exec(T& tls, Matrix<XYZValue<TFloat>>& gridData);
-	template<typename T>
-		static void execSingleThread(T& threadData, Matrix<XYZValue<TFloat>>& gridData);
-	template<typename T, typename U>
-		static void execSingleThreadMultiThread(T& stThreadData, U& tls, Matrix<XYZValue<TFloat>>& gridData);
-
-	template<typename ImpulseResponse>
 	static void getCircularSourceAcousticField(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -241,8 +149,101 @@ public:
 			const std::vector<XY<TFloat>>& elemPos,
 			const std::vector<TFloat>& focusDelay /* s */,
 			Matrix<XYZValue<TFloat>>& gridData);
+
 private:
+	template<typename ImpulseResponse>
+	struct CircularSourceThreadData {
+		CircularSourceThreadData(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceRadius,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceRadius, discretization)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ImpulseResponse ir;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
+	};
+
+	template<typename ImpulseResponse>
+	struct RectangularSourceThreadData {
+		RectangularSourceThreadData(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<TFloat>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ImpulseResponse ir;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
+	};
+
+	template<typename ImpulseResponse>
+	struct ArrayOfRectangularSourcesThreadData {
+		ArrayOfRectangularSourcesThreadData(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<XY<TFloat>>& elemPos,
+			const std::vector<TFloat>& focusDelay,
+			const std::vector<TFloat>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
+					elemPos, focusDelay)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ArrayOfRectangularSourcesImpulseResponse<TFloat, ImpulseResponse> ir;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
+	};
+
+	template<typename ImpulseResponse>
+	struct DirectArrayOfRectangularSourcesThreadData {
+		DirectArrayOfRectangularSourcesThreadData(
+			TFloat samplingFreq,
+			TFloat propagationSpeed,
+			TFloat sourceWidth,
+			TFloat sourceHeight,
+			TFloat discretization,
+			const std::vector<XY<TFloat>>& elemPos,
+			const std::vector<TFloat>& focusDelay,
+			const std::vector<TFloat>& dvdt)
+				: ir(samplingFreq, propagationSpeed, sourceWidth, sourceHeight, discretization,
+					elemPos, focusDelay)
+		{
+			filter.setCoefficients(dvdt, filterFreqCoeff);
+		}
+		ImpulseResponse ir;
+		std::vector<std::complex<TFloat>> filterFreqCoeff;
+		std::vector<TFloat> h;
+		std::vector<TFloat> signal;
+		FFTWFilter2<TFloat> filter;
+	};
+
 	SimTransientAcousticField() = delete;
+
+	template<typename T>
+		static void exec(T& tls, Matrix<XYZValue<TFloat>>& gridData);
+	template<typename T>
+		static void execSingleThread(T& threadData, Matrix<XYZValue<TFloat>>& gridData);
+	template<typename T, typename U>
+		static void execSingleThreadMultiThread(T& stThreadData, U& tls, Matrix<XYZValue<TFloat>>& gridData);
 };
 
 template<typename TFloat>
