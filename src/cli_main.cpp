@@ -19,8 +19,7 @@
 #include <fftw3.h>
 #include <iostream>
 #include <string>
-
-#include "tbb/task_scheduler_init.h"
+#include <thread>
 
 #include "Log.h"
 #include "lzf_filter.h"
@@ -66,8 +65,8 @@ main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	std::cout << "tbb::task_scheduler_init::default_num_threads() = "
-			<< tbb::task_scheduler_init::default_num_threads() << std::endl;
+	std::cout << "std::thread::hardware_concurrency(): "
+			<< std::thread::hardware_concurrency() << std::endl;
 
 	std::cout << "================================================================================" << std::endl;
 	std::string projectDir = argv[1];

@@ -20,8 +20,7 @@
 #include <cfenv> /* fesetround */
 #include <fftw3.h>
 #include <iostream>
-
-#include "tbb/task_scheduler_init.h"
+#include <thread>
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -50,8 +49,8 @@ main(int argc, char* argv[])
 	fftwf_import_wisdom_from_filename(FFTW_WISDOM_FILE_NAME_SP);
 	fftw_import_wisdom_from_filename(FFTW_WISDOM_FILE_NAME_DP);
 
-	std::cout << "tbb::task_scheduler_init::default_num_threads() = "
-			<< tbb::task_scheduler_init::default_num_threads() << std::endl;
+	std::cout << "std::thread::hardware_concurrency(): "
+			<< std::thread::hardware_concurrency() << std::endl;
 
 	Lab::Log::setLevel(Lab::Log::LEVEL_DEBUG);
 
