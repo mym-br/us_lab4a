@@ -115,18 +115,6 @@ public:
 			Matrix<XYZValue<TFloat>>& gridData);
 
 	template<typename ImpulseResponse>
-	static void getArrayOfRectangularSourcesAcousticFieldSingleThread(
-			TFloat samplingFreq,
-			TFloat propagationSpeed,
-			TFloat sourceWidth,
-			TFloat sourceHeight,
-			TFloat discretization,
-			const std::vector<TFloat>& dvdt,
-			const std::vector<XY<TFloat>>& elemPos,
-			const std::vector<TFloat>& focusDelay /* s */,
-			Matrix<XYZValue<TFloat>>& gridData);
-
-	template<typename ImpulseResponse>
 	static void getArrayOfRectangularSourcesAcousticFieldDirectSingleThread(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -597,34 +585,6 @@ SimTransientAcousticField<TFloat>::getArrayOfRectangularSourcesAcousticFieldDire
 	tbb::enumerable_thread_specific<DirectArrayOfRectangularSourcesThreadData<ImpulseResponse>> tls(threadData);
 
 	exec(tls, gridData);
-}
-
-template<typename TFloat>
-template<typename ImpulseResponse>
-void
-SimTransientAcousticField<TFloat>::getArrayOfRectangularSourcesAcousticFieldSingleThread(
-					TFloat samplingFreq,
-					TFloat propagationSpeed,
-					TFloat sourceWidth,
-					TFloat sourceHeight,
-					TFloat discretization,
-					const std::vector<TFloat>& dvdt,
-					const std::vector<XY<TFloat>>& elemPos,
-					const std::vector<TFloat>& focusDelay,
-					Matrix<XYZValue<TFloat>>& gridData)
-{
-	ArrayOfRectangularSourcesThreadData<ImpulseResponse> threadData{
-		samplingFreq,
-		propagationSpeed,
-		sourceWidth,
-		sourceHeight,
-		discretization,
-		elemPos,
-		focusDelay,
-		dvdt
-	};
-
-	execSingleThread(threadData, gridData);
 }
 
 template<typename TFloat>

@@ -103,18 +103,6 @@ public:
 			const Matrix<XYZ<TFloat>>& inputData,
 			Matrix<XYZValue<TFloat>>& gridData);
 
-	static void getArrayOfRectangularSourcesRadiationPatternSingleThread(
-			TFloat samplingFreq,
-			TFloat propagationSpeed,
-			TFloat sourceWidth,
-			TFloat sourceHeight,
-			TFloat discretization,
-			const std::vector<TFloat>& dvdt,
-			const std::vector<XY<TFloat>>& elemPos,
-			const std::vector<TFloat>& focusDelay /* s */,
-			const Matrix<XYZ<TFloat>>& inputData,
-			Matrix<XYZValue<TFloat>>& gridData);
-
 	static void getArrayOfRectangularSourcesRadiationPatternDirectSingleThread(
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
@@ -444,34 +432,6 @@ SimTransientRadiationPattern<TFloat, ImpulseResponse>::getArrayOfRectangularSour
 	tbb::enumerable_thread_specific<DirectArrayOfRectangularSourcesThreadData> tls(threadData);
 
 	exec(tls, inputData, gridData);
-}
-
-template<typename TFloat, typename ImpulseResponse>
-void
-SimTransientRadiationPattern<TFloat, ImpulseResponse>::getArrayOfRectangularSourcesRadiationPatternSingleThread(
-					TFloat samplingFreq,
-					TFloat propagationSpeed,
-					TFloat sourceWidth,
-					TFloat sourceHeight,
-					TFloat discretization,
-					const std::vector<TFloat>& dvdt,
-					const std::vector<XY<TFloat>>& elemPos,
-					const std::vector<TFloat>& focusDelay,
-					const Matrix<XYZ<TFloat>>& inputData,
-					Matrix<XYZValue<TFloat>>& gridData)
-{
-	ArrayOfRectangularSourcesThreadData threadData{
-		samplingFreq,
-		propagationSpeed,
-		sourceWidth,
-		sourceHeight,
-		discretization,
-		elemPos,
-		focusDelay,
-		dvdt
-	};
-
-	execSingleThread(threadData, inputData, gridData);
 }
 
 template<typename TFloat, typename ImpulseResponse>
