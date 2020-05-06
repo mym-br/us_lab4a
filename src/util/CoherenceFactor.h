@@ -22,7 +22,6 @@
 #include <memory>
 #include <string>
 
-#include "PseudorandomNumberGenerator.h"
 #include "ParameterMap.h"
 #include "Statistics.h"
 #include "Util.h"
@@ -38,18 +37,11 @@
 // IEEE Transactions on Ultrasonics, Ferroelectrics, and Frequency Control,
 // vol. 56, no. 5, pp. 958-974, 2009.
 // DOI: 10.1109/TUFFC.2009.1128
-//
-// PRNGPhaseCoherenceFactor
-//
-// Similar to PhaseCoherenceFactor, but sets a pseudorandom phase when
-// the signal is zero.
-// Used when the signal has no noise, like in simulated data.
 
 namespace Lab {
 
 template<typename TFloat> class SignCoherenceFactor;
 template<typename TFloat> class PhaseCoherenceFactor;
-template<typename TFloat> class PRNGPhaseCoherenceFactor;
 
 template<typename TFloat>
 class CoherenceFactor {
@@ -154,9 +146,6 @@ AnalyticSignalCoherenceFactor<TFloat>::get(const ParameterMap& pm)
 	} else if (coherenceFactorMethod == "phase_coherence_factor") {
 		const auto gamma = pm.value<TFloat>("phase_coherence_factor_gamma", 0.0, 100.0);
 		return std::make_unique<PhaseCoherenceFactor<TFloat>>(gamma);
-	} else if (coherenceFactorMethod == "prng_phase_coherence_factor") {
-		const auto gamma = pm.value<TFloat>("phase_coherence_factor_gamma", 0.0, 100.0);
-		return std::make_unique<PRNGPhaseCoherenceFactor<TFloat>>(gamma);
 	} else {
 		THROW_EXCEPTION(InvalidParameterException, "Invalid coherence factor method: " << coherenceFactorMethod << '.');
 	}
@@ -299,71 +288,6 @@ PhaseCoherenceFactor<TFloat>::calculate(const std::complex<TFloat>* data, unsign
 template<typename TFloat>
 void
 PhaseCoherenceFactor<TFloat>::getConstants(std::vector<TFloat>& list) const
-{
-	list.clear();
-	list.push_back(gamma_);
-	list.push_back(sigma0_);
-	list.push_back(factor_);
-}
-
-//=============================================================================
-
-template<typename TFloat>
-class PRNGPhaseCoherenceFactor : public AnalyticSignalCoherenceFactor<TFloat> {
-public:
-	PRNGPhaseCoherenceFactor(TFloat gamma)
-		: gamma_(gamma)
-		, sigma0_(pi / std::sqrt(3.0))
-		, factor_(gamma / sigma0_) { }
-	virtual ~PRNGPhaseCoherenceFactor() = default;
-
-	virtual std::unique_ptr<AnalyticSignalCoherenceFactor<TFloat>> clone() const {
-		return std::make_unique<PRNGPhaseCoherenceFactor>(gamma_);
-	}
-	virtual TFloat calculate(const std::complex<TFloat>* data, unsigned int size);
-	virtual void getConstants(std::vector<TFloat>& list) const;
-private:
-	PRNGPhaseCoherenceFactor(const PRNGPhaseCoherenceFactor&) = delete;
-	PRNGPhaseCoherenceFactor& operator=(const PRNGPhaseCoherenceFactor&) = delete;
-	PRNGPhaseCoherenceFactor(PRNGPhaseCoherenceFactor&&) = delete;
-	PRNGPhaseCoherenceFactor& operator=(PRNGPhaseCoherenceFactor&&) = delete;
-
-	PseudorandomNumberGenerator prng_;
-	const TFloat gamma_;
-	const TFloat sigma0_;
-	const TFloat factor_;
-	std::vector<TFloat> phi_;
-	std::vector<TFloat> phiAux_;
-};
-
-template<typename TFloat>
-TFloat
-PRNGPhaseCoherenceFactor<TFloat>::calculate(const std::complex<TFloat>* data, unsigned int size)
-{
-	if (phi_.size() != size) {
-		phi_.resize(size);
-		phiAux_.resize(size);
-	}
-
-	for (unsigned int i = 0; i < size; ++i) {
-		const std::complex<TFloat> c = data[i];
-		if (c == TFloat(0)) {
-			phi_[i] = (2.0 * prng_.get() - 1.0) * pi;
-		} else {
-			phi_[i] = std::atan2(c.imag(), c.real());
-		}
-		phiAux_[i] = phi_[i] + ((phi_[i] < 0) ? TFloat(pi) : -TFloat(pi));
-	}
-
-	const TFloat sf = std::min(
-				Statistics::standardDeviation(&phi_[0]   , size),
-				Statistics::standardDeviation(&phiAux_[0], size));
-	return std::max<TFloat>(0, 1 - factor_ * sf);
-}
-
-template<typename TFloat>
-void
-PRNGPhaseCoherenceFactor<TFloat>::getConstants(std::vector<TFloat>& list) const
 {
 	list.clear();
 	list.push_back(gamma_);
