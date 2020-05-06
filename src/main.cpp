@@ -20,11 +20,13 @@
 #include <cfenv> /* fesetround */
 #include <fftw3.h>
 #include <iostream>
+#include <locale>
 #include <thread>
 
 #include <QApplication>
 #include <QCoreApplication>
 #include <QIcon>
+#include <QLocale>
 
 #include "Log.h"
 #include "lzf_filter.h"
@@ -61,6 +63,10 @@ main(int argc, char* argv[])
 	QCoreApplication::setOrganizationName("LUS EP USP");
 	QCoreApplication::setOrganizationDomain("lus.poli.usp.br");
 	QCoreApplication::setApplicationName("USLab4a");
+
+	// Force "C" locale.
+	QLocale::setDefault(QLocale::c());
+	std::locale::global(std::locale::classic());
 
 	Lab::USLab4a w;
 	int returnValue = a.exec();
