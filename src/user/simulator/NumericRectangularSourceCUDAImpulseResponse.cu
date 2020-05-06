@@ -40,6 +40,7 @@
 namespace Lab {
 
 struct NumericRectangularSourceCUDAImpulseResponse::CUDAData {
+	CUDAContext c; // must be the first member
 	CUDAHostDevMem<MFloat> subElemX;
 	CUDAHostDevMem<MFloat> subElemY;
 	CUDADevMem<unsigned int> n0;

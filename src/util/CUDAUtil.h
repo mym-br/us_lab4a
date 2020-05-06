@@ -21,6 +21,14 @@ struct CUDAException : std::runtime_error {
 	using std::runtime_error::runtime_error;
 };
 
+class CUDAContext {
+public:
+	CUDAContext() {}
+	~CUDAContext() {
+		cudaDeviceReset();
+	}
+};
+
 template<typename T>
 struct CUDAHostDevMem {
 	T* hostPtr;

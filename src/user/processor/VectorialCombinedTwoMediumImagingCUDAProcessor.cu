@@ -165,6 +165,7 @@ processImagePCFKernel(
 //=============================================================================
 
 struct VectorialCombinedTwoMediumImagingCUDAProcessor::CUDAData {
+	CUDAContext c; // must be the first member
 	bool cudaDataInitialized;
 	CUDADevMem<MFloat> rxApod;
 	std::vector<CUDAHostDevMem<MFloat>> rawDataList;

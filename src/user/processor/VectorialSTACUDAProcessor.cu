@@ -211,6 +211,7 @@ processRowColumnSTAPCFKernel(
 //=============================================================================
 
 struct VectorialSTACUDAProcessor::CUDAData {
+	CUDAContext c; // must be the first member
 	bool cudaDataInitialized;
 	CUDAHostDevMem<MFloat[2]> gridXZ;
 	CUDADevMem<MFloat> rxApod;

@@ -85,6 +85,7 @@ numericArraySourceIRKernel(
 //=============================================================================
 
 struct NumericArrayOfRectangularSourcesCUDAImpulseResponse::CUDAData {
+	CUDAContext c; // must be the first member
 	CUDAHostDevMem<MFloat> subElemX;
 	CUDAHostDevMem<MFloat> subElemY;
 	CUDAHostDevMem<MFloat> elemDelay;

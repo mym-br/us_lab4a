@@ -334,6 +334,7 @@ processRowColumnWithOneTxElemPCFKernel(
 //=============================================================================
 
 struct VectorialCombinedTwoMediumImagingCUDAProcessor2::CUDAData {
+	CUDAContext c; // must be the first member
 	bool cudaDataInitialized;
 	CUDADevMem<MFloat[2]> gridXZ;
 	CUDADevMem<MFloat> rxApod;
