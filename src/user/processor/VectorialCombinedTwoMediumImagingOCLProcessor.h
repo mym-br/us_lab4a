@@ -503,7 +503,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			procImageKernel.setArg(5, cfConstants[2] /* factor */);
 		}
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[Kernel preparation] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[Kernel preparation] " << e);
 	}
 
 	std::vector<cl::Event> writeBufferEventList(VECTORIAL_COMBINED_TWO_MEDIUM_IMAGING_OCL_PROCESSOR_NUM_RAW_DATA_BUFFERS);
@@ -558,7 +558,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 
 			LOG_DEBUG << "TIME OCL TRANSF " << transfTimer.getTime(); // useful only with CL_BLOCKING
 		} catch (cl::Error& e) {
-			THROW_EXCEPTION(OCLException, "[Memory transfer] OpenCL error: " << e.what() << " (" << e.err() << ").");
+			THROW_EXCEPTION(OCLException, "[Memory transfer] " << e);
 		}
 
 		try {
@@ -592,7 +592,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>::process(
 			LOG_DEBUG << "TIME OCL PROC " << procTimer.getTime(); // useful only with kernelEvent.wait()
 
 		} catch (cl::Error& e) {
-			THROW_EXCEPTION(OCLException, "[Imaging] OpenCL error: " << e.what() << " (" << e.err() << ").");
+			THROW_EXCEPTION(OCLException, "[Imaging] " << e);
 		}
 	}
 

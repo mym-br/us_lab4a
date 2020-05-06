@@ -409,7 +409,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 		tCalculateDelaysML.put(calculateDelaysTimer.getTime());
 #endif
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[calculateDelaysSTAKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[calculateDelaysSTAKernel] " << e);
 	}
 
 	//==================================================
@@ -446,7 +446,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 			procKernel.setArg(10, gridValueCLBuffer_);
 		}
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[Kernel preparation] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[Kernel preparation] " << e);
 	}
 
 	cl::Event procKernelEvent;
@@ -471,7 +471,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 			cl::NDRange(rowGroupSize, colGroupSize), // local
 			nullptr /* previous events */, &procKernelEvent);
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[processRowColumnSTA*Kernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[processRowColumnSTA*Kernel] " << e);
 	}
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT

@@ -256,7 +256,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 			cl::NDRange(groupSize), // local
 			nullptr /* previous events */, nullptr);
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[numericSourceIRKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[numericSourceIRKernel] " << e);
 	}
 
 	const unsigned int reduceGlobalN0 = OCLUtil::roundUpToMultipleOfGroupSize(numSubElem_, REDUCE_GROUP_SIZE);
@@ -276,7 +276,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 			cl::NDRange(REDUCE_GROUP_SIZE), // local
 			nullptr /* previous events */, nullptr);
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[groupReduceMinMaxKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[groupReduceMinMaxKernel] " << e);
 	}
 
 	try {
@@ -292,7 +292,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 			cl::NDRange(1), // local
 			nullptr /* previous events */, nullptr);
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[reduceMinMaxKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[reduceMinMaxKernel] " << e);
 	}
 
 	try {
@@ -303,7 +303,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 			maxN0CLBuffer_, CL_BLOCKING, 0 /* offset */,
 			sizeof(unsigned int), maxN0HostMem_->hostPtr);
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[Read minN0, maxN0] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[Read minN0, maxN0] " << e);
 	}
 
 	const unsigned int minN0 = *(minN0HostMem_->hostPtr);
@@ -345,7 +345,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 			cl::NDRange(groupSize), // local
 			nullptr /* previous events */, nullptr);
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[accumulateIRSamplesKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[accumulateIRSamplesKernel] " << e);
 	}
 
 	try {
@@ -353,7 +353,7 @@ NumericRectangularSourceOCLImpulseResponse<TFloat>::getImpulseResponse(
 			hCLBuffer_, CL_BLOCKING, 0 /* offset */,
 			hSize * sizeof(TFloat), hHostMem_->hostPtr);
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[Read h] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[Read h] " << e);
 	}
 
 	h.resize(hSize);

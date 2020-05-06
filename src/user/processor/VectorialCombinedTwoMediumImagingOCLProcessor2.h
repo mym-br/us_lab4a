@@ -468,7 +468,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>::process(
 		tCalculateDelaysML.put(calculateDelaysTimer.getTime());
 #endif
 	} catch (cl::Error& e) {
-		THROW_EXCEPTION(OCLException, "[calculateDelaysTwoMediumKernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+		THROW_EXCEPTION(OCLException, "[calculateDelaysTwoMediumKernel] " << e);
 	}
 
 #ifdef USE_EXECUTION_TIME_MEASUREMENT
@@ -550,7 +550,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>::process(
 				procKernel.setArg(13, cfConstants[2] /* factor */);
 			}
 		} catch (cl::Error& e) {
-			THROW_EXCEPTION(OCLException, "[Kernel preparation] OpenCL error: " << e.what() << " (" << e.err() << ").");
+			THROW_EXCEPTION(OCLException, "[Kernel preparation] " << e);
 		}
 
 		try {
@@ -574,7 +574,7 @@ VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>::process(
 				cl::NDRange(rowGroupSize, colGroupSize), // local
 				nullptr /* previous events */, &procKernelEvent);
 		} catch (cl::Error& e) {
-			THROW_EXCEPTION(OCLException, "[processRowColumnWithOneTxElem*Kernel] OpenCL error: " << e.what() << " (" << e.err() << ").");
+			THROW_EXCEPTION(OCLException, "[processRowColumnWithOneTxElem*Kernel] " << e);
 		}
 
 		//procKernelEvent.wait();
