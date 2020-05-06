@@ -357,6 +357,8 @@ template<typename TFloat>
 void
 SimCircularSourceMethod<TFloat>::execTransientPropagation()
 {
+	Timer tProc;
+
 	const ParameterMap& taskPM = project_.taskParamMap();
 	MainData mainData;
 	SimulationData simData;
@@ -445,6 +447,8 @@ SimCircularSourceMethod<TFloat>::execTransientPropagation()
 		}
 	}
 	LOG_INFO << "gridData: maxAbsValue = " << maxAbsValue;
+
+	LOG_DEBUG << ">>> Processing time: " << tProc.getTime();
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	Project::GridDataType projGridData;
@@ -584,8 +588,6 @@ template<typename TFloat>
 void
 SimCircularSourceMethod<TFloat>::execute()
 {
-	Timer tProc;
-
 	switch (project_.method()) {
 	case MethodEnum::sim_acoustic_field_circular_source_transient:
 	case MethodEnum::sim_acoustic_field_circular_source_transient_sp:
@@ -606,8 +608,6 @@ SimCircularSourceMethod<TFloat>::execute()
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
-
-	LOG_DEBUG << ">>> Processing time: " << tProc.getTime();
 }
 
 } // namespace Lab

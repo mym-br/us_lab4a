@@ -585,6 +585,8 @@ template<typename TFloat>
 void
 SimRectangularSourceMethod<TFloat>::execTransientPropagation(bool sourceIsArray)
 {
+	Timer tProc;
+
 	const ParameterMap& taskPM = project_.taskParamMap();
 	MainData mainData;
 	SimulationData simData;
@@ -715,6 +717,8 @@ SimRectangularSourceMethod<TFloat>::execTransientPropagation(bool sourceIsArray)
 		}
 	}
 	LOG_INFO << "gridData: maxAbsValue = " << maxAbsValue;
+
+	LOG_DEBUG << ">>> Processing time: " << tProc.getTime();
 
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 	Project::GridDataType projGridData;
@@ -883,8 +887,6 @@ template<typename TFloat>
 void
 SimRectangularSourceMethod<TFloat>::execute()
 {
-	Timer tProc;
-
 	switch (project_.method()) {
 	case MethodEnum::sim_acoustic_field_rectangular_source_transient:
 	case MethodEnum::sim_acoustic_field_rectangular_source_transient_sp:
@@ -921,8 +923,6 @@ SimRectangularSourceMethod<TFloat>::execute()
 	default:
 		THROW_EXCEPTION(InvalidParameterException, "Invalid method: " << static_cast<int>(project_.method()) << '.');
 	}
-
-	LOG_DEBUG << ">>> Processing time: " << tProc.getTime();
 }
 
 } // namespace Lab
