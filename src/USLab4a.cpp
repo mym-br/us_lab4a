@@ -439,7 +439,7 @@ USLab4a::on_selectProjectDirButton_clicked()
 		QString dirPath = QFileDialog::getExistingDirectory(this,
 					tr("Select project directory"),
 					project_.directory().c_str(),
-					QFileDialog::ShowDirsOnly /*| QFileDialog::DontUseNativeDialog*/);
+					QFileDialog::ShowDirsOnly | QFileDialog::DontUseNativeDialog);
 		if (!dirPath.isEmpty()) {
 			ui_.projectDirLineEdit->setText(dirPath);
 			project_.setDirectory(dirPath.toStdString());
