@@ -82,6 +82,16 @@ NumericRectangularSourceCUDAImpulseResponse::NumericRectangularSourceCUDAImpulse
 	subElemHeight_ = sourceHeight / numElemY;
 
 	data_ = std::make_unique<CUDAData>();
+
+	if (Log::isDebugEnabled()) {
+		int device;
+		exec(cudaGetDevice(&device));
+
+		cudaDeviceProp prop;
+		exec(cudaGetDeviceProperties(&prop, device));
+		LOG_DEBUG << "CUDA device: " << prop.name;
+	}
+
 	data_->subElemX = CUDAHostDevMem<MFloat>(numSubElem_);
 	data_->subElemY = CUDAHostDevMem<MFloat>(numSubElem_);
 	const unsigned int numReduceThreads = CUDAUtil::roundUpToMultipleOfBlockSize(numSubElem_, REDUCE_BLOCK_SIZE);
