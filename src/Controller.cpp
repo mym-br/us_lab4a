@@ -45,12 +45,9 @@ Controller::~Controller()
 void
 Controller::connectProcessingNode(const ProcessingNode* node)
 {
-	connect(this, SIGNAL(processingRequested()),
-		node, SLOT(process()));
-	connect(node, SIGNAL(processingComplete()),
-		this, SLOT(execAfterProcessing()));
-	connect(node, SIGNAL(error()),
-		this, SLOT(execAfterError()));
+	connect(this, &Controller::processingRequested   , node, &ProcessingNode::process        );
+	connect(node, &ProcessingNode::processingComplete, this, &Controller::execAfterProcessing);
+	connect(node, &ProcessingNode::error             , this, &Controller::execAfterError     );
 }
 
 void

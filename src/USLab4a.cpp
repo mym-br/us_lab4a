@@ -85,15 +85,15 @@ USLab4a::USLab4a(QWidget* parent)
 {
 	ui_.setupUi(this);
 
-	connect(controller_.get(), SIGNAL(processingFinished()), this, SLOT(handleControllerFinishedProcessing()));
+	connect(controller_.get(), &Controller::processingFinished, this, &USLab4a::handleControllerFinishedProcessing);
 
 	ui_.logPlainTextEdit->setMaximumBlockCount(MAX_LOG_BLOCK_COUNT);
 
 	figureWindowsTimer_.start(FIGURE_WINDOWS_TIMER_PERIOD_MS);
-	connect(&figureWindowsTimer_, SIGNAL(timeout()), this, SLOT(updateFigureWindows()));
+	connect(&figureWindowsTimer_, &QTimer::timeout, this, &USLab4a::updateFigureWindows);
 
 	infoTimer_.start(INFO_TIMER_PERIOD_MS);
-	connect(&infoTimer_, SIGNAL(timeout()), this, SLOT(updateInfo()));
+	connect(&infoTimer_, &QTimer::timeout, this, &USLab4a::updateInfo);
 
 	new LogSyntaxHighlighter(ui_.logPlainTextEdit->document());
 
