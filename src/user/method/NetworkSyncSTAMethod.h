@@ -165,7 +165,7 @@ NetworkSyncSTAMethod<TFloat>::execute()
 		if (maxAbsValue > valueLevel) valueLevel = maxAbsValue;
 
 		project_.showFigure3D(1, "Raw image", &gridData, &pointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS,
+					true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS,
 					config.valueScale != 0.0 ? 1.0 : 0.0);
 
 		if (coherenceFactorEnabled) {
@@ -176,7 +176,7 @@ NetworkSyncSTAMethod<TFloat>::execute()
 			project_.saveImageToHDF5(gridData, acqOutputDir, "image_cf", "cf");
 
 			project_.showFigure3D(2, "Coherence factor image", &gridData, &pointList,
-						true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS,
+						true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS,
 						config.valueScale != 0.0 ? 1.0 : 0.0);
 		}
 	}

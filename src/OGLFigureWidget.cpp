@@ -99,8 +99,8 @@ OGLFigureWidget::OGLFigureWidget(QWidget* parent)
 		, showInfo_(true)
 		, dataChanged_()
 		, useManualSettings_()
-		, colormap_(Colormap::GRADIENT_GRAY)
-		, visualization_(Visualization::VALUE_RAW_LINEAR)
+		, colormap_(Colormap::Id::GRADIENT_GRAY)
+		, visualization_(Visualization::Value::RAW_LINEAR)
 		, minDecibels_(DEFAULT_MIN_DECIBELS)
 		, minValue_(Util::decibelsToLinear(minDecibels_))
 		, scale_(1.0)
@@ -201,8 +201,8 @@ OGLFigureWidget::fillOGLGridData()
 	}
 
 	switch (visualization_) {
-	case Visualization::VALUE_DEFAULT:
-	case Visualization::VALUE_RAW_LINEAR:
+	case Visualization::Value::DEFAULT:
+	case Visualization::Value::RAW_LINEAR:
 		{
 			const float valueFactor = 0.5f * calcValueFactor(gridData_);
 			auto srcIter = gridData_.begin();
@@ -217,19 +217,19 @@ OGLFigureWidget::fillOGLGridData()
 			}
 		}
 		break;
-	case Visualization::VALUE_RECTIFIED_LINEAR:
+	case Visualization::Value::RECTIFIED_LINEAR:
 		{
 			const float valueFactor = calcValueFactor(gridData_);
 			fillOGLGridDataWithAbsValues<ColorScale>(gridData_, valueFactor);
 		}
 		break;
-	case Visualization::VALUE_RECTIFIED_LOG:
+	case Visualization::Value::RECTIFIED_LOG:
 		{
 			const float valueFactor = calcValueFactor(gridData_);
 			fillOGLGridDataWithLogAbsValues<ColorScale>(gridData_, valueFactor);
 		}
 		break;
-	case Visualization::VALUE_ENVELOPE_LINEAR:
+	case Visualization::Value::ENVELOPE_LINEAR:
 		{
 			Matrix<XYZValue<float>> envelope = gridData_;
 			ParallelHilbertEnvelope<float>::calculateDim2Value(envelope);
@@ -237,7 +237,7 @@ OGLFigureWidget::fillOGLGridData()
 			fillOGLGridDataWithAbsValues<ColorScale>(envelope, valueFactor);
 		}
 		break;
-	case Visualization::VALUE_ENVELOPE_LOG:
+	case Visualization::Value::ENVELOPE_LOG:
 		{
 			Matrix<XYZValue<float>> envelope = gridData_;
 			ParallelHilbertEnvelope<float>::calculateDim2Value(envelope);
@@ -334,8 +334,8 @@ OGLFigureWidget::setMinDecibels(float minDecibels)
 	minDecibels_ = minDecibels;
 	minValue_ = Util::decibelsToLinear(minDecibels_);
 
-	if (visualization_ == Visualization::VALUE_RECTIFIED_LOG ||
-			visualization_ == Visualization::VALUE_ENVELOPE_LOG) {
+	if (visualization_ == Visualization::Value::RECTIFIED_LOG ||
+			visualization_ == Visualization::Value::ENVELOPE_LOG) {
 		updateDataVisualization();
 		update();
 	}
@@ -358,8 +358,8 @@ OGLFigureWidget::updateDataVisualization()
 	if (gridData_.empty()) return;
 
 	switch (colormap_) {
-	case Colormap::DEFAULT:
-#define COLORMAP_ITEM(A, B, C) case Colormap::A: fillOGLGridData<C>(); break;
+	case Colormap::Id::DEFAULT:
+#define COLORMAP_ITEM(A, B, C) case Colormap::Id::A: fillOGLGridData<C>(); break;
 	COLORMAP_TABLE
 #undef COLORMAP_ITEM
 	}

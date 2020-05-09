@@ -114,7 +114,7 @@ DeviceSectorialScanMethod<TFloat>::getSingleImageFromNetwork()
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Image", &imageData, &pointList,
-				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
+				true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS, config_.valueScale);
 
 	project_.saveImageToHDF5(imageData, outputDir);
 	project_.saveXYZToHDF5(imageData, outputDir);
@@ -139,7 +139,7 @@ DeviceSectorialScanMethod<TFloat>::showSavedImage()
 	std::vector<XYZ<float>> pointList = {{((config_.numElements - 1U) / 2.0f) * config_.pitch, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Image", &imageData, &pointList,
-				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
+				true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS, config_.valueScale);
 }
 
 template<typename TFloat>
@@ -160,7 +160,7 @@ DeviceSectorialScanMethod<TFloat>::execContinuousNetworkImaging()
 		Util::copy(acqImageData, imageData);
 
 		project_.showFigure3D(1, "Image", &imageData, &pointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
+					true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS, config_.valueScale);
 
 		if (++n == 10) {
 			LOG_INFO << 10.0 / t.getTime() << " image/s";
@@ -193,7 +193,7 @@ DeviceSectorialScanMethod<TFloat>::execTriggeredNetworkImaging()
 		Util::copy(acqImageData, imageData);
 
 		project_.showFigure3D(1, "Image", &imageData, &pointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, config_.valueScale);
+					true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS, config_.valueScale);
 
 		std::ostringstream out;
 		out << outputDirPrefix << triggerCount;

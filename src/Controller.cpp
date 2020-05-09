@@ -27,7 +27,7 @@
 namespace Lab {
 
 Controller::Controller(Project& project)
-		: state_(STATE_PROCESSING_STOPPED)
+		: state_(State::PROCESSING_STOPPED)
 		, processingThread_(*this, project)
 {
 	processingThread_.start();
@@ -62,8 +62,8 @@ Controller::exit()
 void
 Controller::enableProcessing()
 {
-	if (state_ == STATE_PROCESSING_STOPPED) {
-		state_ = STATE_PROCESSING_ENABLED;
+	if (state_ == State::PROCESSING_STOPPED) {
+		state_ = State::PROCESSING_ENABLED;
 		LOG_DEBUG << "STATE: PROCESSING_ENABLED";
 		showTimestamp();
 		emit processingRequested();
@@ -73,7 +73,7 @@ Controller::enableProcessing()
 void
 Controller::execAfterProcessing()
 {
-	state_ = STATE_PROCESSING_STOPPED;
+	state_ = State::PROCESSING_STOPPED;
 	showTimestamp();
 	LOG_DEBUG << "STATE: PROCESSING_STOPPED";
 	emit processingFinished();
@@ -82,7 +82,7 @@ Controller::execAfterProcessing()
 void
 Controller::execAfterError()
 {
-	state_ = STATE_PROCESSING_STOPPED;
+	state_ = State::PROCESSING_STOPPED;
 	showTimestamp();
 	LOG_DEBUG << "STATE: PROCESSING_STOPPED (after error)";
 	emit processingFinished();

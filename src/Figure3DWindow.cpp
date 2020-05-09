@@ -114,7 +114,7 @@ Figure3DWindow::setVisualization(Visualization::Value visualization)
 {
 	if (ui_.oglFigureWidget->useManualSettings()) return;
 
-	if (visualization != Visualization::VALUE_DEFAULT) {
+	if (visualization != Visualization::Value::DEFAULT) {
 		ui_.oglFigureWidget->setVisualization(visualization);
 		ui_.visualizationComboBox->setCurrentIndex(static_cast<int>(visualization));
 	}
@@ -125,7 +125,7 @@ Figure3DWindow::setColormap(Colormap::Id colormap)
 {
 	if (ui_.oglFigureWidget->useManualSettings()) return;
 
-	if (colormap != Colormap::DEFAULT) {
+	if (colormap != Colormap::Id::DEFAULT) {
 		ui_.oglFigureWidget->setColormap(colormap);
 		ui_.colormapComboBox->setCurrentIndex(static_cast<int>(colormap));
 	}

@@ -88,7 +88,7 @@ STA3DMethod<TFloat>::useCoherenceFactor(TFloat valueScale, const std::string& ou
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
-				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename TFloat>
@@ -104,7 +104,7 @@ STA3DMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TF
 	project_.saveXYZToHDF5(gridData_, outputDir);
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
-				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS, valueScale);
 
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 }

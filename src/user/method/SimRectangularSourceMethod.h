@@ -386,7 +386,7 @@ SimRectangularSourceMethod<TFloat>::execTransientRadiationPattern(bool sourceIsA
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Pattern", &gridData, &pointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS);
 
 	std::size_t sectionTYIndex = 0;
 	std::size_t sectionTXIndex = 0;
@@ -571,7 +571,7 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Acoustic field", &gridData, &pointList,
-					true, Visualization::VALUE_RECTIFIED_LINEAR, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::Value::RECTIFIED_LINEAR, Colormap::Id::GRADIENT_VIRIDIS);
 
 	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"        , "value");
 	project_.saveHDF5(tExc       , mainData.outputDir + "/v_time"   , "value");
@@ -735,7 +735,7 @@ SimRectangularSourceMethod<TFloat>::execTransientPropagation(bool sourceIsArray)
 			}
 
 			project_.showFigure3D(1, "Propagation", &projGridData, &pointList,
-						true, Visualization::VALUE_RAW_LINEAR, Colormap::GRADIENT_GRAY);
+						true, Visualization::Value::RAW_LINEAR, Colormap::Id::GRADIENT_GRAY);
 
 			Util::sleepMs(propagPause);
 		}

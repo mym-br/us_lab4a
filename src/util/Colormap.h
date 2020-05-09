@@ -37,7 +37,7 @@ COLORMAP_ITEM(GRADIENT_RED_WHITE_BLUE  , "Red-white-blue"  , Colormap::RedWhiteB
 namespace Lab {
 namespace Colormap {
 
-enum Id {
+enum class Id {
 #define COLORMAP_ITEM(A, B, C) A,
 	COLORMAP_TABLE
 #undef COLORMAP_ITEM

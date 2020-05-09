@@ -70,8 +70,8 @@ public:
 		const std::string& figureName,
 		Project::GridDataType* gridData=nullptr,
 		const std::vector<Project::PointType>* pointList=nullptr,
-		Visualization::Value visualization=Visualization::VALUE_DEFAULT,
-		Colormap::Id colormap=Colormap::DEFAULT,
+		Visualization::Value visualization=Visualization::Value::DEFAULT,
+		Colormap::Id colormap=Colormap::Id::DEFAULT,
 		double valueScale=0.0);
 	void showMultiLayer3D(
 		int id,

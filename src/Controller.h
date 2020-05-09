@@ -38,7 +38,7 @@ public:
 	void connectProcessingNode(const ProcessingNode* node);
 	void exit();
 	void enableProcessing();
-	bool processingEnabled() const { return (state_ == STATE_PROCESSING_ENABLED); }
+	bool processingEnabled() const { return (state_ == State::PROCESSING_ENABLED); }
 signals:
 	void processingFinished();
 	void processingRequested();
@@ -46,9 +46,9 @@ private slots:
 	void execAfterProcessing();
 	void execAfterError();
 private:
-	enum State {
-		STATE_PROCESSING_STOPPED,
-		STATE_PROCESSING_ENABLED
+	enum class State {
+		PROCESSING_STOPPED,
+		PROCESSING_ENABLED
 	};
 
 	static void showTimestamp();

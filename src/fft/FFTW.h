@@ -42,10 +42,10 @@
 namespace Lab {
 
 struct FFTWPlan {
-	enum Type {
-		TYPE_INVALID = 0,
-		TYPE_FLOAT   = 1,
-		TYPE_DOUBLE  = 2
+	enum class Type {
+		INVALID = 0,
+		FLOAT   = 1,
+		DOUBLE  = 2
 	};
 	Type type;
 	union {
@@ -53,11 +53,11 @@ struct FFTWPlan {
 		fftw_plan plan;
 	};
 
-	FFTWPlan() : type(TYPE_INVALID) {
+	FFTWPlan() : type(Type::INVALID) {
 		plan = nullptr;
 	}
 	void reset() {
-		type = TYPE_INVALID;
+		type = Type::INVALID;
 		plan = nullptr;
 	}
 };
@@ -79,7 +79,7 @@ public:
 		fftwf_plan p = fftwf_plan_dft_r2c_1d(n, in, out, flags);
 		if (p == nullptr) THROW_EXCEPTION(Exception, "Error in fftw_plan_dft_r2c_1d.");
 		FFTWPlan plan;
-		plan.type = FFTWPlan::TYPE_FLOAT;
+		plan.type = FFTWPlan::Type::FLOAT;
 		plan.planF = p;
 		return plan;
 	}
@@ -87,7 +87,7 @@ public:
 		fftw_plan p = fftw_plan_dft_r2c_1d(n, in, out, flags);
 		if (p == nullptr) THROW_EXCEPTION(Exception, "Error in fftw_plan_dft_r2c_1d.");
 		FFTWPlan plan;
-		plan.type = FFTWPlan::TYPE_DOUBLE;
+		plan.type = FFTWPlan::Type::DOUBLE;
 		plan.plan = p;
 		return plan;
 	}
@@ -96,7 +96,7 @@ public:
 		fftwf_plan p = fftwf_plan_dft_c2r_1d(n, in, out, flags);
 		if (p == nullptr) THROW_EXCEPTION(Exception, "Error in fftw_plan_dft_c2r_1d.");
 		FFTWPlan plan;
-		plan.type = FFTWPlan::TYPE_FLOAT;
+		plan.type = FFTWPlan::Type::FLOAT;
 		plan.planF = p;
 		return plan;
 	}
@@ -104,7 +104,7 @@ public:
 		fftw_plan p = fftw_plan_dft_c2r_1d(n, in, out, flags);
 		if (p == nullptr) THROW_EXCEPTION(Exception, "Error in fftw_plan_dft_c2r_1d.");
 		FFTWPlan plan;
-		plan.type = FFTWPlan::TYPE_DOUBLE;
+		plan.type = FFTWPlan::Type::DOUBLE;
 		plan.plan = p;
 		return plan;
 	}
@@ -113,7 +113,7 @@ public:
 		fftwf_plan p = fftwf_plan_dft_1d(n, in, out, FFTW_BACKWARD, flags);
 		if (p == nullptr) THROW_EXCEPTION(Exception, "Error in fftw_plan_dft_1d.");
 		FFTWPlan plan;
-		plan.type = FFTWPlan::TYPE_FLOAT;
+		plan.type = FFTWPlan::Type::FLOAT;
 		plan.planF = p;
 		return plan;
 	}
@@ -121,17 +121,17 @@ public:
 		fftw_plan p = fftw_plan_dft_1d(n, in, out, FFTW_BACKWARD, flags);
 		if (p == nullptr) THROW_EXCEPTION(Exception, "Error in fftw_plan_dft_1d.");
 		FFTWPlan plan;
-		plan.type = FFTWPlan::TYPE_DOUBLE;
+		plan.type = FFTWPlan::Type::DOUBLE;
 		plan.plan = p;
 		return plan;
 	}
 
 	void destroy_plan(FFTWPlan& p) {
 		switch (p.type) {
-		case FFTWPlan::TYPE_FLOAT:
+		case FFTWPlan::Type::FLOAT:
 			fftwf_destroy_plan(p.planF);
 			break;
-		case FFTWPlan::TYPE_DOUBLE:
+		case FFTWPlan::Type::DOUBLE:
 			fftw_destroy_plan(p.plan);
 			break;
 		default:
@@ -158,14 +158,14 @@ public:
 
 	static void execute(FFTWPlan p) {
 		switch (p.type) {
-		case FFTWPlan::TYPE_FLOAT:
+		case FFTWPlan::Type::FLOAT:
 			fftwf_execute(p.planF);
 			break;
-		case FFTWPlan::TYPE_DOUBLE:
+		case FFTWPlan::Type::DOUBLE:
 			fftw_execute(p.plan);
 			break;
 		default:
-			THROW_EXCEPTION(InvalidValueException, "Invalid plan type: " << p.type << '.');
+			THROW_EXCEPTION(InvalidValueException, "Invalid plan type.");
 		}
 	}
 	static void execute(fftw_plan p) {

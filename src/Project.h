@@ -141,8 +141,8 @@ public:
 						const Matrix<T>* gridData,
 						const std::vector<U>* pointList,
 						bool waitPending=true,
-						Visualization::Value visualization=Visualization::VALUE_DEFAULT,
-						Colormap::Id colormap=Colormap::DEFAULT,
+						Visualization::Value visualization=Visualization::Value::DEFAULT,
+						Colormap::Id colormap=Colormap::Id::DEFAULT,
 						double valueScale=0.0);
 
 	// Called by the producer.
@@ -199,8 +199,8 @@ private:
 			, newGridData()
 			, newPointList()
 			, figureId()
-			, visualization(Visualization::VALUE_DEFAULT)
-			, colormap(Colormap::DEFAULT)
+			, visualization(Visualization::Value::DEFAULT)
+			, colormap(Colormap::Id::DEFAULT)
 			, figureName("Figure")
 			, valueScale()
 		{ }

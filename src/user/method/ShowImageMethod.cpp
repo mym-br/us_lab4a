@@ -72,10 +72,10 @@ ShowImageMethod::execute()
 		projPointList.resize(pointsX.size());
 		Util::copyXYZFromSimpleVectors(pointsX, pointsY, pointsZ, projPointList);
 		project_.showFigure3D(1, "Image", &projGridData, &projPointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS);
 	} else {
 		project_.showFigure3D(1, "Image", &projGridData, Project::emptyPointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS);
 	}
 }
 

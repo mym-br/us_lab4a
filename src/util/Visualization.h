@@ -18,20 +18,20 @@
 #define VISUALIZATION_H
 
 #define VISUALIZATION_VALUE_TABLE \
-VISUALIZATION_VALUE_ITEM(VALUE_RAW_LINEAR      , "Raw - linear"      ) \
-VISUALIZATION_VALUE_ITEM(VALUE_RECTIFIED_LINEAR, "Rectified - linear") \
-VISUALIZATION_VALUE_ITEM(VALUE_RECTIFIED_LOG   , "Rectified - dB"    ) \
-VISUALIZATION_VALUE_ITEM(VALUE_ENVELOPE_LINEAR , "Envelope - linear" ) \
-VISUALIZATION_VALUE_ITEM(VALUE_ENVELOPE_LOG    , "Envelope - dB"     ) \
+VISUALIZATION_VALUE_ITEM(RAW_LINEAR      , "Raw - linear"      ) \
+VISUALIZATION_VALUE_ITEM(RECTIFIED_LINEAR, "Rectified - linear") \
+VISUALIZATION_VALUE_ITEM(RECTIFIED_LOG   , "Rectified - dB"    ) \
+VISUALIZATION_VALUE_ITEM(ENVELOPE_LINEAR , "Envelope - linear" ) \
+VISUALIZATION_VALUE_ITEM(ENVELOPE_LOG    , "Envelope - dB"     ) \
 
 namespace Lab {
 namespace Visualization {
 
-enum Value {
+enum class Value {
 #define VISUALIZATION_VALUE_ITEM(A, B) A,
 	VISUALIZATION_VALUE_TABLE
 #undef VISUALIZATION_VALUE_ITEM
-	VALUE_DEFAULT // must be the last
+	DEFAULT // must be the last
 };
 
 extern const char* valueNameList[];

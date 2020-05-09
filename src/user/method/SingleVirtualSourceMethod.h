@@ -103,7 +103,7 @@ SingleVirtualSourceMethod<TFloat>::useCoherenceFactor(TFloat valueScale, const s
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
-				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename TFloat>
@@ -122,7 +122,7 @@ SingleVirtualSourceMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<XYZ
 	};
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
-				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS, valueScale);
 
 	LOG_DEBUG << ">>> Acquisition + processing time: " << tProc.getTime();
 }
@@ -143,7 +143,7 @@ SingleVirtualSourceMethod<TFloat>::execContinuousNetworkImaging(TFloat valueScal
 		}
 
 		project_.showFigure3D(1, "Image", &gridData_, &pointList_,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+					true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS, valueScale);
 
 		if (++n == 10) {
 			LOG_INFO << 10.0 / t.getTime() << " image/s";

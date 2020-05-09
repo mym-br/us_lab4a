@@ -343,7 +343,7 @@ SimCircularSourceMethod<TFloat>::execTransientAcousticField()
 	std::vector<XYZ<float>> pointList = {{0.0, 0.0, 0.0}};
 
 	project_.showFigure3D(1, "Acoustic field", &gridData, &pointList,
-					true, Visualization::VALUE_RECTIFIED_LINEAR, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::Value::RECTIFIED_LINEAR, Colormap::Id::GRADIENT_VIRIDIS);
 
 	project_.saveHDF5(simData.exc, mainData.outputDir + "/v"        , "value");
 	project_.saveHDF5(tExc       , mainData.outputDir + "/v_time"   , "value");
@@ -465,7 +465,7 @@ SimCircularSourceMethod<TFloat>::execTransientPropagation()
 			}
 
 			project_.showFigure3D(1, "Propagation", &projGridData, &pointList,
-						true, Visualization::VALUE_RAW_LINEAR, Colormap::GRADIENT_GRAY);
+						true, Visualization::Value::RAW_LINEAR, Colormap::Id::GRADIENT_GRAY);
 
 			Util::sleepMs(propagPause);
 		}

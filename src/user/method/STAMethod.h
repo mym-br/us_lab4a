@@ -91,7 +91,7 @@ template<typename TFloat>
 STAMethod<TFloat>::STAMethod(Project& project)
 		: project_(project)
 		, pointList_{{0.0, 0.0, 0.0}}
-		, visual_(Visualization::VALUE_ENVELOPE_LOG)
+		, visual_(Visualization::Value::ENVELOPE_LOG)
 {
 }
 
@@ -110,7 +110,7 @@ STAMethod<TFloat>::useCoherenceFactor(TFloat valueScale, bool calculateEnvelope,
 	project_.saveImageToHDF5(gridData_, outputDir, "image_cf", "cf");
 
 	project_.showFigure3D(2, "Coherence factor image", &gridData_, &pointList_,
-				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename TFloat>
@@ -126,7 +126,7 @@ STAMethod<TFloat>::process(TFloat valueScale, ArrayProcessor<XYZValueFactor<TFlo
 	project_.saveXYZToHDF5(gridData_, outputDir);
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
-				true, visual_, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, visual_, Colormap::Id::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename TFloat>
@@ -150,7 +150,7 @@ STAMethod<TFloat>::process(TFloat valueScale, P& processor, unsigned int baseEle
 	project_.saveXYZToHDF5(gridData_, outputDir);
 
 	project_.showFigure3D(1, "Raw image", &gridData_, &pointList_,
-				true, visual_, Colormap::GRADIENT_VIRIDIS, valueScale);
+				true, visual_, Colormap::Id::GRADIENT_VIRIDIS, valueScale);
 }
 
 template<typename TFloat>
@@ -214,7 +214,7 @@ STAMethod<TFloat>::execute()
 	const TFloat nyquistLambda = Util::nyquistLambda(config.propagationSpeed, config.maxFrequency);
 	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData_);
 
-	visual_ = Visualization::VALUE_ENVELOPE_LOG;
+	visual_ = Visualization::Value::ENVELOPE_LOG;
 
 	switch (project_.method()) {
 	case MethodEnum::sta_simple_simulated:
@@ -230,7 +230,7 @@ STAMethod<TFloat>::execute()
 		{
 			const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 			const auto rxApodDesc       = imagPM->value<std::string>( "rx_apodization");
-			visual_ = Visualization::VALUE_RECTIFIED_LOG;
+			visual_ = Visualization::Value::RECTIFIED_LOG;
 			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 			std::vector<TFloat> rxApod(config.numElements);
 			WindowFunction::get(rxApodDesc, config.numElements, rxApod);
@@ -248,7 +248,7 @@ STAMethod<TFloat>::execute()
 		if constexpr (std::is_same<TFloat, float>::value) {
 			const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 			const auto rxApodDesc       = imagPM->value<std::string>( "rx_apodization");
-			visual_ = Visualization::VALUE_RECTIFIED_LOG;
+			visual_ = Visualization::Value::RECTIFIED_LOG;
 			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 			std::vector<TFloat> rxApod(config.numElements);
 			WindowFunction::get(rxApodDesc, config.numElements, rxApod);
@@ -270,7 +270,7 @@ STAMethod<TFloat>::execute()
 		{
 			const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
 			const auto rxApodDesc       = imagPM->value<std::string>( "rx_apodization");
-			visual_ = Visualization::VALUE_RECTIFIED_LOG;
+			visual_ = Visualization::Value::RECTIFIED_LOG;
 			AnalyticSignalCoherenceFactorProcessor<TFloat> coherenceFactor(*project_.getSubParamMap("coherence_factor_config_file"));
 			std::vector<TFloat> rxApod(config.numElements);
 			WindowFunction::get(rxApodDesc, config.numElements, rxApod);

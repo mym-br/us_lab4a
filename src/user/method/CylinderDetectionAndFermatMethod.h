@@ -402,7 +402,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingVectorSum()
 
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_SHOW_PEAK_IMAGES
 		project_.showFigure3D(1, "Peak detection", &gridData, Project::emptyPointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::Value::RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
 #endif
 		if (project_.processingCancellationRequested()) {
 			LOG_INFO  << "########## Processing cancelled.";
@@ -523,7 +523,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCrossCorrelation()
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_POINT_DETECTION_SHOW_PEAK_IMAGES
 		//project_.showFigure3D(baseElemIdx, "Peak detection", &gridData, &arc,
 		project_.showFigure3D(baseElemIdx, "Peak detection", &gridData, Project::emptyPointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::Value::RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
 #endif
 		if (project_.processingCancellationRequested()) {
 			LOG_INFO  << "########## Processing cancelled.";
@@ -1349,7 +1349,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execTwoMediumImaging()
 #endif
 
 	project_.showFigure3D(1, "Raw", &gridData, &localInterfacePointList,
-				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
+				true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS);
 
 	if (coherenceFactorEnabled) {
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
@@ -1366,7 +1366,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execTwoMediumImaging()
 		project_.saveHDF5(gridData, String::Begin() << imageDir << "/final_cf_image_" << finalImageBaseElem << String::End(), "image", Util::CopyValueOp());
 #endif
 		project_.showFigure3D(2, "CF", &gridData, &localInterfacePointList,
-					true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_VIRIDIS);
+					true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_VIRIDIS);
 	}
 }
 
@@ -1572,7 +1572,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging()
 #endif
 
 	project_.showFigure3D(1, "Raw", &gridData, &interfacePointList,
-				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_INVERTED_GRAY);
+				true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_INVERTED_GRAY);
 }
 
 template<typename TFloat>
@@ -1735,7 +1735,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingCyl()
 #endif
 
 	project_.showFigure3D(1, "Raw", &gridData, &interfacePointList,
-				true, Visualization::VALUE_RECTIFIED_LOG, Colormap::GRADIENT_INVERTED_GRAY);
+				true, Visualization::Value::RECTIFIED_LOG, Colormap::Id::GRADIENT_INVERTED_GRAY);
 }
 
 template<typename TFloat>
