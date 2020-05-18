@@ -302,13 +302,12 @@ if(USE_CUDA)
         src/util
         src/user/acquisition
         src/user/configuration
-        ${Qt5Core_INCLUDE_DIRS}
         ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
     )
     set_target_properties(usercuda PROPERTIES
         CUDA_SEPARABLE_COMPILATION ON
         POSITION_INDEPENDENT_CODE ON)
-    target_compile_features(usercuda PUBLIC cxx_std_14)
+    target_compile_features(usercuda PRIVATE cxx_std_14)
     target_compile_options(usercuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--compiler-options=-march=native>)
 endif()
 
@@ -334,7 +333,6 @@ target_include_directories(uslab4a PUBLIC
 
     ${FFTW3_INCLUDE_DIRS}
     ${FFTW3F_INCLUDE_DIRS}
-    ${GLU_INCLUDE_DIRS}
     ${HDF5_INCLUDE_DIRS}
 )
 
@@ -364,6 +362,10 @@ target_link_libraries(us_lab4a_gui
     uslab4a
 
     stdc++fs
+)
+
+target_include_directories(us_lab4a_gui PUBLIC
+    ${GLU_INCLUDE_DIRS}
 )
 
 add_executable(us_lab4a
