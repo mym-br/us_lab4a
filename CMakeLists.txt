@@ -19,8 +19,8 @@ pkg_check_modules(GLU REQUIRED IMPORTED_TARGET glu)
 pkg_check_modules(HDF5 REQUIRED IMPORTED_TARGET hdf5)
 
 if(UNIX)
-    if(NOT APPLE)
-        set(CMAKE_CXX_FLAGS "-Wall -Wextra -march=native")
+    if(CMAKE_CXX_FLAGS MATCHES "^ *$")
+        set(CMAKE_CXX_FLAGS "-Wall -Wextra -march=native" CACHE STRING "Flags used by the CXX compiler during all build types." FORCE)
     endif()
 endif()
 
