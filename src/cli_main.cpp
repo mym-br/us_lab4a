@@ -39,7 +39,7 @@ constexpr const char* FFTW_WISDOM_FILE_NAME_DP = "fftw_wisdom_dp-us_lab4a.txt";
 
 namespace Lab {
 
-struct USLab4a {};
+class USLab4a {};
 
 }
 

@@ -1375,7 +1375,8 @@ void
 CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImaging()
 {
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
-	const auto imageDir = project_.taskParamMap().value<std::string>("image_dir");
+	const ParameterMap& taskPM = project_.taskParamMap();
+	const auto imageDir = taskPM.value<std::string>("image_dir");
 	project_.createDirectory(imageDir, false);
 #endif
 	const ParamMapPtr methodPM = project_.getSubParamMap("method_config_file");
@@ -1581,7 +1582,8 @@ void
 CylinderDetectionAndFermatMethod<TFloat>::execCombinedTwoMediumImagingCyl()
 {
 #ifdef CYL_DETECT_AND_FERMAT_METHOD_IMAGING_SAVE_DATA
-	const auto imageDir = project_.taskParamMap().value<std::string>("image_dir");
+	const ParameterMap& taskPM = project_.taskParamMap();
+	const auto imageDir = taskPM.value<std::string>("image_dir");
 	project_.createDirectory(imageDir, false);
 #endif
 	const ParamMapPtr methodPM = project_.getSubParamMap("method_config_file");
