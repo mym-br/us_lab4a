@@ -34,9 +34,9 @@ namespace Lab {
 Matrix<XYZValue<float>>* const Project::emptyGridData = nullptr;
 std::vector<XYZ<float>>* const Project::emptyPointList = nullptr;
 
-Project::Project(USLab4a& mainWindow)
+Project::Project(USLab4a& mainClass)
 		: method_(MethodEnum::invalid)
-		, mainWindow_(mainWindow)
+		, mainClass_(mainClass)
 		, useGUI_(true)
 {
 }
@@ -80,7 +80,7 @@ Project::handleShowFigure2DRequest()
 {
 	const std::lock_guard<std::mutex> locker(figure2DData_.mutex);
 	if (!figure2DData_.showFigureRequested) return;
-	mainWindow_.showFigure2D(
+	mainClass_.showFigure2D(
 			figure2DData_.figureId,
 			figure2DData_.figureName,
 			figure2DData_.xList,
@@ -95,7 +95,7 @@ Project::handleShowFigure3DRequest()
 {
 	const std::lock_guard<std::mutex> locker(figure3DData_.mutex);
 	if (!figure3DData_.showFigureRequested) return;
-	mainWindow_.showFigure3D(
+	mainClass_.showFigure3D(
 			figure3DData_.figureId,
 			figure3DData_.figureName,
 			figure3DData_.newGridData ? &figure3DData_.gridData : nullptr,
@@ -112,7 +112,7 @@ Project::handleShowMultiLayer3DRequest()
 {
 	const std::lock_guard<std::mutex> locker(multiLayer3DData_.mutex);
 	if (!multiLayer3DData_.showFigureRequested) return;
-	mainWindow_.showMultiLayer3D(
+	mainClass_.showMultiLayer3D(
 			multiLayer3DData_.figureId,
 			multiLayer3DData_.figureName,
 			multiLayer3DData_.pointArray,

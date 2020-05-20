@@ -371,6 +371,7 @@ target_include_directories(us_lab4a_gui PUBLIC
 add_executable(us_lab4a
     src/cli_main.cpp
     src/cli_Project.cpp
+    src/cli_USLab4a.h
 )
 
 target_link_libraries(us_lab4a

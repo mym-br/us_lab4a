@@ -23,6 +23,8 @@
 
 #include "KeyValueFileReader.h"
 
+#include "cli_USLab4a.h"
+
 namespace fs = std::filesystem;
 
 namespace Lab {
@@ -30,11 +32,12 @@ namespace Lab {
 Matrix<XYZValue<float>>* const Project::emptyGridData = nullptr;
 std::vector<XYZ<float>>* const Project::emptyPointList = nullptr;
 
-Project::Project(USLab4a& mainWindow)
+Project::Project(USLab4a& mainClass)
 		: method_(MethodEnum::invalid)
-		, mainWindow_(mainWindow)
+		, mainClass_(mainClass)
 		, useGUI_()
 {
+	mainClass_.showMessage("[cli_Project.cpp] Project");
 }
 
 void

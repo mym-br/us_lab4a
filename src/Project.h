@@ -57,7 +57,7 @@ public:
 	typedef Matrix<XYZValue<float>> GridDataType;
 	typedef XYZ<float> PointType;
 
-	Project(USLab4a& mainWindow);
+	Project(USLab4a& mainClass);
 	~Project() = default;
 
 	const std::string& directory() const { return directory_; }
@@ -252,7 +252,7 @@ private:
 	Project& operator=(Project&&) = delete;
 
 	MethodEnum method_;
-	USLab4a& mainWindow_;
+	USLab4a& mainClass_;
 	ParamMapPtr taskParameterMap_;
 	std::string directory_;
 	std::string expDirectory_;

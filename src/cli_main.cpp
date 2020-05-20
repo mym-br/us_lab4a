@@ -28,18 +28,14 @@
 #include "Project.h"
 #include "Timer.h"
 
+#include "cli_USLab4a.h"
+
 
 
 namespace {
 
 constexpr const char* FFTW_WISDOM_FILE_NAME_SP = "fftw_wisdom_sp-us_lab4a.txt";
 constexpr const char* FFTW_WISDOM_FILE_NAME_DP = "fftw_wisdom_dp-us_lab4a.txt";
-
-}
-
-namespace Lab {
-
-class USLab4a {};
 
 }
 
@@ -89,8 +85,8 @@ main(int argc, char* argv[])
 	Lab::Log::setLogToStdOut();
 	Lab::Log::setLevel(Lab::Log::LEVEL_DEBUG);
 
-	Lab::USLab4a dummy;
-	Lab::Project project(dummy);
+	Lab::USLab4a lab;
+	Lab::Project project(lab);
 
 	project.setDirectory(projectDir);
 	project.setExpDirectory(experimentDir);
