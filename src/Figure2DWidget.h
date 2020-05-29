@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2019 Marcelo Y. Matuda                                       *
+ *  Copyright 2019, 2020 Marcelo Y. Matuda                                 *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,10 +18,10 @@
 #ifndef FIGURE_2D_WIDGET_H
 #define FIGURE_2D_WIDGET_H
 
-#include <algorithm>
 #include <iostream>
 #include <vector>
 
+#include <QPointF>
 #include <QString>
 #include <QWidget>
 
@@ -36,6 +36,10 @@ public:
 	void setXLabel(QString label);
 	void setYLabel(QString label);
 	void enablePointMarker(bool enable) { drawPointMarker_ = enable; }
+	void setExpandAxisTicks(bool value) { expandAxisTicks_ = value; }
+	void setSymmetricYRange(bool value) { symmetricYRange_ = value; }
+	void setReduceYRange(bool value) { reduceYRange_ = value; }
+	void setXCursorIndex(int value) { xCursorIndex_ = value; }
 protected:
 	virtual void paintEvent(QPaintEvent* event);
 	virtual void mouseDoubleClickEvent(QMouseEvent* event);
@@ -47,14 +51,18 @@ protected:
 private:
 	void handleTransform();
 	void autoSetAxesTicks(bool expand=false);
-	bool resetFigure();
+	bool resetFigure(bool reduceYRange=true);
 
 	static void autoSetAxisTicks(double minValue, double maxValue,
 					std::vector<double>& ticks, double& offset, double& coef,
-					bool expand);
+					bool expand, bool symmetric);
 
 	bool figureChanged_;
 	bool drawPointMarker_;
+	bool expandAxisTicks_;
+	bool symmetricYRange_;
+	bool reduceYRange_; // if false, updateData() will only extend the range
+	bool showCoordinates_;
 	int leftMargin_;
 	int rightMargin_;
 	int topMargin_;
@@ -70,6 +78,10 @@ private:
 	double xEnd_;
 	double yBegin_;
 	double yEnd_;
+	double xBeginData_;
+	double xEndData_;
+	double yBeginData_;
+	double yEndData_;
 	double xTickOffset_;
 	double yTickOffset_;
 	double xTickCoef_;
@@ -85,6 +97,7 @@ private:
 	QString xLabel_;
 	QString yLabel_;
 	QPointF lastMousePos_;
+	int xCursorIndex_;
 };
 
 template<typename T>
@@ -107,7 +120,7 @@ Figure2DWidget::updateData(const std::vector<T>& x, const std::vector<T>& y)
 		yList_[i] = y[i];
 	}
 
-	if (!resetFigure()) {
+	if (!resetFigure(reduceYRange_)) {
 		xList_.clear();
 		yList_.clear();
 	}
