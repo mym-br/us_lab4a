@@ -98,6 +98,7 @@ private:
 	QString yLabel_;
 	QPointF lastMousePos_;
 	int xCursorIndex_;
+	int maxXTickWidth_;
 };
 
 template<typename T>

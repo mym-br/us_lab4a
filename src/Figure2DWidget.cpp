@@ -30,6 +30,7 @@ constexpr int SPACING = 10;
 constexpr int TEXT_SPACING = 10;
 constexpr int TICK_SIZE = 5;
 constexpr int MIN_AXIS_DIV = 8;
+constexpr int MIN_X_TICKS_MARGIN = 10;
 constexpr unsigned int MAX_X_LIST_SIZE_WITH_MARKER = 1000;
 constexpr double WHEEL_ZOOM_FACTOR = 0.01;
 constexpr double MOUSE_ZOOM_FACTOR = 0.002;
@@ -83,6 +84,7 @@ Figure2DWidget::Figure2DWidget(QWidget* parent)
 		, xLabel_("x")
 		, yLabel_("y")
 		, xCursorIndex_(-1)
+		, maxXTickWidth_()
 {
 	setAutoFillBackground(true);
 	setBackgroundRole(QPalette::Base);
@@ -138,6 +140,11 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 		xLabelWidth_ = fm.width(xLabel_);
 		yLabelWidth_ = fm.width(yLabel_);
 
+		maxXTickWidth_ = 0;
+		for (unsigned int i = 0; i < xTicks_.size(); ++i) {
+			maxXTickWidth_ = std::max(maxXTickWidth_, fm.width(formatTickValue(xTicks_[i], showXTicksFractionalPart)));
+		}
+
 		handleTransform();
 
 		figureChanged_ = false;
@@ -151,8 +158,11 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	// X axis.
 	const double vTick = vBegin + TICK_SIZE;
 	const double vText = vTick + TEXT_SPACING + textCapHeight_;
-	for (float tick : xTicks_) {
-		const double u = uBegin + (tick * xTickCoef_ + xTickOffset_ - xBegin_) * xScale_;
+	double uOld = 0;
+	for (unsigned int i = 0; i < xTicks_.size(); ++i) {
+		const double u = uBegin + (xTicks_[i] * xTickCoef_ + xTickOffset_ - xBegin_) * xScale_;
+		if (i > 0 && u - uOld < maxXTickWidth_ + MIN_X_TICKS_MARGIN) continue;
+
 		// Vertical line.
 		painter.setPen(Qt::lightGray);
 		painter.drawLine(QPointF(u, vBegin), QPointF(u, vEnd));
@@ -160,7 +170,9 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 		// Tick.
 		painter.drawLine(QPointF(u, vBegin), QPointF(u, vTick));
 		// Tich value.
-		painter.drawText(QPointF(u, vText), formatTickValue(tick, showXTicksFractionalPart));
+		painter.drawText(QPointF(u, vText), formatTickValue(xTicks_[i], showXTicksFractionalPart));
+
+		uOld = u;
 	}
 	// X label.
 	const double vLabelPos = vText + TEXT_SPACING + textCapHeight_;
