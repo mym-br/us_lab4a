@@ -18,7 +18,7 @@
 #ifndef METHOD_TABLE_H
 #define METHOD_TABLE_H
 
-#ifdef USE_OPENCL
+#ifdef LAB_ENABLE_OPENCL
 # define OCL_METHOD_TABLE \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<double>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_dp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<float> , cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp) \
@@ -30,7 +30,7 @@ METHOD_ITEM(STAMethod<float> , sta_vectorial_ocl_sp_saved)
 # define OCL_METHOD_TABLE
 #endif
 
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 # define CUDA_METHOD_TABLE \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_cuda_sp) \
 METHOD_ITEM(CylinderDetectionAndFermatMethod<float>, cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_cuda_2_sp) \

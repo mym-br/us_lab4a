@@ -63,11 +63,11 @@
 #include "XZComplexValue.h"
 #include "XZComplexValueFactor.h"
 #include "XZValueFactor.h"
-#ifdef USE_OPENCL
+#ifdef LAB_ENABLE_OPENCL
 # include "VectorialCombinedTwoMediumImagingOCLProcessor.h"
 # include "VectorialCombinedTwoMediumImagingOCLProcessor2.h"
 #endif
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 # include "VectorialCombinedTwoMediumImagingCUDAProcessor.h"
 # include "VectorialCombinedTwoMediumImagingCUDAProcessor2.h"
 #endif
@@ -769,7 +769,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingCCBFPitchCatch()
 			signalStartOffset);
 
 	BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(p, baseElemList.size())
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	pointPositionList.clear();
 #endif
 
@@ -1159,7 +1159,7 @@ CylinderDetectionAndFermatMethod<TFloat>::detectPointsUsingTangentCurveGeometry(
 			signalStartOffset);
 
 	BEGIN_EXECUTION_TIME_MEASUREMENT_WITH_PARTIAL_X_N(p, baseElemList.size())
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	pointPositionList.clear();
 #endif
 
@@ -2273,7 +2273,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_sta_sp:
 		execCombinedTwoMediumImaging();
 		break;
-#ifdef USE_OPENCL
+#ifdef LAB_ENABLE_OPENCL
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_dp:
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_ocl_sp:
 		execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingOCLProcessor<TFloat>>();
@@ -2283,7 +2283,7 @@ CylinderDetectionAndFermatMethod<TFloat>::execute()
 		execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingOCLProcessor2<TFloat>>();
 		break;
 #endif
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 	case MethodEnum::cylinder_detection_and_fermat_two_medium_imaging_combined_cyl_wave_cuda_sp:
 		if constexpr (std::is_same<TFloat, float>::value) {
 			execCombinedTwoMediumImagingCyl<VectorialCombinedTwoMediumImagingCUDAProcessor>();

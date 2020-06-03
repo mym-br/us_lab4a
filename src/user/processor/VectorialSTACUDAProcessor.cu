@@ -332,12 +332,12 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 		//LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		Timer acquisitionTimer;
 #endif
 		acquisition_.execute(txElem, acqData_);
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		tAcquisitionML.put(acquisitionTimer.getTime());
 #endif
 		if (!initialized_) {
@@ -382,7 +382,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 
 		const unsigned int samplesPerChannelLow = acqData_.n2();
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		Timer prepareDataTimer;
 #endif
 		PrepareData<MFloat> prepareDataOp = {
@@ -400,7 +400,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements, 1 /* grain size */), prepareDataOp, tbb::simple_partitioner());
 		//prepareDataOp(tbb::blocked_range<unsigned int>(0, config_.numElements)); // single-thread
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		tPrepareDataML.put(prepareDataTimer.getTime());
 #endif
 	}
@@ -424,7 +424,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 	LOG_DEBUG << "PREPARE BUFFERS " << prepareBuffersTimer.getTime();
 
 	{
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		Timer calculateDelaysTimer;
 #endif
 		const std::size_t rowBlockSize = 32;
@@ -445,7 +445,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 			data_->delayTensor.devPtr);
 		checkKernelLaunchError();
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		exec(cudaDeviceSynchronize());
 		tCalculateDelaysML.put(calculateDelaysTimer.getTime());
 #endif
@@ -455,7 +455,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 	// Delay and sum.
 	//==================================================
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	Timer delaySumTimer;
 #endif
 	if (coherenceFactor_.enabled()) {
@@ -509,7 +509,7 @@ VectorialSTACUDAProcessor::process(Matrix<XYZValueFactor<MFloat>>& gridData)
 		checkKernelLaunchError();
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	exec(cudaDeviceSynchronize());
 	tDelaySumML.put(delaySumTimer.getTime());
 #endif

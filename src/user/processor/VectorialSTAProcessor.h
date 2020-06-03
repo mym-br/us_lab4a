@@ -68,7 +68,7 @@ public:
 	virtual void prepare(unsigned int baseElement);
 	virtual void process(Matrix<TPoint>& gridData);
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tAcquisitionML;
 	MeasurementList<double> tPrepareDataML;
 	MeasurementList<double> tDelaySumML;
@@ -167,12 +167,12 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 		//LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		Timer acquisitionTimer;
 #endif
 		acquisition_.execute(txElem, acqData_);
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		tAcquisitionML.put(acquisitionTimer.getTime());
 #endif
 		if (!initialized_) {
@@ -204,7 +204,7 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 		const unsigned int samplesPerChannelLow = acqData_.n2();
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		Timer prepareDataTimer;
 #endif
 		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements),
@@ -227,7 +227,7 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 						&analyticSignalTensor_(txElem - config_.firstTxElem, rxElem, 0));
 			}
 		});
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		tPrepareDataML.put(prepareDataTimer.getTime());
 #endif
 	}
@@ -242,7 +242,7 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 
 	IterationCounter::reset(numCols);
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	Timer delaySumTimer;
 #endif
 	if (coherenceFactor_.enabled()) {
@@ -328,7 +328,7 @@ VectorialSTAProcessor<TFloat, TPoint>::process(Matrix<TPoint>& gridData)
 			IterationCounter::add(r.end() - r.begin());
 		});
 	}
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	tDelaySumML.put(delaySumTimer.getTime());
 #endif
 

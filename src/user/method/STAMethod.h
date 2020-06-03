@@ -48,10 +48,10 @@
 #include "WindowFunction.h"
 #include "XYZ.h"
 #include "XYZValueFactor.h"
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 # include "VectorialSTACUDAProcessor.h"
 #endif
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_OPENCL
 # include "VectorialSTAOCLProcessor.h"
 #endif
 
@@ -179,10 +179,10 @@ STAMethod<TFloat>::execute()
 	case MethodEnum::sta_vectorial_dp_saved:
 	case MethodEnum::sta_sp_saved:
 	case MethodEnum::sta_vectorial_sp_saved:
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 	case MethodEnum::sta_vectorial_cuda_sp_saved:
 #endif
-#ifdef USE_OPENCL
+#ifdef LAB_ENABLE_OPENCL
 	case MethodEnum::sta_vectorial_ocl_dp_saved:
 	case MethodEnum::sta_vectorial_ocl_sp_saved:
 #endif
@@ -243,7 +243,7 @@ STAMethod<TFloat>::execute()
 			}
 		}
 		break;
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 	case MethodEnum::sta_vectorial_cuda_sp_saved:
 		if constexpr (std::is_same<TFloat, float>::value) {
 			const auto upsamplingFactor = imagPM->value<unsigned int>("upsampling_factor", 1, 128);
@@ -264,7 +264,7 @@ STAMethod<TFloat>::execute()
 		}
 		break;
 #endif
-#ifdef USE_OPENCL
+#ifdef LAB_ENABLE_OPENCL
 	case MethodEnum::sta_vectorial_ocl_dp_saved:
 	case MethodEnum::sta_vectorial_ocl_sp_saved:
 		{

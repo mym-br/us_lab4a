@@ -183,7 +183,7 @@ NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>::NumericArrayOfRectan
 					getKernels()};
 	clProgram_ = cl::Program(clContext_, kernelStrings);
 	std::ostringstream progOpt;
-	progOpt << OCL_PROGRAM_BUILD_OPTIONS
+	progOpt << LAB_OPENCL_PROGRAM_BUILD_OPTIONS
 			<< " -DMFloat=" << TemplateUtil::typeName<TFloat>();
 #ifdef NUMERIC_ARRAY_OF_RECTANGULAR_SOURCES_OCL_IMPULSE_RESPONSE_ACCUMULATE_WITH_LOCAL_MEM
 	progOpt << " -DWITH_LOCAL_MEM=1";

@@ -51,11 +51,11 @@
 #include "XYZ.h"
 #include "XYZValue.h"
 #include "XYZValueArray.h"
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 # include "NumericArrayOfRectangularSourcesCUDAImpulseResponse.h"
 # include "NumericRectangularSourceCUDAImpulseResponse.h"
 #endif
-#ifdef USE_OPENCL
+#ifdef LAB_ENABLE_OPENCL
 # include "NumericArrayOfRectangularSourcesOCLImpulseResponse.h"
 # include "NumericRectangularSourceOCLImpulseResponse.h"
 #endif
@@ -308,7 +308,7 @@ SimRectangularSourceMethod<TFloat>::execTransientRadiationPattern(bool sourceIsA
 						subElemSize,
 						dvdt, inputData, gridData);
 		}
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 	} else if (simData.irMethod == "numeric_cuda") {
 		if constexpr (std::is_same<TFloat, float>::value) {
 			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
@@ -333,7 +333,7 @@ SimRectangularSourceMethod<TFloat>::execTransientRadiationPattern(bool sourceIsA
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}
 #endif
-#ifdef USE_OPENCL
+#ifdef LAB_ENABLE_OPENCL
 	} else if (simData.irMethod == "numeric_ocl") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
@@ -463,7 +463,7 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 						subElemSize,
 						dvdt, gridData);
 		}
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 	} else if (simData.irMethod == "numeric_cuda") {
 		if constexpr (std::is_same<TFloat, float>::value) {
 			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
@@ -507,7 +507,7 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}
 #endif
-#ifdef USE_OPENCL
+#ifdef LAB_ENABLE_OPENCL
 	} else if (simData.irMethod == "numeric_ocl") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
@@ -639,7 +639,7 @@ SimRectangularSourceMethod<TFloat>::execTransientPropagation(bool sourceIsArray)
 						subElemSize,
 						dvdt, propagIndexList, gridData);
 		}
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 	} else if (simData.irMethod == "numeric_cuda") {
 		if constexpr (std::is_same<TFloat, float>::value) {
 			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
@@ -664,7 +664,7 @@ SimRectangularSourceMethod<TFloat>::execTransientPropagation(bool sourceIsArray)
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}
 #endif
-#ifdef USE_OPENCL
+#ifdef LAB_ENABLE_OPENCL
 	} else if (simData.irMethod == "numeric_ocl") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
@@ -800,7 +800,7 @@ SimRectangularSourceMethod<TFloat>::execImpulseResponse(bool sourceIsArray)
 						subElemSize);
 			impResp->getImpulseResponse(pointX, pointY, pointZ, hOffset, h);
 		}
-#ifdef USE_CUDA
+#ifdef LAB_ENABLE_CUDA
 	} else if (simData.irMethod == "numeric_cuda") {
 		if constexpr (std::is_same<TFloat, float>::value) {
 			const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
@@ -820,7 +820,7 @@ SimRectangularSourceMethod<TFloat>::execImpulseResponse(bool sourceIsArray)
 			THROW_EXCEPTION(InvalidValueException, "Invalid float type.");
 		}
 #endif
-#ifdef USE_OPENCL
+#ifdef LAB_ENABLE_OPENCL
 	} else if (simData.irMethod == "numeric_ocl") {
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {

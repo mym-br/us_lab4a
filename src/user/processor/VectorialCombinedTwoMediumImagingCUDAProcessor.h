@@ -80,7 +80,7 @@ public:
 		const Matrix<XZ<float>>& gridXZ,
 		Matrix<std::complex<float>>& gridValue);
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tMinRowIdxML;
 	MeasurementList<double> tMedium1DelayMatrixML;
 	MeasurementList<double> tCalculateDelaysML;

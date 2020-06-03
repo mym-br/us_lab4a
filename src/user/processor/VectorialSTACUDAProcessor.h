@@ -61,7 +61,7 @@ public:
 	virtual void prepare(unsigned int baseElement);
 	virtual void process(Matrix<XYZValueFactor<float>>& gridData);
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tAcquisitionML;
 	MeasurementList<double> tPrepareDataML;
 	MeasurementList<double> tCalculateDelaysML;

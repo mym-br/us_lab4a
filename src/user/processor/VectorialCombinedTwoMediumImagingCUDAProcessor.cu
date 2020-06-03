@@ -466,7 +466,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	const unsigned int fermatBlockSize = FermatPrinciple::calcBlockSizeForTwoStepSearch(interfacePointList.size(), r, lambda2_, maxFermatBlockSize_);
 	LOG_DEBUG << "fermatBlockSize: " << fermatBlockSize;
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	Timer minRowIdxTimer;
 #endif
 	//==================================================
@@ -503,7 +503,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	}
 	LOG_DEBUG << "number of valid grid points: " << gridPointIdx;
 	const std::size_t numGridPoints = gridPointIdx;
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	tMinRowIdxML.put(minRowIdxTimer.getTime());
 #endif
 
@@ -559,7 +559,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		ArrayGeometry::getElementX2D(config_.numElementsMux, config_.pitch, MFloat(0) /* offset */, xArray_);
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	Timer medium1DelayMatrixTimer;
 #endif
 	for (unsigned int elem = 0; elem < config_.numElementsMux; ++elem) {
@@ -569,7 +569,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 			delays[i] = Geometry::distance2DY0(xArray_[elem], ifPoint.x, ifPoint.z) * c2ByC1;
 		}
 	}
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	tMedium1DelayMatrixML.put(medium1DelayMatrixTimer.getTime());
 
 	Timer calculateDelaysTimer;
@@ -590,11 +590,11 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 	//tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols), calculateDelaysOp);
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, numCols, 1 /* grain size */), calculateDelaysOp, tbb::simple_partitioner());
 	//calculateDelaysOp(tbb::blocked_range<unsigned int>(0, numCols)); // single-thread
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	tCalculateDelaysML.put(calculateDelaysTimer.getTime());
 #endif
 	// Only one transmit element.
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	Timer prepareDataTimer;
 #endif
 	unsigned int stepIdx = 0;
@@ -614,7 +614,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 
 		++stepIdx;
 	}
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	tPrepareDataML.put(prepareDataTimer.getTime());
 
 	Timer processColumnTimer;
@@ -733,7 +733,7 @@ VectorialCombinedTwoMediumImagingCUDAProcessor::process(
 		}
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	tProcessColumnML.put(processColumnTimer.getTime());
 #endif
 	//LOG_DEBUG << "END ========== VectorialCombinedTwoMediumImagingCUDAProcessor::process ==========";

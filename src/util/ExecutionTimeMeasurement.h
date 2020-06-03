@@ -24,7 +24,7 @@
 
 #define EXECUTION_TIME_MEASUREMENT_ITERATIONS 10U
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 # include "Log.h"
 # include "MeasurementList.h"
 # include "Timer.h"
@@ -47,7 +47,7 @@
 
 
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 # define BEGIN_EXECUTION_TIME_MEASUREMENT \
 	{ MeasurementList<double> execTimeMeasML; \
 	for (unsigned int nExecTimeMeas = 0; nExecTimeMeas < EXECUTION_TIME_MEASUREMENT_ITERATIONS + 1; ++nExecTimeMeas) { \

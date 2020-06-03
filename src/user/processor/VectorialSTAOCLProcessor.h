@@ -82,7 +82,7 @@ public:
 	virtual void prepare(unsigned int baseElement);
 	virtual void process(Matrix<XYZValueFactor<TFloat>>& gridData);
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	MeasurementList<double> tAcquisitionML;
 	MeasurementList<double> tPrepareDataML;
 	MeasurementList<double> tCalculateDelaysML;
@@ -215,7 +215,7 @@ VectorialSTAOCLProcessor<TFloat>::VectorialSTAOCLProcessor(
 	std::vector<std::string> kernelStrings = {OCLCoherenceFactor::code() + OCLGeometry::code() + getKernels()};
 	clProgram_ = cl::Program(clContext_, kernelStrings);
 	std::ostringstream progOpt;
-	progOpt << OCL_PROGRAM_BUILD_OPTIONS
+	progOpt << LAB_OPENCL_PROGRAM_BUILD_OPTIONS
 			<< " -DNUM_RX_ELEM="        << config.numElements
 			<< " -DSTATISTICS_N="       << config.numElements
 			<< " -DCOHERENCE_FACTOR_N=" << config.numElements
@@ -265,12 +265,12 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 	for (unsigned int txElem = config_.firstTxElem; txElem <= config_.lastTxElem; ++txElem) {
 		//LOG_INFO << "ACQ/PREP txElem: " << txElem << " <= " << config_.lastTxElem;
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		Timer acquisitionTimer;
 #endif
 		acquisition_.execute(txElem, acqData_);
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		tAcquisitionML.put(acquisitionTimer.getTime());
 #endif
 		if (!initialized_) {
@@ -327,7 +327,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 
 		const unsigned int samplesPerChannelLow = acqData_.n2();
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		Timer prepareDataTimer;
 #endif
 		PrepareData prepareDataOp = {
@@ -345,7 +345,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 		tbb::parallel_for(tbb::blocked_range<unsigned int>(0, config_.numElements, 1 /* grain size */), prepareDataOp, tbb::simple_partitioner());
 		//prepareDataOp(tbb::blocked_range<unsigned int>(0, config_.numElements)); // single-thread
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		tPrepareDataML.put(prepareDataTimer.getTime());
 #endif
 	}
@@ -377,7 +377,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 	LOG_DEBUG << "PREPARE BUFFERS " << prepareBuffersTimer.getTime();
 
 	try {
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		Timer calculateDelaysTimer;
 #endif
 		cl::Kernel kernel(clProgram_, "calculateDelaysSTAKernel");
@@ -404,7 +404,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 			cl::NDRange(rowGroupSize, colGroupSize, elemGroupSize), // local
 			nullptr /* previous events */, &kernelEvent);
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 		kernelEvent.wait();
 		tCalculateDelaysML.put(calculateDelaysTimer.getTime());
 #endif
@@ -416,7 +416,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 	// Delay and sum.
 	//==================================================
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	Timer delaySumTimer;
 #endif
 	cl::Kernel procKernel;
@@ -474,7 +474,7 @@ VectorialSTAOCLProcessor<TFloat>::process(Matrix<XYZValueFactor<TFloat>>& gridDa
 		THROW_EXCEPTION(OCLException, "[processRowColumnSTA*Kernel] " << e);
 	}
 
-#ifdef USE_EXECUTION_TIME_MEASUREMENT
+#ifdef LAB_ENABLE_EXECUTION_TIME_MEASUREMENT
 	procKernelEvent.wait();
 	tDelaySumML.put(delaySumTimer.getTime());
 #endif

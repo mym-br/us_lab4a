@@ -127,10 +127,10 @@ initOpenCL()
 	}
 
 	// Select platform.
-	if (OPENCL_PLATFORM >= platforms.size()) {
-		THROW_EXCEPTION(UnavailableResourceException, "Invalid OpenCL platform: " << OPENCL_PLATFORM << '.');
+	if (LAB_OPENCL_PLATFORM >= platforms.size()) {
+		THROW_EXCEPTION(UnavailableResourceException, "Invalid OpenCL platform: " << LAB_OPENCL_PLATFORM << '.');
 	}
-	cl::Platform chosenPlatform = platforms[OPENCL_PLATFORM];
+	cl::Platform chosenPlatform = platforms[LAB_OPENCL_PLATFORM];
 
 	// Select device.
 	std::vector<cl::Device> devices;
@@ -138,10 +138,10 @@ initOpenCL()
 	if (devices.empty()) {
 		THROW_EXCEPTION(UnavailableResourceException, "No OpenCL devices available.");
 	}
-	if (OPENCL_DEVICE >= devices.size()) {
-		THROW_EXCEPTION(UnavailableResourceException, "Invalid OpenCL device: " << OPENCL_DEVICE << '.');
+	if (LAB_OPENCL_DEVICE >= devices.size()) {
+		THROW_EXCEPTION(UnavailableResourceException, "Invalid OpenCL device: " << LAB_OPENCL_DEVICE << '.');
 	}
-	cl::Device chosenDevice = devices[OPENCL_DEVICE];
+	cl::Device chosenDevice = devices[LAB_OPENCL_DEVICE];
 
 	// Create context.
 	cl_context_properties contextProp[] = {CL_CONTEXT_PLATFORM, (cl_context_properties) chosenPlatform(), 0 /* end of list */};

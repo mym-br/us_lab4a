@@ -24,23 +24,23 @@ if(UNIX)
     endif()
 endif()
 
-option(USE_SIMD "Use SIMD." ON)
-option(USE_OPENCL "Use OpenCL." OFF)
-set(OPENCL_LIB "/usr/lib/libOpenCL.so" CACHE FILEPATH "OpenCL library path.")
-set(OPENCL_PLATFORM 0 CACHE STRING "OpenCL plataform index.")
-set(OPENCL_DEVICE 0 CACHE STRING "OpenCL device index.")
-option(USE_CUDA "Use CUDA." OFF)
+option(LAB_ENABLE_SIMD "Enable SIMD." ON)
+option(LAB_ENABLE_OPENCL "Enable OpenCL." OFF)
+set(LAB_OPENCL_LIB "/usr/lib/libOpenCL.so" CACHE FILEPATH "OpenCL library path.")
+set(LAB_OPENCL_PLATFORM 0 CACHE STRING "OpenCL plataform index.")
+set(LAB_OPENCL_DEVICE 0 CACHE STRING "OpenCL device index.")
+option(LAB_ENABLE_CUDA "Enable CUDA." OFF)
 if(CMAKE_CUDA_FLAGS MATCHES "^ *$")
     set(CMAKE_CUDA_FLAGS "-arch compute_75 -code sm_75" CACHE STRING "Flags used by the CUDA compiler during all build types." FORCE)
 endif()
-option(USE_EXECUTION_TIME_MEASUREMENT "Use execution time measurement." OFF)
+option(LAB_ENABLE_EXECUTION_TIME_MEASUREMENT "Enable execution time measurement." OFF)
 
-if(USE_SIMD)
-    add_compile_definitions(USE_SIMD)
+if(LAB_ENABLE_SIMD)
+    add_compile_definitions(LAB_ENABLE_SIMD)
 endif()
 
-if(USE_OPENCL)
-    set(OPENCL_LIB_VAR ${OPENCL_LIB})
+if(LAB_ENABLE_OPENCL)
+    set(OPENCL_LIB ${LAB_OPENCL_LIB})
     set(OPENCL_SRC
         src/user/processor/VectorialCombinedTwoMediumImagingOCLProcessor.h
         src/user/processor/VectorialCombinedTwoMediumImagingOCLProcessor2.h
@@ -56,21 +56,21 @@ if(USE_OPENCL)
         src/util/OCLUtil.h
     )
     add_compile_definitions(
-        USE_OPENCL
+        LAB_ENABLE_OPENCL
     )
     set(OPENCL_TARGET_DEFS
         CL_HPP_ENABLE_EXCEPTIONS
         CL_HPP_MINIMUM_OPENCL_VERSION=120
         CL_HPP_TARGET_OPENCL_VERSION=120
         CL_HPP_CL_1_2_DEFAULT_BUILD
-        OPENCL_PLATFORM=${OPENCL_PLATFORM}
-        OPENCL_DEVICE=${OPENCL_DEVICE}
-        OCL_PROGRAM_BUILD_OPTIONS="-cl-std=CL1.2"
+        LAB_OPENCL_PLATFORM=${LAB_OPENCL_PLATFORM}
+        LAB_OPENCL_DEVICE=${LAB_OPENCL_DEVICE}
+        LAB_OPENCL_PROGRAM_BUILD_OPTIONS="-cl-std=CL1.2"
     )
 endif()
 
-if(USE_EXECUTION_TIME_MEASUREMENT)
-    add_compile_definitions(USE_EXECUTION_TIME_MEASUREMENT)
+if(LAB_ENABLE_EXECUTION_TIME_MEASUREMENT)
+    add_compile_definitions(LAB_ENABLE_EXECUTION_TIME_MEASUREMENT)
 endif()
 
 set(uslab4a_SRC
@@ -271,9 +271,9 @@ set(uslab4a_gui_SRC
     resource/us_lab4a.qrc
 )
 
-if(USE_CUDA)
+if(LAB_ENABLE_CUDA)
     add_compile_definitions(
-        USE_CUDA
+        LAB_ENABLE_CUDA
     )
     add_library(usercuda STATIC
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.cu
@@ -356,7 +356,7 @@ target_link_libraries(us_lab4a_gui
     boost_system
     pthread
 
-    ${OPENCL_LIB_VAR}
+    ${OPENCL_LIB}
     ${USER_CUDA_LIB}
 
     uslab4a
@@ -386,7 +386,7 @@ target_link_libraries(us_lab4a
     boost_system
     pthread
 
-    ${OPENCL_LIB_VAR}
+    ${OPENCL_LIB}
     ${USER_CUDA_LIB}
 
     uslab4a

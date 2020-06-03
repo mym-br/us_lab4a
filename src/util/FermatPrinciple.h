@@ -25,7 +25,7 @@
 
 #include "XZ.h"
 
-#ifdef USE_SIMD
+#ifdef LAB_ENABLE_SIMD
 # include "SIMD.h"
 #endif
 
@@ -133,7 +133,7 @@ findMinTimeInTwoSteps(
 	idxMin = std::numeric_limits<unsigned int>::max();
 	for (unsigned int i = 0, end = interfacePointList.size(); i < end; i += blockSize) {
 		const XZ<TFloat>& point = interfacePointList[i];
-#ifdef USE_SIMD
+#ifdef LAB_ENABLE_SIMD
 		const TFloat t = SIMD::calcTwoMediumTravelTime(x1, z1, point.x, point.z, x2, z2, invC1, invC2);
 #else
 		const TFloat dx1 = point.x - x1;
@@ -153,7 +153,7 @@ findMinTimeInTwoSteps(
 	const unsigned int iEnd = std::min<unsigned int>(idxMin + blockSize, interfacePointList.size());
 	for (unsigned int i = iBegin; i < iEnd; ++i) {
 		const XZ<TFloat>& point = interfacePointList[i];
-#ifdef USE_SIMD
+#ifdef LAB_ENABLE_SIMD
 		const TFloat t = SIMD::calcTwoMediumTravelTime(x1, z1, point.x, point.z, x2, z2, invC1, invC2);
 #else
 		const TFloat dx1 = point.x - x1;
