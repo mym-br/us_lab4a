@@ -26,7 +26,6 @@ endif()
 
 option(LAB_ENABLE_SIMD "Enable SIMD." ON)
 option(LAB_ENABLE_OPENCL "Enable OpenCL." OFF)
-set(LAB_OPENCL_LIB "/usr/lib/libOpenCL.so" CACHE FILEPATH "OpenCL library path.")
 set(LAB_OPENCL_PLATFORM 0 CACHE STRING "OpenCL plataform index.")
 set(LAB_OPENCL_DEVICE 0 CACHE STRING "OpenCL device index.")
 option(LAB_ENABLE_CUDA "Enable CUDA." OFF)
@@ -40,7 +39,7 @@ if(LAB_ENABLE_SIMD)
 endif()
 
 if(LAB_ENABLE_OPENCL)
-    set(OPENCL_LIB ${LAB_OPENCL_LIB})
+    set(OPENCL_LIB OpenCL)
     set(OPENCL_SRC
         src/user/processor/VectorialCombinedTwoMediumImagingOCLProcessor.h
         src/user/processor/VectorialCombinedTwoMediumImagingOCLProcessor2.h
