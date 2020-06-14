@@ -13,3 +13,4 @@ fftw_wisdom*
 !/test/*.h5
 !/python/data/**
 !/img/*
+!/resource/**
