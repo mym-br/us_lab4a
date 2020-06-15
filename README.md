@@ -29,20 +29,6 @@ Status
 - The documentation is very limited. In many cases the C++ code must be
   consulted.
 
-Requirements
-------------
-
-- CMake
-- Boost
-- FFTW
-- HDF5
-- Qt 5
-- TBB - Threading Building Blocks
-
-A C++17 compiler is required to build the software.
-
-The software has been tested in Debian 10 x86_64.
-
 License
 -------
 
@@ -63,7 +49,7 @@ The .txt and .h5 files are in the public domain.
 External code
 -------------
 
-The LZF filter for HDF5 is provided by the [h5py][] project
+The LZF filter for HDF5 has been provided by the [h5py][] project
 (files in src/external/lzf).
 
 [h5py]: https://www.h5py.org/
