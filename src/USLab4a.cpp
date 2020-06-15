@@ -52,7 +52,7 @@
 #include "ParameterMap.h"
 #include "Util.h"
 
-#define PROGRAM_VERSION_STR "us_lab4a 0.2"
+#define PROGRAM_VERSION_STR "us_lab4a 0.3"
 
 namespace {
 
