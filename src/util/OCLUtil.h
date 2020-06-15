@@ -162,6 +162,7 @@ roundUpToMultipleOfGroupSize(std::size_t n, std::size_t groupSize) {
 
 #define OCL_ERROR_CASE(A) case A: return #A;
 
+inline
 const char*
 getErrorString(cl_int error)
 {
@@ -231,8 +232,11 @@ getErrorString(cl_int error)
 	}
 }
 
+#undef OCL_ERROR_CASE
+
 } // namespace OCLUtil
 
+inline
 std::ostream&
 operator<<(std::ostream& out, const cl::Error& e)
 {

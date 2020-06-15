@@ -48,7 +48,7 @@ struct SingleAcquisitionMethodConfiguration {
 class SingleAcquisitionMethod : public Method {
 public:
 	explicit SingleAcquisitionMethod(Project& project);
-	virtual ~SingleAcquisitionMethod() = default;
+	virtual ~SingleAcquisitionMethod();
 
 	virtual void execute();
 private:

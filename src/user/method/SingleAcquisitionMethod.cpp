@@ -35,6 +35,10 @@
 
 namespace Lab {
 
+SingleAcquisitionMethod::~SingleAcquisitionMethod()
+{
+}
+
 void
 SingleAcquisitionMethod::fillConfiguration()
 {

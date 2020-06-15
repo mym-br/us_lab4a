@@ -174,24 +174,35 @@ set(uslab4a_SRC
     src/user/configuration/STAConfiguration.h
     src/user/configuration/TnRnConfiguration.h
     src/user/configuration/TwoMediumSTAConfiguration.h
+    src/user/method/CylinderDetectionAndFermatMethod.cpp
     src/user/method/CylinderDetectionAndFermatMethod.h
+    src/user/method/DeviceSectorialScanMethod.cpp
     src/user/method/DeviceSectorialScanMethod.h
     src/user/method/method_includes.h
     src/user/method/method_table.h
     src/user/method/MultiLayerImageMethod.cpp
     src/user/method/MultiLayerImageMethod.h
+    src/user/method/NetworkSyncSTAMethod.cpp
     src/user/method/NetworkSyncSTAMethod.h
+    src/user/method/NetworkSyncSingleVirtualSourceMethod.cpp
     src/user/method/NetworkSyncSingleVirtualSourceMethod.h
-    src/user/method/STA3DMethod.h
-    src/user/method/STAMethod.h
     src/user/method/ShowImageMethod.cpp
     src/user/method/ShowImageMethod.h
+    src/user/method/SimCircularSourceMethod.cpp
     src/user/method/SimCircularSourceMethod.h
+    src/user/method/SimRectangularSourceMethod.cpp
     src/user/method/SimRectangularSourceMethod.h
     src/user/method/SingleAcquisitionMethod.cpp
     src/user/method/SingleAcquisitionMethod.h
+    src/user/method/SingleVirtualSourceMethod.cpp
     src/user/method/SingleVirtualSourceMethod.h
+    src/user/method/STA3DMethod.cpp
+    src/user/method/STA3DMethod.h
+    src/user/method/STAMethod.cpp
+    src/user/method/STAMethod.h
+    src/user/method/SyntheticYSingleVirtualSourceMethod.cpp
     src/user/method/SyntheticYSingleVirtualSourceMethod.h
+    src/user/method/T1R1SAFT3DMethod.cpp
     src/user/method/T1R1SAFT3DMethod.h
     src/user/method/TestMethod.cpp
     src/user/method/TestMethod.h
