@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
-project(us_lab4a LANGUAGES C CXX CUDA)
+project(us_lab4a LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -32,9 +32,6 @@ option(LAB_ENABLE_OPENCL "Enable OpenCL." OFF)
 set(LAB_OPENCL_PLATFORM 0 CACHE STRING "OpenCL plataform index.")
 set(LAB_OPENCL_DEVICE 0 CACHE STRING "OpenCL device index.")
 option(LAB_ENABLE_CUDA "Enable CUDA." OFF)
-if(CMAKE_CUDA_FLAGS MATCHES "^ *$")
-    set(CMAKE_CUDA_FLAGS "-arch compute_61 -code sm_61,compute_61" CACHE STRING "Flags used by the CUDA compiler during all build types." FORCE)
-endif()
 option(LAB_ENABLE_EXECUTION_TIME_MEASUREMENT "Enable execution time measurement." OFF)
 
 if(LAB_ENABLE_SIMD)
@@ -289,6 +286,10 @@ set(uslab4a_gui_SRC
 )
 
 if(LAB_ENABLE_CUDA)
+    enable_language(CUDA)
+    if(CMAKE_CUDA_FLAGS MATCHES "^ *$")
+        set(CMAKE_CUDA_FLAGS "-arch compute_61 -code sm_61,compute_61" CACHE STRING "Flags used by the CUDA compiler during all build types." FORCE)
+    endif()
     add_compile_definitions(
         LAB_ENABLE_CUDA
     )
