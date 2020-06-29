@@ -20,8 +20,9 @@
 #include <complex>
 #include <vector>
 
+#include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
-#include <tbb/tbb.h>
+#include <tbb/parallel_for.h>
 
 #include "ArrayOfRectangularSourcesImpulseResponse.h"
 #include "FFTWFilter2.h"

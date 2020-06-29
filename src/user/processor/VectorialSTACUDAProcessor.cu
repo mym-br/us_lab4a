@@ -19,8 +19,10 @@
 
 #include <algorithm> /* copy */
 
+#include <tbb/blocked_range.h>
+#include <tbb/enumerable_thread_specific.h>
+#include <tbb/parallel_for.h>
 #include <tbb/partitioner.h>
-#include <tbb/tbb.h>
 
 #include "cuda.h"
 
