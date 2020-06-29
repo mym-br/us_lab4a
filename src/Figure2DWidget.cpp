@@ -128,21 +128,21 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 		yTicksWidth_.resize(yTicks_.size());
 		int maxW = 0;
 		for (unsigned int i = 0; i < yTicks_.size(); ++i) {
-			yTicksWidth_[i] = fm.width(formatTickValue(yTicks_[i], showYTicksFractionalPart));
+			yTicksWidth_[i] = fm.horizontalAdvance(formatTickValue(yTicks_[i], showYTicksFractionalPart));
 			if (yTicksWidth_[i] > maxW) maxW = yTicksWidth_[i];
 		}
-		maxW = std::max(maxW, fm.width("00000"));
+		maxW = std::max(maxW, fm.horizontalAdvance("00000"));
 		leftMargin_ = SPACING + textCapHeight_ + 2 * TEXT_SPACING + maxW + TICK_SIZE;
 
-		rightMargin_ = std::max(fm.width(QString::number(xTicks_.back())), fm.width("00000")) + SPACING;
+		rightMargin_ = std::max(fm.horizontalAdvance(QString::number(xTicks_.back())), fm.horizontalAdvance("00000")) + SPACING;
 		topMargin_ = textCapHeight_ + 2 * SPACING;
 		bottomMargin_ = TICK_SIZE + 2 * TEXT_SPACING + 2 * textCapHeight_ + SPACING;
-		xLabelWidth_ = fm.width(xLabel_);
-		yLabelWidth_ = fm.width(yLabel_);
+		xLabelWidth_ = fm.horizontalAdvance(xLabel_);
+		yLabelWidth_ = fm.horizontalAdvance(yLabel_);
 
 		maxXTickWidth_ = 0;
 		for (unsigned int i = 0; i < xTicks_.size(); ++i) {
-			maxXTickWidth_ = std::max(maxXTickWidth_, fm.width(formatTickValue(xTicks_[i], showXTicksFractionalPart)));
+			maxXTickWidth_ = std::max(maxXTickWidth_, fm.horizontalAdvance(formatTickValue(xTicks_[i], showXTicksFractionalPart)));
 		}
 
 		handleTransform();
