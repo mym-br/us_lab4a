@@ -16,7 +16,7 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(FFTW3 REQUIRED IMPORTED_TARGET fftw3)
 pkg_check_modules(FFTW3F REQUIRED IMPORTED_TARGET fftw3f)
 pkg_check_modules(GLU REQUIRED IMPORTED_TARGET glu)
-pkg_check_modules(HDF5 REQUIRED IMPORTED_TARGET hdf5)
+pkg_search_module(HDF5 REQUIRED hdf5-serial hdf5)
 
 if(UNIX)
     if(CMAKE_CXX_FLAGS MATCHES "^ *$")
@@ -39,6 +39,10 @@ option(LAB_ENABLE_EXECUTION_TIME_MEASUREMENT "Enable execution time measurement.
 
 if(LAB_ENABLE_SIMD)
     add_compile_definitions(LAB_ENABLE_SIMD)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCC AND (CMAKE_CXX_COMPILER_VERSION MATCHES "^8\."))
+    set(CXX_FS_LIB stdc++fs)
 endif()
 
 if(LAB_ENABLE_OPENCL)
@@ -352,6 +356,8 @@ target_include_directories(uslab4a PUBLIC
 add_executable(us_lab4a_gui ${uslab4a_gui_SRC})
 
 target_link_libraries(us_lab4a_gui
+    uslab4a
+
     Qt5::Core
     Qt5::Gui
     Qt5::OpenGL
@@ -360,21 +366,21 @@ target_link_libraries(us_lab4a_gui
     PkgConfig::FFTW3
     PkgConfig::FFTW3F
     PkgConfig::GLU
-    PkgConfig::HDF5
-
-    tbb
-    tbbmalloc
-    #tbbmalloc_proxy
-    hdf5_cpp
-    boost_system
-    pthread
 
     ${OPENCL_LIB}
     ${USER_CUDA_LIB}
 
-    uslab4a
+    ${HDF5_LDFLAGS}
+    hdf5_cpp
+    hdf5
 
-    stdc++fs
+    ${CXX_FS_LIB}
+
+    tbb
+    tbbmalloc
+    #tbbmalloc_proxy
+    boost_system
+    pthread
 )
 
 target_include_directories(us_lab4a_gui PUBLIC
@@ -388,21 +394,23 @@ add_executable(us_lab4a
 )
 
 target_link_libraries(us_lab4a
+    uslab4a
+
     PkgConfig::FFTW3
     PkgConfig::FFTW3F
-    PkgConfig::HDF5
-
-    tbb
-    tbbmalloc
-    #tbbmalloc_proxy
-    hdf5_cpp
-    boost_system
-    pthread
 
     ${OPENCL_LIB}
     ${USER_CUDA_LIB}
 
-    uslab4a
+    ${HDF5_LDFLAGS}
+    hdf5_cpp
+    hdf5
 
-    stdc++fs
+    ${CXX_FS_LIB}
+
+    tbb
+    tbbmalloc
+    #tbbmalloc_proxy
+    boost_system
+    pthread
 )
