@@ -8,10 +8,17 @@ Requirements
 - HDF5 (with C++ support)
 - Qt 5
 - TBB - Threading Building Blocks
+- pkg-config
+- GLU
 
 A C++17 compiler is required to build the software.
 
-The software has been tested in Debian 10 (Buster) x86_64.
+The software has been tested in Debian 10 (Buster) x86_64. For Debian 10, the
+following command installs the prerequisites:
+
+    apt install cmake g++ pkg-config \
+      qt5-qmake qtbase5-dev qt5-default \
+      libtbb-dev libhdf5-dev libboost-dev libboost-system-dev libfftw3-dev
 
 For CUDA:
 
