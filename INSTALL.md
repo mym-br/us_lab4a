@@ -6,26 +6,27 @@ Requirements
 - Boost
 - FFTW (single and double precision)
 - HDF5 (with C++ support)
-- Qt 5
+- Qt 5.11 or newer
 - TBB - Threading Building Blocks
 - pkg-config
 - GLU
 
-A C++17 compiler is required to build the software.
+A C++ compiler with support for C++17 (or newer specification) is required to
+build the software.
 
 The software has been tested in Debian 10 (Buster) x86_64. For Debian 10, the
-following command installs the prerequisites:
+following command installs the dependencies:
 
     apt install cmake g++ pkg-config \
       qt5-qmake qtbase5-dev qt5-default \
       libtbb-dev libhdf5-dev libboost-dev libboost-system-dev libfftw3-dev
 
-For CUDA:
+Dependencies for CUDA:
 
 - NVIDIA closed source drivers.
 - CUDA Toolkit.
 
-For OpenCL:
+Dependencies for OpenCL:
 
 - The OpenCL library, headers and at least one installable client driver (ICD).
 
