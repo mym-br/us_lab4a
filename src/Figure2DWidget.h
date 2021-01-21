@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2019, 2020 Marcelo Y. Matuda                                 *
+ *  Copyright 2019, 2020, 2021 Marcelo Y. Matuda                           *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -33,13 +33,16 @@ public:
 	explicit Figure2DWidget(QWidget* parent=0);
 
 	template<typename T> void updateData(const std::vector<T>& x, const std::vector<T>& y);
+	template<typename T> void updateData(const std::vector<T>& x, T xCoef, const std::vector<T>& y, T yCoef);
 	void setXLabel(QString label);
 	void setYLabel(QString label);
+	void setDrawCurveLines(bool enable) { drawCurveLines_ = enable; }
 	void enablePointMarker(bool enable) { drawPointMarker_ = enable; }
 	void setExpandAxisTicks(bool value) { expandAxisTicks_ = value; }
 	void setSymmetricYRange(bool value) { symmetricYRange_ = value; }
 	void setReduceYRange(bool value) { reduceYRange_ = value; }
 	void setXCursorIndex(int value) { xCursorIndex_ = value; }
+	void resetYRange() { yBegin_ = 0.0; yEnd_ = 0.0; }
 protected:
 	virtual void paintEvent(QPaintEvent* event);
 	virtual void mouseDoubleClickEvent(QMouseEvent* event);
@@ -54,15 +57,15 @@ private:
 	bool resetFigure(bool reduceYRange=true);
 
 	static void autoSetAxisTicks(double minValue, double maxValue,
-					std::vector<double>& ticks, double& offset, double& coef,
+					std::vector<double>& ticks, double& coef,
 					bool expand, bool symmetric);
 
 	bool figureChanged_;
+	bool drawCurveLines_;
 	bool drawPointMarker_;
 	bool expandAxisTicks_;
 	bool symmetricYRange_;
 	bool reduceYRange_; // if false, updateData() will only extend the range
-	bool showCoordinates_;
 	int leftMargin_;
 	int rightMargin_;
 	int topMargin_;
@@ -82,8 +85,6 @@ private:
 	double xEndData_;
 	double yBeginData_;
 	double yEndData_;
-	double xTickOffset_;
-	double yTickOffset_;
 	double xTickCoef_;
 	double yTickCoef_;
 	double lastXBegin_;
@@ -105,6 +106,9 @@ template<typename T>
 void
 Figure2DWidget::updateData(const std::vector<T>& x, const std::vector<T>& y)
 {
+	xList_.clear();
+	yList_.clear();
+	update();
 	if (x.size() != y.size()) {
 		std::cerr << "[Figure2DWidget::updateData] Arrays x and y with different sizes." << std::endl;
 		return;
@@ -124,6 +128,37 @@ Figure2DWidget::updateData(const std::vector<T>& x, const std::vector<T>& y)
 	if (!resetFigure(reduceYRange_)) {
 		xList_.clear();
 		yList_.clear();
+		update();
+	}
+}
+
+template<typename T>
+void
+Figure2DWidget::updateData(const std::vector<T>& x, T xCoef, const std::vector<T>& y, T yCoef)
+{
+	xList_.clear();
+	yList_.clear();
+	update();
+	if (x.size() != y.size()) {
+		std::cerr << "[Figure2DWidget::updateData] Arrays x and y with different sizes." << std::endl;
+		return;
+	}
+	if (x.size() < 2U) {
+		std::cerr << "[Figure2DWidget::updateData] Arrays x and y are too small." << std::endl;
+		return;
+	}
+
+	xList_.resize(x.size());
+	yList_.resize(y.size());
+	for (unsigned int i = 0, end = x.size(); i < end; ++i) {
+		xList_[i] = x[i] * xCoef;
+		yList_[i] = y[i] * yCoef;
+	}
+
+	if (!resetFigure(reduceYRange_)) {
+		xList_.clear();
+		yList_.clear();
+		update();
 	}
 }
 

@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2019, 2020 Marcelo Y. Matuda                                 *
+ *  Copyright 2019, 2020, 2021 Marcelo Y. Matuda                           *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -20,25 +20,28 @@
 #include <algorithm> /* max_element, min_element */
 #include <cmath> /* abs, ceil, floor, log10, max, min, pow */
 
+#include <QCursor>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPoint>
 #include <QRectF>
 
 namespace {
 
-constexpr int SPACING = 10;
-constexpr int TEXT_SPACING = 10;
+constexpr int SPACING = 6;
+constexpr int TEXT_SPACING = 6;
 constexpr int TICK_SIZE = 5;
-constexpr int MIN_AXIS_DIV = 8;
-constexpr int MIN_X_TICKS_MARGIN = 10;
+constexpr int MIN_AXIS_DIV = 4;
+constexpr int MIN_X_TICKS_MARGIN = 6;
 constexpr unsigned int MAX_X_LIST_SIZE_WITH_MARKER = 1000;
 constexpr double WHEEL_ZOOM_FACTOR = 0.01;
 constexpr double MOUSE_ZOOM_FACTOR = 0.002;
 constexpr double DEFAULT_Y_DELTA = 1.0;
 constexpr double MIN_ABS_VALUE_DELTA = 1.0e-9;
-constexpr double MIN_VALUE_DELTA = 1.0e-2;
-constexpr double MAX_VALUE_DELTA = 1.0e2;
+constexpr double MIN_VALUE_DELTA = 1.0e-5;
+constexpr double MAX_VALUE_DELTA = 1.0e5;
 constexpr double MARKER_SIZE = 2.0;
+constexpr double POINT_MARKER_SIZE = 1.0;
 constexpr double EPS = 1.0e-5;
 constexpr double MAX_TICK_POW = 2.0;
 constexpr double MIN_TICK_POW = -2.0;
@@ -50,11 +53,11 @@ namespace Lab {
 Figure2DWidget::Figure2DWidget(QWidget* parent)
 		: QWidget(parent)
 		, figureChanged_()
+		, drawCurveLines_(true)
 		, drawPointMarker_()
 		, expandAxisTicks_(true)
 		, symmetricYRange_()
 		, reduceYRange_(true)
-		, showCoordinates_()
 		, leftMargin_()
 		, rightMargin_()
 		, topMargin_()
@@ -74,8 +77,6 @@ Figure2DWidget::Figure2DWidget(QWidget* parent)
 		, xEndData_()
 		, yBeginData_()
 		, yEndData_()
-		, xTickOffset_()
-		, yTickOffset_()
 		, xTickCoef_(1.0)
 		, yTickCoef_(1.0)
 		, lastXBegin_()
@@ -98,28 +99,27 @@ Figure2DWidget::Figure2DWidget(QWidget* parent)
 void
 Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 {
-	if (xList_.empty() || xTicks_.empty()) return;
+	if (xList_.empty() || xTicks_.size() < 2 || yTicks_.size() < 2) return;
 	if (xList_.size() > MAX_X_LIST_SIZE_WITH_MARKER) drawPointMarker_ = false;
 
 	QPainter painter(this);
-	painter.setFont(QFont("monospace"));
+#ifdef _MSC_VER
+	QFont monoFont("Consolas");
+	monoFont.setStyleHint(QFont::Monospace);
+#else
+	QFont monoFont("monospace");
+#endif
+	painter.setFont(monoFont);
 
-	auto formatTickValue = [](double value, bool showFractionalPart) {
-		if (showFractionalPart) {
-			return QString::number(value, 'f', 2);
-		} else {
-			return QString::number(value, 'f', 0);
-		}
+	auto formatTickValue = [](double value, int precision) {
+		return QString::number(value, 'f', precision);
 	};
-	auto hasFractionalPart = [&](const std::vector<double>& v) {
-		for (float n : v) {
-			const double x = n - std::floor(n);
-			if (x > 1.0e-4 && x < 1.0 - 1.0e-4) return true;
-		}
-		return false;
+	auto tickPrecision = [](double step) {
+		const int stepPow = static_cast<int>(std::floor(std::log10(step) + 1.0e-5));
+		return (stepPow < 0) ? -stepPow : 0;
 	};
-	bool showXTicksFractionalPart = hasFractionalPart(xTicks_);
-	bool showYTicksFractionalPart = hasFractionalPart(yTicks_);
+	const int xPrec = tickPrecision(xTicks_[1] - xTicks_[0]);
+	const int yPrec = tickPrecision(yTicks_[1] - yTicks_[0]);
 
 	if (figureChanged_) {
 		QFontMetrics fm = painter.fontMetrics();
@@ -128,7 +128,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 		yTicksWidth_.resize(yTicks_.size());
 		int maxW = 0;
 		for (unsigned int i = 0; i < yTicks_.size(); ++i) {
-			yTicksWidth_[i] = fm.horizontalAdvance(formatTickValue(yTicks_[i], showYTicksFractionalPart));
+			yTicksWidth_[i] = fm.horizontalAdvance(formatTickValue(yTicks_[i], yPrec));
 			if (yTicksWidth_[i] > maxW) maxW = yTicksWidth_[i];
 		}
 		maxW = std::max(maxW, fm.horizontalAdvance("00000"));
@@ -142,7 +142,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 
 		maxXTickWidth_ = 0;
 		for (unsigned int i = 0; i < xTicks_.size(); ++i) {
-			maxXTickWidth_ = std::max(maxXTickWidth_, fm.horizontalAdvance(formatTickValue(xTicks_[i], showXTicksFractionalPart)));
+			maxXTickWidth_ = std::max(maxXTickWidth_, fm.horizontalAdvance(formatTickValue(xTicks_[i], xPrec)));
 		}
 
 		handleTransform();
@@ -160,7 +160,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	const double vText = vTick + TEXT_SPACING + textCapHeight_;
 	double uOld = 0;
 	for (unsigned int i = 0; i < xTicks_.size(); ++i) {
-		const double u = uBegin + (xTicks_[i] * xTickCoef_ + xTickOffset_ - xBegin_) * xScale_;
+		const double u = uBegin + (xTicks_[i] * xTickCoef_ - xBegin_) * xScale_;
 		if (i > 0 && u - uOld < maxXTickWidth_ + MIN_X_TICKS_MARGIN) continue;
 
 		// Vertical line.
@@ -169,8 +169,8 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 		painter.setPen(Qt::black);
 		// Tick.
 		painter.drawLine(QPointF(u, vBegin), QPointF(u, vTick));
-		// Tich value.
-		painter.drawText(QPointF(u, vText), formatTickValue(xTicks_[i], showXTicksFractionalPart));
+		// Tick value.
+		painter.drawText(QPointF(u, vText), formatTickValue(xTicks_[i], xPrec));
 
 		uOld = u;
 	}
@@ -180,10 +180,8 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	painter.drawText(QPointF(uBegin + mainAreaWidth_ - xLabelWidth_, vLabelPos), xLabel_);
 	// X ticks transformation.
 	QString xTickTransf;
-	//if (xTickCoef_   != 1.0) xTickTransf += QString("x1e%1 ").arg(std::log10(xTickCoef_));
-	if (xTickCoef_   != 1.0) xTickTransf += QString("x%1 ").arg(xTickCoef_, 0, 'g', 10);
-	if (xTickOffset_ >  0.0) xTickTransf += "+";
-	if (xTickOffset_ != 0.0) xTickTransf += QString("%1").arg(xTickOffset_, 0, 'g', 10);
+	//if (xTickCoef_ != 1.0) xTickTransf += QString("x1e%1").arg(std::log10(xTickCoef_));
+	if (xTickCoef_ != 1.0) xTickTransf += QString("x%1").arg(xTickCoef_, 0, 'g', 10);
 	if (!xTickTransf.isEmpty()) {
 		painter.drawText(QPointF(uBegin, vLabelPos), xTickTransf);
 	}
@@ -192,7 +190,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	const double uTick = uBegin - TICK_SIZE;
 	for (unsigned int i = 0; i < yTicks_.size(); ++i) {
 		const double uText = uTick - TEXT_SPACING - yTicksWidth_[i];
-		const double v = vBegin + (yTicks_[i] * yTickCoef_ + yTickOffset_ - yBegin_) * yScale_;
+		const double v = vBegin + (yTicks_[i] * yTickCoef_ - yBegin_) * yScale_;
 		// Horizontal line.
 		painter.setPen(Qt::lightGray);
 		painter.drawLine(QPointF(uBegin, v), QPointF(uEnd, v));
@@ -200,7 +198,7 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 		// Tick.
 		painter.drawLine(QPointF(uBegin, v), QPointF(uTick, v));
 		// Tick value.
-		painter.drawText(QPointF(uText, v), formatTickValue(yTicks_[i], showYTicksFractionalPart));
+		painter.drawText(QPointF(uText, v), formatTickValue(yTicks_[i], yPrec));
 	}
 	// Y label.
 	painter.rotate(-90.0);
@@ -208,10 +206,8 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	painter.drawText(QPointF(-vBegin + mainAreaHeight_ - yLabelWidth_, SPACING + textCapHeight_), yLabel_);
 	// Y ticks transformation.
 	QString yTickTransf;
-	//if (yTickCoef_   != 1.0) yTickTransf += QString("x1e%1 ").arg(std::log10(yTickCoef_));
-	if (yTickCoef_   != 1.0) yTickTransf += QString("x%1 ").arg(yTickCoef_, 0, 'g', 10);
-	if (yTickOffset_ >  0.0) yTickTransf += "+";
-	if (yTickOffset_ != 0.0) yTickTransf += QString("%1").arg(yTickOffset_, 0, 'g', 10);
+	//if (yTickCoef_ != 1.0) yTickTransf += QString("x1e%1").arg(std::log10(yTickCoef_));
+	if (yTickCoef_ != 1.0) yTickTransf += QString("x%1").arg(yTickCoef_, 0, 'g', 10);
 	if (!yTickTransf.isEmpty()) {
 		painter.drawText(QPointF(-vBegin, SPACING + textCapHeight_), yTickTransf);
 	}
@@ -220,12 +216,12 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	// Frame.
 	painter.drawRect(QRectF(QPointF(uBegin, vBegin), QPointF(uEnd, vEnd)));
 
-	if (showCoordinates_) {
-		const double x = xBegin_ + (lastMousePos_.x() - uBegin) / xScale_;
-		const double y = yBegin_ + (lastMousePos_.y() - vBegin) / yScale_;
+	QPoint pCursor = mapFromGlobal(QCursor::pos());
+	if (rect().contains(pCursor)) {
+		const double x = xBegin_ + (pCursor.x() - uBegin) / xScale_;
+		const double y = yBegin_ + (pCursor.y() - vBegin) / yScale_;
 		if (x >= xBegin_ && x <= xEnd_ && y >= yBegin_ && y <= yEnd_) {
-			painter.drawText(QPointF(uBegin               , vEnd - SPACING), QString("x: %1").arg(x));
-			painter.drawText(QPointF(0.5 * (uBegin + uEnd), vEnd - SPACING), QString("y: %1").arg(y));
+			painter.drawText(QPointF(uBegin, vEnd - SPACING), QString("%1 %2").arg(x).arg(y));
 		}
 	}
 
@@ -235,7 +231,9 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 		cursorPen.setColor(Qt::red);
 		painter.setPen(cursorPen);
 		const double x = uBegin + (xList_[xCursorIndex_] - xBegin_) * xScale_;
-		painter.drawLine(QPointF(x, vBegin), QPointF(x, vEnd));
+		if (x >= uBegin && x <= uEnd) {
+			painter.drawLine(QPointF(x, vBegin), QPointF(x, vEnd));
+		}
 	}
 
 	QPen pen2;
@@ -247,21 +245,30 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 	// Draw curve.
 	painter.setClipRect(uBegin, vEnd, mainAreaWidth_, mainAreaHeight_);
 	painter.setPen(pen2);
-	QPointF prevPoint(
-			0.5 + uBegin + (xList_[0] - xBegin_) * xScale_,
-			0.5 + vBegin + (yList_[0] - yBegin_) * yScale_);
-	if (drawPointMarker_) {
-		painter.drawEllipse(prevPoint, MARKER_SIZE, MARKER_SIZE);
-	}
-	for (unsigned int i = 1, size = xList_.size(); i < size; ++i) {
-		QPointF currPoint(
-			0.5 + uBegin + (xList_[i] - xBegin_) * xScale_,
-			0.5 + vBegin + (yList_[i] - yBegin_) * yScale_);
-		painter.drawLine(prevPoint, currPoint);
+	if (drawCurveLines_) {
+		QPointF prevPoint(
+				0.5 + uBegin + (xList_[0] - xBegin_) * xScale_,
+				0.5 + vBegin + (yList_[0] - yBegin_) * yScale_);
 		if (drawPointMarker_) {
-			painter.drawEllipse(currPoint, MARKER_SIZE, MARKER_SIZE);
+			painter.drawEllipse(prevPoint, MARKER_SIZE, MARKER_SIZE);
 		}
-		prevPoint = currPoint;
+		for (unsigned int i = 1, size = xList_.size(); i < size; ++i) {
+			QPointF currPoint(
+				0.5 + uBegin + (xList_[i] - xBegin_) * xScale_,
+				0.5 + vBegin + (yList_[i] - yBegin_) * yScale_);
+			painter.drawLine(prevPoint, currPoint);
+			if (drawPointMarker_) {
+				painter.drawEllipse(currPoint, MARKER_SIZE, MARKER_SIZE);
+			}
+			prevPoint = currPoint;
+		}
+	} else {
+		for (unsigned int i = 0, size = xList_.size(); i < size; ++i) {
+			QPointF currPoint(
+				0.5 + uBegin + (xList_[i] - xBegin_) * xScale_,
+				0.5 + vBegin + (yList_[i] - yBegin_) * yScale_);
+			painter.drawEllipse(currPoint, POINT_MARKER_SIZE, POINT_MARKER_SIZE);
+		}
 	}
 	painter.setClipping(false);
 }
@@ -269,8 +276,6 @@ Figure2DWidget::paintEvent(QPaintEvent* /*event*/)
 void
 Figure2DWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {
-	showCoordinates_ = false;
-
 	if (xList_.empty() || xTicks_.empty()) return;
 	if (event->button() != Qt::LeftButton) return;
 
@@ -280,8 +285,6 @@ Figure2DWidget::mouseDoubleClickEvent(QMouseEvent* event)
 void
 Figure2DWidget::mousePressEvent(QMouseEvent* event)
 {
-	showCoordinates_ = false;
-
 	if (xList_.empty() || xTicks_.empty()) return;
 
 	lastMousePos_ = event->localPos();
@@ -294,8 +297,6 @@ void
 Figure2DWidget::mouseMoveEvent(QMouseEvent* event)
 {
 	// Note: For mouse move events, event->button() == Qt::NoButton.
-
-	showCoordinates_ = false;
 
 	if (xList_.empty() || xTicks_.empty()) return;
 
@@ -324,41 +325,41 @@ Figure2DWidget::mouseMoveEvent(QMouseEvent* event)
 		const double factor = 1.0 + MOUSE_ZOOM_FACTOR * std::abs(delta.x());
 		const double centerX = lastXBegin_ + (lastMousePos_.x() - leftMargin_) / lastXScale_;
 		const double maxAbsXValue = std::max(std::abs(xBeginData_), std::abs(xEndData_));
+		double newXBegin;
+		double newXEnd;
 		if (delta.x() > 0.0) {
-			const double newXBegin = centerX + (lastXBegin_ - centerX) / factor;
-			const double newXEnd   = centerX + (lastXEnd_   - centerX) / factor;
+			newXBegin = centerX + (lastXBegin_ - centerX) / factor;
+			newXEnd   = centerX + (lastXEnd_   - centerX) / factor;
 			const double xDeltaThreshold = std::max(MIN_ABS_VALUE_DELTA, MIN_VALUE_DELTA * maxAbsXValue);
 			if (newXEnd - newXBegin < xDeltaThreshold) {
 				qDebug("Zoom limit.");
 				return;
 			}
-			xBegin_ = newXBegin;
-			xEnd_   = newXEnd;
 		} else {
-			const double newXBegin = centerX + (lastXBegin_ - centerX) * factor;
-			const double newXEnd   = centerX + (lastXEnd_   - centerX) * factor;
+			newXBegin = centerX + (lastXBegin_ - centerX) * factor;
+			newXEnd   = centerX + (lastXEnd_   - centerX) * factor;
 			const double xDeltaThreshold = MAX_VALUE_DELTA * maxAbsXValue;
 			if (newXEnd - newXBegin > xDeltaThreshold) {
 				qDebug("Zoom limit.");
 				return;
 			}
+		}
+		// The new region must contain at least part of the data.
+		if (newXBegin < xEndData_ && newXEnd > xBeginData_) {
 			xBegin_ = newXBegin;
 			xEnd_   = newXEnd;
+			autoSetAxesTicks();
 		}
-		autoSetAxesTicks();
 		return;
 	}
 
 	lastMousePos_ = event->localPos();
-	showCoordinates_ = true;
 	update();
 }
 
 void
 Figure2DWidget::wheelEvent(QWheelEvent* event)
 {
-	showCoordinates_ = false;
-
 	if (xList_.empty() || xTicks_.empty()) return;
 
 	QPoint angle = event->angleDelta() / 8; // degrees
@@ -366,36 +367,36 @@ Figure2DWidget::wheelEvent(QWheelEvent* event)
 	const double factor = 1.0 + WHEEL_ZOOM_FACTOR * std::abs(angle.y());
 	const double centerY = symmetricYRange_ ? 0.0 : yEnd_ + (event->y() - topMargin_) / yScale_;
 	const double maxAbsYValue = std::max(std::abs(yBeginData_), std::abs(yEndData_));
+	double newYBegin;
+	double newYEnd;
 	if (angle.y() > 0) {
-		const double newYBegin = centerY + (yBegin_ - centerY) / factor;
-		const double newYEnd   = centerY + (yEnd_   - centerY) / factor;
+		newYBegin = centerY + (yBegin_ - centerY) / factor;
+		newYEnd   = centerY + (yEnd_   - centerY) / factor;
 		const double yDeltaThreshold = std::max(MIN_ABS_VALUE_DELTA, MIN_VALUE_DELTA * maxAbsYValue);
 		if (newYEnd - newYBegin < yDeltaThreshold) {
 			qDebug("Zoom limit.");
 			return;
 		}
-		yBegin_ = newYBegin;
-		yEnd_   = newYEnd;
 	} else {
-		const double newYBegin = centerY + (yBegin_ - centerY) * factor;
-		const double newYEnd   = centerY + (yEnd_   - centerY) * factor;
+		newYBegin = centerY + (yBegin_ - centerY) * factor;
+		newYEnd   = centerY + (yEnd_   - centerY) * factor;
 		const double yDeltaThreshold = MAX_VALUE_DELTA * maxAbsYValue;
 		if (newYEnd - newYBegin > yDeltaThreshold) {
 			qDebug("Zoom limit.");
 			return;
 		}
+	}
+	// The new region must contain at least part of the data.
+	if (newYBegin < yEndData_ && newYEnd > yBeginData_) {
 		yBegin_ = newYBegin;
 		yEnd_   = newYEnd;
+		autoSetAxesTicks();
 	}
-
-	autoSetAxesTicks();
 }
 
 void
 Figure2DWidget::resizeEvent(QResizeEvent* /*event*/)
 {
-	showCoordinates_ = false;
-
 	if (xList_.empty() || xTicks_.empty()) return;
 
 	handleTransform();
@@ -404,8 +405,6 @@ Figure2DWidget::resizeEvent(QResizeEvent* /*event*/)
 void
 Figure2DWidget::keyPressEvent(QKeyEvent* event)
 {
-	showCoordinates_ = false;
-
 	if (xList_.empty() || xTicks_.empty()) {
 		QWidget::keyPressEvent(event);
 		return;
@@ -433,7 +432,7 @@ Figure2DWidget::handleTransform()
 
 void
 Figure2DWidget::autoSetAxisTicks(double minValue, double maxValue,
-					std::vector<double>& ticks, double& offset, double& coef,
+					std::vector<double>& ticks, double& coef,
 					bool expand, bool symmetric)
 {
 	ticks.clear();
@@ -468,32 +467,19 @@ Figure2DWidget::autoSetAxisTicks(double minValue, double maxValue,
 		lastTick  = std::floor(maxValue / step) * step;
 	}
 	ticks.push_back(firstTick);
-	for (unsigned int i = 0; ; ++i) {
+	for (unsigned int i = 1; ; ++i) {
 		const double tick = firstTick + i * step;
 		if (tick > lastTick + step * EPS) break;
 		ticks.push_back(tick);
 	}
 
-	// Calculate offset.
-	const double delta = ticks.back() - ticks.front();
-	const double mean = 0.5 * (ticks.front() + ticks.back());
-	if (mean > delta) {
-		offset = ticks.front();
-		for (double& t : ticks) t -= offset;
-	} else if (mean < -delta) {
-		offset = ticks.back();
-		for (double& t : ticks) t -= offset;
-	} else {
-		offset = 0.0;
-	}
-
 	// Calculate coefficient.
 	const double stepPow = std::log10(step);
-	if (stepPow < MIN_TICK_POW) {
-		coef = std::pow(10.0, std::floor(stepPow) - MIN_TICK_POW);
-		for (double& t : ticks) t /= coef;
-	} else if (stepPow > MAX_TICK_POW) {
+	if (stepPow > MAX_TICK_POW) {
 		coef = std::pow(10.0, std::ceil(stepPow) - MAX_TICK_POW);
+		for (double& t : ticks) t /= coef;
+	} else if (stepPow < MIN_TICK_POW) {
+		coef = std::pow(10.0, std::floor(stepPow) - MIN_TICK_POW);
 		for (double& t : ticks) t /= coef;
 	} else {
 		coef = 1.0;
@@ -503,8 +489,8 @@ Figure2DWidget::autoSetAxisTicks(double minValue, double maxValue,
 void
 Figure2DWidget::autoSetAxesTicks(bool expand)
 {
-	autoSetAxisTicks(xBegin_, xEnd_, xTicks_, xTickOffset_, xTickCoef_, expand, false);
-	autoSetAxisTicks(yBegin_, yEnd_, yTicks_, yTickOffset_, yTickCoef_, expand, symmetricYRange_);
+	autoSetAxisTicks(xBegin_, xEnd_, xTicks_, xTickCoef_, expand, false);
+	autoSetAxisTicks(yBegin_, yEnd_, yTicks_, yTickCoef_, expand, symmetricYRange_);
 
 	figureChanged_ = true;
 	update();
@@ -513,8 +499,6 @@ Figure2DWidget::autoSetAxesTicks(bool expand)
 bool
 Figure2DWidget::resetFigure(bool reduceYRange)
 {
-	showCoordinates_ = false;
-
 	// The values may not be sorted.
 	xEndData_   = *std::max_element(xList_.begin(), xList_.end());
 	xBeginData_ = *std::min_element(xList_.begin(), xList_.end());
@@ -525,7 +509,7 @@ Figure2DWidget::resetFigure(bool reduceYRange)
 	const double maxAbsXValue = std::max(std::abs(xBeginData_), std::abs(xEndData_));
 	const double xDeltaThreshold = std::max(MIN_ABS_VALUE_DELTA, MIN_VALUE_DELTA * maxAbsXValue);
 	if (xValueDelta < xDeltaThreshold) {
-		std::cerr << "[Figure2DWidget::resetFigure] Invalid x range (< " << MIN_VALUE_DELTA << ")." << std::endl;
+		std::cerr << "[Figure2DWidget::resetFigure] Invalid x range (< " << xDeltaThreshold << ")." << std::endl;
 		return false;
 	}
 	xBegin_ = xBeginData_;
@@ -550,10 +534,10 @@ Figure2DWidget::resetFigure(bool reduceYRange)
 
 	autoSetAxesTicks(symmetricYRange_ ? false : expandAxisTicks_);
 
-	xBegin_ = std::min(xBegin_, xTicks_.front() * xTickCoef_ + xTickOffset_);
-	xEnd_   = std::max(xEnd_  , xTicks_.back()  * xTickCoef_ + xTickOffset_);
-	yBegin_ = std::min(yBegin_, yTicks_.front() * yTickCoef_ + yTickOffset_);
-	yEnd_   = std::max(yEnd_  , yTicks_.back()  * yTickCoef_ + yTickOffset_);
+	xBegin_ = std::min(xBegin_, xTicks_.front() * xTickCoef_);
+	xEnd_   = std::max(xEnd_  , xTicks_.back()  * xTickCoef_);
+	yBegin_ = std::min(yBegin_, yTicks_.front() * yTickCoef_);
+	yEnd_   = std::max(yEnd_  , yTicks_.back()  * yTickCoef_);
 
 	figureChanged_ = true;
 	update();
