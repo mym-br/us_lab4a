@@ -36,7 +36,7 @@ Building (Linux+GNU)
     mkdir ../us_lab4a-build
     cd ../us_lab4a-build
     cmake -D CMAKE_BUILD_TYPE=Release ../us_lab4a
-    make
+    cmake --build .
 
 To enable CUDA, add
 ` -D LAB_ENABLE_CUDA=ON -D CMAKE_CUDA_FLAGS='-arch compute_75 -code sm_75' `
