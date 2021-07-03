@@ -567,8 +567,8 @@ TestMethod::testFFTWFilter2()
 	FFTWFilter2<double> filter2;
 	filter2.setCoefficients(yRef, filterFreqCoeff);
 	FFTWFilter2<double> filter3;
-	std::vector<std::complex<double>> dummyFilterFreqCoeff;
-	filter3.setCoefficients(yRef, dummyFilterFreqCoeff);
+	std::vector<std::complex<double>> unusedFilterFreqCoeff;
+	filter3.setCoefficients(yRef, unusedFilterFreqCoeff);
 	std::vector<double> y2;
 	filter3.filter(filterFreqCoeff, x, y2);
 	{
