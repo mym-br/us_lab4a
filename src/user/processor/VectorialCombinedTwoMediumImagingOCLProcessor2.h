@@ -48,7 +48,9 @@
 #include "Util.h"
 #include "XZ.h"
 
-#include <CL/cl2.hpp>
+#define CL_TARGET_OPENCL_VERSION 120
+#include <CL/opencl.hpp>
+
 #include "OCLCoherenceFactor.h"
 #include "OCLGeometry.h"
 #include "OCLUtil.h"

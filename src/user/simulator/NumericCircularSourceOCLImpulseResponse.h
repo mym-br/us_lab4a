@@ -29,7 +29,9 @@
 #include "Log.h"
 #include "Util.h" /* pi */
 
-#include <CL/cl2.hpp>
+#define CL_TARGET_OPENCL_VERSION 120
+#include <CL/opencl.hpp>
+
 #include "NumericRectangularSourceOCLImpulseResponse.h"
 #include "OCLAtomic.h"
 #include "OCLReduce.h"
