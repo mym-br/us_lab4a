@@ -284,7 +284,7 @@ OGLMultiLayerWidget::mouseMoveEvent(QMouseEvent* e)
 void
 OGLMultiLayerWidget::wheelEvent(QWheelEvent* e)
 {
-	if (e->delta() > 0) {
+	if (e->angleDelta().y() > 0) {
 		scale_ *= ZOOM_IN_FACTOR;
 	} else {
 		scale_ *= ZOOM_OUT_FACTOR;

@@ -365,7 +365,7 @@ Figure2DWidget::wheelEvent(QWheelEvent* event)
 	QPoint angle = event->angleDelta() / 8; // degrees
 	if (angle.y() == 0) return;
 	const double factor = 1.0 + WHEEL_ZOOM_FACTOR * std::abs(angle.y());
-	const double centerY = symmetricYRange_ ? 0.0 : yEnd_ + (event->y() - topMargin_) / yScale_;
+	const double centerY = symmetricYRange_ ? 0.0 : yEnd_ + (event->position().y() - topMargin_) / yScale_;
 	const double maxAbsYValue = std::max(std::abs(yBeginData_), std::abs(yEndData_));
 	double newYBegin;
 	double newYEnd;

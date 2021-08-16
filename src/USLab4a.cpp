@@ -324,7 +324,7 @@ USLab4a::on_openBatchFileAction_triggered()
 			if (line.startsWith('#')) continue; // comment
 			if (line.isEmpty()) continue;
 
-			QStringList fieldList = line.split(' ', QString::SkipEmptyParts);
+			QStringList fieldList = line.split(' ', Qt::SkipEmptyParts);
 			if (fieldList.size() == 2) {
 				batchEntryList_ << BatchEntry{batchFileDir + '/' + fieldList[0], fieldList[1], ""};
 			} else if (fieldList.size() == 3) {
