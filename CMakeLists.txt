@@ -382,6 +382,7 @@ target_link_libraries(us_lab4a_gui
     #tbbmalloc_proxy
     boost_system
     pthread
+    GL
 )
 
 target_include_directories(us_lab4a_gui PUBLIC
