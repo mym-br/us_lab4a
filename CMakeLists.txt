@@ -37,6 +37,7 @@ option(LAB_ENABLE_EXECUTION_TIME_MEASUREMENT "Enable execution time measurement.
 if(LAB_ENABLE_SIMD)
     add_compile_definitions(LAB_ENABLE_SIMD)
 endif()
+add_compile_definitions(QT_NO_KEYWORDS)
 
 if(CMAKE_COMPILER_IS_GNUCC AND (CMAKE_CXX_COMPILER_VERSION MATCHES "^8\."))
     set(CXX_FS_LIB stdc++fs)

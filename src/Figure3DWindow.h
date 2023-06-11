@@ -47,7 +47,7 @@ public:
 	void setColormap(Colormap::Id colormap);
 protected:
 	virtual void closeEvent(QCloseEvent* event);
-private slots:
+private Q_SLOTS:
 	void on_colormapComboBox_currentIndexChanged(int index);
 	void on_colormapComboBox_activated(int index); // caused by user interaction, called after on_colormapComboBox_currentIndexChanged
 	void on_minDecibelsComboBox_currentIndexChanged(const QString& text);

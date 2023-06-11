@@ -46,16 +46,16 @@ ProcessingNode::process()
 
 	} catch (std::exception& e) {
 		LOG_ERROR << "Exception caught during processing:\n" << e.what();
-		emit error();
+		Q_EMIT error();
 		return;
 	} catch (...) {
 		LOG_ERROR << "Unknown exception caught during processing.";
-		emit error();
+		Q_EMIT error();
 		return;
 	}
 
 	LOG_INFO << "========== Processing complete.";
-	emit processingComplete();
+	Q_EMIT processingComplete();
 }
 
 } // namespace Lab

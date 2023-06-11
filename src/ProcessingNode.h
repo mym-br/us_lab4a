@@ -32,10 +32,10 @@ class ProcessingNode : public QObject {
 	Q_OBJECT
 public:
 	ProcessingNode(Controller& controller, Project& project);
-signals:
+Q_SIGNALS:
 	void processingComplete();
 	void error();
-public slots:
+public Q_SLOTS:
 	void process();
 private:
 	Project& project_;

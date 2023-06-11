@@ -39,10 +39,10 @@ public:
 	void exit();
 	void enableProcessing();
 	bool processingEnabled() const { return (state_ == State::PROCESSING_ENABLED); }
-signals:
+Q_SIGNALS:
 	void processingFinished();
 	void processingRequested();
-private slots:
+private Q_SLOTS:
 	void execAfterProcessing();
 	void execAfterError();
 private:

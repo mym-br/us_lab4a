@@ -66,7 +66,7 @@ Controller::enableProcessing()
 		state_ = State::PROCESSING_ENABLED;
 		LOG_DEBUG << "STATE: PROCESSING_ENABLED";
 		showTimestamp();
-		emit processingRequested();
+		Q_EMIT processingRequested();
 	}
 }
 
@@ -76,7 +76,7 @@ Controller::execAfterProcessing()
 	state_ = State::PROCESSING_STOPPED;
 	showTimestamp();
 	LOG_DEBUG << "STATE: PROCESSING_STOPPED";
-	emit processingFinished();
+	Q_EMIT processingFinished();
 }
 
 void
@@ -85,7 +85,7 @@ Controller::execAfterError()
 	state_ = State::PROCESSING_STOPPED;
 	showTimestamp();
 	LOG_DEBUG << "STATE: PROCESSING_STOPPED (after error)";
-	emit processingFinished();
+	Q_EMIT processingFinished();
 }
 
 void

@@ -78,7 +78,7 @@ public:
 		const std::string& figureName,
 		const std::vector<XYZValue<float>>& pointArray,
 		const std::vector<unsigned int>& indexArray);
-private slots:
+private Q_SLOTS:
 	void handleControllerFinishedProcessing();
 	void on_openBatchFileAction_triggered();
 	void on_exitAction_triggered();
