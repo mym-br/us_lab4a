@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
+cmake_policy(SET CMP0104 NEW)
+
+set(CMAKE_CUDA_ARCHITECTURES "75")
+
 project(us_lab4a LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -288,9 +292,9 @@ set(uslab4a_gui_SRC
 
 if(LAB_ENABLE_CUDA)
     enable_language(CUDA)
-    if(CMAKE_CUDA_FLAGS MATCHES "^ *$")
-        set(CMAKE_CUDA_FLAGS "-arch compute_61 -code sm_61,compute_61" CACHE STRING "Flags used by the CUDA compiler during all build types." FORCE)
-    endif()
+    #if(CMAKE_CUDA_FLAGS MATCHES "^ *$")
+    #    set(CMAKE_CUDA_FLAGS "-arch compute_61 -code sm_61,compute_61" CACHE STRING "Flags used by the CUDA compiler during all build types." FORCE)
+    #endif()
     add_compile_definitions(
         LAB_ENABLE_CUDA
     )
