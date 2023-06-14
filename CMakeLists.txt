@@ -3,6 +3,10 @@ cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 cmake_policy(SET CMP0104 NEW)
 
 set(CMAKE_CUDA_ARCHITECTURES "75")
+set(CMAKE_CUDA_STANDARD 17)
+if(LINUX)
+    set(CMAKE_CUDA_HOST_COMPILER /usr/bin/g++-11)
+endif()
 
 project(us_lab4a LANGUAGES C CXX)
 
