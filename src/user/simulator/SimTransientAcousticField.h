@@ -17,6 +17,7 @@
 #ifndef SIMTRANSIENTACOUSTICFIELD_H
 #define SIMTRANSIENTACOUSTICFIELD_H
 
+#include <algorithm> /* min */
 #include <complex>
 #include <condition_variable>
 #include <mutex>
@@ -83,6 +84,7 @@ public:
 
 	template<typename STImpulseResponse, typename MTImpulseResponse>
 	static void getRectangularSourceAcousticFieldSTMT(
+			unsigned int mtNumThreads,
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
 			TFloat sourceWidth,
@@ -129,6 +131,7 @@ public:
 
 	template<typename STImpulseResponse, typename MTImpulseResponse>
 	static void getArrayOfRectangularSourcesAcousticFieldDirectSTMT(
+			unsigned int mtNumThreads,
 			TFloat samplingFreq,
 			TFloat propagationSpeed,
 			TFloat sourceWidth,
@@ -232,7 +235,7 @@ private:
 	template<typename T>
 		static void execSingleThread(T& threadData, Matrix<XYZValue<TFloat>>& gridData);
 	template<typename T, typename U>
-		static void execSingleThreadMultiThread(T& stThreadData, U& tls, Matrix<XYZValue<TFloat>>& gridData);
+		static void execSingleThreadMultiThread(T& stThreadData, unsigned int mtNumThreads, U& tls, Matrix<XYZValue<TFloat>>& gridData);
 };
 
 template<typename TFloat>
@@ -287,10 +290,10 @@ SimTransientAcousticField<TFloat>::execSingleThread(T& threadData, Matrix<XYZVal
 template<typename TFloat>
 template<typename T, typename U>
 void
-SimTransientAcousticField<TFloat>::execSingleThreadMultiThread(T& stThreadData, U& tls, Matrix<XYZValue<TFloat>>& gridData)
+SimTransientAcousticField<TFloat>::execSingleThreadMultiThread(T& stThreadData, unsigned int mtNumThreads, U& tls, Matrix<XYZValue<TFloat>>& gridData)
 {
 	const unsigned int totalThreads = std::thread::hardware_concurrency();
-	const unsigned int numThreads = (totalThreads > 2) ? totalThreads - 2 : 0;
+	const unsigned int numThreads = std::min((mtNumThreads == 0) ? totalThreads : mtNumThreads, (totalThreads > 2) ? totalThreads - 2 : 0);
 
 	IterationCounter::reset(gridData.n1() * gridData.n2());
 
@@ -501,6 +504,7 @@ template<typename TFloat>
 template<typename STImpulseResponse, typename MTImpulseResponse>
 void
 SimTransientAcousticField<TFloat>::getRectangularSourceAcousticFieldSTMT(
+					unsigned int mtNumThreads,
 					TFloat samplingFreq,
 					TFloat propagationSpeed,
 					TFloat sourceWidth,
@@ -527,7 +531,7 @@ SimTransientAcousticField<TFloat>::getRectangularSourceAcousticFieldSTMT(
 	};
 	tbb::enumerable_thread_specific<RectangularSourceThreadData<MTImpulseResponse>> tls(mtThreadData);
 
-	execSingleThreadMultiThread(stThreadData, tls, gridData);
+	execSingleThreadMultiThread(stThreadData, mtNumThreads, tls, gridData);
 }
 
 template<typename TFloat>
@@ -620,6 +624,7 @@ template<typename TFloat>
 template<typename STImpulseResponse, typename MTImpulseResponse>
 void
 SimTransientAcousticField<TFloat>::getArrayOfRectangularSourcesAcousticFieldDirectSTMT(
+					unsigned int mtNumThreads,
 					TFloat samplingFreq,
 					TFloat propagationSpeed,
 					TFloat sourceWidth,
@@ -652,7 +657,7 @@ SimTransientAcousticField<TFloat>::getArrayOfRectangularSourcesAcousticFieldDire
 	};
 	tbb::enumerable_thread_specific<DirectArrayOfRectangularSourcesThreadData<MTImpulseResponse>> tls(mtThreadData);
 
-	execSingleThreadMultiThread(stThreadData, tls, gridData);
+	execSingleThreadMultiThread(stThreadData, mtNumThreads, tls, gridData);
 }
 
 } // namespace Lab

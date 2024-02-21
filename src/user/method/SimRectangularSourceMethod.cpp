@@ -39,6 +39,7 @@
 #include "SimTransientPropagation.h"
 #include "SimTransientRadiationPattern.h"
 #include "Timer.h"
+#include "ThreadUtil.h"
 #include "Util.h"
 #include "Visualization.h"
 #include "Waveform.h"
@@ -71,9 +72,10 @@ SimRectangularSourceMethod<TFloat>::loadData(const ParameterMap& taskPM, MainDat
 {
 	const ParamMapPtr mainPM = project_.getSubParamMap("main_config_file");
 	//mainPM->getValue(data.density         , "density"          , 0.0, 100000.0);
-	mainPM->getValue(data.propagationSpeed, "propagation_speed", 0.0, 100000.0);
-	mainPM->getValue(data.centerFreq      , "center_frequency" , 0.0,  100.0e6);
-	mainPM->getValue(data.maxFreq         , "max_frequency"    , 0.0,  200.0e6);
+	mainPM->getValue(data.propagationSpeed , "propagation_speed"  , 0.0, 100000.0);
+	mainPM->getValue(data.centerFreq       , "center_frequency"   , 0.0,  100.0e6);
+	mainPM->getValue(data.maxFreq          , "max_frequency"      , 0.0,  200.0e6);
+	mainPM->getValue(data.numThreadsNumeric, "num_threads_numeric",   0,     1024);
 	data.nyquistRate = Util::nyquistRate(data.maxFreq);
 	taskPM.getValue(data.outputDir, "output_dir");
 
@@ -389,6 +391,8 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 	ImageGrid<TFloat>::get(*project_.getSubParamMap("grid_config_file"), nyquistLambda, gridData);
 
 	if (simData.irMethod == "numeric") {
+		auto numThreadsControl = ThreadUtil::createNumThreadsControl(mainData.numThreadsNumeric);
+
 		const TFloat subElemSize = mainData.propagationSpeed / (mainData.nyquistRate * simData.discretFactor);
 		if (sourceIsArray) {
 			SimTransientAcousticField<TFloat>::template getArrayOfRectangularSourcesAcousticFieldDirect<NumericArrayOfRectangularSourcesImpulseResponse<TFloat>>(
@@ -430,6 +434,7 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 				SimTransientAcousticField<TFloat>::template getArrayOfRectangularSourcesAcousticFieldDirectSTMT<
 										NumericArrayOfRectangularSourcesCUDAImpulseResponse,
 										NumericArrayOfRectangularSourcesImpulseResponse<TFloat>>(
+							mainData.numThreadsNumeric,
 							simData.samplingFreq, mainData.propagationSpeed,
 							srcData.sourceWidth, srcData.sourceHeight,
 							subElemSize,
@@ -438,6 +443,7 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 				SimTransientAcousticField<TFloat>::template getRectangularSourceAcousticFieldSTMT<
 										NumericRectangularSourceCUDAImpulseResponse,
 										NumericRectangularSourceImpulseResponse<TFloat>>(
+							mainData.numThreadsNumeric,
 							simData.samplingFreq, mainData.propagationSpeed,
 							srcData.sourceWidth, srcData.sourceHeight,
 							subElemSize,
@@ -469,6 +475,7 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 			SimTransientAcousticField<TFloat>::template getArrayOfRectangularSourcesAcousticFieldDirectSTMT<
 									NumericArrayOfRectangularSourcesOCLImpulseResponse<TFloat>,
 									NumericArrayOfRectangularSourcesImpulseResponse<TFloat>>(
+						mainData.numThreadsNumeric,
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,
@@ -477,6 +484,7 @@ SimRectangularSourceMethod<TFloat>::execTransientAcousticField(bool sourceIsArra
 			SimTransientAcousticField<TFloat>::template getRectangularSourceAcousticFieldSTMT<
 									NumericRectangularSourceOCLImpulseResponse<TFloat>,
 									NumericRectangularSourceImpulseResponse<TFloat>>(
+						mainData.numThreadsNumeric,
 						simData.samplingFreq, mainData.propagationSpeed,
 						srcData.sourceWidth, srcData.sourceHeight,
 						subElemSize,

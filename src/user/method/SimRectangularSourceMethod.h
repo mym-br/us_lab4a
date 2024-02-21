@@ -45,6 +45,7 @@ private:
 		TFloat maxFreq;
 		TFloat nyquistRate;
 		std::string outputDir;
+		unsigned int numThreadsNumeric;
 	};
 	struct SimulationData {
 		TFloat samplingFreq;

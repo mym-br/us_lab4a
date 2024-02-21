@@ -154,6 +154,8 @@ set(uslab4a_SRC
     src/util/TemplateUtil.h
     src/util/Tensor3.h
     src/util/Timer.h
+    src/util/ThreadUtil.cpp
+    src/util/ThreadUtil.h
     src/util/Util.cpp
     src/util/Util.h
     src/util/Value.h
