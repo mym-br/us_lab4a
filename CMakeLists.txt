@@ -38,7 +38,7 @@ endif()
 
 option(LAB_ENABLE_SIMD "Enable SIMD." ON)
 option(LAB_ENABLE_OPENCL "Enable OpenCL." OFF)
-set(LAB_OPENCL_PLATFORM 0 CACHE STRING "OpenCL plataform index.")
+set(LAB_OPENCL_PLATFORM 0 CACHE STRING "OpenCL platform index.")
 set(LAB_OPENCL_DEVICE 0 CACHE STRING "OpenCL device index.")
 option(LAB_ENABLE_CUDA "Enable CUDA." OFF)
 option(LAB_ENABLE_EXECUTION_TIME_MEASUREMENT "Enable execution time measurement." OFF)
