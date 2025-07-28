@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
+ *  Copyright 2014, 2017, 2018, 2020, 2025 Marcelo Y. Matuda               *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -34,9 +34,28 @@
 #include "TwoMediumSTAConfiguration.h"
 #include "XZ.h"
 
-
+class dim3;
 
 namespace Lab {
+
+void execCalculateDelaysTwoMediumKernel(const dim3& gridDim, const dim3& blockDim,
+			unsigned int numCols, unsigned int numRows, unsigned int numElementsMux, float fs,
+			float fsInvC2, float c1, float c2, unsigned int fermatBlockSize,
+			const float (*interfacePointList)[2], unsigned int interfacePointListSize,
+			const float* xArray, const unsigned int* minRowIdx,
+			const float* medium1DelayMatrix, const float (*gridXZ)[2], float* delayTensor);
+void execProcessRowColumnWithOneTxElemKernel(const dim3& gridDim, const dim3& blockDim,
+			unsigned int numCols, unsigned int numRows, float signalOffset, const float (*signalTensor)[2],
+			unsigned int signalTensorN2, unsigned int signalTensorN3, unsigned int baseElem,
+			unsigned int baseElemIdx, unsigned int txElem, const unsigned int* minRowIdx,
+			const float* delayTensor, float (*gridValue)[2], const float* rxApod);
+void execProcessRowColumnWithOneTxElemPCFKernel(const dim3& gridDim, const dim3& blockDim,
+			unsigned int numCols, unsigned int numRows, float signalOffset, const float (*signalTensor)[2],
+			unsigned int signalTensorN2, unsigned int signalTensorN3, unsigned int baseElem,
+			unsigned int baseElemIdx, unsigned int txElem, const unsigned int* minRowIdx,
+			const float* delayTensor, float (*gridValue)[2], const float* rxApod, float pcfFactor);
+
+
 
 // Two-medium image formation, using analytic signals (each sample is a real-imag vector).
 // The final image is a combination of sub-images, using apodization.

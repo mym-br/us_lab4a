@@ -24,6 +24,7 @@
 
 namespace Lab {
 
+// Must have the same value as in the .cpp file.
 #define NUM_RX_ELEM 32
 
 template<typename TFloat>
@@ -184,14 +185,16 @@ processRowColumnSTAPCFKernel(
 	gridFactor[point] = pcf;
 }
 
-void execCalculateDelaysSTAKernel(const dim3& gridDim, const dim3& blockDim,
+void
+execCalculateDelaysSTAKernel(const dim3& gridDim, const dim3& blockDim,
 		unsigned int numCols, unsigned int numRows, float invCT,
 		const float* xArray, const float (*gridXZ)[2], float* delayTensor)
 {
 	calculateDelaysSTAKernel<<<gridDim, blockDim>>>(numCols, numRows, invCT, xArray, gridXZ, delayTensor);
 }
 
-void execProcessRowColumnSTAKernel(const dim3& gridDim, const dim3& blockDim,
+void
+execProcessRowColumnSTAKernel(const dim3& gridDim, const dim3& blockDim,
 		unsigned int numCols, unsigned int numRows, float signalOffset,
 		const float (*signalTensor)[2], unsigned int signalTensorN2, unsigned int signalTensorN3,
 		unsigned int firstTxElem, unsigned int lastTxElem, const float* rxApod,
@@ -202,7 +205,8 @@ void execProcessRowColumnSTAKernel(const dim3& gridDim, const dim3& blockDim,
 		rxApod, delayTensor, gridValue);
 }
 
-void execProcessRowColumnSTAPCFKernel(const dim3& gridDim, const dim3& blockDim,
+void
+execProcessRowColumnSTAPCFKernel(const dim3& gridDim, const dim3& blockDim,
 		unsigned int numCols, unsigned int numRows, float signalOffset,
 		const float (*signalTensor)[2], unsigned int signalTensorN2, unsigned int signalTensorN3,
 		unsigned int firstTxElem, unsigned int lastTxElem, const float* rxApod, const float* delayTensor,

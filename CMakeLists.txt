@@ -305,8 +305,10 @@ if(LAB_ENABLE_CUDA)
         LAB_ENABLE_CUDA
     )
     add_library(usercuda STATIC
+        src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.cpp
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.cu
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.h
+        src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.cpp
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.cu
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.h
         src/user/processor/VectorialSTACUDAProcessor.cpp

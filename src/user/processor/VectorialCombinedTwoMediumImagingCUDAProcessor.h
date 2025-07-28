@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright 2014, 2017, 2018, 2020 Marcelo Y. Matuda                     *
+ *  Copyright 2014, 2017, 2018, 2020, 2025 Marcelo Y. Matuda               *
  *                                                                         *
  *  This program is free software: you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -35,9 +35,20 @@
 #include "TwoMediumSTAConfiguration.h"
 #include "XZ.h"
 
-
+class dim3;
 
 namespace Lab {
+
+void execTransposeKernel(const dim3& gridDim, const dim3& blockDim,
+			float* rawData, float* rawDataT, unsigned int oldSizeX, unsigned int oldSizeY);
+void execProcessImageKernel(const dim3& gridDim, const dim3& blockDim,
+			float* rawData, unsigned int numGridPoints, float* gridValueRe,
+			float* gridValueIm, float* rxApod);
+void execProcessImagePCFKernel(const dim3& gridDim, const dim3& blockDim,
+			float* rawData, unsigned int numGridPoints, float* gridValueRe,
+			float* gridValueIm, float* rxApod, float pcfFactor);
+
+
 
 // Two-medium image formation, using analytic signals (each sample is a real-imag vector).
 // The final image is a combination of sub-images, using apodization.

@@ -48,9 +48,8 @@
 
 namespace Lab {
 
+// Must have the same value as in the .cu file.
 #define NUM_RX_ELEM 32
-
-//=============================================================================
 
 struct VectorialSTACUDAProcessor::CUDAData {
 	CUDAContext c; // must be the first member
