@@ -310,6 +310,7 @@ if(LAB_ENABLE_CUDA)
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor.h
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.cu
         src/user/processor/VectorialCombinedTwoMediumImagingCUDAProcessor2.h
+        src/user/processor/VectorialSTACUDAProcessor.cpp
         src/user/processor/VectorialSTACUDAProcessor.cu
         src/user/processor/VectorialSTACUDAProcessor.h
         src/user/simulator/NumericArrayOfRectangularSourcesCUDAImpulseResponse.cu
