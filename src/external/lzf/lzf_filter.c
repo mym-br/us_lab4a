@@ -43,6 +43,7 @@
 #endif
 
 /*  Deal with the multiple definitions for H5Z_class_t.
+    [old comment]
     Note: Only HDF5 1.6 and 1.8 are supported.
 
     (1) The old class should always be used for HDF5 1.6
@@ -51,7 +52,7 @@
         macro H5_USE_16_API is set
 */
 
-#if H5_VERS_MAJOR == 1 && H5_VERS_MINOR == 8 && (H5_VERS_RELEASE < 3 || !H5_USE_16_API)
+#if H5_VERS_MAJOR == 1 && ((H5_VERS_MINOR == 8 && (H5_VERS_RELEASE < 3 || !H5_USE_16_API)) || H5_VERS_MINOR > 8)
 #define H5PY_H5Z_NEWCLS 1
 #elif H5_VERS_MAJOR == 1 && H5_VERS_MINOR == 10
 #define H5PY_H5Z_NEWCLS 1
