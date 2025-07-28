@@ -8,6 +8,7 @@ fftw_wisdom*
 *.pdf
 *.vtk
 *.obj
+/build
 
 !/data/**
 !/test/*.h5
