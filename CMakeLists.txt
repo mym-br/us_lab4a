@@ -28,12 +28,11 @@ pkg_check_modules(GLU REQUIRED IMPORTED_TARGET glu)
 pkg_search_module(HDF5 REQUIRED hdf5-serial hdf5)
 
 if(UNIX)
-    if(CMAKE_CXX_FLAGS MATCHES "^ *$")
-        set(CMAKE_CXX_FLAGS "-Wall -Wextra -march=native" CACHE STRING "Flags used by the CXX compiler during all build types." FORCE)
-    endif()
-    if(CMAKE_C_FLAGS MATCHES "^ *$")
-        set(CMAKE_C_FLAGS "-Wall -Wextra -march=native" CACHE STRING "Flags used by the C compiler during all build types." FORCE)
-    endif()
+    add_compile_options(
+        $<$<COMPILE_LANGUAGE:C,CXX>:-Wall>
+        $<$<COMPILE_LANGUAGE:C,CXX>:-Wextra>
+        $<$<COMPILE_LANGUAGE:C,CXX>:-march=native>
+    )
 endif()
 
 option(LAB_ENABLE_SIMD "Enable SIMD." ON)
