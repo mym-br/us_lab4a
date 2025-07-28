@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15.0 FATAL_ERROR)
 
 cmake_policy(SET CMP0104 NEW)
 
-set(CMAKE_CUDA_ARCHITECTURES "75")
+set(CMAKE_CUDA_ARCHITECTURES "89")
 set(CMAKE_CUDA_STANDARD 17)
 if(LINUX)
-    set(CMAKE_CUDA_HOST_COMPILER /usr/bin/g++-11)
+    set(CMAKE_CUDA_HOST_COMPILER /usr/bin/g++-12)
 endif()
 
 project(us_lab4a LANGUAGES C CXX)
@@ -338,8 +338,9 @@ if(LAB_ENABLE_CUDA)
     set_target_properties(usercuda PROPERTIES
         CUDA_SEPARABLE_COMPILATION ON
         POSITION_INDEPENDENT_CODE ON)
-    target_compile_features(usercuda PRIVATE cxx_std_14)
-    target_compile_options(usercuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--compiler-options=-march=native>)
+    target_compile_features(usercuda PRIVATE cxx_std_17)
+    target_compile_options(usercuda PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:--compiler-options=-march=native>
+                                            $<$<COMPILE_LANGUAGE:CUDA>:--compiler-options=-std=c++17>)
 endif()
 
 add_library(uslab4a STATIC ${uslab4a_SRC})
